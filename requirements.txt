@@ -1,0 +1,6 @@
+av
+imageio-ffmpeg
+numpy
+Pillow
+arabic-reshaper
+python-bidi
