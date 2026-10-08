@@ -28,6 +28,9 @@ def pm(frame, name, socket, pivot, theta=0.0, sx=1.0, sy=1.0):
     ox, oy = OFF[name]; return frame @ M3(socket[0], socket[1], sx, sy, theta, pivot[0] - ox, pivot[1] - oy)
 
 
+CAPTIONS = False  # STYLE LOCK: user does NOT want on-screen subtitles
+
+
 class ScenesAR:
     D = 12.5
 
@@ -104,6 +107,7 @@ class ScenesAR:
         for i in range(36):
             x = (r.random() * W + t * (4 + 8 * r.random())) % W; y = (r.random() * H * 0.8 + 12 * math.sin(t * 0.7 + i)) % H
             c = 150 + 80 * r.random(); cv2.circle(cv, (int(x), int(y)), 1, (c * 0.8, c * 0.95, c), -1, cv2.LINE_AA)
+        if not CAPTIONS: return cv
         sh_ = np.linspace(0, 1, 210, dtype=np.float32)[:, None, None] ** 1.6 * 0.72 * sstep(seg(t, 4.2, 4.8)); cv[H - 210:] *= (1 - sh_)
         # Arabic captions, gold, wiped in right -> left
         for (s, t0, t1, t2) in (('هذا اختبار لأسلوب الرسم الزيتي', 4.4, 6.6, 7.6), ('كل جزء من الشخصية يتحرك بنظام الطبقات', 7.9, 10.8, 12.0)):

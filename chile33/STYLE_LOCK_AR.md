@@ -17,9 +17,9 @@ Approved by the user on the 12.5 s test (`Test_Oil_Layered_Style.mp4`, commit 59
 - Circle around the whole face: B&W high-contrast filter inside, black outer ring + white inner ring, radius = 128 x character scale.
 - Solid black bar over the eyes (head-local x 12-132, y 72-108). Both follow the head matrix. (`scenes_ar.py::face_mark`)
 
-## 4. Arabic captions
-- arabic_reshaper + bidi, `assets/Amiri-Bold.ttf`, gold BGR (75,170,232) with dark halo, right->left wipe reveal,
-  bottom dark gradient shade, baseline y = H-135. Fusha text.
+## 4. NO on-screen subtitles / captions (user decision)
+- Do NOT show any translated/spoken-text captions in the video. `scenes_ar.py` has `CAPTIONS = False`; keep it False.
+- The story is carried by the voice + animation only. (Caption code is kept dormant only for reference.)
 
 ## 5. Process rules
 - New character: generate a parts sheet with the SAME layout/part order and rig it with the same constants; add the face mark.
