@@ -7,3 +7,9 @@ for k, c in CROP.items():
     cv2.imwrite(f'assets/layers/p4_{k}.jpg', im, [cv2.IMWRITE_JPEG_QUALITY, 94])
 for k in ('urzua', 'sepulveda', 'gomez', 'tray'):
     cv2.imwrite(f'assets/layers/p4_{k}.jpg', cv2.imread(f'assets/frames/fr_{k}.jpg'), [cv2.IMWRITE_JPEG_QUALITY, 95])
+# soften the (AI-garbled) note text: it is never read in the story, it is a cliffhanger
+import numpy as np
+im = cv2.imread('assets/layers/p4_drillbit.jpg'); H_, W_ = im.shape[:2]
+m = np.zeros((H_, W_), np.float32); cv2.ellipse(m, (775, 215), (95, 110), -8, 0, 360, 1.0, -1); m = cv2.GaussianBlur(m, (0, 0), 6)[..., None]
+bl = cv2.GaussianBlur(im, (0, 0), 7).astype(np.float32)
+cv2.imwrite('assets/layers/p4_drillbit.jpg', (im * (1 - m) + bl * m).astype(np.uint8), [cv2.IMWRITE_JPEG_QUALITY, 94])
