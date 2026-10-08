@@ -18,7 +18,7 @@ def draw_items(cv, cam, items, T):
     for it in sorted(items, key=lambda a: a['gy']):
         Xc, Yc = cam.pt(it['x'], it['gy'] - it.get('hop', 0))
         HM = draw_char(cv, it['ch'], T, Xc, Yc, it['sc'] * cam.sc, walk=it.get('walk', 0.0), ph0=it.get('ph0', 0.0), pose=it.get('pose'), mouth=it.get('mouth', 0.0), flip=it.get('flip', 1),
-                       gain=it.get('gain', 1.0), tint=it.get('tint'), crouch=it.get('crouch', 0.0), shirt=it.get('shirt'), pants=it.get('pants'), hs=it.get('hs', 1.0))
+                       gain=it.get('gain', 1.0), tint=it.get('tint'), crouch=it.get('crouch', 0.0), shirt=it.get('shirt'), pants=it.get('pants'), hs=it.get('hs', 1.0), rot=it.get('rot', 0.0), dy=it.get('dy', 0.0) * it['sc'] * cam.sc)
         heads.append((it, HM))
     return heads
 

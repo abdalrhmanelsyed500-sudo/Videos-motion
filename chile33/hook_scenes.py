@@ -62,7 +62,7 @@ def face_mark(cv, HM, ch, sc):
     cv2.fillConvexPoly(roi, pts, (6.0, 6.0, 6.0), cv2.LINE_AA)
 
 
-def draw_char(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, flip=1, gain=1.0, tint=None, crouch=0.0, sway_amp=1.0, shirt=None, pants=None, hs=1.0):
+def draw_char(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, flip=1, gain=1.0, tint=None, crouch=0.0, sway_amp=1.0, shirt=None, pants=None, hs=1.0, rot=0.0, dy=0.0):
     """layered puppet: legs, torso, head, arms+forearms - every part is a separate layer moved by its own joint"""
     P = pose or {}; R = RIG[ch]
     Ls = {k: L(f'{ch}_{k}') for k in ('head', 'torso', 'arm_l', 'arm_r', 'fore_l', 'fore_r', 'leg_l', 'leg_r')}
@@ -70,7 +70,7 @@ def draw_char(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, fli
     bob = abs(math.sin(ph)) * 7 * walk; sway = math.sin(ph) * 2.0 * walk * sway_amp
     breath = 0.012 * math.sin(t * 2.2 + ph0)
     sy = sc * (1 - 0.12 * crouch)
-    root = M3(X, gy - 497 * sy, sc * flip, sy, sway * 0.5 + P.get('lean', 0) * 0.4, HIPS[0], HIPS[1]) @ M3(0, -bob, 1, 1, 0, 0, 0)
+    root = M3(X, gy - 497 * sy + dy, sc * flip, sy, sway * 0.5 + P.get('lean', 0) * 0.4 + rot, HIPS[0], HIPS[1]) @ M3(0, -bob, 1, 1, 0, 0, 0)
     shadow(cv, X, gy, sc)
     def mul(a, b): return a if b is None else (b if a is None else tuple(x * y for x, y in zip(a, b)))
     kw = dict(gain=gain, tint=tint); kws = dict(gain=gain, tint=mul(tint, shirt)); kwp = dict(gain=gain, tint=mul(tint, pants))
