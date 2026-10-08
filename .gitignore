@@ -2,3 +2,6 @@ chile33/build/
 __pycache__/
 chile33/*.mp4
 /part*.mp4
+*.mp4
+!renders/*.mp4
+google_drive/

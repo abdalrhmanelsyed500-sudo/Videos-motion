@@ -13,3 +13,8 @@ im = cv2.imread('assets/layers/p4_drillbit.jpg'); H_, W_ = im.shape[:2]
 m = np.zeros((H_, W_), np.float32); cv2.ellipse(m, (775, 215), (95, 110), -8, 0, 360, 1.0, -1); m = cv2.GaussianBlur(m, (0, 0), 6)[..., None]
 bl = cv2.GaussianBlur(im, (0, 0), 7).astype(np.float32)
 cv2.imwrite('assets/layers/p4_drillbit.jpg', (im * (1 - m) + bl * m).astype(np.uint8), [cv2.IMWRITE_JPEG_QUALITY, 94])
+# ---- Part 5 plates
+for k, c in {'pull': 0, 'note': 0, 'pinera': 26, 'joy': 0, 'nation': 0, 'alive': 0, 'engineers': 0}.items():
+    im = cv2.imread(f'assets/raw/p5_{k}.jpg')
+    if c: im = im[c:-c, c:-c]
+    cv2.imwrite(f'assets/layers/p5_{k}.jpg', im, [cv2.IMWRITE_JPEG_QUALITY, 94])
