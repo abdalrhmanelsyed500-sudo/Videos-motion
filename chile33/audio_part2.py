@@ -1,4 +1,4 @@
-"""Part 2 mix: Arabic voice (hook.wav) + procedural ambience/SFX synced to part2_scenes timeline. Output build/mix_part2.wav (stereo 44.1k)."""
+"""Part 2 mix (NO MUSIC, SFX only - user request): Arabic voice (hook.wav) + procedural ambience/SFX synced to part2_scenes timeline. Output build/mix_part2.wav (stereo 44.1k)."""
 import numpy as np, math, wave
 from scipy import signal
 import part2_scenes as HS
@@ -37,8 +37,6 @@ def thump(t0, f0, amp, dur=0.8, pan=0.0):
 # ---- beds
 wind = bp(noise(), 250, 1400, 2); wind *= 0.5 + 0.5 * np.sin(2 * math.pi * 0.13 * t + 1) * np.sin(2 * math.pi * 0.07 * t)
 add(wind * 0.07 * (win(0, 5.9, 0.1, 0.9) + 0.9 * win(21.2, 24.6, 0.4, 0.5) + 1.2 * win(24.4, 28.2, 0.5, 0.5) + 1.2 * win(33.0, 44.0, 0.6, 0.6)))
-drone = (np.sin(2 * math.pi * 55 * t) + 0.6 * np.sin(2 * math.pi * 82.4 * t + 1) + 0.3 * np.sin(2 * math.pi * 110.3 * t)) * (0.7 + 0.3 * np.sin(2 * math.pi * 0.09 * t))
-add(drone * 0.05 * (0.3 * win(5.7, 16.6, .6, .6) + 0.3 * win(28.0, 33.4, .6, .6) + 0.9 * win(43.8, 63.3, 1, 1.5) + 1.2 * win(16.4, 19.3, .4, .5)))
 add(lp(noise(), 120) * 0.25 * win(5.7, 16.5, 0.6, 0.6) + lp(noise(), 130) * 0.22 * win(28.0, 33.4, .6, .6) + lp(noise(), 130) * 0.2 * win(43.8, 63.3, 1.0, 1.0))
 # machinery far away at the mine, rhythmic pick/hammer taps in the tunnel
 for th in np.arange(7.0, 9.0, 0.78): burst(th, 0.12, 900, 3500, 0.07, 0.3, 40); thump(th, 140, 0.03, 0.1, 0.3)
@@ -56,15 +54,6 @@ for e in HS.PEB:
     tl = e['t0'] + math.sqrt(2 * (e['yf'] + 120) / 1500.0); burst(tl, 0.2, 800, 4000, 0.10, (e['x'] - 640) / 640, 22)
 burst(11.12, 1.0, 150, 3500, 0.34, 0.0, 4.0); thump(11.12, 70, 0.5, 1.0)
 add(hp(noise(), 2000) * 0.05 * win(10.8, 12.6, 0.2, 1.4))
-# families: soft plucked Karplus-Strong guitar-ish phrase under the home/street beats
-def pluck(t0, f, amp, dur=1.6):
-    i0 = int(t0 * SR); n = int(dur * SR); p = int(SR / f); buf = rg.uniform(-1, 1, p).astype(np.float32); out = np.zeros(n, np.float32)
-    for i in range(n):
-        out[i] = buf[i % p]; buf[i % p] = 0.5 * (buf[i % p] + buf[(i + 1) % p]) * 0.996
-    seg_ = np.zeros(N, np.float32); seg_[i0:i0 + n] = out * amp * np.exp(-np.arange(n) / SR * 1.4); add(seg_, -0.2)
-mel = [(16.5, 220.0), (17.1, 261.6), (17.8, 329.6), (19.2, 293.7), (19.75, 329.6), (20.3, 392.0), (20.9, 349.2), (21.45, 329.6), (22.0, 293.7), (22.55, 261.6), (23.1, 329.6), (23.7, 392.0), (24.2, 329.6)]
-for tp, f in mel: pluck(tp, f, 0.16)
-add(0.02 * (np.sin(2 * math.pi * 220 * t) + 0.5 * np.sin(2 * math.pi * 329.6 * t)) * win(19.0, 24.6, 0.8, 0.8))
 # kids / town: distant voices murmur + laughs of the men with Mario
 add(bp(noise(), 500, 2200) * 0.05 * (0.6 + 0.4 * np.sin(2 * math.pi * 3.1 * t)) * win(22.1, 24.8, .2, .5), 0.0)
 for tl in (29.5, 29.95, 30.4, 31.2): burst(tl, 0.25, 400, 1800, 0.08, (rg.random() - 0.5) * 1.6, 9)
@@ -87,8 +76,6 @@ for td in (55.0, 56.3, 58.8, 61.9):
     i0 = int(td * SR); n = int(0.3 * SR); tt = np.arange(n) / SR; x = np.sin(2 * math.pi * (1700 + 500 * np.exp(-tt * 30)) * tt) * np.exp(-tt * 28) * 0.07
     s_ = np.zeros(N, np.float32); s_[i0:i0 + n] = x; add(s_, (rg.random() - 0.5) * 1.4)
 # dreadful low swell as the mountain closes
-pad = (np.sin(2 * math.pi * 55 * t) + 0.5 * np.sin(2 * math.pi * 58.3 * t) + 0.35 * np.sin(2 * math.pi * 82.4 * t)) * (0.8 + 0.2 * np.sin(2 * math.pi * 0.2 * t))
-add(pad * 0.10 * sm(57.5, 62.0, t) * (1 - sm(62.6, 63.3, t)))
 # ---- duck ambience under the voice, then mix
 amb_L, amb_R = L * (1 - 0.30 * env), R * (1 - 0.30 * env)
 oL = amb_L + v; oR = amb_R + v

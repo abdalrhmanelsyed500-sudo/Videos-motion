@@ -30,3 +30,4 @@ Approved by the user on the 12.5 s test (`Test_Oil_Layered_Style.mp4`, commit 59
 - Code: `prepare_hook.py` (cuts parts sheets m/w + sprites + plate layers), `hook_scenes.py` (rig, shots, timeline), `render_hook.py` (`--preview t1,t2` / `--range f0 f1 out.mp4`; two halves rendered in parallel then concatenated), `audio_hook.py` (voice + SFX mix), `align_hook.py` (phrase timing from silences).
 - Characters: `m` miner (hard hat), `w` woman, `ar` civilian; all share the same part layout/rig, variations via shirt/pants tint, flip, scale. Every one gets the face mark.
 - Shots: exterior dawn -> tunnel crew -> collapse (rocks, dust, shake) -> 700 m cutaway pan -> dark refuge + food -> surface vigil (time-lapse day/night) -> cutaway pan -> refuge, men gather. No captions.
+- Audio rule (user): NO music in any part (no drone tones, pads, melodies); SFX/ambience noise only.
