@@ -62,7 +62,7 @@ def face_mark(cv, HM, ch, sc):
     cv2.fillConvexPoly(roi, pts, (6.0, 6.0, 6.0), cv2.LINE_AA)
 
 
-def draw_char(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, flip=1, gain=1.0, tint=None, crouch=0.0, sway_amp=1.0, shirt=None, pants=None):
+def draw_char(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, flip=1, gain=1.0, tint=None, crouch=0.0, sway_amp=1.0, shirt=None, pants=None, hs=1.0):
     """layered puppet: legs, torso, head, arms+forearms - every part is a separate layer moved by its own joint"""
     P = pose or {}; R = RIG[ch]
     Ls = {k: L(f'{ch}_{k}') for k in ('head', 'torso', 'arm_l', 'arm_r', 'fore_l', 'fore_r', 'leg_l', 'leg_r')}
@@ -79,7 +79,7 @@ def draw_char(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, fli
         place(cv, Ls[name], pm(root, ch, name, sock, piv, th), **kwp)
     TF = root @ M3(HIPS[0], HIPS[1], 1, 1 + breath, sway * 0.6 + P.get('lean', 0), HIPS[0], HIPS[1])
     hn = 2.0 * math.sin(t * 1.7 + ph0) + 2.0 * math.sin(ph) * walk + P.get('head', 0.0)
-    HM = pm(TF, ch, 'head', R['sock'], R['piv'], hn)
+    ox_, oy_ = OFFS[ch]['head']; HM = TF @ M3(R['sock'][0], R['sock'][1], hs, hs, hn, R['piv'][0] - ox_, R['piv'][1] - oy_)
     place(cv, Ls['head'], HM, **kw)
     if mouth > 0.02:
         ml = mouth_layer(ch); mo = 0.08 + 0.92 * mouth; ox, oy = OFFS[ch]['head']
@@ -98,7 +98,7 @@ def draw_char(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, fli
         A = pm(TF, ch, an, sock, piv, a_t)
         F = A @ M3(elb[0], elb[1], 1, 1, f_t, fp[0], fp[1])
         place(cv, Ls[fn], F, **kw); place(cv, Ls[an], A, **kws)
-    face_mark(cv, HM, ch, sc)
+    face_mark(cv, HM, ch, sc * hs)
     return HM
 
 

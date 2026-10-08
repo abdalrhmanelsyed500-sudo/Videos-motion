@@ -29,7 +29,7 @@ def cut(im, bg, d, mk, pad=2):
 
 
 offs = {}
-for ch in ('m', 'w'):
+for ch in ('m', 'w', 'u', 's', 'g', 'j'):
     im = cv2.imread(f'assets/raw/{ch}_parts.jpg'); bg = bgcol(im); d, m = matte(im, bg); lab, n = ndi.label(m)
     offs[ch] = {}
     for k, (sx, sy) in SEEDS.items():
@@ -87,4 +87,9 @@ for p in ('p1', 'p2', 'p3', 'p4', 'p5', 'p6'):
         cv2.imwrite('assets/layers/h_p6.jpg', im, [cv2.IMWRITE_JPEG_QUALITY, 95])
         poly_layer(im, 'h_p6_wl', [(0, 0), (150, 0), (170, 300), (200, 700), (190, 768), (0, 768)], 8); poly_layer(im, 'h_p6_wr', [(1230, 0), (1376, 0), (1376, 768), (1250, 768), (1260, 500)], 8)
     else: cv2.imwrite('assets/layers/h_p4.jpg', im, [cv2.IMWRITE_JPEG_QUALITY, 95])
+# ---- part 2 plates
+for nm in ('mine', 'home', 'house', 'street'):
+    im = cv2.imread(f'assets/raw/p2_{nm}.jpg'); assert im.shape[:2] == (768, 1376)
+    cv2.imwrite(f'assets/layers/h2_{nm}.jpg', im, [cv2.IMWRITE_JPEG_QUALITY, 95])
+    if nm in ('mine', 'house', 'street'): poly_layer(im, f'h2_{nm}_gr', [(0, 650), (1376, 650), (1376, 768), (0, 768)], 22)
 print('ok')
