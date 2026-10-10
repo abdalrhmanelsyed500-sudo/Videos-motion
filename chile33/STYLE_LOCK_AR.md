@@ -31,3 +31,8 @@ Approved by the user on the 12.5 s test (`Test_Oil_Layered_Style.mp4`, commit 59
 - Characters: `m` miner (hard hat), `w` woman, `ar` civilian; all share the same part layout/rig, variations via shirt/pants tint, flip, scale. Every one gets the face mark.
 - Shots: exterior dawn -> tunnel crew -> collapse (rocks, dust, shake) -> 700 m cutaway pan -> dark refuge + food -> surface vigil (time-lapse day/night) -> cutaway pan -> refuge, men gather. No captions.
 - Audio rule (user): NO music in any part (no drone tones, pads, melodies); SFX/ambience noise only.
+
+## 7. USER DECISION (Prosperi video onwards): NO face signature
+- From the Prosperi / Sahara video and all FUTURE videos: NO black eye bar and NO B&W circle around faces. Characters have normal painted faces.
+- Implemented with `hook_scenes.FACE_MARK = False` (set in `pros_scenes.py`) and `BARE_ARMS` (runners' upper arms are bare skin, no shirt tint). The Chile series (parts 1-9) keeps the signature.
+- Prosperi project files: `prepare_pros.py`, `pros_scenes.py`, `audio_pros.py`, `render_pros.py`, parts sheets `assets/raw/{mauro,racer}_parts.jpg` (chars `p`, `r`), wide plates `pr_{race,storm,empty,border}` (1584x672, `WC` wide camera).
