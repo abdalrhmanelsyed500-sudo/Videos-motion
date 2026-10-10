@@ -44,6 +44,7 @@ def shadow(cv, X, gy, sc, a=0.55):
     m = cv2.GaussianBlur(m, (0, 0), 6 * sc + 2)[..., None]; cv[y0:y1, x0:x1] *= (1 - a * m)
 
 
+LASTHAND = {}   # (char, 'l'|'r') -> screen position of the hand (set by draw_char)
 BARE_ARMS = set()   # characters whose upper arms are bare skin (no shirt tint)
 FACE_MARK = True   # set False for projects without the signature (Prosperi video onwards: user decision)
 
@@ -102,6 +103,7 @@ def draw_char(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, fli
             a_t = -raise_a + sw; f_t = -raise_f
         A = pm(TF, ch, an, sock, piv, a_t)
         F = A @ M3(elb[0], elb[1], 1, 1, f_t, fp[0], fp[1])
+        LASTHAND[(ch, side)] = pt_(F, Ls[fn].w * 0.5, Ls[fn].h * 0.92)
         place(cv, Ls[fn], F, **kw); place(cv, Ls[an], A, **(kw if ch in BARE_ARMS else kws))
     face_mark(cv, HM, ch, sc * hs)
     return HM
