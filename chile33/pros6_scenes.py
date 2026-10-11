@@ -45,10 +45,10 @@ def sunicon(cv, x, y, r, a=1.0, half=False):
     cv[:] = cv * (1 - a) + ov * a
 
 
-def qmark(cv, x, y, h, a):
+def qmark(cv, x, y, h, a, col=(40, 62, 150)):
     if a <= 0.02: return
     im = Image.new('RGBA', (int(h * 1.2), int(h * 1.6)), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
-    f = ImageFont.truetype('assets/Amiri-Bold.ttf', int(h)); d.text((im.width / 2, im.height / 2), '?', font=f, fill=(40, 62, 150, 255), anchor='mm')
+    f = ImageFont.truetype('assets/Amiri-Bold.ttf', int(h)); d.text((im.width / 2, im.height / 2), '?', font=f, fill=(col[0], col[1], col[2], 255), anchor='mm')
     arr = np.array(im).astype(np.float32); al = arr[..., 3:4] / 255.0 * a; x0, y0 = int(x - im.width / 2), int(y - im.height / 2)
     if x0 < 0 or y0 < 0 or x0 + im.width > W or y0 + im.height > H: return
     roi = cv[y0:y0 + im.height, x0:x0 + im.width]; roi[:] = roi * (1 - al) + arr[..., [2, 1, 0]] * al
