@@ -57,7 +57,7 @@ def arm_canvas(ch, side):
     _arm[key] = d; return d
 
 
-def draw_char2(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, flip=1, gain=1.0, tint=None, crouch=0.0, sway_amp=1.0, shirt=None, pants=None, hs=1.0, rot=0.0, dy=0.0, stride=1.0):
+def draw_char2(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, flip=1, gain=1.0, tint=None, crouch=0.0, legstyle='front', sway_amp=1.0, shirt=None, pants=None, hs=1.0, rot=0.0, dy=0.0, stride=1.0):
     P = pose or {}; R = HK.RIG[ch]
     Ls = {k: HK.L(f'{ch}_{k}') for k in ('head', 'torso', 'leg_l', 'leg_r', 'fore_l', 'fore_r')}; Ls_ = Ls
     ph = 2 * math.pi * 1.1 * t + ph0
@@ -71,14 +71,22 @@ def draw_char2(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, fl
     # legs: hip swing + knee flex on the lifted leg + ankle counter-rotation so the shoe stays level
     for side, name, sock, piv in (('l', 'leg_l', (468, 640), (1025, 225)), ('r', 'leg_r', (558, 640), (1253, 230))):
         sg = 1 if side == 'l' else -1; s = math.sin(ph) * sg
+        ox, oy = HK.OFFS[ch][name]; pv = (piv[0] - ox, piv[1] - oy); kx, ky = KNEE[name]; ax, ay = ANKLE[name]
+        if legstyle == 'front' and walk > 0:
+            # front-view walk (the art is a front drawing): legs never scissor sideways; the swing leg comes TOWARD the camera, so the thigh/shin FORESHORTEN
+            # (knee rises, shin folds back, foot grows slightly) and the push-off leg lengthens its heel. Planted leg stays under the body.
+            lf = max(0.0, -s) ** 0.9 * walk; pk = max(0.0, s - 0.45) / 0.55 * walk
+            th = 3.0 * sg * lf * stride + P.get('legs', 0) * sg
+            T0 = root @ M3(sock[0], sock[1], 1, 1 - 0.075 * lf * stride, th, pv[0], pv[1])
+            T1 = T0 @ M3(kx, ky - 6 * lf * stride, 1, 1 - 0.40 * lf ** 1.15 * stride - 0.07 * pk, -3.5 * sg * lf, kx, ky)
+            T2 = T1 @ M3(ax, ay, 1 + 0.07 * lf, 1 + 0.10 * lf - 0.22 * pk, 3.5 * sg * lf, ax, ay)
+            place_skin(cv, Ls[name], [T0, T1, T2], [(kx, ky), (ax, ay)], (0.0, 1.0), 38, **kwp); continue
         th = (18 * stride * s) * walk + (2 if side == 'l' else -2) * (1 - walk) * math.sin(t * 0.8 + ph0) + P.get('legs', 0) * sg
-        lift = max(0.0, -s) if walk > 0 else 0.0                       # leg moving forward = swing phase: knee bends
-        kn = (26 * lift ** 0.8) * walk * stride + P.get('knee', 0) * (1 if side == 'l' else 1.0)
+        lift = max(0.0, -s) if walk > 0 else 0.0
+        kn = (26 * lift ** 0.8) * walk * stride + P.get('knee', 0)
         an_ = -(th + kn) * 0.9
-        ox, oy = HK.OFFS[ch][name]; pv = (piv[0] - ox, piv[1] - oy)
         T0 = root @ M3(sock[0], sock[1], 1, 1, th, pv[0], pv[1])
-        kx, ky = KNEE[name]; ax, ay = ANKLE[name]
-        T1 = T0 @ M3(kx, ky, 1, 1, -kn, kx, ky); T2 = T1 @ M3(ax, ay, 1, 1, an_ + 0.0, ax, ay)
+        T1 = T0 @ M3(kx, ky, 1, 1, -kn, kx, ky); T2 = T1 @ M3(ax, ay, 1, 1, an_, ax, ay)
         place_skin(cv, Ls[name], [T0, T1, T2], [(kx, ky), (ax, ay)], (0.0, 1.0), 38, **kwp)
     TF = root @ M3(HIPS[0], HIPS[1], 1, 1 + breath, sway * 0.6 + P.get('lean', 0), HIPS[0], HIPS[1])
     hn = 2.0 * math.sin(t * 1.7 + ph0) + 2.0 * math.sin(ph) * walk + P.get('head', 0.0)
