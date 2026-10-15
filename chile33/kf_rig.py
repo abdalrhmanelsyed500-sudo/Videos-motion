@@ -23,7 +23,7 @@ def reg(nm):
     if k not in _img:
         (ex, ey), (tx, ty), s = REG[nm]; im = img(nm)
         M = np.float32([[s, 0, tx - s * ex], [0, s, ty - s * ey]])
-        _img[k] = cv2.warpAffine(im, M, (im.shape[1], im.shape[0]), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT)
+        _img[k] = np.clip(cv2.warpAffine(im, M, (im.shape[1], im.shape[0]), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT), 0, None)
     return _img[k]
 
 
@@ -46,7 +46,12 @@ def morph(a, b, t):
     k = (a, b, t)
     if k in _mc: return _mc[k]
     if len(_mc) > 28: _mc.pop(next(iter(_mc)))
-    Ia, Ib = img(a), img(b); Fab, Fba = flow(a, b), flow(b, a)
+    return morph_arr(img(a), img(b), t, flow(a, b), flow(b, a), cache=k)
+
+
+def morph_arr(Ia, Ib, t, Fab=None, Fba=None, cache=None):
+    if Fab is None:
+        ga, gb = _gray(Ia), _gray(Ib); Fab = _dis.calc(ga, gb, None); Fba = _dis.calc(gb, ga, None)
     h, w = Ia.shape[:2]; gx, gy = np.meshgrid(np.arange(w, dtype=np.float32), np.arange(h, dtype=np.float32))
     # backward warping with the opposite flow field (flow fields are smooth, so this is a good approximation)
     wa = cv2.remap(Ia, gx - t * (-Fba[..., 0]), gy - t * (-Fba[..., 1]), cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
@@ -56,7 +61,8 @@ def morph(a, b, t):
     aa, ab = wa[..., 3:], wb[..., 3:]; mis = (np.abs(aa - ab) > 0.45).astype(np.float32); mis = cv2.GaussianBlur(mis, (0, 0), 1.2)[..., None]
     near = wa if t < 0.5 else wb
     out = out * (1 - mis) + near * mis
-    _mc[k] = out; return out
+    if cache is not None: _mc[cache] = out
+    return out
 
 
 def layer_of(arr): return Layer.from_array(arr)
