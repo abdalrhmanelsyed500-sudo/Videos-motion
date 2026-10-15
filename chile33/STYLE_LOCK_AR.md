@@ -36,3 +36,6 @@ Approved by the user on the 12.5 s test (`Test_Oil_Layered_Style.mp4`, commit 59
 - From the Prosperi / Sahara video and all FUTURE videos: NO black eye bar and NO B&W circle around faces. Characters have normal painted faces.
 - Implemented with `hook_scenes.FACE_MARK = False` (set in `pros_scenes.py`) and `BARE_ARMS` (runners' upper arms are bare skin, no shirt tint). The Chile series (parts 1-9) keeps the signature.
 - Prosperi project files: `prepare_pros.py`, `pros_scenes.py`, `audio_pros.py`, `render_pros.py`, parts sheets `assets/raw/{mauro,racer}_parts.jpg` (chars `p`, `r`), wide plates `pr_{race,storm,empty,border}` (1584x672, `WC` wide camera).
+
+## §8. Pro-upgrade test (Task E, Prosperi test shot)
+Not applied to the old videos. New tools: `rig2.py` (skinned legs with knee/ankle, elbow ball-joint caps, forearm overlap, neck patch), chroma-keyed foreground assets (`prepare_up.py`, `assets/layers/up_fg_*`), DOF blur, light leaks, 5 camera set-ups in `up_scenes.py`, audio `audio_up.py`. Known flaw: dark collar patch under the chin in close-ups. Arms cannot be skinned at big bends (spikes).
