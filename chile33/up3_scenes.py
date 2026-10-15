@@ -71,14 +71,14 @@ def s3(cv, T):
 def s4(cv, T):
     t = T - 12.2
     wc = cam(T, 12.2, 17.6, (760, 296, 1.5), (780, 296, 1.58), 'pr_dawn', cv=cv); blur_bg(cv, 3.5)
-    hand = ev(t, 1.6, 2.6) * (1 - ev(t, 4.0, 4.9))
-    pose = {'aL': 8, 'fL': 8, 'aR': 8 + 80 * hand, 'fR': 8 - 158 * hand, 'head': 5 * math.sin(t * 0.9) + 4 * hand}
+    hf = ev(t, 1.3, 2.1) * (1 - ev(t, 4.4, 5.1)); ha = ev(t, 1.8, 2.7) * (1 - ev(t, 3.9, 4.6)); hand = ha
+    pose = {'aL': 8, 'fL': 8, 'aR': 8 + 80 * ha, 'fR': 8 - 158 * hf, 'head': 5 * math.sin(t * 0.9) + 4 * hand}
     f = [(0, 'worried'), (3.2, 'determined')]
     cur = f[0][1]
     fa = ('worried', 'determined', sstep(clamp((t - 3.2) / 0.5))) if t > 3.2 else ('worried', 'worried', 0.0)
     if fa[2] >= 1.0: fa = ('determined', 'determined', 0.0)
     if fa[2] == 0.0 and (t % 3.1) < 0.13: fa = (fa[0], 'blink', 0.95 * math.sin(math.pi * (t % 3.1) / 0.13))
-    hero_front(cv, T, 520 + 6 * math.sin(t * 0.5), 830, 0.82, fa, pose, sun_h=0.2, rim=0.7, sl=0.0, t=t)
+    hero_front(cv, T, 520 + 6 * math.sin(t * 0.5), 690, 0.56, fa, pose, sun_h=0.2, rim=0.7, sl=0.0, t=t)
     leak(cv, 120, 240, 420, T, 0.45, (120, 195, 255)); fin(cv, T, 3004, 0.5, mo=30); shake(cv, T, 1.1, 4)
 
 
@@ -91,7 +91,7 @@ def s5(cv, T):
     elif t < 3.0: fa = ('worried', 'shocked', sstep(clamp((t - 1.3) / 0.22))); fa = ('shocked', 'shocked', 0.0) if fa[2] >= 1.0 else fa
     else: fa = ('shocked', 'tired', sstep(clamp((t - 3.0) / 0.6))); fa = ('tired', 'tired', 0.0) if fa[2] >= 1.0 else fa
     if fa[2] == 0.0 and fa[0] == 'worried' and (t % 3.1) < 0.13: fa = ('worried', 'blink', 0.95 * math.sin(math.pi * (t % 3.1) / 0.13))
-    hero_front(cv, T, 640 + 5 * math.sin(t * 0.6), 1470 + 25 * seg(T, 17.2, 21.6), k * jolt, fa, {'aL': 6, 'aR': 6, 'fL': 6, 'fR': 6, 'head': 2 + 3 * ev(t, 3.0, 3.8)}, sun_h=0.3, rim=0.9, sl=0.0, t=t)
+    hero_front(cv, T, 640 + 5 * math.sin(t * 0.6), 52 + 1111 * k * jolt + 18 * seg(T, 17.2, 21.6), k * jolt, fa, {'aL': 6, 'aR': 6, 'fL': 6, 'fR': 6, 'head': 2 + 3 * ev(t, 3.0, 3.8)}, sun_h=0.3, rim=0.9, sl=0.0, t=t)
     leak(cv, 120, 200, 520, T, 0.55, (120, 195, 255)); fin(cv, T, 3005, 0.55, mo=40); shake(cv, T, 1.5, 5)
 
 
@@ -102,12 +102,12 @@ def s6(cv, T):
     cv[:] = heat_haze(cv, T, 1.2, 0.05, 2.0, 300, 480)
     X, Y = wc.pt(930, 520); k = 0.2 * wc.s / SC0
     sv = {'aL': 8, 'fL': 8, 'aR': 8, 'fR': 8, 'head': -4 * math.sin(t * 0.7)}
-    hero_front(cv, T, X, Y, k * 1.15, ('tired', 'tired', 0.0), sv, sun_h=0.12, rim=1.0, sl=1.6, t=t)
+    hero_front(cv, T, X, Y, k * 0.97, ('tired', 'tired', 0.0), sv, sun_h=0.12, rim=1.0, sl=1.6, t=t)
     sand(cv, T, 0.06 + 0.1 * seg(T, 21, 26), 77, -1.0, 0.5)
     leak(cv, *wc.pt(585, 262), 380, T, 0.4, (120, 195, 255)); fin(cv, T, 3006, 0.5); shake(cv, T, 0.6, 6)
 
 
-SHOTS3 = [('s1', 0.0, 4.4, s1, 0.0), ('s2', 4.4, 9.4, s2, 0.5), ('s3', 9.4, 12.4, s3, 0.4), ('s4', 12.4, 17.4, s4, 0.4), ('s5', 17.4, 21.2, s5, 0.4), ('s6', 21.2, DP3, s6, 0.6)]
+SHOTS3 = [('s1', 0.0, 4.4, s1, 0.0), ('s2', 4.4, 9.4, s2, 0.2), ('s3', 9.4, 12.4, s3, 0.2), ('s4', 12.4, 17.4, s4, 0.2), ('s5', 17.4, 21.2, s5, 0.2), ('s6', 21.2, DP3, s6, 0.25)]
 
 
 class PartUP3(P2.PartP2):

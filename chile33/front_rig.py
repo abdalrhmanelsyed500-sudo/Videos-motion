@@ -10,6 +10,9 @@ from side_rig import _raw, _cx, _over, _layer, mul_t
 _c = {}
 HEADK = 0.37
 ARMK = 0.88
+HEADUP = 26.0
+LEGX, LEGY, TORX, TORY = 1.0, 1.05, 1.0, 1.38
+UAX, UAY, FAX, FAY = 0.80, 1.05, 0.80, 1.08
 
 
 def build():
@@ -37,24 +40,31 @@ def draw_front(cv, t, X, gy, sc, face=('neutral', 'neutral', 0.0), flip=1, gain=
     C = build(); P = pose or {}; kw = dict(gain=gain, tint=tint)
     lg, tr = C['legs'], C['torso']
     br = 0.010 * math.sin(t * 2.1 + ph0); sw = P.get('sway', 0.0) + 0.55 * math.sin(t * 0.9 + ph0)
-    if shadow: HK.shadow(cv, X, gy, sc * 1.05)
-    Tl = M3(X, gy, sc * flip, sc, sw * 0.5, lg['foot'][0], lg['foot'][1])
+    if shadow: HK.shadow(cv, X, gy, sc * 1.05 * LEGY)
+    fx = sc * flip
+    # every limb segment is stretched in its OWN frame (no skew when rotated) so that the front figure has exactly the same height/proportions as the side rig
+    Tl = M3(X, gy, fx * LEGX, sc * LEGY, sw * 0.5, lg['foot'][0], lg['foot'][1])
     place(cv, lg['L'], Tl, **kw)
-    top = lg['top']; Tt = Tl @ M3(top[0], top[1], 1, 1 + br, -sw * 0.9 + P.get('lean', 0.0), tr['bot'][0], tr['bot'][1])
-    nk = C['neck']; place(cv, nk, Tt @ M3(0, 0, 1, 1, 0, 0, 30), **kw)
+    top = lg['top']; pt = Tl @ np.array([top[0], top[1], 1.0])
+    rotT = sw * 0.5 + flip * (-sw * 0.9 + P.get('lean', 0.0))
+    Tt = M3(pt[0], pt[1], fx * TORX, sc * TORY * (1 + br), rotT, tr['bot'][0], tr['bot'][1])
     fa, fb, fm = face; LA = HK.L('ph_' + fa); hn = head_neck(fa)
     hrot = P.get('head', 0.0) + 1.6 * math.sin(t * 1.1 + ph0) + 0.8 * math.sin(t * 2.3 + 1)
-    Th = Tt @ M3(tr['neck'][0], tr['neck'][1] - 12, hk, hk, hrot, hn[0], hn[1])
+    pn = Tt @ np.array([tr['neck'][0], tr['neck'][1] - 12 - HEADUP, 1.0])
+    Th = M3(pn[0], pn[1], fx * hk, sc * hk, rotT + flip * hrot, hn[0], hn[1])
     place(cv, LA, Th, **kw)
     if fm > 0.01 and fb != fa: place(cv, HK.L('ph_' + fb), Th, alpha=fm, **kw)
+    place(cv, C['neck'], Tt @ M3(0, 0, 1, 1, 0, 0, 80), **kw)
     place(cv, tr['L'], Tt, **kw)
     hands = {}
     for side, sg in (('L', 1), ('R', -1)):
         a = C['arm' + side]; sh = tr['sh' + side]
         ang = sg * (P.get('a' + side, 5.0) + 1.5 * math.sin(t * 1.3 + ph0 + (0 if side == 'L' else 1.7)))
         fl_ = -sg * (P.get('f' + side, 8.0) + 3 * math.sin(t * 1.7 + ph0 + (1 if side == 'L' else 2)))
-        T0 = Tt @ M3(sh[0], sh[1], ARMK, ARMK, ang, a['sh'][0], a['sh'][1]); ex, ey = a['el']
-        T1 = T0 @ M3(ex, ey, 1, 1, fl_, a['fe'][0], a['fe'][1])
+        ps = Tt @ np.array([sh[0], sh[1], 1.0]); r0 = rotT + flip * ang
+        T0 = M3(ps[0], ps[1], fx * UAX, sc * UAY, r0, a['sh'][0], a['sh'][1]); ex, ey = a['el']
+        pe = T0 @ np.array([ex, ey, 1.0])
+        T1 = M3(pe[0], pe[1], fx * FAX, sc * FAY, r0 + flip * fl_, a['fe'][0], a['fe'][1])
         place(cv, a['F'], T1, **kw); place(cv, a['A'], T0, **kw)
         hx, hy = a['hand']; p = T1 @ np.array([hx, hy, 1.0]); hands[side] = (float(p[0]), float(p[1]))
     return hands
