@@ -72,7 +72,7 @@ def s4(cv, T):
     t = T - 12.2
     wc = cam(T, 12.2, 17.6, (760, 296, 1.5), (780, 296, 1.58), 'pr_dawn', cv=cv); blur_bg(cv, 3.5)
     hand = ev(t, 1.6, 2.6) * (1 - ev(t, 4.0, 4.9))
-    pose = {'aL': 8, 'fL': 8, 'aR': 8 + 84 * hand, 'fR': 8 - 132 * hand, 'head': 5 * math.sin(t * 0.9) + 4 * hand}
+    pose = {'aL': 8, 'fL': 8, 'aR': 8 + 80 * hand, 'fR': 8 - 158 * hand, 'head': 5 * math.sin(t * 0.9) + 4 * hand}
     f = [(0, 'worried'), (3.2, 'determined')]
     cur = f[0][1]
     fa = ('worried', 'determined', sstep(clamp((t - 3.2) / 0.5))) if t > 3.2 else ('worried', 'worried', 0.0)
