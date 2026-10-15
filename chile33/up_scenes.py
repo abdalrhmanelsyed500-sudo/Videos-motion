@@ -7,13 +7,15 @@ import cv2
 DPU = 19.6
 _bl = {}
 def fgl(cv, name, x, y, sc, blur=0.0, gain=1.0, alpha=1.0, flip=1, tint=None):
-    k = (name, round(blur, 1))
+    """foreground cut-out anchored bottom-centre; strong down-scales are pre-filtered (INTER_AREA) so small props stay clean"""
+    q = round(sc, 2) if sc < 0.5 else 1.0; k = (name, round(blur, 1), q)
     if k not in _bl:
-        Ly = get_layer(name)
-        if blur > 0.2:
-            im = cv2.GaussianBlur(Ly.img, (0, 0), blur); _bl[k] = Layer.from_array(im)
-        else: _bl[k] = Ly
-    Ly = _bl[k]; place(cv, Ly, M3(x, y, sc * flip, sc, 0, Ly.w / 2, Ly.h), gain=gain, alpha=alpha, tint=tint)
+        im = get_layer(name).img
+        if q < 1.0: im = cv2.resize(im, None, fx=q, fy=q, interpolation=cv2.INTER_AREA)
+        if blur > 0.2: im = cv2.GaussianBlur(im, (0, 0), blur * (q if q < 1.0 else 1.0) + 0.01)
+        _bl[k] = Layer.from_array(im)
+    Ly = _bl[k]; s2 = sc / q if q < 1.0 else sc
+    place(cv, Ly, M3(x, y, s2 * flip, s2, 0, Ly.w / 2, Ly.h), gain=gain, alpha=alpha, tint=tint)
 
 
 def hero(cv, T, x, gy, sc, flip=1, **kw):

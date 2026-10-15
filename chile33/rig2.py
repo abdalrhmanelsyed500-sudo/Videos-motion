@@ -57,7 +57,7 @@ def arm_canvas(ch, side):
     _arm[key] = d; return d
 
 
-def draw_char2(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, flip=1, gain=1.0, tint=None, crouch=0.0, legstyle='front', sway_amp=1.0, shirt=None, pants=None, hs=1.0, rot=0.0, dy=0.0, stride=1.0):
+def draw_char2(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, flip=1, gain=1.0, tint=None, crouch=0.0, legstyle='front', face=None, sway_amp=1.0, shirt=None, pants=None, hs=1.0, rot=0.0, dy=0.0, stride=1.0):
     P = pose or {}; R = HK.RIG[ch]
     Ls = {k: HK.L(f'{ch}_{k}') for k in ('head', 'torso', 'leg_l', 'leg_r', 'fore_l', 'fore_r')}; Ls_ = Ls
     ph = 2 * math.pi * 1.1 * t + ph0
@@ -91,8 +91,16 @@ def draw_char2(cv, ch, t, X, gy, sc, walk=0.0, ph0=0.0, pose=None, mouth=0.0, fl
     TF = root @ M3(HIPS[0], HIPS[1], 1, 1 + breath, sway * 0.6 + P.get('lean', 0), HIPS[0], HIPS[1])
     hn = 2.0 * math.sin(t * 1.7 + ph0) + 2.0 * math.sin(ph) * walk + P.get('head', 0.0)
     ox_, oy_ = HK.OFFS[ch]['head']; HM = TF @ M3(R['sock'][0], R['sock'][1], hs, hs, hn, R['piv'][0] - ox_, R['piv'][1] - oy_)
-    place(cv, neck_patch(ch), TF @ M3(R['sock'][0], R['sock'][1] + 6, 1, 1, 0, 42, 50), **kws)
-    place(cv, Ls['head'], HM, **kw)
+    if face is not None:
+        # expression heads: hi-res AI repaints of the same head (ph_<name>.png), cross-faded; face=(nameA, nameB, mix)
+        fa, fb, fm = face; LA = HK.L('ph_' + fa); kx_ = LA.w / float(Ls['head'].w); ky_ = LA.h / float(Ls['head'].h)
+        HF = TF @ M3(R['sock'][0], R['sock'][1], hs / kx_, hs / ky_, hn, (R['piv'][0] - ox_) * kx_, (R['piv'][1] - oy_) * ky_)
+        place(cv, LA, HF, **kw)
+        if fm > 0.01 and fb != fa: place(cv, HK.L('ph_' + fb), HF, alpha=fm, **kw)
+        mouth = 0.0
+    else:
+        place(cv, neck_patch(ch), TF @ M3(R['sock'][0], R['sock'][1] + 6, 1, 1, 0, 42, 50), **kws)
+        place(cv, Ls['head'], HM, **kw)
     if mouth > 0.02:
         ml = HK.mouth_layer(ch); mo = 0.08 + 0.92 * mouth; ox, oy = HK.OFFS[ch]['head']
         place(cv, ml, HM @ M3(R['mouth'][0] - ox, R['mouth'][1] - oy, 0.64, 0.5 * mo, 0, ml.w / 2, ml.h * 0.42), **kw)
