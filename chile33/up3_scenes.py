@@ -25,12 +25,12 @@ def side_face(t, script):
     return (A, B, m)
 
 
-def hero_side(cv, T, X, gy, k, walk=1.0, face=None, sun_h=0.2, head=0.0, rim=0.6, sl=1.0):
-    FX.hero_fx(cv, lambda c: SR.draw_side(c, T, X, gy, k, 1, walk=walk, shadow=False, face=face, head=head), gy, sun=SUNX, sun_h=sun_h, rim=rim, shadow_len=sl)
+def hero_side(cv, T, X, gy, k, walk=1.0, face=None, sun_h=0.2, head=0.0, rim=0.6, sl=1.0, haze=0.0):
+    FX.hero_fx(cv, lambda c: SR.draw_side(c, T, X, gy, k, 1, walk=walk, shadow=False, face=face, head=head), gy, sun=SUNX, sun_h=sun_h, rim=rim, shadow_len=sl, haze=haze)
 
 
-def hero_front(cv, T, X, gy, k, face, pose, sun_h=0.2, rim=0.6, sl=1.0, t=None):
-    FX.hero_fx(cv, lambda c: FR.draw_front(c, T if t is None else t, X, gy, k, face=face, pose=pose, shadow=False), gy, sun=SUNX, sun_h=sun_h, rim=rim, shadow_len=sl)
+def hero_front(cv, T, X, gy, k, face, pose, sun_h=0.2, rim=0.6, sl=1.0, t=None, haze=0.0):
+    FX.hero_fx(cv, lambda c: FR.draw_front(c, T if t is None else t, X, gy, k, face=face, pose=pose, shadow=False), gy, sun=SUNX, sun_h=sun_h, rim=rim, shadow_len=sl, haze=haze)
 
 
 # 1. wide establishing crane (0 - 4.4)
@@ -39,7 +39,7 @@ def s1(cv, T):
     cv[:] = heat_haze(cv, T, 1.2, 0.05, 2.4, 300, 470)
     k = 0.17; gy = 520 + 6 * seg(T, 0, 4.6)
     props(cv, T, gy, k * 1.6, 0.55, a=0.85, blur=1.0)
-    hero_side(cv, T, 250 + 0.92 * V_GROUND * k * T * 0.95, gy, k, walk=1.0, face=('neutral', 'neutral', 0.0), rim=0.8, sl=1.4)
+    hero_side(cv, T, 250 + 0.92 * V_GROUND * k * T * 0.95, gy, k, walk=1.0, face=('neutral', 'neutral', 0.0), rim=0.8, sl=1.4, haze=0.22)
     fgl(cv, 'up_fg_dune.png', 640 - (wc.px - 880) * 1.4, 905, 1.3, blur=3, gain=0.8)
     fgl(cv, 'up_fg_rocks.png', 1050 + (wc.px - 880) * 2.4, 880, 0.55, blur=3.5, gain=0.7, flip=-1)
     leak(cv, *wc.pt(585, 262), 380, T, 0.35, (120, 195, 255)); fin(cv, T, 3001, 0.45); shake(cv, T, 0.7, 1)
@@ -52,7 +52,7 @@ def s2(cv, T):
     k = 0.5; gy = 610
     props(cv, T, gy, k, 1.0, a=0.9)
     f = side_face(T - 4.2, [(0, 'determined'), (2.4, 'tired')])
-    hero_side(cv, T, 470 + 8 * math.sin(T * 0.8), gy, k, walk=1.0, face=f, sun_h=0.18, head=-1.0)
+    hero_side(cv, T, 470 + 8 * math.sin(T * 0.8), gy, k, walk=1.0, face=f, sun_h=0.18, head=-1.0, haze=0.07)
     puffs(cv, T, 4.0, 10.0, 22, (300, gy - 12, 240, 14), (128, 178, 215), seed=5, size=(30, 70), rise=(6, 22), spread=(40, 110), grow=1.9, life=1.3, alpha=0.34, wind=(-330, 0))
     fgl(cv, 'up_fg_rocks.png', 120 - 160 * seg(T, 4.2, 9.6), 760, 1.0, blur=8, gain=0.7, alpha=0.9)
     leak(cv, *wc.pt(585, 262), 420, T, 0.4, (120, 195, 255)); fin(cv, T, 3002, 0.45); shake(cv, T, 1.0, 2)
@@ -102,7 +102,7 @@ def s6(cv, T):
     cv[:] = heat_haze(cv, T, 1.2, 0.05, 2.0, 300, 480)
     X, Y = wc.pt(930, 520); k = 0.2 * wc.s / SC0
     sv = {'aL': 8, 'fL': 8, 'aR': 8, 'fR': 8, 'head': -4 * math.sin(t * 0.7)}
-    hero_front(cv, T, X, Y, k * 0.95, ('tired', 'tired', 0.0), sv, sun_h=0.12, rim=1.0, sl=1.6, t=t)
+    hero_front(cv, T, X, Y, k * 0.95, ('tired', 'tired', 0.0), sv, sun_h=0.12, rim=1.0, sl=1.6, t=t, haze=0.28)
     sand(cv, T, 0.06 + 0.1 * seg(T, 21, 26), 77, -1.0, 0.5)
     leak(cv, *wc.pt(585, 262), 380, T, 0.4, (120, 195, 255)); fin(cv, T, 3006, 0.5); shake(cv, T, 0.6, 6)
 
