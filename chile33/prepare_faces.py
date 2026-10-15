@@ -15,3 +15,4 @@ for n in names:
     out = np.dstack([im, (a * 255)[..., None]]).astype(np.uint8); cv2.imwrite(f'assets/layers/ph_{n}.png', out)
     ck = np.indices(m.shape).sum(0) // 16 % 2 * 40 + 100; ims[n] = (im * a[..., None] + ck[..., None] * (1 - a[..., None])).astype(np.uint8)
 cv2.imwrite('build/faces_b.jpg', np.hstack([cv2.resize(ims[n], (293, 399)) for n in names]))
+

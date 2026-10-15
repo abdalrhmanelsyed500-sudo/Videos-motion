@@ -13,7 +13,7 @@ def props(cv, T, gy, k, speed_scale, depth0=0.0, a=1.0, blur=0.0, y_lo=None):
     for i, (u0, yy, s) in enumerate([(120, 14, 0.10), (560, 40, 0.15), (940, 8, 0.085), (1330, 62, 0.23), (1700, 22, 0.12), (2090, 50, 0.18), (2420, 12, 0.095)]):
         d = (gy + yy - 340.0) / (gy - 340.0); sp = v * d * speed_scale
         span = 2700.0; x = (u0 - sp * T) % span - 200
-        fgl(cv, 'up_fg_rocks.png', x, gy + yy, s * 1.7 * (0.7 + 0.5 * d) * (k / 0.6), blur=blur + (1.5 if yy > 40 else 0), gain=0.95 * (0.85 + 0.15 * d), alpha=a)
+        fgl(cv, 'up_fg_rocks2.png', x, gy + yy, s * 1.7 * (0.7 + 0.5 * d) * (k / 0.6), blur=blur + (1.5 if yy > 40 else 0), gain=0.95 * (0.85 + 0.15 * d), alpha=a)
 
 
 def shot_walk(cv, T):

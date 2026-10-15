@@ -75,7 +75,7 @@ def mul_t(a, b):
     return tuple(x * y for x, y in zip(a, b))
 
 
-def draw_side(cv, t, X, gy, sc, flip=1, walk=1.0, ph0=0.0, gain=1.0, tint=None, speed=1.1, head=0.0, lean=4.0, shadow=True, arms=(0.0, 0.0), far_tint=(0.74, 0.74, 0.8), elbow=0.0):
+def draw_side(cv, t, X, gy, sc, flip=1, walk=1.0, ph0=0.0, gain=1.0, tint=None, speed=1.1, head=0.0, lean=4.0, shadow=True, arms=(0.0, 0.0), far_tint=(0.74, 0.74, 0.8), elbow=0.0, face=None):
     """X, gy = screen position of the ground contact; sc = scale; arms=(extra shoulder angle, extra elbow flex) added to the walk swing"""
     C = build(); k = sc
     ph = 2 * math.pi * speed * t + ph0; leg = C['leg']; hp = leg['hip']; kx, ky = leg['knee']; ax, ay = leg['ank']
@@ -91,7 +91,11 @@ def draw_side(cv, t, X, gy, sc, flip=1, walk=1.0, ph0=0.0, gain=1.0, tint=None, 
     if shadow: HK.shadow(cv, X, gy, sc * 0.95)
     tor = C['torso']; ln = lean * walk + 1.0
     Tt = root @ M3(0, 0, 1, 1, ln + 1.6 * math.sin(2 * ph) * walk, tor['hip'][0], tor['hip'][1])
-    hd = C['head']; Th = Tt @ M3(tor['neck'][0], tor['neck'][1], 1, 1, head + 2.0 * math.sin(2 * ph + 0.8) * walk - ln * 0.6 + 1.2 * math.sin(t * 1.3 + ph0), hd['neck'][0], hd['neck'][1])
+    hd = C['head']; hk_ = 1.0
+    if face is not None:
+        FL = HK.L('pss_' + face[0]); hk_ = FL.w / float(hd['L'].w); hdn = (hd['neck'][0] * hk_, hd['neck'][1] * hk_)
+    else: hdn = hd['neck']
+    Th = Tt @ M3(tor['neck'][0], tor['neck'][1], 1.0 / hk_, 1.0 / hk_, head + 2.0 * math.sin(2 * ph + 0.8) * walk - ln * 0.6 + 1.2 * math.sin(t * 1.3 + ph0), hdn[0], hdn[1])
 
     def leg_draw(side, tn):
         th, kn, toe, _ = G[side]; kk = dict(gain=gain, tint=mul_t(tint, tn))
@@ -107,6 +111,10 @@ def draw_side(cv, t, X, gy, sc, flip=1, walk=1.0, ph0=0.0, gain=1.0, tint=None, 
         place_skin(cv, a['L'], [T0, T1], [(ex, ey)], (0.0, 1.0), 20, gain=gain, tint=mul_t(tint, tn))
 
     arm_draw('arm_b', 'far', far_tint); leg_draw('far', far_tint); leg_draw('near', None)
-    place(cv, tor['L'], Tt, gain=gain, tint=tint); place(cv, hd['L'], Th, gain=gain, tint=tint)
+    place(cv, tor['L'], Tt, gain=gain, tint=tint)
+    if face is None: place(cv, hd['L'], Th, gain=gain, tint=tint)
+    else:
+        place(cv, FL, Th, gain=gain, tint=tint)
+        if face[2] > 0.01 and face[1] != face[0]: place(cv, HK.L('pss_' + face[1]), Th, alpha=face[2], gain=gain, tint=tint)
     arm_draw('arm_a', 'near', None)
     return G
