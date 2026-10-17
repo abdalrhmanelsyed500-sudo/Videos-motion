@@ -7,13 +7,13 @@ rig = Rig('out/rigs/zaki_front/rig.json')
 pose = {'armR_up': {'rot': anim.D2R(-112)}, 'armR_lo': {'rot': anim.D2R(-68)}}
 canvas = np.ones((1080,1920,3), np.float32)
 rig.draw(canvas, pose, cam=(1.15, 960, 940), swap={'handR':'hand_open'},
-         dyn=face.face_dyn({'mouth': face.VISEMES['grin']}, chars.SPECS['zaki'], 'front'))
+         dyn=face.face_dyn({'mouth': face.VISEMES['grin']}, chars.SPECS['zaki'], 'front'))  # باقي بارامترات الوجه افتراضية
 ```
 `cam=(scale, tx, ty)` يحوّل العالم للشاشة: `screen = scale*world + t`.
 
 ## IK لقدم ثابتة
 ```python
-rig.ik2(pose, ('legR_up','legR_lo','footR'), target=(x, -36), bend=1, end_rot=0.0, root={'x': x0})
+err = rig.ik2(pose, ('legR_up','legR_lo','footR'), (x, -36), bend=1, end_rot=0.0, root={'x': x0})  # err = خطأ الوصول
 ```
 ثبّت هدف القدم بإحداثي عالم واحد طوال فترة الارتكاز: فلا انزلاق (اختبار الفحص: 0.0000 px).
 
@@ -22,14 +22,14 @@ rig.ik2(pose, ('legR_up','legR_lo','footR'), target=(x, -36), bend=1, end_rot=0.
 mouth_frames, env = anim.lipsync('audio/z1.wav', fps=30)   # بارامترات الفم لكل إطار + مغلف الصوت
 ```
 القاعدة: سعة الصوت ← فتح الفم؛ المركز الطيفي المنخفض ← O/U مستدير؛ العالي ← E/I عريض؛ مستوى منخفض ← M (إغلاق الشفاه).
-وضع بديل بالتوقيت الصوتي: `anim.viseme_track([(t0,t1,'A'),...], t)`.
+وضع بديل بالتوقيت الصوتي: `anim.viseme_track([(t0, t1, 'A'), ...], t)` (تُرجع بارامترات الفم عند الزمن t).
 
 ## الحركة الثانوية
 `anim.spring_series(drive, fps)` نابض مخمّد مستقر (Euler شبه ضمني بخطوات فرعية) يعطي زاوية الخصلة/الضفائر من تسارع الرأس. حتمي 100%.
 
 ## قواعد الجودة المطبّقة
 1. لا انزلاق قدم أثناء الارتكاز. 2. لا مفصل خارج حدوده. 3. الأعضاء لا تنفصل (اختبار اتصال على 1000 وضع عشوائي).
-4. الرمش بجدول عشوائي ثابت البذرة (2–4.6 ث) مع إغلاق 0.07 ث وفتح 0.11 ث. 5. squash & stretch يحفظ الحجم (sx = 1/√sy).
+4. الرمش بجدول عشوائي ثابت البذرة (2–4.6 ث) مع إغلاق 0.07 ث وفتح 0.11 ث. 5. squash & stretch عبر `sx/sy` في الجذر (يُطبَّق قبل حل IK فتبقى الأقدام ثابتة حتى أثناء الانحناء والاستدارة).
 6. كل حركة تبدأ وتنتهي بـ ease (smootherstep) — لا حركة خطية جامدة. 7. خطوات الصوت تُولَّد من أحداث هبوط القدم نفسها فتتزامن تماماً.
 
 ## الحدود المعروفة (بصدق)
