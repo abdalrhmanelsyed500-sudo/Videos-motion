@@ -3,8 +3,10 @@ import numpy as np
 from sdf3d import *
 from sdf3d import PART_ID
 
+import os
+STYLE = os.environ.get('PENGUIN_STYLE', 'classic')      # 'classic' or 'lackey' (palette/shading taken from the reference sheet)
 def hexrgb(h): h = h.lstrip('#'); return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
-RAMPS = {
+RAMPS_CLASSIC = {
  'body':  ['#090c16', '#182038', '#2b3858', '#455a85', '#7088b8'],
  'flip':  ['#0a0e1c', '#1c2844', '#31436a', '#4f6a9c', '#82a0cf'],
  'belly': ['#38425f', '#8794b6', '#cfd7ea', '#eef2fa', '#ffffff'],
@@ -18,7 +20,27 @@ RAMPS = {
  'flash': ['#8a2a10', '#ff7a1a', '#ffc83a', '#fff0a0', '#ffffff'],
  'blood': ['#26050f', '#5a0e1c', '#8c1826', '#c2283a', '#e8505a'],
  'hurt':  ['#6a1428', '#d8484f', '#ff948c', '#ffd4cc', '#ffffff'],
+ 'eyew':  ['#38425f', '#8794b6', '#cfd7ea', '#eef2fa', '#ffffff'],
 }
+# palette sampled from the reference sheet (G.P. Lackey): indigo-black, plum, wine, rose, tan, cream, sage, teal
+RAMPS_LACKEY = {
+ 'body':  ['#13022d', '#13022d', '#452547', '#62366a', '#62366a'],
+ 'flip':  ['#13022d', '#452547', '#62366a', '#886e9a', '#886e9a'],
+ 'belly': ['#925758', '#be9890', '#decfba', '#f7f7e8', '#f7f7e8'],
+ 'orange':['#823454', '#925758', '#be9890', '#decfba', '#f7f7e8'],
+ 'red':   ['#13022d', '#3e2b38', '#823454', '#925758', '#be9890'],
+ 'olive': ['#13022d', '#3d3a4e', '#6c7368', '#859580', '#859580'],
+ 'metal': ['#13022d', '#3d3a4e', '#554f61', '#886e9a', '#f7f7e8'],
+ 'wood':  ['#13022d', '#3e2b38', '#925758', '#be9890', '#decfba'],
+ 'brass': ['#925758', '#be9890', '#decfba', '#f7f7e8', '#f9f6f4'],
+ 'pupil': ['#13022d', '#13022d', '#13022d', '#13022d', '#13022d'],
+ 'flash': ['#823454', '#925758', '#decfba', '#f7f7e8', '#f9f6f4'],
+ 'blood': ['#3e2b38', '#823454', '#823454', '#925758', '#be9890'],
+ 'hurt':  ['#823454', '#be9890', '#decfba', '#f7f7e8', '#f9f6f4'],
+ 'eyew':  ['#f7f7e8', '#f7f7e8', '#f7f7e8', '#f7f7e8', '#f9f6f4'],
+}
+TEAL = (0x75, 0xa0, 0x94)
+RAMPS = RAMPS_LACKEY if STYLE == 'lackey' else RAMPS_CLASSIC
 NAMES = list(RAMPS); IDX = {n: i for i, n in enumerate(NAMES)}
 RAMP_RGB = [[hexrgb(h) for h in RAMPS[n]] for n in NAMES]
 M = lambda n: IDX[n]
@@ -89,7 +111,7 @@ def build(pose, yaw_deg):
     # eyes
     ex = 4.5
     for sx in (-1, 1):
-        sc.ell(head, (sx * ex, 27.4, 9.0), (2.8, 3.0, 2.0), M('belly'), 'eye', rot=Ry(D(sx * 22)))
+        sc.ell(head, (sx * ex, 27.4, 9.0), (2.8, 3.0, 2.0), M('eyew'), 'eye', rot=Ry(D(sx * 22)))
         if p['eyes'] == 'open':
             sc.ell(head, (sx * (ex - .5), 27.0, 10.8), (1.15, 1.45, 1.0), M('pupil'), 'pupil')
         elif p['eyes'] == 'closed':
@@ -158,7 +180,8 @@ def muzzle_world(gfr): return gfr.ap(V(0, .9, 23.0) * GS)
 # ---------------------------------------------------------------------------------------------- pixel finishing
 def finish(r, p=None, flash=None, outline=True, sep=True, hurt=0.0):
     H, W = r['hit'].shape; hit = r['hit']; mat = r['mat'].copy(); lam = r['lam']; part = r['part']; dep = r['depth']
-    th = (-.08, .34, .70, .92)
+    th = (-.08, .28, .80, 9.0) if STYLE == 'lackey' else (-.08, .34, .70, .92)
+    if STYLE == 'lackey': outline = False; sep = False
     lvl = np.where(lam < th[1], 1, np.where(lam < th[2], 2, np.where(lam < th[3], 3, 4)))
     if hurt > 0: mat[hit] = M('hurt')
     rgb = np.zeros((H, W, 3), np.uint8)

@@ -36,3 +36,9 @@ Because the character is a 3D rig, new directions (diagonals), colour variants, 
 * The head is a dome from above, so the face is only clearly readable in the front view.
 * Reload is clearest from the side; from the front the rifle points at the camera.
 * Only 4 directions. One character, one palette.
+
+## Styles
+* `out/` – "classic" style (blue-navy penguin, orange beak, selective outlines).
+* `out_lackey/` – style matched to the reference sheet (G.P. Lackey): 16 flat colours sampled from it (indigo-black, plum, wine, rose, tan, cream, sage, plus the teal ground disc), **no outlines**, 2–3 flat tones per material, hard cell shading, big white eyes with dark pupils, opaque flat teal ground disc instead of a soft shadow, cream hit-flash.
+  Build: `PENGUIN_STYLE=lackey python build_all.py out_lackey`. Same animations, frame counts, timings and layout as `out/`. `sheets_noshadow/` has no teal disc.
+  Note: the reference is a side/front view of characters ~30-55 px tall at 3× scale; this is the same palette/shading/shape language applied to the top-down 64×64 penguin, not a copy of any character from it.
