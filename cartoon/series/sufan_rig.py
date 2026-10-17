@@ -24,6 +24,17 @@ PUPIL_N = {'L': (798.5, 616.5), 'R': (1025.0, 616.5)}
 MOUTH_C = (912.0, 873.0); BROW_C = {'L': (792.0, 452.0), 'R': (1032.0, 452.0)}
 INK = (86, 24, 31)
 
+def fix_holes(im):
+    """fill interior alpha holes (matte removed the near-white interior of the cuff strap ring) with the surrounding colour"""
+    a = im[..., 3] > 127
+    inv = (~a).astype(np.uint8); n, cc = cv2.connectedComponents(inv, connectivity=4)
+    border = set(np.unique(np.concatenate([cc[0], cc[-1], cc[:, 0], cc[:, -1]])))
+    hole = np.isin(cc, [i for i in range(1, n) if i not in border]) & ~a
+    if not hole.any(): return im
+    hole = cv2.dilate(hole.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+    rgb = cv2.inpaint(np.ascontiguousarray(im[..., :3]), (hole & ~a).astype(np.uint8) * 255, 5, cv2.INPAINT_TELEA)
+    out = im.copy(); out[..., :3] = np.where((hole & ~a)[..., None], rgb, im[..., :3]); out[..., 3] = np.where(hole, 255, im[..., 3]); return out
+
 def build(outdir=None):
     """writes out/rig.json and part pngs"""
     outdir = outdir or os.path.join(RIGB, 'out'); os.makedirs(outdir, exist_ok=True)
@@ -38,7 +49,7 @@ def build(outdir=None):
               'armUpL': 'armL_up', 'armLoL': 'armL_lo', 'handL': 'handL', 'armUpR': 'armR_up', 'armLoR': 'armR_lo', 'handR': 'handR',
               'bootL': 'footL', 'bootR': 'footR'}
     for n, b in simple.items():
-        im = cv2.imread(os.path.join(RIGB, 'parts_clean', n + '.png'), cv2.IMREAD_UNCHANGED); save(n, im, bb[n][0], bb[n][1], b)
+        im = cv2.imread(os.path.join(RIGB, 'parts_clean', n + '.png'), cv2.IMREAD_UNCHANGED); im = fix_holes(im) if n.startswith('armLo') else im; save(n, im, bb[n][0], bb[n][1], b)
     for s in 'LR':   # legs split at the knee (y=1925) with 12px overlap
         im = cv2.imread(os.path.join(RIGB, 'parts_clean', f'leg{s}.png'), cv2.IMREAD_UNCHANGED); x0, y0, x1, y1 = bb[f'leg{s}']
         cut_t = 1925 + 12 - y0; cut_s = 1925 - 12 - y0

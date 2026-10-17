@@ -137,7 +137,10 @@ for x in range(int(246*2),int(690*2)):
 a_bak=alpha; alpha=alpha_b; save('belly',bel_ext,img=img_b); alpha=a_bak
 # ---- arm: upper / lower (split at y=640 native, 8px overlap), hand
 sl=lab('arm'); sp=int(640*2)
-save('armUp',sl&(yy<sp+8)); save('armLo',sl&(yy>=sp-8)); save('hand',lab('hand'))
+row=np.where(sl[sp])[0]; ecx=(row.min()+row.max())/2; er=(row.max()-row.min())/2-3
+disc=((xx-ecx)**2+(yy-1280)**2)<=er**2   # round elbow: both parts carry the same disc so the joint stays closed when it bends
+save('armUp',sl&((yy<sp+8)|disc)); save('armLo',sl&((yy>=sp-8)|disc)); save('hand',lab('hand'))
+print('elbow disc',ecx,er)
 # ---- legs: extend up (hidden under belly) and down (hidden under boot); thigh / shin split at y=985 native
 for s in ('N','F'):
     lg=lab('leg'+s)&(((X>=410)&(X<=476)) if s=='N' else ((X>=484)&(X<=552)))&(Y>=955)&(Y<=1016)

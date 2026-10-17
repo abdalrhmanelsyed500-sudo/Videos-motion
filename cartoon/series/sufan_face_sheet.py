@@ -8,6 +8,7 @@ def mv(**k):
     m=dict(VISEMES['rest']); m.update(k); return m
 EXPR={
  'neutral':{}, 'blink':dict(blinkL=1,blinkR=1), 'wink':dict(blinkL=1,mouth=VISEMES['smile']),
+ 'laugh ^_^':dict(mouth=VISEMES['laugh'],arc=1.0,browL=(.7,0),browR=(.7,0)),
  'happy':dict(mouth=VISEMES['grin'],browL=(.5,0),browR=(.5,0),squint=.25),
  'laugh':dict(mouth=VISEMES['laugh'],squint=.6,browL=(.7,0),browR=(.7,0)),
  'sad':dict(mouth=VISEMES['sad'],browL=(-.1,-.9),browR=(-.1,-.9),look=(0,.6),lidtilt=-.2),

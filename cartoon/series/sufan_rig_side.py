@@ -19,6 +19,17 @@ BONES_PX = {
 EYE_C = (1224.0, 620.0); EYE_RX, EYE_RY = 50.0, 54.0; PUPIL_N = (1238.0, 626.0); PUPIL_R = (22.0, 30.0)
 MOUTH_C = (1365.0, 810.0); BROW_C = (1226.0, 486.0)
 INK = (86, 24, 31)
+def fix_holes(im):
+    """fill interior alpha holes (matte removed the near-white interior of the cuff strap ring) with the surrounding colour"""
+    a = im[..., 3] > 127
+    inv = (~a).astype(np.uint8); n, cc = cv2.connectedComponents(inv, connectivity=4)
+    border = set(np.unique(np.concatenate([cc[0], cc[-1], cc[:, 0], cc[:, -1]])))
+    hole = np.isin(cc, [i for i in range(1, n) if i not in border]) & ~a
+    if not hole.any(): return im
+    hole = cv2.dilate(hole.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+    rgb = cv2.inpaint(np.ascontiguousarray(im[..., :3]), (hole & ~a).astype(np.uint8) * 255, 5, cv2.INPAINT_TELEA)
+    out = im.copy(); out[..., :3] = np.where((hole & ~a)[..., None], rgb, im[..., :3]); out[..., 3] = np.where(hole, 255, im[..., 3]); return out
+
 def build(outdir=None):
     outdir = outdir or os.path.join(RIGB, 'out'); os.makedirs(outdir, exist_ok=True)
     bb = json.load(open(os.path.join(RIGB, 'parts', 'bbox.json'))); parts = {}
@@ -31,7 +42,7 @@ def build(outdir=None):
             'armUpL': ('armUp', 'armL_up'), 'armLoL': ('armLo', 'armL_lo'), 'handL': ('hand', 'handL'),
             'thighR': ('thighN', 'legR_up'), 'shinR': ('shinN', 'legR_lo'), 'bootR': ('bootN', 'footR'),
             'thighL': ('thighF', 'legL_up'), 'shinL': ('shinF', 'legL_lo'), 'bootL': ('bootF', 'footL')}
-    for n, (src, b) in spec.items(): save(n, ld(src), src, b)
+    for n, (src, b) in spec.items(): save(n, fix_holes(ld(src)) if src == 'armLo' else ld(src), src, b)
     bones = [dict(name=n, parent=p, head=U(*h), limit=lim) for n, (p, h, lim) in BONES_PX.items()]
     Z = dict(thighL=1, shinL=2, bootL=3, armUpL=4, armLoL=4, handL=4, thighR=5, shinR=6, bootR=7, belly=10, torso=30,
              handR=40, armLoR=41, armUpR=42, head=50, glasses=53, earR=55, hat=60)
@@ -106,7 +117,7 @@ def mouth_sprite(m):
             a.ellipse((cx, cy), rx + 5, ry + 5, INK); a.ellipse((cx, cy), rx, ry, (122, 32, 46))
             if m['tongue'] > .1: a.ellipse((cx, cy + ry * .5), rx * .6, ry * .45, (238, 110, 120), clip=True)
             return _tag(_pack(a, 0, 0))
-        lo = [(x - .42 * H * math.sin(math.pi * u), y + H * math.sin(math.pi * u) ** .8) for (x, y), u in zip(up, xs)][::-1]
+        lo = [(x - .22 * H * math.sin(math.pi * u), y + H * math.sin(math.pi * u) ** .8) for (x, y), u in zip(up, xs)][::-1]
         shape = up + lo
         a.poly(shape, INK, outline=INK, ow=5); a.poly(shape, (122, 32, 46))
         if m['tongue'] > .05:

@@ -34,7 +34,7 @@ def poses_sheet(path):
        ('blink + lean',{'spine':{'rot':D(8)},'head':{'rot':D(-8)},'armR_up':{'rot':D(-40)}},{'mouth':VISEMES['O'],'blinkL':1,'blinkR':1}),
        ('step (leg bend)',{'legL_up':{'rot':D(-25)},'legL_lo':{'rot':D(45)},'footL':{'rot':D(-20)},'legR_up':{'rot':D(25)},'legR_lo':{'rot':D(-25)},'hips':{'rot':D(5)}},{'mouth':VISEMES['smile']}),
        ('cheer',{**arms(80,40,80,40)},{'mouth':VISEMES['laugh'],'squint':.6}),
-       ('hands on hips',{**arms(-5,70,-5,70)},{'mouth':VISEMES['rest'],'browL':(-.1,.5),'browR':(-.1,.5)}),
+       ('arms out',{**arms(-5,70,-5,70)},{'mouth':VISEMES['rest'],'browL':(-.1,.5),'browR':(-.1,.5)}),
        ('point',{**arms(10,5,75,0),'head':{'rot':D(-8)}},{'mouth':VISEMES['E'],'look':(1,0)})]
     zs={'cheer':HI,'wave':HI}
     T=[label(u8(tile(p,f,zov=zs.get(n))),n) for n,p,f in P]
