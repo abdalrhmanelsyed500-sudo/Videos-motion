@@ -66,6 +66,7 @@ class Art:
 
     def curve(self, pts, color, w, alpha=1.0, clip=False, closed=False):
         """thick round-capped polyline; pts already smooth (dense)"""
+        if len(pts) < 2: return
         P = self.P(pts); t = max(1, int(round(w * self.k)))
         def d(m, v):
             cv2.polylines(m, [P], closed, v, t, cv2.LINE_8, 4)

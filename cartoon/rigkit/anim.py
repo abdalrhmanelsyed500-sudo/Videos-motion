@@ -191,8 +191,8 @@ class Walker:
         for i, t in enumerate(ts):
             v[i] = v0 * smooth((t - tU) / ramp) * smooth((tD - t) / ramp) if tU <= t <= tD else 0.0
         # make sure distance matches exactly
-        X = np.cumsum(v) / hz; X *= (x1 - x0) / max(X[-1], 1e-9); self.ts, self.X = ts, x0 + X
-        self.v = v * ((x1 - x0) / max(np.cumsum(v)[-1] / hz, 1e-9))
+        X = np.cumsum(v) / hz; tot = float(X[-1]); fac = (x1 - x0) / tot; X = X * fac; self.ts, self.X = ts, x0 + X
+        self.v = v * fac
         self.v0 = abs(v0)
         self._plan(); self._hips_table()
 

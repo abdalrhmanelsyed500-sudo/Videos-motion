@@ -43,7 +43,7 @@ class Park:
     def _clouds(self):
         L = self._rgba(); r = self.rng
         for i in range(7):
-            cx = (i + .5) * W_TILE / 7 + r.uniform(-120, 120); cy = r.uniform(110, 330); sc = r.uniform(.8, 1.4)
+            cx = (i + .5) * W_TILE / 7 + r.uniform(-120, 120); cy = r.uniform(70, 190); sc = r.uniform(.7, 1.15)
             def draw(dx, cx=cx, cy=cy, sc=sc):
                 tmp = np.zeros((self.H, W_TILE, 3), np.uint8); m = np.zeros((self.H, W_TILE), np.uint8)
                 parts = [(-80, 12, 52), (-30, -14, 66), (30, -4, 74), (88, 10, 56), (0, 22, 62)]
