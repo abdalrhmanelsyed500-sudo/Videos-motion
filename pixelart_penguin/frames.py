@@ -59,7 +59,7 @@ def render_frame(pose, yaw, shadow=True, seed=0, cx=CX):
         im[pm, :3] = P.RAMP_RGB[P.M('blood')][2]; im[pm, 3] = 255
         im[pc & pm, :3] = P.RAMP_RGB[P.M('blood')][3]
         edge = pm & ~(np.roll(pm, 1, 0) & np.roll(pm, -1, 0) & np.roll(pm, 1, 1) & np.roll(pm, -1, 1)); im[edge, :3] = P.RAMP_RGB[P.M('blood')][1]
-    if shadow and P.STYLE == 'lackey':      # flat opaque teal ground disc like the reference sheet
+    if shadow and P.FLAT:      # flat opaque teal ground disc like the reference sheet
         yy, xx = np.mgrid[0:64, 0:64]; sh = r['shadow'].copy()
         if pose['lean'] > -50:
             sh = ((xx + .5 - cx) / 10.5) ** 2 + ((yy + .5 - CY - .5) / 4.3) ** 2 <= 1

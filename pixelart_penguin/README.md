@@ -42,3 +42,11 @@ Because the character is a 3D rig, new directions (diagonals), colour variants, 
 * `out_lackey/` – style matched to the reference sheet (G.P. Lackey): 16 flat colours sampled from it (indigo-black, plum, wine, rose, tan, cream, sage, plus the teal ground disc), **no outlines**, 2–3 flat tones per material, hard cell shading, big white eyes with dark pupils, opaque flat teal ground disc instead of a soft shadow, cream hit-flash.
   Build: `PENGUIN_STYLE=lackey python build_all.py out_lackey`. Same animations, frame counts, timings and layout as `out/`. `sheets_noshadow/` has no teal disc.
   Note: the reference is a side/front view of characters ~30-55 px tall at 3× scale; this is the same palette/shading/shape language applied to the top-down 64×64 penguin, not a copy of any character from it.
+
+### Style `pear` (cartoon pear-shaped penguin)
+`PENGUIN_STYLE=pear python build_all.py out_pear` -> `out_pear/`.
+Same skeleton, poses, animations, sheet layout and atlas as the other styles, but the body is rebuilt as a pear/egg
+(wide belly ellipsoid + smaller head ellipsoid blended with a smooth union), black cap and back, white face/belly,
+wide flat orange beak, big white eyes with a dark socket ring, orange feet, black flippers (slightly lighter slate so
+they separate from the body), no vest/headband. Flat 3-tone shading, no outlines, teal ground disc (as the `lackey` style).
+From behind the face (eyes/beak) is not built because it is occluded; this avoids stray pixels over the head silhouette.

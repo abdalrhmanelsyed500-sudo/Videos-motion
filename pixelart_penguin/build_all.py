@@ -4,7 +4,7 @@ from multiprocessing import Pool
 from PIL import Image
 import anims as A, frames as F, penguin as P
 OUT = sys.argv[1] if len(sys.argv) > 1 else 'out'
-BG = (0xbc, 0xc9, 0x93) if P.STYLE == 'lackey' else (70, 86, 66)
+BG = (0xbc, 0xc9, 0x93) if P.FLAT else (70, 86, 66)
 ORDER = ['idle', 'walk', 'run', 'shoot', 'reload', 'hit', 'death']; DIRS = ['down', 'up', 'right', 'left']
 LABEL = {'idle': 'Idle (breathing)', 'walk': 'Walk', 'run': 'Run', 'shoot': 'Shoot (full-auto loop)', 'reload': 'Reload', 'hit': 'Get hit', 'death': 'Hit and die'}
 
@@ -53,7 +53,7 @@ if __name__ == '__main__':
             allrows.append(row)
             for i, im in enumerate(byd[d]):
                 op = im[..., 3] == 255
-                if P.STYLE == 'lackey': op = op & ~np.all(im[..., :3] == np.array(P.TEAL), axis=2)     # ground disc may touch the frame edge
+                if P.FLAT: op = op & ~np.all(im[..., :3] == np.array(P.TEAL), axis=2)     # ground disc may touch the frame edge
                 if op[0].any() or op[-1].any() or op[:, 0].any() or op[:, -1].any(): clipped += 1; qa.append(f'  CLIPPED at frame edge: {name}/{d}/{i}')
                 rgb = im[..., :3][op]; 
                 for c in {tuple(x) for x in rgb}:
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     for r in P.RAMP_RGB:
         for col in r:
             if col not in uniq: uniq.append(col)
-    if P.STYLE == 'lackey': uniq.append(P.TEAL)
+    if P.FLAT: uniq.append(P.TEAL)
     sw = Image.new('RGB', (8 * 24, ((len(uniq) + 7) // 8) * 24), (40, 40, 40))
     with open(f'{OUT}/penguin_palette.hex', 'w') as fh, open(f'{OUT}/penguin_palette.gpl', 'w') as fg:
         fg.write('GIMP Palette\nName: Penguin Commando (%s)\nColumns: 8\n#\n' % P.STYLE)

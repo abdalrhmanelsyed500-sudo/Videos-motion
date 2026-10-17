@@ -4,7 +4,8 @@ from sdf3d import *
 from sdf3d import PART_ID
 
 import os
-STYLE = os.environ.get('PENGUIN_STYLE', 'classic')      # 'classic' or 'lackey' (palette/shading taken from the reference sheet)
+STYLE = os.environ.get('PENGUIN_STYLE', 'classic')      # 'classic', 'lackey' (palette/shading of the reference sheet) or 'pear' (cartoon pear-shaped penguin, flat lackey rendering)
+FLAT = STYLE in ('lackey', 'pear'); PEAR = STYLE == 'pear'
 def hexrgb(h): h = h.lstrip('#'); return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 RAMPS_CLASSIC = {
  'body':  ['#090c16', '#182038', '#2b3858', '#455a85', '#7088b8'],
@@ -39,8 +40,24 @@ RAMPS_LACKEY = {
  'hurt':  ['#823454', '#be9890', '#decfba', '#f7f7e8', '#f9f6f4'],
  'eyew':  ['#f7f7e8', '#f7f7e8', '#f7f7e8', '#f7f7e8', '#f9f6f4'],
 }
+# cartoon black/white/orange pear penguin (shape reference: the 'Madagascar' penguins), flat 3-tone, no outlines
+RAMPS_PEAR = dict(RAMPS_LACKEY)
+RAMPS_PEAR.update({
+ 'body':  ['#0a0d15', '#0a0d15', '#1b2231', '#2d3649', '#2d3649'],
+ 'flip':  ['#0a0d15', '#1b2231', '#2d3649', '#4b5972', '#4b5972'],
+ 'belly': ['#76878a', '#a9b9b4', '#d9e3dc', '#f3f7f0', '#f3f7f0'],
+ 'orange':['#7a2c12', '#b8481a', '#e8731c', '#ff9f3a', '#ffc46a'],
+ 'metal': ['#0a0d15', '#2a303c', '#4b5262', '#7c8596', '#c3cad6'],
+ 'wood':  ['#1c0c06', '#4e2410', '#84451f', '#b36832', '#d9965a'],
+ 'eyew':  ['#ffffff'] * 5,
+ 'pupil': ['#05060a'] * 5,
+ 'socket':['#3a4458', '#3a4458', '#3a4458', '#3a4458', '#3a4458'],
+ 'flash': ['#8a2a10', '#ff7a1a', '#ffc83a', '#fff0a0', '#ffffff'],
+ 'blood': ['#26050f', '#5a0e1c', '#8c1826', '#c2283a', '#e8505a'],
+ 'hurt':  ['#6a1428', '#e0525a', '#ff9c94', '#ffd8d0', '#ffffff'],
+})
 TEAL = (0x75, 0xa0, 0x94)
-RAMPS = RAMPS_LACKEY if STYLE == 'lackey' else RAMPS_CLASSIC
+RAMPS = RAMPS_PEAR if PEAR else RAMPS_LACKEY if STYLE == 'lackey' else RAMPS_CLASSIC
 NAMES = list(RAMPS); IDX = {n: i for i, n in enumerate(NAMES)}
 RAMP_RGB = [[hexrgb(h) for h in RAMPS[n]] for n in NAMES]
 M = lambda n: IDX[n]
@@ -50,6 +67,13 @@ SHADOW_RGBA = (10, 12, 24, 84)
 def belly_fn(q, n):   # white belly on the front of the body, black on the sides/back
     z = q[:, 2] / 9.0; y = (q[:, 1]) / 12.0; x = q[:, 0] / 10.5
     white = (z > .20 + .55 * x ** 2) & (y < .72)
+    return np.where(white, M('belly'), M('body'))
+def pear_body_fn(q, n):
+    x = q[:, 0] / 10.6; z = q[:, 2] / 9.6
+    return np.where(z > .02 + .55 * x ** 2, M('belly'), M('body'))
+def pear_head_fn(q, n):     # black cap down to the eyes, white face below, cap wraps down the sides/back
+    x = q[:, 0] / 7.6; z = q[:, 2] / 7.6
+    white = (z > .05 + .9 * x ** 2) & (q[:, 1] < 2.6 - 3.2 * x ** 2)
     return np.where(white, M('belly'), M('body'))
 def flipper_fn(q, n): return np.full(len(q), M('body'))
 
@@ -87,37 +111,58 @@ def build(pose, yaw_deg):
         sc.ell(fr_, (1.8, 0, 5.5), (1.4, 1.1, 1.8), M('orange'), 'foot', group=None)
     sq = p['squash']
     # ---- torso
-    sc.ell(body, (0, 13.2, 0), (10.6, 12.2 * sq, 9.2), M('body'), 'body', group='torso', mat_fn=belly_fn)
-    sc.ell(body, (0, 3.2, -9.0 + 0), (3.4, 1.8, 3.6), M('body'), 'tail', rot=Rx(D(18)))
-    # vest
-    sc.band(body, (0, 13.2, 0), (11.35, 12.8, 9.95), 11.2 - 13.2 + 1.0, 3.6, M('olive'), 'vest')
-    sc.box(body, (-4.3, 10.9, 9.3), (2.4, 2.2, 1.3), M('olive'), 'pouch', rnd=.8)
-    sc.box(body, (4.3, 10.9, 9.3), (2.4, 2.2, 1.3), M('olive'), 'pouch', rnd=.8)
-    # ---- head
-    hp, hy, hr = p['head']; hoff = np.array(p['hoff'])
-    head = body.comp(local(Rx(D(hp)) @ Ry(D(hy)) @ Rz(D(hr)), hoff, pivot=(0, 22.5, 0)))
-    sc.ell(head, (0, 26.5, 1.2), (9.6, 8.0, 9.2), M('body'), 'head', group='torso', k=4.5)
-    # headband
-    sc.band(head, (0, 26.5, 1.2), (10.25, 8.7, 9.8), 3.2, 1.15, M('red'), 'band')
-    wv, am = p['band']
-    for i, (sx) in enumerate((-1, 1)):
-        a0 = V(sx * 1.0, 29.2, -8.0)
-        b1 = a0 + V(sx * (2.2 + am * np.sin(wv)), -3.0 + am * .5 * np.sin(wv + 1), -3.2)
-        b2 = b1 + V(sx * (1.2 + am * 1.2 * np.sin(wv + 1.4)), -3.6 + am * np.sin(wv + 2.2), -2.4)
-        sc.cap(head, a0, b1, 1.15, 1.05, M('red'), 'bandtail'); sc.cap(head, b1, b2, 1.05, .7, M('red'), 'bandtail')
-    # beak
-    sc.cap(head, (0, 25.6, 8.4), (0, 24.6, 13.8), 2.5, .9, M('orange'), 'beak')
-    sc.ell(head, (0, 24.1, 9.3), (1.9, .9, 3.4), M('orange'), 'beak')
-    # eyes
-    ex = 4.5
-    for sx in (-1, 1):
-        sc.ell(head, (sx * ex, 27.4, 9.0), (2.8, 3.0, 2.0), M('eyew'), 'eye', rot=Ry(D(sx * 22)))
-        if p['eyes'] == 'open':
-            sc.ell(head, (sx * (ex - .5), 27.0, 10.8), (1.15, 1.45, 1.0), M('pupil'), 'pupil')
-        elif p['eyes'] == 'closed':
-            sc.ell(head, (sx * (ex - .2), 27.0, 10.6), (1.9, .6, .9), M('pupil'), 'pupil')
-        elif p['eyes'] == 'wide':
-            sc.ell(head, (sx * (ex - .2), 27.4, 10.9), (1.0, 1.1, .8), M('pupil'), 'pupil')
+    if PEAR:
+        sc.ell(body, (0, 12.4, 0), (10.6, 12.4 * sq, 9.6), M('body'), 'body', group='torso', mat_fn=pear_body_fn)
+        sc.ell(body, (0, 3.0, -9.0), (3.4, 1.8, 3.6), M('body'), 'tail', rot=Rx(D(18)))
+        hp, hy, hr = p['head']; hoff = np.array(p['hoff'])
+        head = body.comp(local(Rx(D(hp)) @ Ry(D(hy)) @ Rz(D(hr)), hoff, pivot=(0, 22.5, 0)))
+        sc.ell(head, (0, 25.2, .6), (7.6, 9.0, 7.6), M('body'), 'head', group='torso', k=9.0, mat_fn=pear_head_fn)
+        # big flat orange beak (upper + lower mandible)
+        if not (Ry0 @ V(0, 0, 1))[2] > .7 or abs(p['lean']) >= 30:
+            sc.ell(head, (0, 23.8, 8.6), (3.3, 1.1, 4.4), M('orange'), 'beak', rot=Rx(D(-12)))
+            sc.ell(head, (0, 22.5, 7.9), (2.5, .8, 3.0), M('orange'), 'beak', rot=Rx(D(-4)))
+        ex = 3.3
+        fz = (Ry0 @ V(0, 0, 1))[2]
+        away = fz > .7 and abs(p['lean']) < 30      # seen from behind: face is occluded by the head, skip it (avoids stray pixels over the silhouette)
+        for sx in (-1, 1):
+            if away: break
+            sc.ell(head, (sx * ex, 27.7, 6.0), (3.0, 3.2, 2.0), M('socket'), 'socket', rot=Ry(D(sx * 18)))
+            sc.ell(head, (sx * ex, 27.8, 6.4), (2.6, 2.9, 1.9), M('eyew'), 'eye', rot=Ry(D(sx * 18)))
+            if p['eyes'] == 'open':     sc.ell(head, (sx * (ex - .5), 27.4, 8.0), (1.1, 1.4, 1.0), M('pupil'), 'pupil')
+            elif p['eyes'] == 'closed': sc.ell(head, (sx * (ex - .2), 27.4, 7.8), (1.9, .6, .9), M('pupil'), 'pupil')
+            elif p['eyes'] == 'wide':   sc.ell(head, (sx * (ex - .2), 27.8, 8.1), (1.0, 1.1, .8), M('pupil'), 'pupil')
+    else:
+        sc.ell(body, (0, 13.2, 0), (10.6, 12.2 * sq, 9.2), M('body'), 'body', group='torso', mat_fn=belly_fn)
+        sc.ell(body, (0, 3.2, -9.0 + 0), (3.4, 1.8, 3.6), M('body'), 'tail', rot=Rx(D(18)))
+        # vest
+        sc.band(body, (0, 13.2, 0), (11.35, 12.8, 9.95), 11.2 - 13.2 + 1.0, 3.6, M('olive'), 'vest')
+        sc.box(body, (-4.3, 10.9, 9.3), (2.4, 2.2, 1.3), M('olive'), 'pouch', rnd=.8)
+        sc.box(body, (4.3, 10.9, 9.3), (2.4, 2.2, 1.3), M('olive'), 'pouch', rnd=.8)
+        # ---- head
+        hp, hy, hr = p['head']; hoff = np.array(p['hoff'])
+        head = body.comp(local(Rx(D(hp)) @ Ry(D(hy)) @ Rz(D(hr)), hoff, pivot=(0, 22.5, 0)))
+        sc.ell(head, (0, 26.5, 1.2), (9.6, 8.0, 9.2), M('body'), 'head', group='torso', k=4.5)
+        # headband
+        sc.band(head, (0, 26.5, 1.2), (10.25, 8.7, 9.8), 3.2, 1.15, M('red'), 'band')
+        wv, am = p['band']
+        for i, (sx) in enumerate((-1, 1)):
+            a0 = V(sx * 1.0, 29.2, -8.0)
+            b1 = a0 + V(sx * (2.2 + am * np.sin(wv)), -3.0 + am * .5 * np.sin(wv + 1), -3.2)
+            b2 = b1 + V(sx * (1.2 + am * 1.2 * np.sin(wv + 1.4)), -3.6 + am * np.sin(wv + 2.2), -2.4)
+            sc.cap(head, a0, b1, 1.15, 1.05, M('red'), 'bandtail'); sc.cap(head, b1, b2, 1.05, .7, M('red'), 'bandtail')
+        # beak
+        sc.cap(head, (0, 25.6, 8.4), (0, 24.6, 13.8), 2.5, .9, M('orange'), 'beak')
+        sc.ell(head, (0, 24.1, 9.3), (1.9, .9, 3.4), M('orange'), 'beak')
+        # eyes
+        ex = 4.5
+        for sx in (-1, 1):
+            sc.ell(head, (sx * ex, 27.4, 9.0), (2.8, 3.0, 2.0), M('eyew'), 'eye', rot=Ry(D(sx * 22)))
+            if p['eyes'] == 'open':
+                sc.ell(head, (sx * (ex - .5), 27.0, 10.8), (1.15, 1.45, 1.0), M('pupil'), 'pupil')
+            elif p['eyes'] == 'closed':
+                sc.ell(head, (sx * (ex - .2), 27.0, 10.6), (1.9, .6, .9), M('pupil'), 'pupil')
+            elif p['eyes'] == 'wide':
+                sc.ell(head, (sx * (ex - .2), 27.4, 10.9), (1.0, 1.1, .8), M('pupil'), 'pupil')
     # ---- gun
     g = p['gun']
     gf_local = local(Ry(D(g['yaw'])) @ Rx(D(-g['pitch'])) @ Rz(D(g['roll'])), g['pos'])
@@ -180,8 +225,8 @@ def muzzle_world(gfr): return gfr.ap(V(0, .9, 23.0) * GS)
 # ---------------------------------------------------------------------------------------------- pixel finishing
 def finish(r, p=None, flash=None, outline=True, sep=True, hurt=0.0):
     H, W = r['hit'].shape; hit = r['hit']; mat = r['mat'].copy(); lam = r['lam']; part = r['part']; dep = r['depth']
-    th = (-.08, .28, .80, 9.0) if STYLE == 'lackey' else (-.08, .34, .70, .92)
-    if STYLE == 'lackey': outline = False; sep = False
+    th = (-.08, .28, .80, 9.0) if FLAT else (-.08, .34, .70, .92)
+    if FLAT: outline = False; sep = False
     lvl = np.where(lam < th[1], 1, np.where(lam < th[2], 2, np.where(lam < th[3], 3, 4)))
     if hurt > 0: mat[hit] = M('hurt')
     rgb = np.zeros((H, W, 3), np.uint8)

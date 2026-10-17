@@ -1,0 +1,193 @@
+{
+ "canvas": [
+  64,
+  64
+ ],
+ "camera": "top-down 3/4 (44 deg), light from top-left",
+ "directions": [
+  "down",
+  "up",
+  "right",
+  "left"
+ ],
+ "direction_row": {
+  "down": 0,
+  "up": 1,
+  "right": 2,
+  "left": 3
+ },
+ "pivot_note": "feet-contact origin is at (32 + pivot_dx, 47) in each frame",
+ "animations": {
+  "idle": {
+   "label": "Idle (breathing)",
+   "frames": 6,
+   "frame_ms": 140,
+   "loop": true,
+   "rows": {
+    "down": 0,
+    "up": 1,
+    "right": 2,
+    "left": 3
+   },
+   "sheet": "sheets/penguin_idle_sheet.png",
+   "pivot_dx": {
+    "down": 0,
+    "up": 0,
+    "right": -3,
+    "left": 3
+   }
+  },
+  "walk": {
+   "label": "Walk",
+   "frames": 8,
+   "frame_ms": 90,
+   "loop": true,
+   "rows": {
+    "down": 0,
+    "up": 1,
+    "right": 2,
+    "left": 3
+   },
+   "sheet": "sheets/penguin_walk_sheet.png",
+   "pivot_dx": {
+    "down": 0,
+    "up": 0,
+    "right": -3,
+    "left": 3
+   }
+  },
+  "run": {
+   "label": "Run",
+   "frames": 8,
+   "frame_ms": 65,
+   "loop": true,
+   "rows": {
+    "down": 0,
+    "up": 1,
+    "right": 2,
+    "left": 3
+   },
+   "sheet": "sheets/penguin_run_sheet.png",
+   "pivot_dx": {
+    "down": 0,
+    "up": 0,
+    "right": -3,
+    "left": 3
+   }
+  },
+  "shoot": {
+   "label": "Shoot (full-auto loop)",
+   "frames": 4,
+   "frame_ms": 60,
+   "loop": true,
+   "rows": {
+    "down": 0,
+    "up": 1,
+    "right": 2,
+    "left": 3
+   },
+   "sheet": "sheets/penguin_shoot_sheet.png",
+   "pivot_dx": {
+    "down": 0,
+    "up": 0,
+    "right": -3,
+    "left": 3
+   }
+  },
+  "reload": {
+   "label": "Reload",
+   "frames": 16,
+   "frame_ms": 95,
+   "loop": false,
+   "rows": {
+    "down": 0,
+    "up": 1,
+    "right": 2,
+    "left": 3
+   },
+   "sheet": "sheets/penguin_reload_sheet.png",
+   "pivot_dx": {
+    "down": 0,
+    "up": 0,
+    "right": -3,
+    "left": 3
+   }
+  },
+  "hit": {
+   "label": "Get hit",
+   "frames": 7,
+   "frame_ms": 70,
+   "loop": false,
+   "rows": {
+    "down": 0,
+    "up": 1,
+    "right": 2,
+    "left": 3
+   },
+   "sheet": "sheets/penguin_hit_sheet.png",
+   "pivot_dx": {
+    "down": 0,
+    "up": 0,
+    "right": -3,
+    "left": 3
+   }
+  },
+  "death": {
+   "label": "Hit and die",
+   "frames": 16,
+   "frame_ms": 100,
+   "loop": false,
+   "rows": {
+    "down": 0,
+    "up": 1,
+    "right": 2,
+    "left": 3
+   },
+   "sheet": "sheets/penguin_death_sheet.png",
+   "pivot_dx": {
+    "down": 0,
+    "up": 0,
+    "right": 0,
+    "left": 0
+   }
+  }
+ },
+ "master_sheet": {
+  "file": "penguin_ALL_sheet.png",
+  "rows": [
+   "idle_down",
+   "idle_up",
+   "idle_right",
+   "idle_left",
+   "walk_down",
+   "walk_up",
+   "walk_right",
+   "walk_left",
+   "run_down",
+   "run_up",
+   "run_right",
+   "run_left",
+   "shoot_down",
+   "shoot_up",
+   "shoot_right",
+   "shoot_left",
+   "reload_down",
+   "reload_up",
+   "reload_right",
+   "reload_left",
+   "hit_down",
+   "hit_up",
+   "hit_right",
+   "hit_left",
+   "death_down",
+   "death_up",
+   "death_right",
+   "death_left"
+  ],
+  "cols": 16,
+  "cell": [
+   64,
+   64
+  ]
+ }
+}
