@@ -64,9 +64,11 @@ def hat_edit(op, im, b):
     return np.where(add, 1, op).astype(np.uint8)
 def belly_edit(op, im, b):
     H, W = op.shape; x0, y0 = b[0], b[1]
-    yy, xx = np.mgrid[0:H, 0:W]; X = xx + x0; Y = yy + y0
-    inside = ((X - 912.5) / 508.0) ** 2 + ((Y - 1640) / 335.0) ** 2 <= 1
-    out = op.copy(); out[(Y < 1640) & ~inside] = 0; return out
+    r0 = 1650 - y0; r1 = 1500 - y0
+    for r in range(r1, r0):                      # extrude row 1650 upward (clean vertical sides, flat shading)
+        im[r] = im[r0]; op[r] = op[r0]
+    op[:r1] = 0
+    return op
 def arm_edit(op, im, b):
     H, W = op.shape; x0, y0 = b[0], b[1]
     yy, xx = np.mgrid[0:H, 0:W]; X = xx + x0; Y = yy + y0; dx = np.abs(X - 912.0)
@@ -92,7 +94,8 @@ def arm_cap(P, E):
         proj = X * u[0] + Y * u[1]; dist = np.hypot(X, Y)
         out = op.copy(); out[(proj < 0) & (dist > 85)] = 0; return out
     return f
-clean('armUpL', 0, arm_cap((600, 1040), (425, 1217))); clean('armUpR', 0, arm_cap((1224, 1040), (1398, 1219)))
-for n in ('armLoL', 'handL', 'armLoR', 'handR', 'legL', 'legR', 'bootL', 'bootR'):
+clean('armUpL', 7, arm_cap((600, 1040), (425, 1217))); clean('armUpR', 7, arm_cap((1224, 1040), (1398, 1219)))
+clean('armLoL', 7); clean('armLoR', 7); clean('handL', 0); clean('handR', 0)
+for n in ('legL', 'legR', 'bootL', 'bootR'):
     shutil.copy(f'parts/{n}.png', f'parts_clean/{n}.png')
 print('done')

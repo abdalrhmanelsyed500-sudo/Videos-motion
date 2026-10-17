@@ -104,11 +104,11 @@ def brow_sprite(side, h=0.0, tilt=0.0):
         a = Art(-70, -60, 70, 60, ppu=1.0, ss=4); sgn = 1 if side == 'R' else -1   # sgn>0 : inner end towards -x
         pts = []
         for x in np.linspace(-46, 46, 30):
-            y = -9 * (1 - (x / 46) ** 2) - h * 26 + tilt * (-sgn * x) * 0.55
+            y = -9 * (1 - (x / 46) ** 2) - h * 17 + tilt * (-sgn * x) * 0.55
             pts.append((x, y))
-        col = (150, 108, 78)
+        col = (118, 80, 56)
         for i in range(len(pts) - 1):
-            t = i / (len(pts) - 1); r = 4.2 + 4.0 * math.sin(math.pi * t)
+            t = i / (len(pts) - 1); r = 4.8 + 4.4 * math.sin(math.pi * t)
             a.capsule(pts[i], pts[i + 1], r, r, col)
         return _tag(_pack(a, 0, 0))
     return _get(key, mk)
