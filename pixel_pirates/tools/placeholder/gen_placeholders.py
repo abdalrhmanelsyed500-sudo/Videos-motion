@@ -58,7 +58,8 @@ def main() -> None:
         previews.append((aid, sheet.crop((0, 0, CH.CELL_W * 4, CH.CELL_H))))
 
     tiles = {"til_sand_a": PR.tile_sand(), "til_grass_a": PR.tile_grass(), "til_dirt_a": PR.tile_dirt(),
-             "til_cobble_a": PR.tile_cobble(), "til_deck_planks_a": PR.tile_planks(), "til_snow_a": PR.tile_snow()}
+             "til_cobble_a": PR.tile_cobble(), "til_deck_planks_a": PR.tile_planks(), "til_snow_a": PR.tile_snow(),
+             "til_rock_a": PR.tile_rock(), "til_ice_a": PR.tile_ice()}
     for aid, im in tiles.items():
         save("tiles", aid, im)
         man[aid] = {"kind": "tile", "category": "tiles", "size": [48, 48], "px_per_m": 24, "frames": 1, "seamless": True}
@@ -67,6 +68,10 @@ def main() -> None:
     save("tiles", "til_water_deep_a", hstrip(wf))
     man["til_water_deep_a"] = {"kind": "tile", "category": "tiles", "size": [48, 48], "px_per_m": 24, "frames": 4, "ms": 220, "seamless": True, "layout": "columns=frames"}
     previews.append(("til_water_deep_a", hstrip(wf)))
+    sw = PR.tile_water_frames(seed=11, ramp="lagoon")
+    save("tiles", "til_water_shallow_a", hstrip(sw))
+    man["til_water_shallow_a"] = dict(man["til_water_deep_a"])
+    previews.append(("til_water_shallow_a", hstrip(sw)))
 
     props = {"prp_barrel": (PR.prop_barrel(), False), "prp_crate": (PR.prop_crate(), False), "prp_chest_closed": (PR.prop_chest(), False),
              "prp_rock_a": (PR.prop_rock(), False), "prp_palm_a": (PR.prop_palm(), False), "prp_palm_b": (PR.prop_palm(1.8), False), "prp_hut_a": (PR.prop_hut(), False),

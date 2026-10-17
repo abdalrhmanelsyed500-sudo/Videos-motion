@@ -3,7 +3,7 @@ extends RefCounted
 ##   data id   = <kind>_<slug>      kinds below; slug is lower snake_case; islands are isl_NNN (numeric, rename-proof)
 ##   asset id  = <prefix>_<words>   prefixes below
 const DATA_KINDS: PackedStringArray = [
-	"isl", "reg", "crew", "npc", "item", "rcp", "ship", "evt", "loc", "fac", "qst", "dlg", "clue", "mode",
+	"isl", "reg", "crew", "npc", "item", "rcp", "ship", "evt", "loc", "fac", "qst", "dlg", "clue", "mode", "kit", "tpl",
 ]
 const ASSET_PREFIXES: PackedStringArray = ["spr", "til", "prp", "shp", "ico", "fx", "ui", "bg"]
 

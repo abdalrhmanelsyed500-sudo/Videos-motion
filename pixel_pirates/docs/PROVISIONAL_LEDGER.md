@@ -4,13 +4,37 @@ Every balance number in `game/data/` carries `provisional`, `owner` and `source`
 who is expected to finalise them, and where each came from. `owner` uses PROPOSED module numbers (N1..N14, B3); the N-module list is not
 fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is finalised only when this ledger has no `N*` rows left.
 
-**33 provisional records** | B3: 3, N1: 18, N10: 1, N11: 1, N4: 3, N5: 1, N6: 2, N7: 2, N8: 1, N9: 1
+**58 provisional records** | B3: 3, E7: 9, F0: 10, I17: 5, N1: 18, N10: 1, N11: 1, N4: 3, N5: 1, N6: 2, N7: 3, N8: 1, N9: 1
 
 | owner | kind | key | source |
 |---|---|---|---|
 | B3 | difficulty_mode | `mode_hardcore` | design placeholder |
 | B3 | difficulty_mode | `mode_normal` | design placeholder |
 | B3 | difficulty_mode | `mode_story` | design placeholder |
+| E7 | tuning | `island.explore_budget_min_t1` | design placeholder |
+| E7 | tuning | `island.explore_budget_min_t2` | design placeholder |
+| E7 | tuning | `island.explore_budget_min_t3` | design placeholder |
+| E7 | tuning | `island.max_per_hook_kind` | design placeholder |
+| E7 | tuning | `island.max_per_template_kit` | design placeholder |
+| E7 | tuning | `island.sameness_max_iou` | design placeholder |
+| E7 | tuning | `island.size_tiles_t1` | design placeholder |
+| E7 | tuning | `island.size_tiles_t2` | design placeholder |
+| E7 | tuning | `island.size_tiles_t3` | design placeholder |
+| F0 | island_template | `tpl_atoll_ring` | A6 design; tuned by baking and viewing |
+| F0 | island_template | `tpl_blob_isle` | A6 design; tuned by baking and viewing |
+| F0 | island_template | `tpl_cone_volcano` | A6 design; tuned by baking and viewing |
+| F0 | island_template | `tpl_crescent_bay` | A6 design; tuned by baking and viewing |
+| F0 | island_template | `tpl_fjord_cleft` | A6 design; tuned by baking and viewing |
+| F0 | island_template | `tpl_mesa_cliffs` | A6 design; tuned by baking and viewing |
+| F0 | island_template | `tpl_ridge_spine` | A6 design; tuned by baking and viewing |
+| F0 | island_template | `tpl_stack_field` | A6 design; tuned by baking and viewing |
+| F0 | island_template | `tpl_tidal_flats` | A6 design; tuned by baking and viewing |
+| F0 | island_template | `tpl_twin_lobes` | A6 design; tuned by baking and viewing |
+| I17 | kit | `kit_arid` | placeholder art mapping (A4 assets); final biome art replaces it in I17 |
+| I17 | kit | `kit_frozen` | placeholder art mapping (A4 assets); final biome art replaces it in I17 |
+| I17 | kit | `kit_temperate` | placeholder art mapping (A4 assets); final biome art replaces it in I17 |
+| I17 | kit | `kit_tropical` | placeholder art mapping (A4 assets); final biome art replaces it in I17 |
+| I17 | kit | `kit_volcanic` | placeholder art mapping (A4 assets); final biome art replaces it in I17 |
 | N1 | item | `item_bandage` | design placeholder |
 | N1 | item | `item_cannonball` | design placeholder |
 | N1 | item | `item_canvas` | design placeholder |
@@ -39,5 +63,6 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | N6 | tuning | `ship.hull_wear_pct_per_day_at_sea` | design placeholder |
 | N7 | tuning | `crew.awake_limit_hours` | design placeholder |
 | N7 | tuning | `crew.watch_length_hours` | historical figure from general knowledge, not source-checked (four-hour watches) |
+| N7 | tuning | `move.walk_speed_mps` | design placeholder |
 | N8 | tuning | `morale.daily_decay_base` | design placeholder |
 | N9 | tuning | `ammo.powder_loss_pct_per_day_wet` | design placeholder |

@@ -1,0 +1,162 @@
+{
+ "kind": "kit",
+ "key_field": "id",
+ "id_prefix": "kit",
+ "record": {
+  "type": "object",
+  "required": [
+   "id",
+   "name",
+   "biome",
+   "tiles",
+   "props"
+  ],
+  "props": {
+   "id": {
+    "type": "string",
+    "pattern": "^kit_[a-z0-9]+(_[a-z0-9]+)*$"
+   },
+   "name": {
+    "type": "string",
+    "pattern": "^.{2,40}$"
+   },
+   "biome": {
+    "type": "string",
+    "pattern": "^[a-z][a-z0-9_]*$"
+   },
+   "tiles": {
+    "type": "object",
+    "required": [
+     "deep",
+     "shallow",
+     "beach",
+     "ground",
+     "upland",
+     "rock",
+     "cliff"
+    ],
+    "props": {
+     "deep": {
+      "type": "array",
+      "min_items": 1,
+      "items": {
+       "type": "string",
+       "ref": "asset"
+      }
+     },
+     "shallow": {
+      "type": "array",
+      "min_items": 1,
+      "items": {
+       "type": "string",
+       "ref": "asset"
+      }
+     },
+     "beach": {
+      "type": "array",
+      "min_items": 1,
+      "items": {
+       "type": "string",
+       "ref": "asset"
+      }
+     },
+     "ground": {
+      "type": "array",
+      "min_items": 1,
+      "items": {
+       "type": "string",
+       "ref": "asset"
+      }
+     },
+     "upland": {
+      "type": "array",
+      "min_items": 1,
+      "items": {
+       "type": "string",
+       "ref": "asset"
+      }
+     },
+     "rock": {
+      "type": "array",
+      "min_items": 1,
+      "items": {
+       "type": "string",
+       "ref": "asset"
+      }
+     },
+     "cliff": {
+      "type": "array",
+      "min_items": 1,
+      "items": {
+       "type": "string",
+       "ref": "asset"
+      }
+     }
+    }
+   },
+   "props": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "required": [
+      "asset",
+      "zone",
+      "density",
+      "spacing"
+     ],
+     "props": {
+      "asset": {
+       "type": "string",
+       "ref": "asset"
+      },
+      "zone": {
+       "type": "string",
+       "enum": [
+        "beach",
+        "ground",
+        "upland",
+        "rock",
+        "shallows"
+       ]
+      },
+      "density": {
+       "type": "number",
+       "min": 0,
+       "max": 40
+      },
+      "spacing": {
+       "type": "integer",
+       "min": 1,
+       "max": 12
+      },
+      "cluster": {
+       "type": "array",
+       "items": {
+        "type": "integer",
+        "min": 1,
+        "max": 8
+       },
+       "min_items": 2,
+       "max_items": 2
+      }
+     }
+    }
+   },
+   "note": {
+    "type": "string",
+    "pattern": "^.{1,300}$"
+   },
+   "provisional": {
+    "type": "boolean"
+   },
+   "owner": {
+    "type": "string",
+    "pattern": "^[A-Z][0-9]{1,2}$"
+   },
+   "source": {
+    "type": "string",
+    "pattern": "^.{1,200}$"
+   }
+  }
+ }
+}

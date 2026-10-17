@@ -119,9 +119,11 @@
    },
    "kits": {
     "type": "array",
+    "min_items": 1,
+    "unique_items": true,
     "items": {
      "type": "string",
-     "pattern": "^kit_[a-z0-9_]+$"
+     "ref": "kit"
     }
    },
    "status": {
@@ -147,6 +149,39 @@
    "source": {
     "type": "string",
     "pattern": "^.{1,200}$"
+   },
+   "template": {
+    "type": "string",
+    "ref": "island_template"
+   },
+   "seed": {
+    "type": "string",
+    "pattern": "^[0-9]{1,20}$"
+   },
+   "hook_kind": {
+    "type": "string",
+    "enum": [
+     "wreck_field",
+     "ruin",
+     "creature_den",
+     "natural_wonder",
+     "puzzle_site",
+     "hermit",
+     "trade_post",
+     "hazard_field",
+     "hidden_cache",
+     "shortcut",
+     "beacon_tower",
+     "ship_graveyard",
+     "tidal_secret",
+     "echo_cave",
+     "sunken_road",
+     "carcass_whale",
+     "weather_vane_rock",
+     "salt_works",
+     "mapmaker",
+     "duel_ground"
+    ]
    }
   }
  }

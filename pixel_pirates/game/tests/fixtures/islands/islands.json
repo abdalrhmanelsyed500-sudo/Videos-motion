@@ -1,0 +1,274 @@
+{
+ "schema": 1,
+ "kind": "island",
+ "records": [
+  {
+   "id": "isl_901",
+   "name": "Round Fixture",
+   "tier": 2,
+   "biome": "tropical",
+   "region": "reg_fixture",
+   "position": {
+    "x_km": 0.0,
+    "y_km": 0.0
+   },
+   "survival_offers": [
+    "fresh_water",
+    "fruit",
+    "timber"
+   ],
+   "landmark": false,
+   "kits": [
+    "kit_tropical"
+   ],
+   "template": "tpl_blob_isle",
+   "seed": "7135019",
+   "hook_kind": "natural_wonder",
+   "status": "planned",
+   "provisional": true,
+   "owner": "A6",
+   "source": "A6 test fixture - never part of the real registry"
+  },
+  {
+   "id": "isl_902",
+   "name": "Ring Fixture",
+   "tier": 3,
+   "biome": "tropical",
+   "region": "reg_fixture",
+   "position": {
+    "x_km": 10.0,
+    "y_km": 0.0
+   },
+   "survival_offers": [
+    "fish",
+    "salt"
+   ],
+   "landmark": false,
+   "kits": [
+    "kit_tropical"
+   ],
+   "template": "tpl_atoll_ring",
+   "seed": "7142938",
+   "hook_kind": "tidal_secret",
+   "status": "planned",
+   "provisional": true,
+   "owner": "A6",
+   "source": "A6 test fixture - never part of the real registry"
+  },
+  {
+   "id": "isl_903",
+   "name": "Bay Fixture",
+   "tier": 1,
+   "biome": "temperate",
+   "region": "reg_fixture",
+   "position": {
+    "x_km": 20.0,
+    "y_km": 0.0
+   },
+   "survival_offers": [
+    "fresh_water",
+    "game",
+    "timber",
+    "shelter"
+   ],
+   "landmark": false,
+   "kits": [
+    "kit_temperate"
+   ],
+   "template": "tpl_crescent_bay",
+   "seed": "7150857",
+   "hook_kind": "hermit",
+   "status": "planned",
+   "provisional": true,
+   "owner": "A6",
+   "source": "A6 test fixture - never part of the real registry"
+  },
+  {
+   "id": "isl_904",
+   "name": "Spine Fixture",
+   "tier": 2,
+   "biome": "arid",
+   "region": "reg_fixture",
+   "position": {
+    "x_km": 30.0,
+    "y_km": 0.0
+   },
+   "survival_offers": [
+    "salt",
+    "salvage"
+   ],
+   "landmark": false,
+   "kits": [
+    "kit_arid"
+   ],
+   "template": "tpl_ridge_spine",
+   "seed": "7158776",
+   "hook_kind": "wreck_field",
+   "status": "planned",
+   "provisional": true,
+   "owner": "A6",
+   "source": "A6 test fixture - never part of the real registry"
+  },
+  {
+   "id": "isl_905",
+   "name": "Twin Fixture",
+   "tier": 1,
+   "biome": "temperate",
+   "region": "reg_fixture",
+   "position": {
+    "x_km": 40.0,
+    "y_km": 0.0
+   },
+   "survival_offers": [
+    "fresh_water",
+    "game",
+    "herbs",
+    "repair_dock"
+   ],
+   "landmark": false,
+   "kits": [
+    "kit_temperate",
+    "kit_arid"
+   ],
+   "template": "tpl_twin_lobes",
+   "seed": "7166695",
+   "hook_kind": "trade_post",
+   "status": "planned",
+   "provisional": true,
+   "owner": "A6",
+   "source": "A6 test fixture - never part of the real registry"
+  },
+  {
+   "id": "isl_906",
+   "name": "Cone Fixture",
+   "tier": 2,
+   "biome": "volcanic",
+   "region": "reg_fixture",
+   "position": {
+    "x_km": 50.0,
+    "y_km": 0.0
+   },
+   "survival_offers": [
+    "herbs",
+    "shelter"
+   ],
+   "landmark": false,
+   "kits": [
+    "kit_volcanic"
+   ],
+   "template": "tpl_cone_volcano",
+   "seed": "7174614",
+   "hook_kind": "echo_cave",
+   "status": "planned",
+   "provisional": true,
+   "owner": "A6",
+   "source": "A6 test fixture - never part of the real registry"
+  },
+  {
+   "id": "isl_907",
+   "name": "Mesa Fixture",
+   "tier": 2,
+   "biome": "arid",
+   "region": "reg_fixture",
+   "position": {
+    "x_km": 60.0,
+    "y_km": 0.0
+   },
+   "survival_offers": [
+    "fresh_water",
+    "game"
+   ],
+   "landmark": false,
+   "kits": [
+    "kit_arid"
+   ],
+   "template": "tpl_mesa_cliffs",
+   "seed": "7182533",
+   "hook_kind": "beacon_tower",
+   "status": "planned",
+   "provisional": true,
+   "owner": "A6",
+   "source": "A6 test fixture - never part of the real registry"
+  },
+  {
+   "id": "isl_908",
+   "name": "Stack Fixture",
+   "tier": 3,
+   "biome": "frozen",
+   "region": "reg_fixture",
+   "position": {
+    "x_km": 70.0,
+    "y_km": 0.0
+   },
+   "survival_offers": [
+    "fish",
+    "salvage"
+   ],
+   "landmark": false,
+   "kits": [
+    "kit_frozen"
+   ],
+   "template": "tpl_stack_field",
+   "seed": "7190452",
+   "hook_kind": "ship_graveyard",
+   "status": "planned",
+   "provisional": true,
+   "owner": "A6",
+   "source": "A6 test fixture - never part of the real registry"
+  },
+  {
+   "id": "isl_909",
+   "name": "Flats Fixture",
+   "tier": 3,
+   "biome": "frozen",
+   "region": "reg_fixture",
+   "position": {
+    "x_km": 80.0,
+    "y_km": 0.0
+   },
+   "survival_offers": [
+    "fish",
+    "game"
+   ],
+   "landmark": false,
+   "kits": [
+    "kit_frozen"
+   ],
+   "template": "tpl_tidal_flats",
+   "seed": "7198371",
+   "hook_kind": "hidden_cache",
+   "status": "planned",
+   "provisional": true,
+   "owner": "A6",
+   "source": "A6 test fixture - never part of the real registry"
+  },
+  {
+   "id": "isl_910",
+   "name": "Fjord Fixture",
+   "tier": 1,
+   "biome": "frozen",
+   "region": "reg_fixture",
+   "position": {
+    "x_km": 90.0,
+    "y_km": 0.0
+   },
+   "survival_offers": [
+    "fresh_water",
+    "fish",
+    "timber",
+    "shelter"
+   ],
+   "landmark": false,
+   "kits": [
+    "kit_frozen"
+   ],
+   "template": "tpl_fjord_cleft",
+   "seed": "7206290",
+   "hook_kind": "hazard_field",
+   "status": "planned",
+   "provisional": true,
+   "owner": "A6",
+   "source": "A6 test fixture - never part of the real registry"
+  }
+ ]
+}

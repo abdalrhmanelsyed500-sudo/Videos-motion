@@ -1,0 +1,109 @@
+{
+ "schema": 1,
+ "kind": "tuning",
+ "records": [
+  {
+   "key": "island.size_tiles_t1",
+   "value": 192,
+   "unit": "tiles",
+   "min": 128,
+   "max": 320,
+   "provisional": true,
+   "owner": "E7",
+   "source": "design placeholder",
+   "note": "Tier 1 grid edge; 2 m per tile = 384 m."
+  },
+  {
+   "key": "island.size_tiles_t2",
+   "value": 128,
+   "unit": "tiles",
+   "min": 64,
+   "max": 256,
+   "provisional": true,
+   "owner": "E7",
+   "source": "design placeholder"
+  },
+  {
+   "key": "island.size_tiles_t3",
+   "value": 80,
+   "unit": "tiles",
+   "min": 48,
+   "max": 160,
+   "provisional": true,
+   "owner": "E7",
+   "source": "design placeholder"
+  },
+  {
+   "key": "island.explore_budget_min_t1",
+   "value": 45,
+   "unit": "min",
+   "min": 10,
+   "max": 120,
+   "provisional": true,
+   "owner": "E7",
+   "source": "design placeholder",
+   "note": "Max walking time for a tour of all POIs, from the landing."
+  },
+  {
+   "key": "island.explore_budget_min_t2",
+   "value": 16,
+   "unit": "min",
+   "min": 4,
+   "max": 60,
+   "provisional": true,
+   "owner": "E7",
+   "source": "design placeholder"
+  },
+  {
+   "key": "island.explore_budget_min_t3",
+   "value": 6,
+   "unit": "min",
+   "min": 1,
+   "max": 30,
+   "provisional": true,
+   "owner": "E7",
+   "source": "design placeholder"
+  },
+  {
+   "key": "move.walk_speed_mps",
+   "value": 1.4,
+   "unit": "m/s",
+   "min": 0.8,
+   "max": 2.5,
+   "provisional": true,
+   "owner": "N7",
+   "source": "design placeholder"
+  },
+  {
+   "key": "island.sameness_max_iou",
+   "value": 0.85,
+   "unit": "ratio",
+   "min": 0.3,
+   "max": 0.98,
+   "provisional": true,
+   "owner": "E7",
+   "source": "design placeholder",
+   "note": "Silhouette overlap (32x32, any rotation/flip) at or above this = alike. Calibrated on 100 baked islands: random cross-template pairs average 0.54 (p90 0.72); 0.85 flags about 0.2% of pairs. Re-calibrate when templates change."
+  },
+  {
+   "key": "island.max_per_hook_kind",
+   "value": 4,
+   "unit": "islands",
+   "min": 1,
+   "max": 10,
+   "provisional": true,
+   "owner": "E7",
+   "source": "design placeholder"
+  },
+  {
+   "key": "island.max_per_template_kit",
+   "value": 3,
+   "unit": "islands",
+   "min": 1,
+   "max": 10,
+   "provisional": true,
+   "owner": "E7",
+   "source": "design placeholder"
+  }
+ ]
+}

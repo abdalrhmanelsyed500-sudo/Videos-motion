@@ -17,7 +17,7 @@ GAME = ROOT / "game"
 problems: list[str] = []
 warnings: list[str] = []
 
-DATA_KINDS = {"isl", "reg", "crew", "npc", "item", "rcp", "ship", "evt", "loc", "fac", "qst", "dlg", "clue", "mode"}
+DATA_KINDS = {"isl", "reg", "crew", "npc", "item", "rcp", "ship", "evt", "loc", "fac", "qst", "dlg", "clue", "mode", "kit", "tpl"}
 ASSET_PREFIXES = {"spr", "til", "prp", "shp", "ico", "fx", "ui", "bg"}
 RE_DATA = re.compile(r"^[a-z]+(_[a-z0-9]+)+$")
 RE_ISLAND = re.compile(r"^isl_[0-9]{3}$")
@@ -96,7 +96,7 @@ def check_data() -> None:
                     for t in WARN_TERMS:
                         if t in words and not allowed(rel, t):
                             warnings.append(f"content review: {rel}{path} contains '{t}'")
-            if path.endswith("/id") and isinstance(v, str) and "/assets/" not in path and not valid_data_id(v):
+            if re.search(r"^(/records\[\d+\])?/id$", path) and isinstance(v, str) and not valid_data_id(v):
                 problems.append(f"id grammar: {rel}{path} = {v!r}")
         # crew records: HARD RULE 1 (no female characters in the crew)
         if "/crew/" in str(f).replace("\\", "/"):
@@ -141,6 +141,60 @@ def check_data_model() -> None:
     print("data model:", ", ".join(f"{k}={v}" for k, v in sorted(res["counts"].items())))
 
 
+def check_island_kit() -> None:
+    """A6: templates, baked maps (stale / hand-edited / rule violations) and the sameness catalog."""
+    try:
+        sys.path.insert(0, str(ROOT / "tools" / "island_kit"))
+        import bake  # noqa: PLC0415
+        import island_checks  # noqa: PLC0415
+        import sameness  # noqa: PLC0415
+        import shapes  # noqa: PLC0415
+    except ImportError as ex:
+        warnings.append(f"island kit checks skipped ({ex}); pip install numpy scipy pillow")
+        return
+    sys.path.insert(0, str(ROOT / "tools" / "data_tools"))
+    import validate_data  # noqa: PLC0415
+    ctx = bake.load_context()
+    for t in ctx["templates"].values():
+        for k in t["shape"].get("params", {}):
+            if k not in shapes.allowed_params(t["shape"]["op"]):
+                problems.append(f"island kit: template {t['id']} has unknown shape parameter '{k}'")
+    schemas = validate_data.load_schemas(GAME / "data")
+    _, _, res = validate_data.run()
+    base = validate_data.make_lookup(res["tables"], schemas, set(json.loads((GAME / "art" / "manifest" / "sprites.json").read_text())["assets"]))
+    sets = [("data", list(res["tables"].get("island", {}).values()), GAME / "data" / "islands" / "maps", False),
+            ("fixtures", bake.read_island_file(GAME / "tests" / "fixtures" / "islands" / "islands.json"), GAME / "tests" / "fixtures" / "islands" / "maps", True)]
+    for label, recs, mapdir, is_fixture in sets:
+        ids = {r["id"] for r in recs}
+
+        def look(kind, i, _ids=ids):
+            return (kind == "region" and i == "reg_fixture") or (kind == "island" and i in _ids) or base(kind, i)
+        entries = []
+        for rec in recs:
+            if is_fixture:
+                for e in validate_data.M.validate(rec, schemas["island"]["record"], look):
+                    problems.append(f"island kit: fixture {rec['id']} {e[0]}: {e[1]}")
+            mp = mapdir / f"{rec['id']}.map.json"
+            if not mp.exists():
+                if is_fixture or rec.get("status") in ("built", "tested"):
+                    problems.append(f"island kit: {rec['id']} has no baked map ({mp.name})")
+                continue
+            if "template" not in rec:
+                problems.append(f"island kit: {rec['id']} has a map but no template")
+                continue
+            m = island_checks.load_map(mp)
+            if island_checks.is_stale(m, rec, ctx):
+                problems.append(f"island kit: {rec['id']} map is STALE (template/kit/seed changed): run tools/island_kit/bake.py")
+            for p in island_checks.check_map(m, rec, ctx):
+                problems.append(f"island kit: {rec['id']}: {p}")
+            entries.append((rec, m))
+        if len(entries) > 1:
+            probs, warns, _ = sameness.check_catalog(entries, ctx)
+            problems.extend(f"island kit ({label}): {p}" for p in probs)
+            warnings.extend(f"island kit ({label}): {w}" for w in warns)
+    print(f"island kit: {len(ctx['templates'])} templates, {len(ctx['kits'])} kits, {len(sets[1][1])} fixture islands checked")
+
+
 def check_gdscript() -> None:
     exe = shutil.which("gdparse") or str(Path(sys.executable).parent / "gdparse")
     if not Path(exe).exists() and not shutil.which("gdparse"):
@@ -158,6 +212,7 @@ def main() -> int:
     check_data()
     check_manifest()
     check_data_model()
+    check_island_kit()
     check_gdscript()
     for w in warnings:
         print("WARN ", w)

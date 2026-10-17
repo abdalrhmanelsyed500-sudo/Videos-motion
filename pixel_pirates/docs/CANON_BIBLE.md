@@ -1,4 +1,4 @@
-# CANON BIBLE - Crown of the Seas (working title) - v0.4 (after A2, A3, A4, A5)
+# CANON BIBLE - Crown of the Seas (working title) - v0.5 (after A2, A3, A4, A5, A6)
 Drive folder: "Pixel Pirates". Repo path: pixel_pirates/.
 
 ## Hard content rules
@@ -38,11 +38,11 @@ pixel_pirates/ { README.md, .gitignore, .gitattributes, .editorconfig, docs/, ar
 game/ (= res://) { project.godot, .gdlintrc, core/, data/, systems/{survival,economy,crew,ship,combat,weather}/, world/{ocean,islands,cities}/, ui/, shaders/, audio/, art/{placeholder,final,manifest}/, tests/ }
 Dependency rule: systems/ never imports world/ or ui/; core/ imports nothing; systems talk via Bus signals or passed-in data.
 Autoloads: Log, Bus, Quality, Assets, Data (registry). Core utilities via preload constants (Ids, DataLoader).
-tools/: check_project.py, install_hooks.sh, hooks/pre-commit, placeholder/ (generator), looklab/ (stills + report), probes/gpu_probe_v2/.
-docs/: A5_DATA_ARCHITECTURE.md, PROVISIONAL_LEDGER.md (generated), A1_TECH_STACK.md, A2_STRUCTURE_AND_CONVENTIONS.md, A3_ART_BIBLE.md, A4_PLACEHOLDER_PIPELINE.md, CANON_BIBLE.md, ART_STATUS.md (generated).
+tools/: island_kit/ (bake, island_checks, sameness, shapes, prng, preview, report, tests), data_tools/, check_project.py, install_hooks.sh, hooks/pre-commit, placeholder/ (generator), looklab/ (stills + report), probes/gpu_probe_v2/.
+docs/: A6_ISLAND_KIT.md, A6_ISLAND_KIT_REPORT.md (generated), A5_DATA_ARCHITECTURE.md, PROVISIONAL_LEDGER.md (generated), A1_TECH_STACK.md, A2_STRUCTURE_AND_CONVENTIONS.md, A3_ART_BIBLE.md, A4_PLACEHOLDER_PIPELINE.md, CANON_BIBLE.md, ART_STATUS.md (generated).
 
 ## ID grammar (A2)
-Data: <kind>_<slug> lowercase; kinds isl reg crew npc item rcp ship evt loc fac qst dlg clue mode. Islands numeric isl_001..isl_999 (the old "I001" = isl_001).
+Data: <kind>_<slug> lowercase; kinds isl reg crew npc item rcp ship evt loc fac qst dlg clue mode kit tpl. Islands numeric isl_001..isl_999 (the old "I001" = isl_001).
 Assets: prefixes spr til prp shp ico fx ui bg (e.g. spr_crew_mannequin_captain, til_water_deep_a, ico_item_hardtack).
 
 ## Art canon (A3/A4)
@@ -68,9 +68,21 @@ SEED NUMBERS ARE PROVISIONAL PLACEHOLDERS (33 records, docs/PROVISIONAL_LEDGER.m
 Decisions: A5-1 JSON envelopes + schema files. A5-2 two validators + shared fixtures. A5-3 tuning through one accessor with difficulty scaling and overrides. A5-4 provisional ledger. A5-5 hardened save format. A5-6 export filter must include *.json.
 GDScript half of A5 is unrun (no Godot in sandbox).
 
+## Island construction (A6) - sizes are PROVISIONAL (owner E7)
+Pipeline: island record + island_template + kit + seed -> tools/island_kit/bake.py -> committed baked map game/data/islands/maps/<id>.map.json. The game loads baked maps, never generates. source_hash flags stale maps; grid/content hashes flag hand edits.
+Grid: tier 1 = 192x192 tiles (384 m), tier 2 = 128 (256 m), tier 3 = 80 (160 m); 1 tile = 2 m; walk 1.4 m/s. Explore budget (walk all POIs from the landing): T1 45 min, T2 16, T3 6.
+Terrain classes: deep ~, shallow -, beach ., ground g, upland u, rock r, cliff #; elevation 0-15. Walkable = all but deep and cliff.
+Templates (10): tpl_blob_isle, tpl_atoll_ring, tpl_crescent_bay, tpl_ridge_spine, tpl_twin_lobes, tpl_cone_volcano, tpl_mesa_cliffs, tpl_stack_field, tpl_tidal_flats, tpl_fjord_cleft. Slot kinds: survival, hook, secret, story, camp.
+Kits (5): kit_tropical, kit_arid, kit_temperate, kit_frozen, kit_volcanic (placeholder art mapping).
+Hook kinds (20): wreck_field ruin creature_den natural_wonder puzzle_site hermit trade_post hazard_field hidden_cache shortcut beacon_tower ship_graveyard tidal_secret echo_cave sunken_road carcass_whale weather_vane_rock salt_works mapmaker duel_ground.
+Silhouette Quota: 32x32 dry-land silhouette, any rotation/flip, overlap >= 0.85 = alike (calibrated on 100 islands); max 4 islands per hook kind, max 3 per template+kit, neighbours may not share a hook kind.
+Decisions: A6-1 bake, don't generate. A6-2 explore time is a measured per-tier budget. A6-3 slots guarantee a survival POI per declared offer and a hook per island. A6-4 Silhouette Quota. A6-5 fixtures isl_901..910 are test data, not registry. A6-6 need about 16 templates by E3 (proposal). Open: ship navigability of shallows (E8).
+Fixture islands: 10 in game/tests/fixtures/islands, one per template.
+
 ## Island registry (50+ planned)
 Empty. Format: ID (isl_NNN) | name | tier | biome | position | distances to neighbours | status (planned/designed/built/tested). Filled from E3.
 
 ## Open questions
+First run of the A6 GDScript test (test_island_map) and island_viewer on the user's PC. Whether T1 islands should be bigger or carry more content (budget 45 min vs about 11 min of pure walking). Template count (10 now, about 16 proposed).
 First run of the A5 GDScript tests (test_schema/registry/tuning/save) on the user's PC.
 First headless test-run output from the user's PC (`tests/run_all.gd`). Probe results postponed by the user. Access to a capable test machine for visual sign-off (borrow / used PC / cloud / RAM upgrade) - decide before the vertical slice.

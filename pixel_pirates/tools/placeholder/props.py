@@ -113,7 +113,27 @@ def tile_snow(seed=6) -> Image.Image:
     return _tile_from_steps(s, "ice")
 
 
-def tile_water_frames(n_frames=4, seed=7) -> list[Image.Image]:
+def tile_rock(seed=8) -> Image.Image:
+    """bare rock: cool stone, large flat facets with cracks."""
+    rng = np.random.default_rng(seed)
+    n = 0.55 * periodic_noise(TILE, 4, rng) + 0.45 * periodic_noise(TILE, 12, rng)
+    s = _quant(n, [0.33, 0.47, 0.61, 0.76])
+    crack = periodic_noise(TILE, 9, rng)
+    s = np.where((crack > 0.50) & (crack < 0.535), 0, s)
+    return _tile_from_steps(s, "stone_cool")
+
+
+def tile_ice(seed=9) -> Image.Image:
+    """sea ice / glacier: darker and bluer than snow, with fracture lines."""
+    rng = np.random.default_rng(seed)
+    n = 0.6 * periodic_noise(TILE, 3, rng) + 0.4 * periodic_noise(TILE, 8, rng)
+    s = _quant(n, [0.30, 0.46, 0.62, 0.78])
+    fr = periodic_noise(TILE, 7, rng)
+    s = np.where((fr > 0.48) & (fr < 0.515), 0, s)
+    return _tile_from_steps(s, "ice")
+
+
+def tile_water_frames(n_frames=4, seed=7, ramp="sea_deep") -> list[Image.Image]:
     """seamless in space AND time: noise is shifted by TILE/n px per frame."""
     rng = np.random.default_rng(seed)
     big = 0.6 * periodic_noise(TILE, 4, rng) + 0.4 * periodic_noise(TILE, 8, rng)
@@ -123,7 +143,7 @@ def tile_water_frames(n_frames=4, seed=7) -> list[Image.Image]:
         s = _quant(sh, [0.30, 0.44, 0.58, 0.74])
         crest = (sh > 0.70) & (np.roll(sh, 1, 0) <= 0.70)
         s = np.where(crest, 4, s)
-        frames.append(_tile_from_steps(s, "sea_deep"))
+        frames.append(_tile_from_steps(s, ramp))
     return frames
 
 

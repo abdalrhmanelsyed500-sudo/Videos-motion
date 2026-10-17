@@ -5,7 +5,7 @@ Open-world pirate-life simulation. Godot 4.7.2, Compatibility renderer, typed GD
 | folder | what |
 |---|---|
 | `game/` | the Godot project (open THIS folder in Godot). `res://` = `game/` |
-| `docs/` | design + engineering docs (A1 stack, A2 structure, A3 art bible, A4 placeholder pipeline), `CANON_BIBLE.md`, `ART_STATUS.md` |
+| `docs/` | design + engineering docs (A1 stack, A2 structure, A3 art bible, A4 placeholder pipeline, A5 data architecture, A6 island kit), `CANON_BIBLE.md`, `ART_STATUS.md` |
 | `art_bible/` | reference measurements, Look Lab stills + report, placeholder contact sheet |
 | `tools/` | Python helpers (checker, placeholder generator, Look Lab) and `probes/` (GPU probe) - none needed to RUN the game |
 

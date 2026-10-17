@@ -1,0 +1,1550 @@
+{
+ "schema": 1,
+ "kind": "island_template",
+ "records": [
+  {
+   "id": "tpl_blob_isle",
+   "name": "Rounded Isle",
+   "description": "A lumpy rounded island: beach ring, green middle, one rocky knoll.",
+   "tiers": [
+    1,
+    2,
+    3
+   ],
+   "shape": {
+    "op": "blob",
+    "params": {
+     "aspect": 0.68,
+     "lobes": 3,
+     "lobe_amp": 0.2,
+     "warp": 0.26,
+     "var": 0.2
+    }
+   },
+   "land_fraction": {
+    "min": 0.15,
+    "max": 0.5
+   },
+   "relief": {
+    "levels": 5,
+    "cliff_step": 3,
+    "rock_amount": 0.25
+   },
+   "coast": {
+    "shallow_tiles": 5,
+    "beach_tiles": 3
+   },
+   "landings": [
+    1,
+    2
+   ],
+   "slots": [
+    {
+     "id": "supply",
+     "kind": "survival",
+     "count": {
+      "1": [
+       5,
+       7
+      ],
+      "2": [
+       3,
+       5
+      ],
+      "3": [
+       2,
+       3
+      ]
+     },
+     "spacing_tiles": 14
+    },
+    {
+     "id": "hook",
+     "kind": "hook",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       1,
+       1
+      ]
+     },
+     "where": {
+      "coast_tiles": [
+       6,
+       60
+      ]
+     },
+     "spacing_tiles": 18
+    },
+    {
+     "id": "secret",
+     "kind": "secret",
+     "count": {
+      "1": [
+       1,
+       2
+      ],
+      "2": [
+       0,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "rock",
+       "upland"
+      ]
+     },
+     "spacing_tiles": 16
+    },
+    {
+     "id": "story",
+     "kind": "story",
+     "count": {
+      "1": [
+       2,
+       3
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       0
+      ]
+     },
+     "spacing_tiles": 20
+    },
+    {
+     "id": "camp",
+     "kind": "camp",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ],
+      "coast_tiles": [
+       2,
+       20
+      ]
+     },
+     "spacing_tiles": 12
+    }
+   ],
+   "provisional": true,
+   "owner": "F0",
+   "source": "A6 design; tuned by baking and viewing"
+  },
+  {
+   "id": "tpl_atoll_ring",
+   "name": "Ring Atoll",
+   "description": "A thin ring of land around a shallow lagoon, broken by passes.",
+   "tiers": [
+    2,
+    3
+   ],
+   "shape": {
+    "op": "ring",
+    "params": {
+     "width": 0.19,
+     "pass_width": 0.25
+    }
+   },
+   "land_fraction": {
+    "min": 0.05,
+    "max": 0.35
+   },
+   "relief": {
+    "levels": 2,
+    "cliff_step": 3,
+    "rock_amount": 0.05
+   },
+   "coast": {
+    "shallow_tiles": 8,
+    "beach_tiles": 4
+   },
+   "landings": [
+    1,
+    3
+   ],
+   "slots": [
+    {
+     "id": "supply",
+     "kind": "survival",
+     "count": {
+      "1": [
+       5,
+       7
+      ],
+      "2": [
+       3,
+       5
+      ],
+      "3": [
+       2,
+       3
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ]
+     },
+     "spacing_tiles": 10
+    },
+    {
+     "id": "hook",
+     "kind": "hook",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       1,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "ground",
+       "beach"
+      ]
+     },
+     "spacing_tiles": 14
+    },
+    {
+     "id": "secret",
+     "kind": "secret",
+     "count": {
+      "1": [
+       1,
+       2
+      ],
+      "2": [
+       0,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "ground",
+       "rock",
+       "beach"
+      ]
+     },
+     "spacing_tiles": 16
+    },
+    {
+     "id": "story",
+     "kind": "story",
+     "count": {
+      "1": [
+       2,
+       3
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       0
+      ]
+     },
+     "spacing_tiles": 20
+    },
+    {
+     "id": "camp",
+     "kind": "camp",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ],
+      "coast_tiles": [
+       2,
+       20
+      ]
+     },
+     "spacing_tiles": 12
+    }
+   ],
+   "provisional": true,
+   "owner": "F0",
+   "source": "A6 design; tuned by baking and viewing",
+   "multi_island": true
+  },
+  {
+   "id": "tpl_crescent_bay",
+   "name": "Crescent Bay",
+   "description": "A crescent hugging a sheltered bay; the bay is the harbour, the outer coast is wild.",
+   "tiers": [
+    1,
+    2,
+    3
+   ],
+   "shape": {
+    "op": "crescent"
+   },
+   "land_fraction": {
+    "min": 0.1,
+    "max": 0.45
+   },
+   "relief": {
+    "levels": 6,
+    "cliff_step": 3,
+    "rock_amount": 0.3
+   },
+   "coast": {
+    "shallow_tiles": 5,
+    "beach_tiles": 3
+   },
+   "landings": [
+    1,
+    3
+   ],
+   "slots": [
+    {
+     "id": "supply",
+     "kind": "survival",
+     "count": {
+      "1": [
+       5,
+       7
+      ],
+      "2": [
+       3,
+       5
+      ],
+      "3": [
+       2,
+       3
+      ]
+     },
+     "spacing_tiles": 14
+    },
+    {
+     "id": "hook",
+     "kind": "hook",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       1,
+       1
+      ]
+     },
+     "where": {
+      "coast_tiles": [
+       5,
+       60
+      ]
+     },
+     "spacing_tiles": 18
+    },
+    {
+     "id": "secret",
+     "kind": "secret",
+     "count": {
+      "1": [
+       1,
+       2
+      ],
+      "2": [
+       0,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "rock",
+       "upland"
+      ]
+     },
+     "spacing_tiles": 16
+    },
+    {
+     "id": "story",
+     "kind": "story",
+     "count": {
+      "1": [
+       2,
+       3
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       0
+      ]
+     },
+     "spacing_tiles": 20
+    },
+    {
+     "id": "camp",
+     "kind": "camp",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ],
+      "coast_tiles": [
+       2,
+       20
+      ]
+     },
+     "spacing_tiles": 12
+    }
+   ],
+   "provisional": true,
+   "owner": "F0",
+   "source": "A6 design; tuned by baking and viewing"
+  },
+  {
+   "id": "tpl_ridge_spine",
+   "name": "Spine Ridge",
+   "description": "A long narrow island with a rocky backbone; everything is a short walk from water.",
+   "tiers": [
+    1,
+    2,
+    3
+   ],
+   "shape": {
+    "op": "ridge",
+    "params": {
+     "width": 0.34
+    }
+   },
+   "land_fraction": {
+    "min": 0.04,
+    "max": 0.3
+   },
+   "relief": {
+    "levels": 9,
+    "cliff_step": 3,
+    "rock_amount": 0.5
+   },
+   "coast": {
+    "shallow_tiles": 5,
+    "beach_tiles": 3
+   },
+   "landings": [
+    1,
+    3
+   ],
+   "slots": [
+    {
+     "id": "supply",
+     "kind": "survival",
+     "count": {
+      "1": [
+       5,
+       7
+      ],
+      "2": [
+       3,
+       5
+      ],
+      "3": [
+       2,
+       3
+      ]
+     },
+     "spacing_tiles": 12
+    },
+    {
+     "id": "hook",
+     "kind": "hook",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       1,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "upland",
+       "rock"
+      ]
+     },
+     "spacing_tiles": 16
+    },
+    {
+     "id": "secret",
+     "kind": "secret",
+     "count": {
+      "1": [
+       1,
+       2
+      ],
+      "2": [
+       0,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "rock",
+       "upland"
+      ]
+     },
+     "spacing_tiles": 16
+    },
+    {
+     "id": "story",
+     "kind": "story",
+     "count": {
+      "1": [
+       2,
+       3
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       0
+      ]
+     },
+     "spacing_tiles": 20
+    },
+    {
+     "id": "camp",
+     "kind": "camp",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ],
+      "coast_tiles": [
+       2,
+       20
+      ]
+     },
+     "spacing_tiles": 12
+    }
+   ],
+   "provisional": true,
+   "owner": "F0",
+   "source": "A6 design; tuned by baking and viewing"
+  },
+  {
+   "id": "tpl_twin_lobes",
+   "name": "Twin Hills",
+   "description": "Two hills joined by a narrow neck: two halves, one road.",
+   "tiers": [
+    1,
+    2
+   ],
+   "shape": {
+    "op": "twin_lobes",
+    "params": {
+     "warp": 0.24,
+     "var": 0.2,
+     "r1": 0.42,
+     "r2": 0.28
+    }
+   },
+   "land_fraction": {
+    "min": 0.1,
+    "max": 0.4
+   },
+   "relief": {
+    "levels": 6,
+    "cliff_step": 3,
+    "rock_amount": 0.3
+   },
+   "coast": {
+    "shallow_tiles": 5,
+    "beach_tiles": 3
+   },
+   "landings": [
+    1,
+    3
+   ],
+   "slots": [
+    {
+     "id": "supply",
+     "kind": "survival",
+     "count": {
+      "1": [
+       5,
+       7
+      ],
+      "2": [
+       3,
+       5
+      ],
+      "3": [
+       2,
+       3
+      ]
+     },
+     "spacing_tiles": 14
+    },
+    {
+     "id": "hook",
+     "kind": "hook",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       1,
+       1
+      ]
+     },
+     "where": {
+      "coast_tiles": [
+       4,
+       60
+      ]
+     },
+     "spacing_tiles": 18
+    },
+    {
+     "id": "secret",
+     "kind": "secret",
+     "count": {
+      "1": [
+       1,
+       2
+      ],
+      "2": [
+       0,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "rock",
+       "upland"
+      ]
+     },
+     "spacing_tiles": 16
+    },
+    {
+     "id": "story",
+     "kind": "story",
+     "count": {
+      "1": [
+       2,
+       3
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       0
+      ]
+     },
+     "spacing_tiles": 20
+    },
+    {
+     "id": "camp",
+     "kind": "camp",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ],
+      "coast_tiles": [
+       2,
+       20
+      ]
+     },
+     "spacing_tiles": 12
+    }
+   ],
+   "provisional": true,
+   "owner": "F0",
+   "source": "A6 design; tuned by baking and viewing"
+  },
+  {
+   "id": "tpl_cone_volcano",
+   "name": "Smoking Cone",
+   "description": "A steep cone with a crater; the climb is the island.",
+   "tiers": [
+    1,
+    2,
+    3
+   ],
+   "shape": {
+    "op": "cone",
+    "params": {
+     "crater": 0.2,
+     "aspect": 0.78,
+     "lobes": 3,
+     "lobe_amp": 0.18,
+     "warp": 0.24
+    }
+   },
+   "land_fraction": {
+    "min": 0.12,
+    "max": 0.45
+   },
+   "relief": {
+    "levels": 14,
+    "cliff_step": 3,
+    "rock_amount": 0.6
+   },
+   "coast": {
+    "shallow_tiles": 4,
+    "beach_tiles": 3
+   },
+   "landings": [
+    1,
+    2
+   ],
+   "slots": [
+    {
+     "id": "supply",
+     "kind": "survival",
+     "count": {
+      "1": [
+       5,
+       7
+      ],
+      "2": [
+       3,
+       5
+      ],
+      "3": [
+       2,
+       3
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground",
+       "upland"
+      ]
+     },
+     "spacing_tiles": 12
+    },
+    {
+     "id": "hook",
+     "kind": "hook",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       1,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "upland",
+       "rock"
+      ]
+     },
+     "spacing_tiles": 16
+    },
+    {
+     "id": "secret",
+     "kind": "secret",
+     "count": {
+      "1": [
+       1,
+       2
+      ],
+      "2": [
+       0,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "rock",
+       "upland"
+      ]
+     },
+     "spacing_tiles": 16
+    },
+    {
+     "id": "story",
+     "kind": "story",
+     "count": {
+      "1": [
+       2,
+       3
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       0
+      ]
+     },
+     "spacing_tiles": 20
+    },
+    {
+     "id": "camp",
+     "kind": "camp",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ],
+      "coast_tiles": [
+       2,
+       20
+      ]
+     },
+     "spacing_tiles": 12
+    }
+   ],
+   "provisional": true,
+   "owner": "F0",
+   "source": "A6 design; tuned by baking and viewing"
+  },
+  {
+   "id": "tpl_mesa_cliffs",
+   "name": "Cliff Mesa",
+   "description": "A flat-topped island with a cliff rim and a single ramp up.",
+   "tiers": [
+    1,
+    2
+   ],
+   "shape": {
+    "op": "mesa",
+    "params": {
+     "aspect": 0.72,
+     "lobes": 3,
+     "lobe_amp": 0.17,
+     "warp": 0.25,
+     "var": 0.18
+    }
+   },
+   "land_fraction": {
+    "min": 0.1,
+    "max": 0.45
+   },
+   "relief": {
+    "levels": 10,
+    "cliff_step": 3,
+    "rock_amount": 0.4
+   },
+   "coast": {
+    "shallow_tiles": 5,
+    "beach_tiles": 3
+   },
+   "landings": [
+    1,
+    2
+   ],
+   "slots": [
+    {
+     "id": "supply",
+     "kind": "survival",
+     "count": {
+      "1": [
+       5,
+       7
+      ],
+      "2": [
+       3,
+       5
+      ],
+      "3": [
+       2,
+       3
+      ]
+     },
+     "spacing_tiles": 12
+    },
+    {
+     "id": "hook",
+     "kind": "hook",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       1,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "upland"
+      ]
+     },
+     "spacing_tiles": 16
+    },
+    {
+     "id": "secret",
+     "kind": "secret",
+     "count": {
+      "1": [
+       1,
+       2
+      ],
+      "2": [
+       0,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "rock",
+       "upland"
+      ]
+     },
+     "spacing_tiles": 16
+    },
+    {
+     "id": "story",
+     "kind": "story",
+     "count": {
+      "1": [
+       2,
+       3
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       0
+      ]
+     },
+     "spacing_tiles": 20
+    },
+    {
+     "id": "camp",
+     "kind": "camp",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ],
+      "coast_tiles": [
+       2,
+       20
+      ]
+     },
+     "spacing_tiles": 12
+    }
+   ],
+   "provisional": true,
+   "owner": "F0",
+   "source": "A6 design; tuned by baking and viewing"
+  },
+  {
+   "id": "tpl_stack_field",
+   "name": "Stack Field",
+   "description": "Dozens of rock stacks standing in wading shallows.",
+   "tiers": [
+    2,
+    3
+   ],
+   "shape": {
+    "op": "stack_field",
+    "params": {
+     "count": 9,
+     "rmin": 0.08,
+     "rmax": 0.22
+    }
+   },
+   "land_fraction": {
+    "min": 0.03,
+    "max": 0.3
+   },
+   "relief": {
+    "levels": 8,
+    "cliff_step": 2,
+    "rock_amount": 0.8
+   },
+   "coast": {
+    "shallow_tiles": 9,
+    "beach_tiles": 2
+   },
+   "landings": [
+    1,
+    2
+   ],
+   "slots": [
+    {
+     "id": "supply",
+     "kind": "survival",
+     "count": {
+      "1": [
+       4,
+       6
+      ],
+      "2": [
+       3,
+       4
+      ],
+      "3": [
+       2,
+       3
+      ]
+     },
+     "where": {
+      "terrain": [
+       "rock",
+       "ground",
+       "beach",
+       "upland"
+      ]
+     },
+     "spacing_tiles": 8
+    },
+    {
+     "id": "hook",
+     "kind": "hook",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       1,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "rock",
+       "upland",
+       "ground"
+      ]
+     },
+     "spacing_tiles": 10
+    },
+    {
+     "id": "secret",
+     "kind": "secret",
+     "count": {
+      "1": [
+       1,
+       2
+      ],
+      "2": [
+       0,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "rock",
+       "upland",
+       "ground"
+      ]
+     },
+     "spacing_tiles": 16
+    },
+    {
+     "id": "story",
+     "kind": "story",
+     "count": {
+      "1": [
+       2,
+       3
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       0
+      ]
+     },
+     "spacing_tiles": 20
+    },
+    {
+     "id": "camp",
+     "kind": "camp",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ],
+      "coast_tiles": [
+       2,
+       20
+      ]
+     },
+     "spacing_tiles": 12
+    }
+   ],
+   "provisional": true,
+   "owner": "F0",
+   "source": "A6 design; tuned by baking and viewing",
+   "multi_island": true
+  },
+  {
+   "id": "tpl_tidal_flats",
+   "name": "Tidal Flats",
+   "description": "A low sliver of land in vast shallows; the sea is the terrain.",
+   "tiers": [
+    3
+   ],
+   "shape": {
+    "op": "flats",
+    "params": {
+     "width": 0.26
+    }
+   },
+   "land_fraction": {
+    "min": 0.03,
+    "max": 0.25
+   },
+   "relief": {
+    "levels": 2,
+    "cliff_step": 3,
+    "rock_amount": 0.1
+   },
+   "coast": {
+    "shallow_tiles": 14,
+    "beach_tiles": 5
+   },
+   "landings": [
+    1,
+    2
+   ],
+   "slots": [
+    {
+     "id": "supply",
+     "kind": "survival",
+     "count": {
+      "1": [
+       3,
+       4
+      ],
+      "2": [
+       3,
+       4
+      ],
+      "3": [
+       2,
+       3
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ]
+     },
+     "spacing_tiles": 10
+    },
+    {
+     "id": "hook",
+     "kind": "hook",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       1,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ]
+     },
+     "spacing_tiles": 14
+    },
+    {
+     "id": "secret",
+     "kind": "secret",
+     "count": {
+      "1": [
+       1,
+       2
+      ],
+      "2": [
+       0,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ]
+     },
+     "spacing_tiles": 16
+    }
+   ],
+   "provisional": true,
+   "owner": "F0",
+   "source": "A6 design; tuned by baking and viewing"
+  },
+  {
+   "id": "tpl_fjord_cleft",
+   "name": "Cleft Fjord",
+   "description": "A big island split by a long inlet that is a natural harbour.",
+   "tiers": [
+    1,
+    2
+   ],
+   "shape": {
+    "op": "fjord",
+    "params": {
+     "aspect": 0.8,
+     "lobes": 3,
+     "lobe_amp": 0.16,
+     "warp": 0.22
+    }
+   },
+   "land_fraction": {
+    "min": 0.12,
+    "max": 0.5
+   },
+   "relief": {
+    "levels": 7,
+    "cliff_step": 3,
+    "rock_amount": 0.35
+   },
+   "coast": {
+    "shallow_tiles": 5,
+    "beach_tiles": 3
+   },
+   "landings": [
+    1,
+    3
+   ],
+   "slots": [
+    {
+     "id": "supply",
+     "kind": "survival",
+     "count": {
+      "1": [
+       5,
+       7
+      ],
+      "2": [
+       3,
+       5
+      ],
+      "3": [
+       2,
+       3
+      ]
+     },
+     "spacing_tiles": 14
+    },
+    {
+     "id": "hook",
+     "kind": "hook",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       1,
+       1
+      ]
+     },
+     "where": {
+      "coast_tiles": [
+       5,
+       60
+      ]
+     },
+     "spacing_tiles": 18
+    },
+    {
+     "id": "secret",
+     "kind": "secret",
+     "count": {
+      "1": [
+       1,
+       2
+      ],
+      "2": [
+       0,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "rock",
+       "upland"
+      ]
+     },
+     "spacing_tiles": 16
+    },
+    {
+     "id": "story",
+     "kind": "story",
+     "count": {
+      "1": [
+       2,
+       3
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       0
+      ]
+     },
+     "spacing_tiles": 20
+    },
+    {
+     "id": "camp",
+     "kind": "camp",
+     "count": {
+      "1": [
+       1,
+       1
+      ],
+      "2": [
+       1,
+       1
+      ],
+      "3": [
+       0,
+       1
+      ]
+     },
+     "where": {
+      "terrain": [
+       "beach",
+       "ground"
+      ],
+      "coast_tiles": [
+       2,
+       20
+      ]
+     },
+     "spacing_tiles": 12
+    }
+   ],
+   "provisional": true,
+   "owner": "F0",
+   "source": "A6 design; tuned by baking and viewing"
+  }
+ ]
+}

@@ -1,0 +1,323 @@
+{
+ "schema": 1,
+ "kind": "kit",
+ "records": [
+  {
+   "id": "kit_tropical",
+   "name": "Tropical Reef",
+   "biome": "tropical",
+   "tiles": {
+    "deep": [
+     "til_water_deep_a"
+    ],
+    "shallow": [
+     "til_water_shallow_a"
+    ],
+    "beach": [
+     "til_sand_a"
+    ],
+    "ground": [
+     "til_grass_a"
+    ],
+    "upland": [
+     "til_grass_a",
+     "til_dirt_a"
+    ],
+    "rock": [
+     "til_rock_a"
+    ],
+    "cliff": [
+     "til_cobble_a"
+    ]
+   },
+   "props": [
+    {
+     "asset": "prp_palm_a",
+     "zone": "ground",
+     "density": 7,
+     "spacing": 3,
+     "cluster": [
+      1,
+      3
+     ]
+    },
+    {
+     "asset": "prp_palm_b",
+     "zone": "beach",
+     "density": 3,
+     "spacing": 4
+    },
+    {
+     "asset": "prp_palm_b",
+     "zone": "upland",
+     "density": 4,
+     "spacing": 3,
+     "cluster": [
+      1,
+      2
+     ]
+    },
+    {
+     "asset": "prp_rock_a",
+     "zone": "rock",
+     "density": 5,
+     "spacing": 3
+    },
+    {
+     "asset": "prp_rock_a",
+     "zone": "shallows",
+     "density": 0.6,
+     "spacing": 6
+    }
+   ],
+   "note": "Palms and warm shallows.",
+   "provisional": true,
+   "owner": "I17",
+   "source": "placeholder art mapping (A4 assets); final biome art replaces it in I17"
+  },
+  {
+   "id": "kit_arid",
+   "name": "Dry Coast",
+   "biome": "arid",
+   "tiles": {
+    "deep": [
+     "til_water_deep_a"
+    ],
+    "shallow": [
+     "til_water_shallow_a"
+    ],
+    "beach": [
+     "til_sand_a"
+    ],
+    "ground": [
+     "til_sand_a",
+     "til_dirt_a"
+    ],
+    "upland": [
+     "til_dirt_a"
+    ],
+    "rock": [
+     "til_rock_a"
+    ],
+    "cliff": [
+     "til_cobble_a"
+    ]
+   },
+   "props": [
+    {
+     "asset": "prp_rock_a",
+     "zone": "ground",
+     "density": 3,
+     "spacing": 3,
+     "cluster": [
+      1,
+      2
+     ]
+    },
+    {
+     "asset": "prp_rock_a",
+     "zone": "rock",
+     "density": 6,
+     "spacing": 2
+    },
+    {
+     "asset": "prp_palm_b",
+     "zone": "beach",
+     "density": 0.8,
+     "spacing": 8
+    },
+    {
+     "asset": "prp_crate",
+     "zone": "beach",
+     "density": 0.15,
+     "spacing": 12
+    }
+   ],
+   "note": "Scrub, dust and sun-bleached rock; a few crates of old salvage.",
+   "provisional": true,
+   "owner": "I17",
+   "source": "placeholder art mapping (A4 assets); final biome art replaces it in I17"
+  },
+  {
+   "id": "kit_temperate",
+   "name": "Green Hills",
+   "biome": "temperate",
+   "tiles": {
+    "deep": [
+     "til_water_deep_a"
+    ],
+    "shallow": [
+     "til_water_shallow_a"
+    ],
+    "beach": [
+     "til_sand_a"
+    ],
+    "ground": [
+     "til_grass_a"
+    ],
+    "upland": [
+     "til_grass_a",
+     "til_dirt_a"
+    ],
+    "rock": [
+     "til_rock_a"
+    ],
+    "cliff": [
+     "til_cobble_a"
+    ]
+   },
+   "props": [
+    {
+     "asset": "prp_palm_b",
+     "zone": "ground",
+     "density": 9,
+     "spacing": 3,
+     "cluster": [
+      2,
+      4
+     ]
+    },
+    {
+     "asset": "prp_palm_b",
+     "zone": "upland",
+     "density": 6,
+     "spacing": 3,
+     "cluster": [
+      2,
+      4
+     ]
+    },
+    {
+     "asset": "prp_rock_a",
+     "zone": "rock",
+     "density": 4,
+     "spacing": 3
+    }
+   ],
+   "note": "Woodland. Palm sprite stands in for trees until the temperate tree art exists.",
+   "provisional": true,
+   "owner": "I17",
+   "source": "placeholder art mapping (A4 assets); final biome art replaces it in I17"
+  },
+  {
+   "id": "kit_frozen",
+   "name": "Frozen Shore",
+   "biome": "frozen",
+   "tiles": {
+    "deep": [
+     "til_water_deep_a"
+    ],
+    "shallow": [
+     "til_ice_a"
+    ],
+    "beach": [
+     "til_snow_a"
+    ],
+    "ground": [
+     "til_snow_a"
+    ],
+    "upland": [
+     "til_snow_a",
+     "til_ice_a"
+    ],
+    "rock": [
+     "til_rock_a"
+    ],
+    "cliff": [
+     "til_ice_a"
+    ]
+   },
+   "props": [
+    {
+     "asset": "prp_rock_a",
+     "zone": "ground",
+     "density": 2.5,
+     "spacing": 3,
+     "cluster": [
+      1,
+      3
+     ]
+    },
+    {
+     "asset": "prp_rock_a",
+     "zone": "rock",
+     "density": 6,
+     "spacing": 2
+    },
+    {
+     "asset": "prp_rock_a",
+     "zone": "upland",
+     "density": 3,
+     "spacing": 3
+    },
+    {
+     "asset": "prp_rock_a",
+     "zone": "beach",
+     "density": 1.5,
+     "spacing": 4
+    }
+   ],
+   "note": "Snow, shelf ice (frozen shallows) and dark rock.",
+   "provisional": true,
+   "owner": "I17",
+   "source": "placeholder art mapping (A4 assets); final biome art replaces it in I17"
+  },
+  {
+   "id": "kit_volcanic",
+   "name": "Ash Slopes",
+   "biome": "volcanic",
+   "tiles": {
+    "deep": [
+     "til_water_deep_a"
+    ],
+    "shallow": [
+     "til_water_shallow_a"
+    ],
+    "beach": [
+     "til_cobble_a"
+    ],
+    "ground": [
+     "til_dirt_a"
+    ],
+    "upland": [
+     "til_rock_a",
+     "til_dirt_a"
+    ],
+    "rock": [
+     "til_rock_a"
+    ],
+    "cliff": [
+     "til_cobble_a"
+    ]
+   },
+   "props": [
+    {
+     "asset": "prp_rock_a",
+     "zone": "ground",
+     "density": 4,
+     "spacing": 2,
+     "cluster": [
+      1,
+      3
+     ]
+    },
+    {
+     "asset": "prp_rock_a",
+     "zone": "upland",
+     "density": 6,
+     "spacing": 2
+    },
+    {
+     "asset": "prp_rock_a",
+     "zone": "rock",
+     "density": 8,
+     "spacing": 2
+    }
+   ],
+   "note": "Cinder and basalt; barren.",
+   "provisional": true,
+   "owner": "I17",
+   "source": "placeholder art mapping (A4 assets); final biome art replaces it in I17"
+  }
+ ]
+}

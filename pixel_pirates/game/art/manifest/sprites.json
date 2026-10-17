@@ -712,6 +712,32 @@
    ],
    "status": "placeholder"
   },
+  "til_ice_a": {
+   "category": "tiles",
+   "colours": 5,
+   "frames": 1,
+   "kind": "tile",
+   "px_per_m": 24,
+   "seamless": true,
+   "size": [
+    48,
+    48
+   ],
+   "status": "placeholder"
+  },
+  "til_rock_a": {
+   "category": "tiles",
+   "colours": 5,
+   "frames": 1,
+   "kind": "tile",
+   "px_per_m": 24,
+   "seamless": true,
+   "size": [
+    48,
+    48
+   ],
+   "status": "placeholder"
+  },
   "til_sand_a": {
    "category": "tiles",
    "colours": 4,
@@ -739,6 +765,21 @@
    "status": "placeholder"
   },
   "til_water_deep_a": {
+   "category": "tiles",
+   "colours": 5,
+   "frames": 4,
+   "kind": "tile",
+   "layout": "columns=frames",
+   "ms": 220,
+   "px_per_m": 24,
+   "seamless": true,
+   "size": [
+    48,
+    48
+   ],
+   "status": "placeholder"
+  },
+  "til_water_shallow_a": {
    "category": "tiles",
    "colours": 5,
    "frames": 4,
