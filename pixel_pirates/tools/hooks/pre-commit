@@ -1,0 +1,7 @@
+#!/bin/sh
+# only act when pixel_pirates/ files are staged
+if git diff --cached --name-only | grep -q '^pixel_pirates/'; then
+  PY=python3; command -v python3 >/dev/null 2>&1 || PY=python
+  command -v $PY >/dev/null 2>&1 || { echo "pre-commit: Python not found, check skipped"; exit 0; }
+  $PY "$(git rev-parse --show-toplevel)/pixel_pirates/tools/check_project.py" || { echo "pre-commit: fix the problems above (or commit with --no-verify)"; exit 1; }
+fi

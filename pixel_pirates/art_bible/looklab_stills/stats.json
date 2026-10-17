@@ -1,0 +1,56 @@
+{
+ "still_beach_golden_standard": {
+  "mean_sat": 0.625,
+  "lum_p1": 0.114,
+  "lum_p50": 0.342,
+  "edge_over_centre_lum": 0.336,
+  "sharp_edge_over_peak": 0.008,
+  "sharp_peak_band": 4,
+  "RB_shadow": 2.44
+ },
+ "still_beach_golden_devlite": {
+  "mean_sat": 0.634,
+  "lum_p1": 0.107,
+  "lum_p50": 0.319,
+  "edge_over_centre_lum": 0.344,
+  "sharp_edge_over_peak": 0.029,
+  "sharp_peak_band": 4,
+  "RB_shadow": 2.33
+ },
+ "still_beach_golden_starving": {
+  "mean_sat": 0.439,
+  "lum_p1": 0.058,
+  "lum_p50": 0.28,
+  "edge_over_centre_lum": 0.184,
+  "sharp_edge_over_peak": 0.006,
+  "sharp_peak_band": 4,
+  "RB_shadow": 1.74
+ },
+ "still_camp_night_standard": {
+  "mean_sat": 0.422,
+  "lum_p1": 0.045,
+  "lum_p50": 0.229,
+  "edge_over_centre_lum": 0.159,
+  "sharp_edge_over_peak": 0.003,
+  "sharp_peak_band": 4,
+  "RB_shadow": 0.62
+ },
+ "still_frozen_dawn_standard": {
+  "mean_sat": 0.375,
+  "lum_p1": 0.153,
+  "lum_p50": 0.579,
+  "edge_over_centre_lum": 0.32,
+  "sharp_edge_over_peak": 0.04,
+  "sharp_peak_band": 4,
+  "RB_shadow": 0.66
+ },
+ "still_sea_storm_standard": {
+  "mean_sat": 0.713,
+  "lum_p1": 0.033,
+  "lum_p50": 0.139,
+  "edge_over_centre_lum": 0.27,
+  "sharp_edge_over_peak": 0.034,
+  "sharp_peak_band": 4,
+  "RB_shadow": 0.26
+ }
+}

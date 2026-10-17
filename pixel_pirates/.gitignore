@@ -1,0 +1,20 @@
+# Godot 4
+game/.godot/
+game/.nogit/
+game/export/
+*.translation
+# builds
+build/
+dist/
+*.exe
+*.pck
+# python tooling
+__pycache__/
+*.pyc
+.venv/
+# editors / OS
+.vscode/
+.idea/
+*.tmp
+Thumbs.db
+.DS_Store

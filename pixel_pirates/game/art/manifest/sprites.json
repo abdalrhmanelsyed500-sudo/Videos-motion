@@ -1,0 +1,758 @@
+{
+ "assets": {
+  "ico_item_bandage": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "medicine",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_cannonball": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "ammo",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_canvas": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "ship",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_coin": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "money",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_fishing_line": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "tool",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_fresh_fish": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "food",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_grog": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "food",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_gunpowder": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "ammo",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_hammer": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "tool",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_hardtack": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "food",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_lime": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "medicine",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_plank": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "ship",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_rope": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "ship",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_salt_meat": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "food",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_tar": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "ship",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_water_barrel": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "water",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "prp_barrel": {
+   "category": "props",
+   "colours": 7,
+   "emissive": false,
+   "frames": 1,
+   "kind": "prop",
+   "pivot": [
+    8,
+    22
+   ],
+   "px_per_m": 24,
+   "size": [
+    16,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "prp_campfire": {
+   "category": "props",
+   "colours": 8,
+   "emissive": true,
+   "frames": 4,
+   "kind": "prop",
+   "layout": "columns=frames",
+   "ms": 110,
+   "pivot": [
+    14,
+    26
+   ],
+   "px_per_m": 24,
+   "size": [
+    28,
+    28
+   ],
+   "status": "placeholder"
+  },
+  "prp_cannon": {
+   "category": "props",
+   "colours": 7,
+   "emissive": false,
+   "frames": 1,
+   "kind": "prop",
+   "pivot": [
+    20,
+    26
+   ],
+   "px_per_m": 24,
+   "size": [
+    40,
+    28
+   ],
+   "status": "placeholder"
+  },
+  "prp_chest_closed": {
+   "category": "props",
+   "colours": 9,
+   "emissive": false,
+   "frames": 1,
+   "kind": "prop",
+   "pivot": [
+    14,
+    22
+   ],
+   "px_per_m": 24,
+   "size": [
+    28,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "prp_crate": {
+   "category": "props",
+   "colours": 4,
+   "emissive": false,
+   "frames": 1,
+   "kind": "prop",
+   "pivot": [
+    14,
+    26
+   ],
+   "px_per_m": 24,
+   "size": [
+    28,
+    28
+   ],
+   "status": "placeholder"
+  },
+  "prp_hut_a": {
+   "category": "props",
+   "colours": 10,
+   "emissive": false,
+   "frames": 1,
+   "kind": "prop",
+   "pivot": [
+    52,
+    102
+   ],
+   "px_per_m": 24,
+   "size": [
+    104,
+    104
+   ],
+   "status": "placeholder"
+  },
+  "prp_lantern": {
+   "category": "props",
+   "colours": 8,
+   "emissive": true,
+   "frames": 1,
+   "kind": "prop",
+   "pivot": [
+    7,
+    20
+   ],
+   "px_per_m": 24,
+   "size": [
+    14,
+    22
+   ],
+   "status": "placeholder"
+  },
+  "prp_palm_a": {
+   "category": "props",
+   "colours": 9,
+   "emissive": false,
+   "frames": 1,
+   "kind": "prop",
+   "pivot": [
+    36,
+    102
+   ],
+   "px_per_m": 24,
+   "size": [
+    72,
+    104
+   ],
+   "status": "placeholder"
+  },
+  "prp_palm_b": {
+   "category": "props",
+   "colours": 9,
+   "emissive": false,
+   "frames": 1,
+   "kind": "prop",
+   "pivot": [
+    64,
+    185
+   ],
+   "px_per_m": 24,
+   "size": [
+    129,
+    187
+   ],
+   "status": "placeholder"
+  },
+  "prp_rock_a": {
+   "category": "props",
+   "colours": 5,
+   "emissive": false,
+   "frames": 1,
+   "kind": "prop",
+   "pivot": [
+    18,
+    22
+   ],
+   "px_per_m": 24,
+   "size": [
+    36,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "shp_sloop_e": {
+   "category": "ships",
+   "colours": 13,
+   "kind": "ship_billboard",
+   "note": "placeholder sea-scale billboard; the real ship is a 3D model (A3 decision)",
+   "pivot": [
+    136,
+    150
+   ],
+   "px_per_m": 12,
+   "size": [
+    272,
+    200
+   ],
+   "status": "placeholder"
+  },
+  "spr_crew_mannequin_captain": {
+   "anims": {
+    "attack": {
+     "frames": 5,
+     "loop": false,
+     "ms": 70,
+     "start": 22
+    },
+    "death": {
+     "frames": 8,
+     "loop": false,
+     "ms": 110,
+     "start": 30
+    },
+    "hit": {
+     "frames": 3,
+     "loop": false,
+     "ms": 80,
+     "start": 27
+    },
+    "idle": {
+     "frames": 4,
+     "loop": true,
+     "ms": 180,
+     "start": 0
+    },
+    "run": {
+     "frames": 6,
+     "loop": true,
+     "ms": 70,
+     "start": 10
+    },
+    "walk": {
+     "frames": 6,
+     "loop": true,
+     "ms": 100,
+     "start": 4
+    },
+    "work": {
+     "frames": 6,
+     "loop": true,
+     "ms": 120,
+     "start": 16
+    }
+   },
+   "category": "characters",
+   "cell": [
+    48,
+    64
+   ],
+   "colours": 27,
+   "dirs": [
+    "s",
+    "n",
+    "e",
+    "w"
+   ],
+   "kind": "character_sheet",
+   "layout": "rows=dirs (s,n,e,w); columns=frames of all anims in order",
+   "pivot": [
+    24,
+    60
+   ],
+   "px_per_m": 24,
+   "status": "placeholder"
+  },
+  "spr_crew_mannequin_gunner": {
+   "anims": {
+    "attack": {
+     "frames": 5,
+     "loop": false,
+     "ms": 70,
+     "start": 22
+    },
+    "death": {
+     "frames": 8,
+     "loop": false,
+     "ms": 110,
+     "start": 30
+    },
+    "hit": {
+     "frames": 3,
+     "loop": false,
+     "ms": 80,
+     "start": 27
+    },
+    "idle": {
+     "frames": 4,
+     "loop": true,
+     "ms": 180,
+     "start": 0
+    },
+    "run": {
+     "frames": 6,
+     "loop": true,
+     "ms": 70,
+     "start": 10
+    },
+    "walk": {
+     "frames": 6,
+     "loop": true,
+     "ms": 100,
+     "start": 4
+    },
+    "work": {
+     "frames": 6,
+     "loop": true,
+     "ms": 120,
+     "start": 16
+    }
+   },
+   "category": "characters",
+   "cell": [
+    48,
+    64
+   ],
+   "colours": 28,
+   "dirs": [
+    "s",
+    "n",
+    "e",
+    "w"
+   ],
+   "kind": "character_sheet",
+   "layout": "rows=dirs (s,n,e,w); columns=frames of all anims in order",
+   "pivot": [
+    24,
+    60
+   ],
+   "px_per_m": 24,
+   "status": "placeholder"
+  },
+  "spr_crew_mannequin_sailor": {
+   "anims": {
+    "attack": {
+     "frames": 5,
+     "loop": false,
+     "ms": 70,
+     "start": 22
+    },
+    "death": {
+     "frames": 8,
+     "loop": false,
+     "ms": 110,
+     "start": 30
+    },
+    "hit": {
+     "frames": 3,
+     "loop": false,
+     "ms": 80,
+     "start": 27
+    },
+    "idle": {
+     "frames": 4,
+     "loop": true,
+     "ms": 180,
+     "start": 0
+    },
+    "run": {
+     "frames": 6,
+     "loop": true,
+     "ms": 70,
+     "start": 10
+    },
+    "walk": {
+     "frames": 6,
+     "loop": true,
+     "ms": 100,
+     "start": 4
+    },
+    "work": {
+     "frames": 6,
+     "loop": true,
+     "ms": 120,
+     "start": 16
+    }
+   },
+   "category": "characters",
+   "cell": [
+    48,
+    64
+   ],
+   "colours": 30,
+   "dirs": [
+    "s",
+    "n",
+    "e",
+    "w"
+   ],
+   "kind": "character_sheet",
+   "layout": "rows=dirs (s,n,e,w); columns=frames of all anims in order",
+   "pivot": [
+    24,
+    60
+   ],
+   "px_per_m": 24,
+   "status": "placeholder"
+  },
+  "spr_npc_mannequin_villager": {
+   "anims": {
+    "attack": {
+     "frames": 5,
+     "loop": false,
+     "ms": 70,
+     "start": 22
+    },
+    "death": {
+     "frames": 8,
+     "loop": false,
+     "ms": 110,
+     "start": 30
+    },
+    "hit": {
+     "frames": 3,
+     "loop": false,
+     "ms": 80,
+     "start": 27
+    },
+    "idle": {
+     "frames": 4,
+     "loop": true,
+     "ms": 180,
+     "start": 0
+    },
+    "run": {
+     "frames": 6,
+     "loop": true,
+     "ms": 70,
+     "start": 10
+    },
+    "walk": {
+     "frames": 6,
+     "loop": true,
+     "ms": 100,
+     "start": 4
+    },
+    "work": {
+     "frames": 6,
+     "loop": true,
+     "ms": 120,
+     "start": 16
+    }
+   },
+   "category": "characters",
+   "cell": [
+    48,
+    64
+   ],
+   "colours": 27,
+   "dirs": [
+    "s",
+    "n",
+    "e",
+    "w"
+   ],
+   "kind": "character_sheet",
+   "layout": "rows=dirs (s,n,e,w); columns=frames of all anims in order",
+   "pivot": [
+    24,
+    60
+   ],
+   "px_per_m": 24,
+   "status": "placeholder"
+  },
+  "til_cobble_a": {
+   "category": "tiles",
+   "colours": 4,
+   "frames": 1,
+   "kind": "tile",
+   "px_per_m": 24,
+   "seamless": true,
+   "size": [
+    48,
+    48
+   ],
+   "status": "placeholder"
+  },
+  "til_deck_planks_a": {
+   "category": "tiles",
+   "colours": 5,
+   "frames": 1,
+   "kind": "tile",
+   "px_per_m": 24,
+   "seamless": true,
+   "size": [
+    48,
+    48
+   ],
+   "status": "placeholder"
+  },
+  "til_dirt_a": {
+   "category": "tiles",
+   "colours": 5,
+   "frames": 1,
+   "kind": "tile",
+   "px_per_m": 24,
+   "seamless": true,
+   "size": [
+    48,
+    48
+   ],
+   "status": "placeholder"
+  },
+  "til_grass_a": {
+   "category": "tiles",
+   "colours": 4,
+   "frames": 1,
+   "kind": "tile",
+   "px_per_m": 24,
+   "seamless": true,
+   "size": [
+    48,
+    48
+   ],
+   "status": "placeholder"
+  },
+  "til_sand_a": {
+   "category": "tiles",
+   "colours": 4,
+   "frames": 1,
+   "kind": "tile",
+   "px_per_m": 24,
+   "seamless": true,
+   "size": [
+    48,
+    48
+   ],
+   "status": "placeholder"
+  },
+  "til_snow_a": {
+   "category": "tiles",
+   "colours": 4,
+   "frames": 1,
+   "kind": "tile",
+   "px_per_m": 24,
+   "seamless": true,
+   "size": [
+    48,
+    48
+   ],
+   "status": "placeholder"
+  },
+  "til_water_deep_a": {
+   "category": "tiles",
+   "colours": 5,
+   "frames": 4,
+   "kind": "tile",
+   "layout": "columns=frames",
+   "ms": 220,
+   "px_per_m": 24,
+   "seamless": true,
+   "size": [
+    48,
+    48
+   ],
+   "status": "placeholder"
+  }
+ },
+ "version": 1
+}

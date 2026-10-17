@@ -37,7 +37,7 @@ Quality is a data profile (`quality_profiles.json`, A5), not code branches.
 3. **Syntax check on my side.** I run gdtoolkit on every GDScript before delivering. That finds syntax errors, not runtime errors.
 4. **Look Lab (proposal for A3/A4):** a Python tool in my sandbox that renders still images of the HD-2D look (pixel scene + same tilt-shift, bloom, grade, vignette parameters as the Godot shader). You approve the look from PNGs without any GPU; the Godot shader then copies those numbers.
 5. **Visual verification needs one capable machine at some point.** Options (your choice, some cost money): borrow a friend's PC for test sessions; a cheap used PC with a GTX 650-class or newer GPU; a rented cloud Windows GPU desktop (paid, I will not choose one for you); or upgrade this laptop's RAM to 8 GB if the model allows (check its maximum). Run the probe first; the numbers decide.
-6. **Probe first.** Run `a1_smoke_test` (README.txt inside): step 1 headless self-test, step 2 visual probe. Send me `probe_result.txt` or the error text.
+6. **Probe first.** Run `tools/probes/gpu_probe_v2` (README.txt inside): step 1 headless self-test, step 2 visual probe. Send me `probe_result.txt` or the error text.
 
 ## 6. Other decisions
 - **Engine:** Godot 4.7.2 standard, locked. Godot 3.6.3 (OpenGL ES 2/3, runs on very old GPUs) is rejected as the base: end-of-line architecture and a lower ceiling; kept only as a documented emergency fallback if the probe proves 4.7.2 cannot start at all and no other machine is available.
@@ -62,3 +62,9 @@ Quality is a data profile (`quality_profiles.json`, A5), not code branches.
 
 ## 9. Decision log (supersedes the first A1 where noted)
 A1-1 Godot 4.7.2 standard (kept) | A1-2 **Compatibility renderer first, Forward+ optional "Ultra" later (changed)** | A1-3 typed GDScript (kept) | A1-4 pixel textures, nearest, integer density (kept; internal render size is a quality-ladder setting) | A1-5 **tilt-shift = own screen shader, not built-in DOF (changed)** | A1-6 ship-fixed origin (kept) | A1-7 **distribution undecided, no Steam dependency (changed)** | A1-8 **targets above (changed)** | A1-9 engine locked (kept) | A1-10 quality ladder Dev-Lite / Standard / (Ultra) | A1-11 headless-testable logic | A1-12 Look Lab proposal.
+
+---
+## Revision note R2 (with A2-A4)
+* The user chose to skip the GPU probe for now ("Godot is already running on my PC"); the probe stays available in `tools/probes/gpu_probe_v2/`. Visual/performance testing is postponed; headless tests come first.
+* **Dev-Lite internal resolution changed from 683x438 to 640x360** (= the art grid of A3; shown at x2 = 1280x720 on the 1366x876 screen, integer scale, ~22% fewer pixels). Supersedes A1-10 numbers only; the ladder idea is unchanged.
+* The quality profiles are now real data: `game/data/look/look_profiles.json`, read by `core/quality.gd` and by the Look Lab.

@@ -1,0 +1,154 @@
+{
+  "_doc": "Look profiles v1 (Module A3). Read by tools/looklab/looklab.py now and by the Godot post-process shader later (J-module), so stills and game use ONE set of numbers. Measured targets come from the two HD-2D references: focus band centred at 40-70% of screen height, sharpness at the screen edges about 1.5-25% of the centre, edge luminance about 13-33% of centre, mean saturation 0.44-0.64, shadows never pure black (1st percentile luminance 0.02-0.05).",
+  "art_grid": [
+    640,
+    360
+  ],
+  "px_per_m": {
+    "land": 24,
+    "sea": 12
+  },
+  "camera": {
+    "fov_deg": 22.0,
+    "pitch_deg": 39.0,
+    "pitch_sea_deg": 48.0
+  },
+  "profiles": {
+    "standard": {
+      "internal": "window",
+      "tilt_shift": {
+        "focus_y": 0.55,
+        "focus_half_width": 0.12,
+        "ramp_width": 0.33,
+        "max_blur_px": 10.0,
+        "taps": 12
+      },
+      "vignette": {
+        "inner": 0.45,
+        "outer": 1.05,
+        "strength": 0.7
+      },
+      "bloom": {
+        "threshold": 0.65,
+        "intensity": 0.35,
+        "radius_px": 8.0
+      },
+      "grade": {
+        "saturation": 1.15,
+        "contrast": 1.08,
+        "gamma": 1.0,
+        "shadow_lift": 0.03,
+        "shadow_lift_colour": "#2a1620"
+      },
+      "fog": {
+        "colour": "#8da3a2",
+        "far_density": 0.35
+      },
+      "shafts": true,
+      "shadows": true
+    },
+    "dev_lite": {
+      "internal": [
+        640,
+        360
+      ],
+      "tilt_shift": {
+        "focus_y": 0.55,
+        "focus_half_width": 0.12,
+        "ramp_width": 0.33,
+        "max_blur_px": 6.0,
+        "taps": 6
+      },
+      "vignette": {
+        "inner": 0.45,
+        "outer": 1.05,
+        "strength": 0.7
+      },
+      "bloom": {
+        "threshold": 0.65,
+        "intensity": 0.0,
+        "radius_px": 0.0
+      },
+      "grade": {
+        "saturation": 1.15,
+        "contrast": 1.08,
+        "gamma": 1.0,
+        "shadow_lift": 0.03,
+        "shadow_lift_colour": "#2a1620"
+      },
+      "fog": {
+        "colour": "#8da3a2",
+        "far_density": 0.35
+      },
+      "shafts": false,
+      "shadows": false
+    }
+  },
+  "moods": {
+    "golden_hour": {
+      "key": "#ffd9a0",
+      "ambient": "#8a5a48",
+      "ambient_level": 0.3,
+      "exposure": 0.62
+    },
+    "overcast": {
+      "key": "#c9d3d8",
+      "ambient": "#7a8a96",
+      "ambient_level": 0.55,
+      "exposure": 0.92
+    },
+    "storm": {
+      "key": "#8fa0b0",
+      "ambient": "#2c3a4a",
+      "ambient_level": 0.35,
+      "exposure": 0.78
+    },
+    "night_fire": {
+      "key": "#5a6a9a",
+      "ambient": "#2a2036",
+      "ambient_level": 0.3,
+      "exposure": 0.95,
+      "_note": "key = moonlight only; fire is a local point light (emissive fire-ramp pixels + light pools), never the global key"
+    },
+    "frozen_dawn": {
+      "key": "#e8f0ff",
+      "ambient": "#6a8cb8",
+      "ambient_level": 0.5,
+      "exposure": 0.78
+    }
+  },
+  "_units": "tilt_shift.max_blur_px and bloom.radius_px are in pixels at 1080 px screen height and scale linearly with the real height (Dev-Lite 640x360 -> x0.33). focus_y / focus_half_width / ramp_width are fractions of screen height.",
+  "state_grades": {
+    "_doc": "Diegetic survival HUD (A3 idea): the look itself reports crew state. Multipliers on the active profile's grade; blended by the survival systems (N-modules) with smooth interpolation. Story difficulty may scale 'amount' to 0.",
+    "well": {
+      "sat_mul": 1.0,
+      "contrast_mul": 1.0,
+      "vig_add": 0.0,
+      "tint": "#ffffff"
+    },
+    "hungry": {
+      "sat_mul": 0.88,
+      "contrast_mul": 1.03,
+      "vig_add": 0.06,
+      "tint": "#f4efe6"
+    },
+    "starving": {
+      "sat_mul": 0.62,
+      "contrast_mul": 1.08,
+      "vig_add": 0.18,
+      "tint": "#dfe6ee"
+    },
+    "fevered": {
+      "sat_mul": 0.8,
+      "contrast_mul": 1.05,
+      "vig_add": 0.14,
+      "tint": "#f2e2d0"
+    },
+    "mutinous": {
+      "sat_mul": 0.92,
+      "contrast_mul": 1.1,
+      "vig_add": 0.1,
+      "tint": "#f0d9d4"
+    }
+  }
+}

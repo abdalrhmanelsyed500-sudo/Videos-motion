@@ -1,0 +1,189 @@
+{
+  "_doc": "Master palette v1 (Module A3). 22 ramps x 5 steps = 110 colours. Step order: 0 darkest shadow, 1 shadow, 2 base, 3 light, 4 highlight. Hue shifts: shadows drift cooler/purple, highlights drift warm. No #000000 and no #ffffff anywhere. Anchors for earth, stone, teal roof and deep-shadow colours were measured from the two reference images (see art_bible/ref_measure.json).",
+  "light": {
+    "key_dir_screen": [
+      -0.5,
+      -0.6
+    ],
+    "key_colour": "#ffd9a0",
+    "fill_colour": "#6b5a70",
+    "shadow_tint": "#2a1620",
+    "_note": "Measured: both references have WARM shadows (R/B ratio 3.5-6 in the darkest 20 percent) and an overall orange bias (ref B mean RGB 0.40/0.27/0.15). Cool fill is therefore only used in storm and frozen moods."
+  },
+  "ramps": {
+    "sand": [
+      "#6b5a3c",
+      "#8d7a52",
+      "#b3a073",
+      "#d4c496",
+      "#efe3bd"
+    ],
+    "dirt": [
+      "#2e1d12",
+      "#4b301c",
+      "#6d4a2a",
+      "#94693b",
+      "#bd9157"
+    ],
+    "stone_warm": [
+      "#3a3128",
+      "#5b4e3d",
+      "#86775c",
+      "#b3a37e",
+      "#d9cca8"
+    ],
+    "stone_cool": [
+      "#232a33",
+      "#3c4651",
+      "#5f6b76",
+      "#8d9aa3",
+      "#c3ccd0"
+    ],
+    "wood": [
+      "#2b160d",
+      "#4a2814",
+      "#6d4020",
+      "#94672e",
+      "#be8d48"
+    ],
+    "hull_oak": [
+      "#1c0f0a",
+      "#34190f",
+      "#512a17",
+      "#744023",
+      "#9a5c33"
+    ],
+    "grass": [
+      "#26361f",
+      "#3f5a2b",
+      "#65802f",
+      "#98a93a",
+      "#cfd867"
+    ],
+    "foliage": [
+      "#142015",
+      "#243a24",
+      "#38573a",
+      "#577a4a",
+      "#86a064"
+    ],
+    "palm_frond": [
+      "#16301c",
+      "#225a2c",
+      "#3b8a34",
+      "#7cb83f",
+      "#c4e66a"
+    ],
+    "sea_deep": [
+      "#0b1e2e",
+      "#123a4f",
+      "#1d5f73",
+      "#3d8c92",
+      "#7cbdb4"
+    ],
+    "lagoon": [
+      "#1d5d63",
+      "#2f8a86",
+      "#5cb8a5",
+      "#9be0c0",
+      "#dffbe0"
+    ],
+    "roof_teal": [
+      "#2a3a3a",
+      "#404a45",
+      "#53605b",
+      "#6a7873",
+      "#8da3a2"
+    ],
+    "ice": [
+      "#22344f",
+      "#3e5f86",
+      "#73a3c8",
+      "#b5dbe9",
+      "#f0fbff"
+    ],
+    "cloth_red": [
+      "#3d0f14",
+      "#6b1a1e",
+      "#9c2a26",
+      "#c9503a",
+      "#e98a5c"
+    ],
+    "cloth_blue": [
+      "#141d3a",
+      "#22305e",
+      "#36508a",
+      "#5a7fb5",
+      "#93b4d6"
+    ],
+    "cloth_cream": [
+      "#5a4d3f",
+      "#8a7a63",
+      "#b8a888",
+      "#dfd2b0",
+      "#f7efd6"
+    ],
+    "iron": [
+      "#1a1c24",
+      "#2f333f",
+      "#4d5463",
+      "#78808f",
+      "#aeb5c0"
+    ],
+    "gold": [
+      "#4a3210",
+      "#7d5a1a",
+      "#b8862a",
+      "#e6b84a",
+      "#fbe28a"
+    ],
+    "fire": [
+      "#5a1608",
+      "#a8300f",
+      "#e8631a",
+      "#ffa43a",
+      "#ffe08a"
+    ],
+    "skin_light": [
+      "#5a3426",
+      "#8a5539",
+      "#b87a52",
+      "#dca078",
+      "#f2c9a0"
+    ],
+    "skin_tan": [
+      "#3b2118",
+      "#5e3524",
+      "#83502f",
+      "#a96f42",
+      "#cc9564"
+    ],
+    "skin_dark": [
+      "#24130f",
+      "#3d2218",
+      "#5b3624",
+      "#7d4d33",
+      "#a06b48"
+    ]
+  },
+  "limits": {
+    "max_colours_per_sheet": {
+      "characters": 48,
+      "tiles": 20,
+      "props": 32,
+      "ships": 40,
+      "icons": 14
+    },
+    "max_ramps_per_asset": {
+      "characters": 6,
+      "props": 5,
+      "tiles": 1,
+      "ships": 6,
+      "icons": 1
+    },
+    "forbidden": [
+      "#000000",
+      "#ffffff"
+    ]
+  }
+}

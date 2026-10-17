@@ -1,0 +1,21 @@
+{
+  "_doc": "Data-driven placeholder specs (A4). Add a row, rerun gen_placeholders.py, get a correctly named, palette-locked file + manifest entry. Icons: id, 2-letter code, category (food/water/medicine/ship/ammo/tool/money/misc).",
+  "icons": [
+    ["ico_item_hardtack", "HT", "food"],
+    ["ico_item_salt_meat", "SM", "food"],
+    ["ico_item_fresh_fish", "FF", "food"],
+    ["ico_item_water_barrel", "WB", "water"],
+    ["ico_item_grog", "GR", "food"],
+    ["ico_item_gunpowder", "GP", "ammo"],
+    ["ico_item_cannonball", "CB", "ammo"],
+    ["ico_item_lime", "LM", "medicine"],
+    ["ico_item_bandage", "BD", "medicine"],
+    ["ico_item_rope", "RP", "ship"],
+    ["ico_item_plank", "PL", "ship"],
+    ["ico_item_tar", "TR", "ship"],
+    ["ico_item_canvas", "CV", "ship"],
+    ["ico_item_hammer", "HM", "tool"],
+    ["ico_item_fishing_line", "FL", "tool"],
+    ["ico_item_coin", "CN", "money"]
+  ]
+}

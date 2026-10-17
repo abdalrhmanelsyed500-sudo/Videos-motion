@@ -1,4 +1,4 @@
-# CANON BIBLE - Crown of the Seas (working title) - v0.2 (after A1 revision R1)
+# CANON BIBLE - Crown of the Seas (working title) - v0.3 (after A2, A3, A4)
 Drive folder: "Pixel Pirates". Repo path: pixel_pirates/.
 
 ## Hard content rules
@@ -31,13 +31,36 @@ A1-12 Look Lab (Python still renders of the look) proposed for A3/A4.
 Godot 4.7.2-stable (2026-08-18), MIT. Compatibility renderer needs OpenGL 3.3; Forward+/Mobile need Vulkan 1.0+. ANGLE (OpenGL ES 3.0 over Direct3D 11) fallback exists on Windows. Compatibility lacks DOF blur, volumetric fog, SSR, SDFGI, VoxelGI, CompositorEffects, HDR; it has glow, fog, SSAO, shadows, decals, screen-texture shaders, full-screen post.
 
 ## Not verified
-Whether Godot 4.7.2 runs on HD Graphics 3000 (probe pending). Unity/Unreal facts. Hardware targets are design targets.
+All GDScript is parser-checked only (never executed by me). The user reports Godot already runs on the PC, but nothing visual/performance was measured. Look Lab stills approximate the planned shader; no Godot shader exists yet. Unity/Unreal facts. Hardware targets are design targets.
 
-## File structure
-Provisional: pixel_pirates/docs/, pixel_pirates/a1_smoke_test/. Final structure in A2.
+## File structure (FINAL, A2)
+pixel_pirates/ { README.md, .gitignore, .gitattributes, .editorconfig, docs/, art_bible/, tools/, game/ }
+game/ (= res://) { project.godot, .gdlintrc, core/, data/, systems/{survival,economy,crew,ship,combat,weather}/, world/{ocean,islands,cities}/, ui/, shaders/, audio/, art/{placeholder,final,manifest}/, tests/ }
+Dependency rule: systems/ never imports world/ or ui/; core/ imports nothing; systems talk via Bus signals or passed-in data.
+Autoloads: Log, Bus, Quality, Assets. Core utilities via preload constants (Ids, DataLoader).
+tools/: check_project.py, install_hooks.sh, hooks/pre-commit, placeholder/ (generator), looklab/ (stills + report), probes/gpu_probe_v2/.
+docs/: A1_TECH_STACK.md, A2_STRUCTURE_AND_CONVENTIONS.md, A3_ART_BIBLE.md, A4_PLACEHOLDER_PIPELINE.md, CANON_BIBLE.md, ART_STATUS.md (generated).
+
+## ID grammar (A2)
+Data: <kind>_<slug> lowercase; kinds isl reg crew npc item rcp ship evt loc fac qst dlg clue. Islands numeric isl_001..isl_999 (the old "I001" = isl_001).
+Assets: prefixes spr til prp shp ico fx ui bg (e.g. spr_crew_mannequin_captain, til_water_deep_a, ico_item_hardtack).
+
+## Art canon (A3/A4)
+Look: HD-2D (pixel sprites upright in a 3D scene), measured from the references. Art grid 640x360; integer scales 720p x2, 1080p x3, 4K x6. 24 px/m land and deck, 12 px/m open sea.
+Camera: FOV 22 deg, pitch 39 deg land / 48 deg sea, focus plane 38.6 m. Humanoid cell 48x64, body 42 px = 1.75 m, pivot (24,60), 4 dirs x 7 anims (idle4@180, walk6@100, run6@70, work6@120, attack5@70, hit3@80, death8@110).
+Tile 48x48 (2 m). Icon 24x24. Ships are 3D models (stand-in billboard only). Palette: 22 ramps x 5 = 110 colours in game/data/look/palette.json, no pure black/white; fire-ramp pixels are self-lit.
+Post: tilt-shift focus_y 0.55 (10 px @1080), vignette 0.70, LDR bloom 0.65/0.35, grade sat 1.15 contrast 1.08; moods golden_hour, overcast, storm, night_fire, frozen_dawn. state_grades = the look as a survival HUD.
+Dev-Lite = 640x360 internal (supersedes 683x438), no shadows/bloom/shafts.
+38 placeholder assets (4 mannequin sheets, 7 tiles, 10 props, 1 ship stand-in, 16 icons); replace by dropping same-named files into game/art/final/<category>/.
+
+## Decisions added
+A2-1 Godot project in game/. A2-2 stays inside Videos-motion for now, split later with git subtree. A2-3 JSON for all data. A2-4 dev PC needs no Python (generated art is committed). A2-5 preload constants for core utilities. A2-6 own headless test runner. A2-7 plain git, Git LFS gate at first binary > 5 MB or repo > 500 MB. A2-8 strict machine-checked IDs. A2-9 content rules enforced by tools/check_project.py.
+A3-1 art grid 640x360, 24/12 px per metre. A3-2 camera 22 deg FOV, 39/48 deg pitch. A3-3 ships are 3D models. A3-4 master palette 110 colours. A3-5 warm shadows (measured), cool fill only in storm/night/frozen. A3-6 look = survival HUD (state_grades). A3-7 Dev-Lite 640x360. A3-8 Look Lab is the GPU-free look approval tool.
+A4-1 committed generated placeholders, drop-in replacement through the Assets resolver. A4-2 QA built into the generator (palette lock, colour budgets, no clipping).
+A1-10 amended: Dev-Lite internal 640x360.
 
 ## Island registry (50+ planned)
-Empty. Format: ID | name | tier | biome | position | distances to neighbours | status (planned/designed/built/tested). Filled from E3.
+Empty. Format: ID (isl_NNN) | name | tier | biome | position | distances to neighbours | status (planned/designed/built/tested). Filled from E3.
 
 ## Open questions
-Probe results (selftest + visual probe). Access to a capable test machine (borrow / used PC / cloud / RAM upgrade).
+First headless test-run output from the user's PC (`tests/run_all.gd`). Probe results postponed by the user. Access to a capable test machine for visual sign-off (borrow / used PC / cloud / RAM upgrade) - decide before the vertical slice.

@@ -1,0 +1,32 @@
+; Engine configuration file - Crown of the Seas (working title). Godot 4.7.x, COMPATIBILITY renderer (A1-2).
+; Edit by hand only if you know what you do; the editor rewrites this file in its own order.
+config_version=5
+
+[application]
+
+config/name="Crown of the Seas"
+config/description="Open-world pirate survival adventure (working title)."
+run/main_scene="res://ui/asset_viewer.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/version="0.0.1"
+
+[autoload]
+
+Log="*res://core/log.gd"
+Bus="*res://core/bus.gd"
+Quality="*res://core/quality.gd"
+Assets="*res://core/assets.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+gl_compatibility/fallback_to_angle=true
+textures/canvas_textures/default_texture_filter=0
