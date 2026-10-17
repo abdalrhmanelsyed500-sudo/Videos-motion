@@ -115,7 +115,7 @@ def bone_diagram(out):
     for y in range(0, H, 50): cv2.line(img, (0, y), (W, y), (70, 70, 70), 1)
     cv2.line(img, (0, 1370), (W, 1370), (60, 60, 200), 2)          # ground / x axis like Blender's red line
     cv2.rectangle(img, (0, 0), (W, 90), (40, 40, 40), -1)
-    text(img, (40, 12), 'RigKit — Armature (Pose view)', 56, (255, 255, 255)); text(img, (W - 40, 16), 'هيكل العظام (الـ Rig) للشخصيتين', 52, (255, 255, 255), 'ra', True)
+    text(img, (40, 12), 'RigKit — Armature (Pose view)', 56, (255, 255, 255)); text(img, (W - 40, 16), 'هيكل العظام للشخصيتين', 52, (255, 255, 255), 'ra', True)
     cells = [('zaki', 'front', 330), ('zaki', 'side', 930), ('lulu', 'front', 1530), ('lulu', 'side', 2150)]
     for (nm, v, cx) in cells:
         R = rigs(nm)[v]; spec = chars.SPECS[nm]; k = 1.72; cam = (k, cx, 1370)
@@ -162,11 +162,10 @@ def bone_diagram(out):
                 items = sorted(items, key=lambda it: P(it[1])[1]); y_prev = -1e9
                 for lbl, bn in items:
                     p = P(bn); y = max(p[1], y_prev + 46); y_prev = y
-                    x = cx + side * 215
+                    x = cx + side * (215 if side > 0 else 215)
                     cv2.line(img, (int(p[0]), int(p[1])), (int(x), int(y)), (200, 200, 200), 1, cv2.LINE_AA)
                     text(img, (x + side * 8, y - 16), lbl, 26, (235, 235, 235), 'la' if side > 0 else 'ra')
-            labels([('shoulder / upper arm', 'armR_up'), ('elbow / forearm', 'armR_lo'), ('wrist / hand  (IK)', 'handR'), ('hip / thigh', 'legR_up'), ('knee / shin', 'legR_lo'), ('ankle / foot  (IK)', 'footR')], +1)
-            labels([('head (neck pivot)', 'head'), ('spine / hips (body lean, breathing)', 'spine'), ('tuft / pigtails (spring)', 'tuft' if nm == 'zaki' else 'pigtailL')], -1)
+            labels([('head (neck pivot)', 'head'), ('spine / hips', 'spine'), ('shoulder / upper arm', 'armR_up'), ('elbow / forearm', 'armR_lo'), ('wrist / hand (IK)', 'handR'), ('hip / thigh', 'legR_up'), ('knee / shin', 'legR_lo'), ('ankle / foot (IK)', 'footR'), ('tuft (spring)' if nm == 'zaki' else 'pigtail (spring)', 'tuft' if nm == 'zaki' else 'pigtailR')], +1)
     text(img, (60, 1420), 'orange rings = IK controllers · big ring = root (move/squash/flip) · yellow rings = face controls (eyes, brows, mouth) · blue/green bones = left/right', 28, (210, 210, 210))
     cv2.imwrite(out, img)
 

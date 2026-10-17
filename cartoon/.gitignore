@@ -1,0 +1,3 @@
+out/demo/*.mp4
+out/demo/*.wav
+__pycache__/
