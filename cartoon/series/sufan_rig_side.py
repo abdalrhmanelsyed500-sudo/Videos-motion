@@ -6,15 +6,15 @@ HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.jo
 from rigkit.vec import Art
 from rigkit.face import _pack, _get, _q, VISEMES, DEFAULT_FACE
 RIGB = os.path.join(HERE, 'characters', 'sufan', 'rig_side')
-PPU = 3.336; OX, OY = 998.0, 2184.0
+PPU = 3.336; OX, OY = 960.0, 2184.0
 def U(px, py): return [(px - OX) / PPU, (py - OY) / PPU]
 BONES_PX = {
- 'root': (None, (998, 2184), None), 'hips': ('root', (960, 1880), [-20, 20]), 'spine': ('hips', (960, 1880), [-25, 25]),
+ 'root': (None, (960, 2184), None), 'hips': ('root', (960, 1880), [-20, 20]), 'spine': ('hips', (960, 1880), [-25, 25]),
  'head': ('spine', (900, 1060), [-40, 40]), 'hat': ('head', (880, 520), [-35, 35]), 'earR': ('head', (902, 520), [-50, 50]),
  'armL_up': ('spine', (880, 1090), [-170, 100]), 'armL_lo': ('armL_up', (880, 1280), [-140, 8]), 'handL': ('armL_lo', (890, 1550), [-70, 70]),
  'armR_up': ('spine', (880, 1090), [-170, 100]), 'armR_lo': ('armR_up', (880, 1280), [-140, 8]), 'handR': ('armR_lo', (890, 1550), [-70, 70]),
- 'legL_up': ('hips', (1034, 1900), [-45, 45]), 'legL_lo': ('legL_up', (1034, 1970), [-5, 100]), 'footL': ('legL_lo', (1040, 2032), [-50, 50]),
- 'legR_up': ('hips', (886, 1900), [-45, 45]), 'legR_lo': ('legR_up', (886, 1970), [-5, 100]), 'footR': ('legR_lo', (890, 2036), [-50, 50]),
+ 'legL_up': ('hips', (960, 1900), [-60, 60]), 'legL_lo': ('legL_up', (960, 1970), [-5, 120]), 'footL': ('legL_lo', (960, 2032), [-65, 65]),
+ 'legR_up': ('hips', (960, 1900), [-60, 60]), 'legR_lo': ('legR_up', (960, 1970), [-5, 120]), 'footR': ('legR_lo', (960, 2036), [-65, 65]),
 }
 EYE_C = (1224.0, 620.0); EYE_RX, EYE_RY = 50.0, 54.0; PUPIL_N = (1238.0, 626.0); PUPIL_R = (22.0, 30.0)
 MOUTH_C = (1365.0, 810.0); BROW_C = (1226.0, 486.0)
@@ -43,6 +43,8 @@ def build(outdir=None):
             'thighR': ('thighN', 'legR_up'), 'shinR': ('shinN', 'legR_lo'), 'bootR': ('bootN', 'footR'),
             'thighL': ('thighF', 'legL_up'), 'shinL': ('shinF', 'legL_lo'), 'bootL': ('bootF', 'footL')}
     for n, (src, b) in spec.items(): save(n, fix_holes(ld(src)) if src == 'armLo' else ld(src), src, b)
+    import sufan_hands as _H
+    _H.add_variants(outdir, parts, {'handL': ((0.0, 1.0), -1), 'handR': ((0.0, 1.0), -1)})
     bones = [dict(name=n, parent=p, head=U(*h), limit=lim) for n, (p, h, lim) in BONES_PX.items()]
     Z = dict(thighL=1, shinL=2, bootL=3, armUpL=4, armLoL=4, handL=4, thighR=5, shinR=6, bootR=7, belly=10, torso=30,
              handR=40, armLoR=41, armUpR=42, head=50, glasses=53, earR=55, hat=60)

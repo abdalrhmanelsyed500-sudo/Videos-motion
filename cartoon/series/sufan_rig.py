@@ -55,6 +55,9 @@ def build(outdir=None):
         cut_t = 1925 + 12 - y0; cut_s = 1925 - 12 - y0
         th = im[:cut_t].copy(); sh = im[cut_s:].copy()
         save(f'thigh{s}', th, x0, y0, f'leg{s}_up'); save(f'shin{s}', sh, x0, y0 + cut_s, f'leg{s}_lo')
+    import sufan_hands as _H
+    def _dir(b0, b1): return (BONES_PX[b1][1][0] - BONES_PX[b0][1][0], BONES_PX[b1][1][1] - BONES_PX[b0][1][1])
+    _H.add_variants(outdir, parts, {'handL': (_dir('armL_lo', 'handL'), 1), 'handR': (_dir('armR_lo', 'handR'), -1)})
     bones = [dict(name=n, parent=p, head=U(*h), limit=lim) for n, (p, h, lim) in BONES_PX.items()]
     Z = dict(thighL=1, thighR=1, shinL=2, shinR=2, bootL=3, bootR=3, belly=10, handL=18, handR=18, armLoL=19, armLoR=19, armUpL=20, armUpR=20,
              torso=30, earL=45, earR=45, head=50, hat=60)

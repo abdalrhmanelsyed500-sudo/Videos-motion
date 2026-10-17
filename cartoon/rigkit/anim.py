@@ -173,8 +173,9 @@ def ankle_height(th):
 class Walker:
     """Side-view walk with exact foot locking. Direction d=+1 (right) or -1 (left).
     Steps alternate L(far) R(near) ...; every planted foot stays at the SAME world x until its next lift."""
-    def __init__(self, rig, d, x0, x1, t0, t_end, Ts=0.40, swing=0.33, a=58.0, stand=22.0, lift=34.0, hz=240):
+    def __init__(self, rig, d, x0, x1, t0, t_end, Ts=0.40, swing=0.33, a=58.0, stand=22.0, lift=34.0, hz=240, geo=None, bend=1, arm_gain=1.15, arm_bend=14.0):
         self.rig, self.d, self.x0, self.t0 = rig, d, x0, t0
+        self.geo = geo or dict(hip_y=HIP_Y, lmax=LMAX, ankle=ankle_height); self.bend = bend; self.arm_gain = arm_gain; self.arm_bend = arm_bend
         self.Ts, self.swing, self.a, self.stand, self.lift = Ts, swing, a, stand, lift
         self.t_lift0 = t0 + 0.14
         N = int(round((t_end - self.t_lift0 - swing) / Ts)) + 2
@@ -226,25 +227,25 @@ class Walker:
                 lift = s['h'] * math.sin(math.pi * clamp(u)) ** 0.85
                 rot = lerp(D2R(24), D2R(-10), smooth(u * 1.25)) if u < .8 else D2R(-10 - 4 * (u - .8) / .2)
                 rot = D2R(24) * (1 - smooth(u / .55)) + D2R(-6) * smooth(u / .55) if u < .55 else lerp(D2R(-6), D2R(-12), (u - .55) / .45)
-                return xx, -(ankle_height(rot) + lift), rot, 'swing', s
+                return xx, -(self.geo['ankle'](rot) + lift), rot, 'swing', s
             x = s['x_to']; prev_land = s['t_land']
         # planted
         if nxt is None:
             rot = D2R(-12) * (1 - smooth((t - prev_land) / 0.18)) if prev_land > -1e8 else 0.0
-            return x, -ankle_height(rot), rot, 'plant', None
+            return x, -self.geo['ankle'](rot), rot, 'plant', None
         t_in = t - prev_land if prev_land > -1e8 else 1e9
         t_to = nxt['t_lift'] - t
         rot = D2R(-12) * (1 - smooth(t_in / 0.16)) if prev_land > -1e8 else 0.0
         rot += D2R(20) * smooth(1 - t_to / 0.16)
-        return x, -ankle_height(rot), rot, 'plant', nxt
+        return x, -self.geo['ankle'](rot), rot, 'plant', nxt
 
     def _hips_table(self):
         n = len(self.ts); dys = np.zeros(n); d = self.d
         for i in range(0, n, 1):
             t = self.ts[i]; rx = self.X[i]; need = -1e9
             for nm in 'LR':
-                x, y, _, _, _ = self.foot(nm, t); dx = x - (rx + (3 if nm == 'R' else -3) * d)
-                need = max(need, y - HIP_Y - math.sqrt(max(LMAX ** 2 - dx * dx, 1.0)))
+                x, y, _, _, _ = self.foot(nm, t); dx = x - (rx + self.geo.get('hip_dx', {'R': 3, 'L': -3})[nm] * d)
+                need = max(need, y - self.geo['hip_y'] - math.sqrt(max(self.geo['lmax'] ** 2 - dx * dx, 1.0)))
             dys[i] = need
         k = int(0.14 * self.hz); ker = np.ones(2 * k + 1) / (2 * k + 1)
         pad = np.pad(dys, k, mode='edge'); ma = np.convolve(pad, ker, 'valid')
@@ -266,12 +267,12 @@ class Walker:
             x, y, rot, stt, _ = self.foot(nm, t)
             tgt = (x, y)
             ch = (f'leg{nm}_up', f'leg{nm}_lo', f'foot{nm}')
-            rig.ik2(pose, ch, tgt, bend=1, end_rot=rot, root={'x': rx, 'flip': d < 0})
+            rig.ik2(pose, ch, tgt, bend=self.bend, end_rot=rot, root={'x': rx, 'flip': d < 0})
             rot_leg[nm] = pose[f'leg{nm}_up']['rot']
         for nm, other in (('L', 'R'), ('R', 'L')):
-            ar = -1.15 * rot_leg[other] * sp - D2R(2)
+            ar = -self.arm_gain * rot_leg[other] * sp - D2R(2)
             pose[f'arm{nm}_up'] = {'rot': ar}
-            pose[f'arm{nm}_lo'] = {'rot': -(D2R(14) + 0.7 * max(0.0, -ar) + 0.25 * max(0.0, ar))}
+            pose[f'arm{nm}_lo'] = {'rot': -(D2R(self.arm_bend) + 0.7 * max(0.0, -ar) + 0.25 * max(0.0, ar))}
             pose[f'hand{nm}'] = {'rot': D2R(6)}
         return rx, pose
 

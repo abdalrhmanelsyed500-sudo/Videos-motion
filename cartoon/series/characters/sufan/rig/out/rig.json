@@ -730,6 +730,94 @@
     127,
     83
    ]
+  },
+  "handL_fist": {
+   "image": "handL_fist.png",
+   "anchor": [
+    190.0,
+    190.0
+   ],
+   "size": [
+    380,
+    420
+   ]
+  },
+  "handL_point": {
+   "image": "handL_point.png",
+   "anchor": [
+    190.0,
+    190.0
+   ],
+   "size": [
+    380,
+    420
+   ]
+  },
+  "handL_thumb": {
+   "image": "handL_thumb.png",
+   "anchor": [
+    190.0,
+    190.0
+   ],
+   "size": [
+    380,
+    420
+   ]
+  },
+  "handL_flat": {
+   "image": "handL_flat.png",
+   "anchor": [
+    190.0,
+    190.0
+   ],
+   "size": [
+    380,
+    420
+   ]
+  },
+  "handR_fist": {
+   "image": "handR_fist.png",
+   "anchor": [
+    190.0,
+    190.0
+   ],
+   "size": [
+    380,
+    420
+   ]
+  },
+  "handR_point": {
+   "image": "handR_point.png",
+   "anchor": [
+    190.0,
+    190.0
+   ],
+   "size": [
+    380,
+    420
+   ]
+  },
+  "handR_thumb": {
+   "image": "handR_thumb.png",
+   "anchor": [
+    190.0,
+    190.0
+   ],
+   "size": [
+    380,
+    420
+   ]
+  },
+  "handR_flat": {
+   "image": "handR_flat.png",
+   "anchor": [
+    190.0,
+    190.0
+   ],
+   "size": [
+    380,
+    420
+   ]
   }
  },
  "ik": {
