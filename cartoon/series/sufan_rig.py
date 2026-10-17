@@ -73,8 +73,8 @@ def lid_color():
         _LID['c'] = tuple(int(v) for v in c)
     return _LID['c']
 
-def eye_sprite(side, look=(0, 0), blink=0.0, squint=0.0, lidtilt=0.0, pupil=1.0):
-    key = ('sufeye', side, _q(look[0]), _q(look[1]), _q(blink), _q(squint), _q(lidtilt), _q(pupil))
+def eye_sprite(side, look=(0, 0), blink=0.0, squint=0.0, lidtilt=0.0, pupil=1.0, arc=0.0):
+    key = ('sufeye', side, _q(look[0]), _q(look[1]), _q(blink), _q(squint), _q(lidtilt), _q(pupil), _q(arc))
     def mk():
         R = EYE_R; a = Art(-R - 8, -R - 8, R + 8, R + 8, ppu=1.0, ss=4)
         a.ellipse((0, 0), R, R, (253, 254, 253))
@@ -95,6 +95,10 @@ def eye_sprite(side, look=(0, 0), blink=0.0, squint=0.0, lidtilt=0.0, pupil=1.0)
         if squint > .02:
             ys = R + 3 - squint * 44
             a.poly([(x, ys - 10 * (1 - (x / R) ** 2)) for x in xs] + [(x, R + 14) for x in xs[::-1]], lc, clip=True)
+        if arc > .02:   # happy closed eye  ^_^ : cream lid covers the eye, ink arc on top of it
+            lc2 = lid_color(); a.ellipse((0, 0), R + 1, R + 1, lc2, clip=False)
+            ctr = [(x, R * .32 - arc * 52 * (1 - (x / 48.0) ** 2)) for x in np.linspace(-48, 48, 32)]
+            a.curve(ctr, INK, 10.0, clip=False)
         return _tag(_pack(a, 0, 0))
     return _get(key, mk)
 
@@ -148,6 +152,6 @@ def face_dyn(face=None):
     f = {**DEFAULT_FACE, **(face or {})}
     d = {'mouth': mouth_sprite(f['mouth'])}
     for s in 'LR':
-        d['eye' + s] = eye_sprite(s, f['look'], f['blinkL'] if s == 'L' else f['blinkR'], f['squint'], f['lidtilt'], f['pupil'])
+        d['eye' + s] = eye_sprite(s, f['look'], f['blinkL'] if s == 'L' else f['blinkR'], f['squint'], f['lidtilt'], f['pupil'], f.get('arc', 0.0))
         h, t = f['brow' + s]; d['brow' + s] = brow_sprite(s, h, t)
     return d

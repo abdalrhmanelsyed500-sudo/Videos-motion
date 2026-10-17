@@ -6,6 +6,7 @@ def recon(seed, mask, n):
     k = ell(3); cur = seed.copy()
     for _ in range(n): cur = cv2.dilate(cur, k) & mask
     return cur
+SMOOTH = {'armUpL': 2.5, 'armUpR': 2.5, 'armLoL': 2.5, 'armLoR': 2.5, 'handL': 1.5, 'handR': 1.5}
 def clean(name, open_d, edit=None, grow=2):
     im = cv2.imread(f'parts/{name}.png', cv2.IMREAD_UNCHANGED); a = im[..., 3]
     B = (a > 128).astype(np.uint8)
@@ -13,6 +14,7 @@ def clean(name, open_d, edit=None, grow=2):
     # reconstruct back to the original outline (restores rounded features lost by the opening) but only near kept pixels
     op = recon(op, B, open_d // 2 + 2) if open_d else B
     if edit: op = edit(op, im, bb[name])
+    if name in SMOOTH: op = (cv2.GaussianBlur(op.astype(np.float32), (0, 0), SMOOTH[name]) > 0.5).astype(np.uint8)
     if name.startswith('ear'):
         lum = im[..., :3].astype(np.int32).sum(2); op = op & (lum > 330).astype(np.uint8)
         op = cv2.morphologyEx(op, cv2.MORPH_OPEN, ell(5))
@@ -28,7 +30,7 @@ def clean(name, open_d, edit=None, grow=2):
 def dome(op, im, b):
     H, W = op.shape; x0, y0 = b[0], b[1]
     yy, xx = np.mgrid[0:H, 0:W]; X = xx + x0; Y = yy + y0
-    cy = 545; inside = ((X - 912) / 292.0) ** 2 + ((Y - cy) / 150.0) ** 2 <= 1
+    cy = 566; inside = (np.abs(X - 912) / 325.0) ** 6 + (np.abs(Y - cy) / 170.0) ** 6 <= 1
     out = op.copy(); out[(Y < cy) & ~inside] = 0; return out
 def shoulder(op, im, b):
     H, W = op.shape; x0, y0 = b[0], b[1]
@@ -40,8 +42,14 @@ def torso_edit(op, im, b):
     big = cv2.morphologyEx(op, cv2.MORPH_OPEN, ell(45)); big = recon(big, op, 20)
     return shoulder(big, im, b)
 def head_edit(op, im, b):
-    op = dome(op, im, b); H, W = op.shape; x0, y0 = b[0], b[1]
+    H, W = op.shape; x0, y0 = b[0], b[1]
     yy, xx = np.mgrid[0:H, 0:W]; X = xx + x0; Y = yy + y0
+    # fill the dome corners (they used to live in the ear wedge): superellipse top, colours inpainted from neighbours
+    ins = (np.abs(X - 912) / 325.0) ** 6 + (np.abs(Y - 566) / 170.0) ** 6 <= 1
+    add = ins & (op == 0) & (Y >= 396) & (Y < 600)
+    rgb = cv2.inpaint(im[..., :3].copy(), (add * 255).astype(np.uint8), 9, cv2.INPAINT_TELEA)
+    im[..., :3] = np.where(add[..., None], rgb, im[..., :3]); im[..., 3] = np.where(add, 255, im[..., 3]); op = np.where(add, 1, op).astype(np.uint8)
+    op = dome(op, im, b)
     Z = (np.abs(X - 912) > 255) & (Y > 640) & (Y < 1010)
     sm = (cv2.GaussianBlur(op.astype(np.float32), (0, 0), 12) > 0.5).astype(np.uint8)
     out = np.where(Z, sm, op).astype(np.uint8)
@@ -92,7 +100,7 @@ def arm_cap(P, E):
         op = arm_edit(op, im, b); H, W = op.shape; x0, y0 = b[0], b[1]
         yy, xx = np.mgrid[0:H, 0:W]; X = xx + x0 - P[0]; Y = yy + y0 - P[1]
         proj = X * u[0] + Y * u[1]; dist = np.hypot(X, Y)
-        out = op.copy(); out[(proj < 0) & (dist > 85)] = 0; return out
+        out = op.copy(); out[(proj < 0) & (dist > 68)] = 0; return out
     return f
 clean('armUpL', 7, arm_cap((600, 1040), (425, 1217))); clean('armUpR', 7, arm_cap((1224, 1040), (1398, 1219)))
 clean('armLoL', 7); clean('armLoR', 7); clean('handL', 0); clean('handR', 0)
