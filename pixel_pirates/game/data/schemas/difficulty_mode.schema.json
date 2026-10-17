@@ -1,0 +1,120 @@
+{
+ "kind": "difficulty_mode",
+ "key_field": "id",
+ "id_prefix": "mode",
+ "record": {
+  "type": "object",
+  "required": [
+   "id",
+   "name",
+   "description",
+   "multipliers",
+   "warning_lead_hours",
+   "save_anywhere",
+   "autosave_minutes",
+   "permadeath"
+  ],
+  "props": {
+   "id": {
+    "type": "string",
+    "pattern": "^mode_[a-z0-9]+(_[a-z0-9]+)*$"
+   },
+   "name": {
+    "type": "string",
+    "pattern": "^.{2,30}$"
+   },
+   "description": {
+    "type": "string",
+    "pattern": "^.{10,300}$"
+   },
+   "multipliers": {
+    "type": "object",
+    "required": [
+     "hunger_rate",
+     "thirst_rate",
+     "spoilage_rate",
+     "disease_rate",
+     "ship_wear_rate",
+     "morale_decay_rate",
+     "ammo_dampness_rate",
+     "weather_severity",
+     "fatigue_rate"
+    ],
+    "props": {
+     "hunger_rate": {
+      "type": "number",
+      "min": 0,
+      "max": 3
+     },
+     "thirst_rate": {
+      "type": "number",
+      "min": 0,
+      "max": 3
+     },
+     "spoilage_rate": {
+      "type": "number",
+      "min": 0,
+      "max": 3
+     },
+     "disease_rate": {
+      "type": "number",
+      "min": 0,
+      "max": 3
+     },
+     "ship_wear_rate": {
+      "type": "number",
+      "min": 0,
+      "max": 3
+     },
+     "morale_decay_rate": {
+      "type": "number",
+      "min": 0,
+      "max": 3
+     },
+     "ammo_dampness_rate": {
+      "type": "number",
+      "min": 0,
+      "max": 3
+     },
+     "weather_severity": {
+      "type": "number",
+      "min": 0,
+      "max": 3
+     },
+     "fatigue_rate": {
+      "type": "number",
+      "min": 0,
+      "max": 3
+     }
+    }
+   },
+   "warning_lead_hours": {
+    "type": "number",
+    "min": 0,
+    "max": 240
+   },
+   "save_anywhere": {
+    "type": "boolean"
+   },
+   "autosave_minutes": {
+    "type": "integer",
+    "min": 1,
+    "max": 120
+   },
+   "permadeath": {
+    "type": "boolean"
+   },
+   "provisional": {
+    "type": "boolean"
+   },
+   "owner": {
+    "type": "string",
+    "pattern": "^[A-Z][0-9]{1,2}$"
+   },
+   "source": {
+    "type": "string",
+    "pattern": "^.{1,200}$"
+   }
+  }
+ }
+}

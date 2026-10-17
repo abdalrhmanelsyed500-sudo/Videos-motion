@@ -1,0 +1,73 @@
+{
+ "kind": "tuning",
+ "key_field": "key",
+ "id_prefix": "",
+ "record": {
+  "type": "object",
+  "required": [
+   "key",
+   "value",
+   "unit",
+   "min",
+   "max",
+   "provisional",
+   "owner",
+   "source"
+  ],
+  "props": {
+   "key": {
+    "type": "string",
+    "pattern": "^[a-z]+(\\.[a-z][a-z0-9_]*)+$"
+   },
+   "value": {
+    "type": "number"
+   },
+   "unit": {
+    "type": "string",
+    "pattern": "^.{1,40}$"
+   },
+   "min": {
+    "type": "number"
+   },
+   "max": {
+    "type": "number"
+   },
+   "scale": {
+    "type": "string",
+    "enum": [
+     "hunger_rate",
+     "thirst_rate",
+     "spoilage_rate",
+     "disease_rate",
+     "ship_wear_rate",
+     "morale_decay_rate",
+     "ammo_dampness_rate",
+     "weather_severity",
+     "fatigue_rate"
+    ]
+   },
+   "scale_mode": {
+    "type": "string",
+    "enum": [
+     "mul",
+     "div"
+    ]
+   },
+   "note": {
+    "type": "string",
+    "pattern": "^.{1,300}$"
+   },
+   "provisional": {
+    "type": "boolean"
+   },
+   "owner": {
+    "type": "string",
+    "pattern": "^[A-Z][0-9]{1,2}$"
+   },
+   "source": {
+    "type": "string",
+    "pattern": "^.{1,200}$"
+   }
+  }
+ }
+}

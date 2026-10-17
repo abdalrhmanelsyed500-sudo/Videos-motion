@@ -1,0 +1,108 @@
+{
+ "kind": "save_state",
+ "key_field": "",
+ "id_prefix": "",
+ "record": {
+  "type": "object",
+  "required": [
+   "meta",
+   "clock",
+   "rng",
+   "player",
+   "inventory"
+  ],
+  "props": {
+   "meta": {
+    "type": "object",
+    "required": [
+     "profile",
+     "difficulty",
+     "playtime_s"
+    ],
+    "props": {
+     "profile": {
+      "type": "string",
+      "pattern": "^.{1,40}$"
+     },
+     "difficulty": {
+      "type": "string",
+      "ref": "difficulty_mode"
+     },
+     "overrides": {
+      "type": "object",
+      "values": {
+       "type": "number",
+       "min": 0,
+       "max": 3
+      },
+      "key_ref": "multiplier"
+     },
+     "playtime_s": {
+      "type": "integer",
+      "min": 0
+     }
+    }
+   },
+   "clock": {
+    "type": "object",
+    "required": [
+     "t_seconds"
+    ],
+    "props": {
+     "t_seconds": {
+      "type": "integer",
+      "min": 0
+     }
+    }
+   },
+   "rng": {
+    "type": "object",
+    "values": {
+     "type": "string",
+     "pattern": "^[0-9]{1,20}$"
+    }
+   },
+   "player": {
+    "type": "object",
+    "required": [
+     "x_m",
+     "y_m",
+     "at_island"
+    ],
+    "props": {
+     "x_m": {
+      "type": "number"
+     },
+     "y_m": {
+      "type": "number"
+     },
+     "at_island": {
+      "type": "string",
+      "pattern": "^(isl_[0-9]{3})?$"
+     }
+    }
+   },
+   "inventory": {
+    "type": "object",
+    "values": {
+     "type": "number",
+     "min": 0,
+     "max": 1000000
+    },
+    "key_ref": "item"
+   },
+   "discovered_islands": {
+    "type": "array",
+    "items": {
+     "type": "string",
+     "ref": "island"
+    },
+    "unique_items": true
+   },
+   "systems": {
+    "type": "object",
+    "extra": true
+   }
+  }
+ }
+}

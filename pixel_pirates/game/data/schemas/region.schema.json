@@ -1,0 +1,64 @@
+{
+ "kind": "region",
+ "key_field": "id",
+ "id_prefix": "reg",
+ "record": {
+  "type": "object",
+  "required": [
+   "id",
+   "name",
+   "climate",
+   "mood"
+  ],
+  "props": {
+   "id": {
+    "type": "string",
+    "pattern": "^reg_[a-z0-9]+(_[a-z0-9]+)*$"
+   },
+   "name": {
+    "type": "string",
+    "pattern": "^.{2,40}$"
+   },
+   "climate": {
+    "type": "string",
+    "enum": [
+     "tropical",
+     "subtropical",
+     "temperate",
+     "arid",
+     "subpolar",
+     "polar",
+     "stormy",
+     "dead_calm"
+    ]
+   },
+   "mood": {
+    "type": "string",
+    "pattern": "^[a-z_]+$"
+   },
+   "hazards": {
+    "type": "array",
+    "items": {
+     "type": "string",
+     "pattern": "^.{2,40}$"
+    },
+    "unique_items": true
+   },
+   "notes": {
+    "type": "string",
+    "pattern": "^.{1,400}$"
+   },
+   "provisional": {
+    "type": "boolean"
+   },
+   "owner": {
+    "type": "string",
+    "pattern": "^[A-Z][0-9]{1,2}$"
+   },
+   "source": {
+    "type": "string",
+    "pattern": "^.{1,200}$"
+   }
+  }
+ }
+}

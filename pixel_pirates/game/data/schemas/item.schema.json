@@ -1,0 +1,132 @@
+{
+ "kind": "item",
+ "key_field": "id",
+ "id_prefix": "item",
+ "record": {
+  "type": "object",
+  "required": [
+   "id",
+   "name",
+   "category",
+   "weight_kg",
+   "base_value",
+   "stack_max",
+   "icon"
+  ],
+  "props": {
+   "id": {
+    "type": "string",
+    "pattern": "^item_[a-z0-9]+(_[a-z0-9]+)*$"
+   },
+   "name": {
+    "type": "string",
+    "pattern": "^.{2,40}$"
+   },
+   "category": {
+    "type": "string",
+    "enum": [
+     "food",
+     "drink",
+     "medicine",
+     "ship_part",
+     "tool",
+     "ammo",
+     "trade",
+     "treasure",
+     "misc"
+    ]
+   },
+   "weight_kg": {
+    "type": "number",
+    "min": 0,
+    "max": 2000
+   },
+   "capacity_l": {
+    "type": "number",
+    "min": 0,
+    "max": 2000
+   },
+   "base_value": {
+    "type": "integer",
+    "min": 0,
+    "max": 1000000
+   },
+   "stack_max": {
+    "type": "integer",
+    "min": 1,
+    "max": 1000000
+   },
+   "icon": {
+    "type": "string",
+    "ref": "asset"
+   },
+   "perishable": {
+    "type": "object",
+    "required": [
+     "shelf_days"
+    ],
+    "props": {
+     "shelf_days": {
+      "type": "number",
+      "min": 0.05,
+      "max": 3650
+     },
+     "spoils_into": {
+      "type": "string",
+      "ref": "item"
+     },
+     "moisture_sensitive": {
+      "type": "boolean"
+     },
+     "rat_attraction": {
+      "type": "number",
+      "min": 0,
+      "max": 1
+     }
+    }
+   },
+   "nutrition": {
+    "type": "object",
+    "required": [
+     "kcal_per_kg"
+    ],
+    "props": {
+     "kcal_per_kg": {
+      "type": "number",
+      "min": 0,
+      "max": 9000
+     },
+     "vitamin_c_mg_per_kg": {
+      "type": "number",
+      "min": 0,
+      "max": 5000
+     },
+     "protein_g_per_kg": {
+      "type": "number",
+      "min": 0,
+      "max": 1000
+     }
+    }
+   },
+   "tags": {
+    "type": "array",
+    "items": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "unique_items": true
+   },
+   "provisional": {
+    "type": "boolean"
+   },
+   "owner": {
+    "type": "string",
+    "pattern": "^[A-Z][0-9]{1,2}$"
+   },
+   "source": {
+    "type": "string",
+    "pattern": "^.{1,200}$"
+   }
+  }
+ }
+}

@@ -1,0 +1,75 @@
+{
+ "schema": 1,
+ "kind": "difficulty_mode",
+ "records": [
+  {
+   "id": "mode_story",
+   "name": "Story",
+   "description": "Relaxed survival. Supplies last longer, weather is gentler, warnings come early, save anywhere. For the voyage and the tale.",
+   "multipliers": {
+    "hunger_rate": 0.5,
+    "thirst_rate": 0.5,
+    "spoilage_rate": 0.5,
+    "disease_rate": 0.5,
+    "ship_wear_rate": 0.5,
+    "morale_decay_rate": 0.5,
+    "ammo_dampness_rate": 0.5,
+    "weather_severity": 0.7,
+    "fatigue_rate": 0.6
+   },
+   "warning_lead_hours": 72,
+   "save_anywhere": true,
+   "autosave_minutes": 5,
+   "permadeath": false,
+   "provisional": true,
+   "owner": "B3",
+   "source": "design placeholder"
+  },
+  {
+   "id": "mode_normal",
+   "name": "Normal",
+   "description": "The intended experience: every voyage is a logistics puzzle with fair warnings and recovery options.",
+   "multipliers": {
+    "hunger_rate": 1,
+    "thirst_rate": 1,
+    "spoilage_rate": 1,
+    "disease_rate": 1,
+    "ship_wear_rate": 1,
+    "morale_decay_rate": 1,
+    "ammo_dampness_rate": 1,
+    "weather_severity": 1,
+    "fatigue_rate": 1
+   },
+   "warning_lead_hours": 36,
+   "save_anywhere": true,
+   "autosave_minutes": 10,
+   "permadeath": false,
+   "provisional": true,
+   "owner": "B3",
+   "source": "design placeholder"
+  },
+  {
+   "id": "mode_hardcore",
+   "name": "Hardcore Realism",
+   "description": "Harsh and unforgiving: faster spoilage and disease, rougher seas, late warnings, saving only in harbour or at anchor. Still never unfair: every danger can be seen coming.",
+   "multipliers": {
+    "hunger_rate": 1.25,
+    "thirst_rate": 1.25,
+    "spoilage_rate": 1.5,
+    "disease_rate": 1.4,
+    "ship_wear_rate": 1.3,
+    "morale_decay_rate": 1.3,
+    "ammo_dampness_rate": 1.5,
+    "weather_severity": 1.3,
+    "fatigue_rate": 1.25
+   },
+   "warning_lead_hours": 12,
+   "save_anywhere": false,
+   "autosave_minutes": 15,
+   "permadeath": false,
+   "provisional": true,
+   "owner": "B3",
+   "source": "design placeholder"
+  }
+ ]
+}

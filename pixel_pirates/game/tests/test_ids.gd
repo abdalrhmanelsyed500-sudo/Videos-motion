@@ -11,6 +11,7 @@ func run(t: Object) -> void:
 	t.check(not Ids.is_valid_data_id("Item_Hardtack"), "uppercase invalid")
 	t.check(not Ids.is_valid_data_id("item-hardtack"), "dash invalid")
 	t.check(not Ids.is_valid_data_id("banana_split"), "unknown kind invalid")
+	t.check(Ids.is_valid_data_id("mode_normal"), "mode_normal valid")
 	t.check(not Ids.is_valid_data_id("item"), "no slug invalid")
 	t.check(Ids.is_valid_asset_id("spr_crew_mannequin_captain"), "asset id valid")
 	t.check(Ids.is_valid_asset_id("til_water_deep_a"), "tile id valid")

@@ -16,6 +16,7 @@ Log="*res://core/log.gd"
 Bus="*res://core/bus.gd"
 Quality="*res://core/quality.gd"
 Assets="*res://core/assets.gd"
+Data="*res://core/registry.gd"
 
 [display]
 

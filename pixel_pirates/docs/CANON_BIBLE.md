@@ -1,4 +1,4 @@
-# CANON BIBLE - Crown of the Seas (working title) - v0.3 (after A2, A3, A4)
+# CANON BIBLE - Crown of the Seas (working title) - v0.4 (after A2, A3, A4, A5)
 Drive folder: "Pixel Pirates". Repo path: pixel_pirates/.
 
 ## Hard content rules
@@ -37,12 +37,12 @@ All GDScript is parser-checked only (never executed by me). The user reports God
 pixel_pirates/ { README.md, .gitignore, .gitattributes, .editorconfig, docs/, art_bible/, tools/, game/ }
 game/ (= res://) { project.godot, .gdlintrc, core/, data/, systems/{survival,economy,crew,ship,combat,weather}/, world/{ocean,islands,cities}/, ui/, shaders/, audio/, art/{placeholder,final,manifest}/, tests/ }
 Dependency rule: systems/ never imports world/ or ui/; core/ imports nothing; systems talk via Bus signals or passed-in data.
-Autoloads: Log, Bus, Quality, Assets. Core utilities via preload constants (Ids, DataLoader).
+Autoloads: Log, Bus, Quality, Assets, Data (registry). Core utilities via preload constants (Ids, DataLoader).
 tools/: check_project.py, install_hooks.sh, hooks/pre-commit, placeholder/ (generator), looklab/ (stills + report), probes/gpu_probe_v2/.
-docs/: A1_TECH_STACK.md, A2_STRUCTURE_AND_CONVENTIONS.md, A3_ART_BIBLE.md, A4_PLACEHOLDER_PIPELINE.md, CANON_BIBLE.md, ART_STATUS.md (generated).
+docs/: A5_DATA_ARCHITECTURE.md, PROVISIONAL_LEDGER.md (generated), A1_TECH_STACK.md, A2_STRUCTURE_AND_CONVENTIONS.md, A3_ART_BIBLE.md, A4_PLACEHOLDER_PIPELINE.md, CANON_BIBLE.md, ART_STATUS.md (generated).
 
 ## ID grammar (A2)
-Data: <kind>_<slug> lowercase; kinds isl reg crew npc item rcp ship evt loc fac qst dlg clue. Islands numeric isl_001..isl_999 (the old "I001" = isl_001).
+Data: <kind>_<slug> lowercase; kinds isl reg crew npc item rcp ship evt loc fac qst dlg clue mode. Islands numeric isl_001..isl_999 (the old "I001" = isl_001).
 Assets: prefixes spr til prp shp ico fx ui bg (e.g. spr_crew_mannequin_captain, til_water_deep_a, ico_item_hardtack).
 
 ## Art canon (A3/A4)
@@ -59,8 +59,18 @@ A3-1 art grid 640x360, 24/12 px per metre. A3-2 camera 22 deg FOV, 39/48 deg pit
 A4-1 committed generated placeholders, drop-in replacement through the Assets resolver. A4-2 QA built into the generator (palette lock, colour budgets, no clipping).
 A1-10 amended: Dev-Lite internal 640x360.
 
+## Data architecture (A5)
+Envelope {schema:1, kind, records}; schemas in game/data/schemas (item, difficulty_mode, tuning, region, island, crew_member, recipe, save_state). Unknown keys rejected. Two validators (Python tools/data_tools, GDScript core/schema.gd) proven equal by one 35-case fixture file. World rules (neighbour symmetry, sail distance >= straight line, landmark-only visibility, every island >= 1 survival_offer) are enforced by Python until A7.
+Content rule 1 enforced in the crew schema (gender enum ["male"]) and in check_project.py.
+Tuning: every balance number via Tuning.f(key); scale mul/div by one of 9 difficulty multipliers (hunger_rate thirst_rate spoilage_rate disease_rate ship_wear_rate morale_decay_rate ammo_dampness_rate weather_severity fatigue_rate) or a per-system override 0-3. Modes: mode_story / mode_normal / mode_hardcore.
+Save: sha256 envelope, .tmp->.bak->main atomic write, backup recovery, SAVE_VERSION 1 with migrations, 64-bit seeds as decimal strings.
+SEED NUMBERS ARE PROVISIONAL PLACEHOLDERS (33 records, docs/PROVISIONAL_LEDGER.md), NOT Canon survival numbers. N-owner tags are proposed. B3 final only when no N* rows remain.
+Decisions: A5-1 JSON envelopes + schema files. A5-2 two validators + shared fixtures. A5-3 tuning through one accessor with difficulty scaling and overrides. A5-4 provisional ledger. A5-5 hardened save format. A5-6 export filter must include *.json.
+GDScript half of A5 is unrun (no Godot in sandbox).
+
 ## Island registry (50+ planned)
 Empty. Format: ID (isl_NNN) | name | tier | biome | position | distances to neighbours | status (planned/designed/built/tested). Filled from E3.
 
 ## Open questions
+First run of the A5 GDScript tests (test_schema/registry/tuning/save) on the user's PC.
 First headless test-run output from the user's PC (`tests/run_all.gd`). Probe results postponed by the user. Access to a capable test machine for visual sign-off (borrow / used PC / cloud / RAM upgrade) - decide before the vertical slice.

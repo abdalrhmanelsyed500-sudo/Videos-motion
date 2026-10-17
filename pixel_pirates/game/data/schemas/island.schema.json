@@ -1,0 +1,153 @@
+{
+ "kind": "island",
+ "key_field": "id",
+ "id_prefix": "isl",
+ "record": {
+  "type": "object",
+  "required": [
+   "id",
+   "name",
+   "tier",
+   "biome",
+   "region",
+   "position",
+   "survival_offers",
+   "status",
+   "landmark"
+  ],
+  "props": {
+   "id": {
+    "type": "string",
+    "pattern": "^isl_[0-9]{3}$"
+   },
+   "name": {
+    "type": "string",
+    "pattern": "^.{2,40}$"
+   },
+   "tier": {
+    "type": "integer",
+    "min": 1,
+    "max": 3
+   },
+   "biome": {
+    "type": "string",
+    "pattern": "^[a-z][a-z0-9_]*$"
+   },
+   "region": {
+    "type": "string",
+    "ref": "region"
+   },
+   "position": {
+    "type": "object",
+    "required": [
+     "x_km",
+     "y_km"
+    ],
+    "props": {
+     "x_km": {
+      "type": "number",
+      "min": -100000,
+      "max": 100000
+     },
+     "y_km": {
+      "type": "number",
+      "min": -100000,
+      "max": 100000
+     }
+    }
+   },
+   "survival_offers": {
+    "type": "array",
+    "min_items": 1,
+    "unique_items": true,
+    "items": {
+     "type": "string",
+     "enum": [
+      "fresh_water",
+      "game",
+      "fish",
+      "fruit",
+      "herbs",
+      "timber",
+      "salt",
+      "shelter",
+      "salvage",
+      "trade_food",
+      "repair_dock",
+      "surgeon",
+      "ammo_trade"
+     ]
+    }
+   },
+   "neighbors": {
+    "type": "array",
+    "items": {
+     "type": "object",
+     "required": [
+      "id",
+      "distance_km",
+      "sail_hours_sloop"
+     ],
+     "props": {
+      "id": {
+       "type": "string",
+       "ref": "island"
+      },
+      "distance_km": {
+       "type": "number",
+       "min": 0.05,
+       "max": 100000
+      },
+      "sail_hours_sloop": {
+       "type": "number",
+       "min": 0.01,
+       "max": 100000
+      }
+     }
+    }
+   },
+   "landmark": {
+    "type": "boolean"
+   },
+   "visible_from": {
+    "type": "array",
+    "items": {
+     "type": "string",
+     "ref": "island"
+    },
+    "unique_items": true
+   },
+   "kits": {
+    "type": "array",
+    "items": {
+     "type": "string",
+     "pattern": "^kit_[a-z0-9_]+$"
+    }
+   },
+   "status": {
+    "type": "string",
+    "enum": [
+     "planned",
+     "designed",
+     "built",
+     "tested"
+    ]
+   },
+   "hook": {
+    "type": "string",
+    "pattern": "^.{1,300}$"
+   },
+   "provisional": {
+    "type": "boolean"
+   },
+   "owner": {
+    "type": "string",
+    "pattern": "^[A-Z][0-9]{1,2}$"
+   },
+   "source": {
+    "type": "string",
+    "pattern": "^.{1,200}$"
+   }
+  }
+ }
+}

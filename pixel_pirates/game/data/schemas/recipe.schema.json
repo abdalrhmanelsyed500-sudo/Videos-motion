@@ -1,0 +1,102 @@
+{
+ "kind": "recipe",
+ "key_field": "id",
+ "id_prefix": "rcp",
+ "record": {
+  "type": "object",
+  "required": [
+   "id",
+   "name",
+   "station",
+   "inputs",
+   "outputs",
+   "hours"
+  ],
+  "props": {
+   "id": {
+    "type": "string",
+    "pattern": "^rcp_[a-z0-9]+(_[a-z0-9]+)*$"
+   },
+   "name": {
+    "type": "string",
+    "pattern": "^.{2,40}$"
+   },
+   "station": {
+    "type": "string",
+    "enum": [
+     "galley",
+     "workbench",
+     "shipyard",
+     "field"
+    ]
+   },
+   "inputs": {
+    "type": "array",
+    "min_items": 1,
+    "items": {
+     "type": "object",
+     "required": [
+      "item",
+      "qty"
+     ],
+     "props": {
+      "item": {
+       "type": "string",
+       "ref": "item"
+      },
+      "qty": {
+       "type": "number",
+       "min": 0.001,
+       "max": 100000
+      }
+     }
+    }
+   },
+   "outputs": {
+    "type": "array",
+    "min_items": 1,
+    "items": {
+     "type": "object",
+     "required": [
+      "item",
+      "qty"
+     ],
+     "props": {
+      "item": {
+       "type": "string",
+       "ref": "item"
+      },
+      "qty": {
+       "type": "number",
+       "min": 0.001,
+       "max": 100000
+      }
+     }
+    }
+   },
+   "hours": {
+    "type": "number",
+    "min": 0,
+    "max": 1000
+   },
+   "tags": {
+    "type": "array",
+    "items": {
+     "type": "string",
+     "pattern": "^[a-z][a-z0-9_]*$"
+    }
+   },
+   "provisional": {
+    "type": "boolean"
+   },
+   "owner": {
+    "type": "string",
+    "pattern": "^[A-Z][0-9]{1,2}$"
+   },
+   "source": {
+    "type": "string",
+    "pattern": "^.{1,200}$"
+   }
+  }
+ }
+}

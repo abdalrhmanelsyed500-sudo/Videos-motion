@@ -1,0 +1,169 @@
+{
+ "schema": 1,
+ "kind": "tuning",
+ "records": [
+  {
+   "key": "food.need_kcal_per_man_day",
+   "value": 3200,
+   "unit": "kcal/man/day",
+   "min": 2000,
+   "max": 5000,
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "scale": "hunger_rate",
+   "scale_mode": "mul",
+   "note": "Heavy sea labour; the Royal Navy ration was above 4000 kcal."
+  },
+  {
+   "key": "food.hardtack_kg_per_man_day",
+   "value": 0.45,
+   "unit": "kg/man/day",
+   "min": 0.2,
+   "max": 1.0,
+   "provisional": true,
+   "owner": "N1",
+   "source": "historical figure from general knowledge, not source-checked (about 1 lb biscuit per day)"
+  },
+  {
+   "key": "water.need_l_per_man_day_min",
+   "value": 2.5,
+   "unit": "L/man/day",
+   "min": 1.0,
+   "max": 6.0,
+   "provisional": true,
+   "owner": "N4",
+   "source": "design placeholder",
+   "scale": "thirst_rate",
+   "scale_mode": "mul"
+  },
+  {
+   "key": "water.need_l_per_man_day_comfort",
+   "value": 4.0,
+   "unit": "L/man/day",
+   "min": 2.0,
+   "max": 8.0,
+   "provisional": true,
+   "owner": "N4",
+   "source": "design placeholder",
+   "scale": "thirst_rate",
+   "scale_mode": "mul"
+  },
+  {
+   "key": "water.foul_after_days_warm",
+   "value": 30,
+   "unit": "days",
+   "min": 5,
+   "max": 180,
+   "provisional": true,
+   "owner": "N4",
+   "source": "design placeholder",
+   "scale": "spoilage_rate",
+   "scale_mode": "div"
+  },
+  {
+   "key": "health.scurvy_onset_days_no_vitc",
+   "value": 70,
+   "unit": "days",
+   "min": 20,
+   "max": 200,
+   "provisional": true,
+   "owner": "N5",
+   "source": "historical figure from general knowledge, not source-checked (weeks to months)",
+   "scale": "disease_rate",
+   "scale_mode": "div"
+  },
+  {
+   "key": "ship.hull_wear_pct_per_day_at_sea",
+   "value": 0.08,
+   "unit": "% hull/day",
+   "min": 0.0,
+   "max": 2.0,
+   "provisional": true,
+   "owner": "N6",
+   "source": "design placeholder",
+   "scale": "ship_wear_rate",
+   "scale_mode": "mul"
+  },
+  {
+   "key": "ship.barnacle_speed_penalty_pct_per_month",
+   "value": 3.0,
+   "unit": "% speed/month",
+   "min": 0.0,
+   "max": 20.0,
+   "provisional": true,
+   "owner": "N6",
+   "source": "design placeholder",
+   "scale": "ship_wear_rate",
+   "scale_mode": "mul"
+  },
+  {
+   "key": "crew.watch_length_hours",
+   "value": 4,
+   "unit": "hours",
+   "min": 2,
+   "max": 8,
+   "provisional": true,
+   "owner": "N7",
+   "source": "historical figure from general knowledge, not source-checked (four-hour watches)"
+  },
+  {
+   "key": "crew.awake_limit_hours",
+   "value": 16,
+   "unit": "hours",
+   "min": 8,
+   "max": 36,
+   "provisional": true,
+   "owner": "N7",
+   "source": "design placeholder",
+   "scale": "fatigue_rate",
+   "scale_mode": "div"
+  },
+  {
+   "key": "morale.daily_decay_base",
+   "value": 1.0,
+   "unit": "points/day",
+   "min": 0.0,
+   "max": 10.0,
+   "provisional": true,
+   "owner": "N8",
+   "source": "design placeholder",
+   "scale": "morale_decay_rate",
+   "scale_mode": "mul"
+  },
+  {
+   "key": "ammo.powder_loss_pct_per_day_wet",
+   "value": 25.0,
+   "unit": "% powder/day",
+   "min": 0.0,
+   "max": 100.0,
+   "provisional": true,
+   "owner": "N9",
+   "source": "design placeholder",
+   "scale": "ammo_dampness_rate",
+   "scale_mode": "mul"
+  },
+  {
+   "key": "cargo.overload_speed_penalty_pct_per_pct",
+   "value": 0.6,
+   "unit": "% speed per % overload",
+   "min": 0.0,
+   "max": 3.0,
+   "provisional": true,
+   "owner": "N10",
+   "source": "design placeholder"
+  },
+  {
+   "key": "weather.gale_wave_height_m",
+   "value": 6.0,
+   "unit": "m",
+   "min": 2.0,
+   "max": 20.0,
+   "provisional": true,
+   "owner": "N11",
+   "source": "design placeholder",
+   "scale": "weather_severity",
+   "scale_mode": "mul"
+  }
+ ]
+}

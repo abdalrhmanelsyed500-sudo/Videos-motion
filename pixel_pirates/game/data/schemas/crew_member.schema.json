@@ -1,0 +1,119 @@
+{
+ "kind": "crew_member",
+ "key_field": "id",
+ "id_prefix": "crew",
+ "record": {
+  "type": "object",
+  "required": [
+   "id",
+   "name",
+   "age",
+   "gender",
+   "role",
+   "sprite",
+   "stats",
+   "loyalty_start"
+  ],
+  "props": {
+   "id": {
+    "type": "string",
+    "pattern": "^crew_[a-z0-9]+(_[a-z0-9]+)*$"
+   },
+   "name": {
+    "type": "string",
+    "pattern": "^.{2,40}$"
+   },
+   "age": {
+    "type": "integer",
+    "min": 16,
+    "max": 75
+   },
+   "gender": {
+    "type": "string",
+    "enum": [
+     "male"
+    ]
+   },
+   "role": {
+    "type": "string",
+    "enum": [
+     "captain",
+     "first_mate",
+     "navigator",
+     "carpenter",
+     "surgeon",
+     "cook",
+     "gunner",
+     "lookout",
+     "sailor",
+     "boatswain"
+    ]
+   },
+   "sprite": {
+    "type": "string",
+    "ref": "asset"
+   },
+   "stats": {
+    "type": "object",
+    "required": [
+     "strength",
+     "endurance",
+     "seamanship",
+     "fighting",
+     "craft"
+    ],
+    "props": {
+     "strength": {
+      "type": "integer",
+      "min": 1,
+      "max": 10
+     },
+     "endurance": {
+      "type": "integer",
+      "min": 1,
+      "max": 10
+     },
+     "seamanship": {
+      "type": "integer",
+      "min": 1,
+      "max": 10
+     },
+     "fighting": {
+      "type": "integer",
+      "min": 1,
+      "max": 10
+     },
+     "craft": {
+      "type": "integer",
+      "min": 1,
+      "max": 10
+     }
+    }
+   },
+   "loyalty_start": {
+    "type": "integer",
+    "min": 0,
+    "max": 100
+   },
+   "speech_style": {
+    "type": "string",
+    "pattern": "^.{1,300}$"
+   },
+   "backstory": {
+    "type": "string",
+    "pattern": "^.{1,1200}$"
+   },
+   "provisional": {
+    "type": "boolean"
+   },
+   "owner": {
+    "type": "string",
+    "pattern": "^[A-Z][0-9]{1,2}$"
+   },
+   "source": {
+    "type": "string",
+    "pattern": "^.{1,200}$"
+   }
+  }
+ }
+}

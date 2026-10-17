@@ -17,7 +17,7 @@ GAME = ROOT / "game"
 problems: list[str] = []
 warnings: list[str] = []
 
-DATA_KINDS = {"isl", "reg", "crew", "npc", "item", "rcp", "ship", "evt", "loc", "fac", "qst", "dlg", "clue"}
+DATA_KINDS = {"isl", "reg", "crew", "npc", "item", "rcp", "ship", "evt", "loc", "fac", "qst", "dlg", "clue", "mode"}
 ASSET_PREFIXES = {"spr", "til", "prp", "shp", "ico", "fx", "ui", "bg"}
 RE_DATA = re.compile(r"^[a-z]+(_[a-z0-9]+)+$")
 RE_ISLAND = re.compile(r"^isl_[0-9]{3}$")
@@ -37,7 +37,7 @@ def valid_asset_id(i: str) -> bool:
 
 def self_test() -> None:
     """mirror of game/tests/test_ids.gd so the regex logic is verified even without Godot."""
-    cases = [("isl_001", 1), ("isl_1", 0), ("isl_sunken_bay", 0), ("item_hardtack", 1), ("crew_old_tomas", 1),
+    cases = [("isl_001", 1), ("isl_1", 0), ("isl_sunken_bay", 0), ("item_hardtack", 1), ("crew_old_tomas", 1), ("mode_normal", 1),
              ("Item_Hardtack", 0), ("item-hardtack", 0), ("banana_split", 0), ("item", 0)]
     for s, want in cases:
         if valid_data_id(s) != bool(want):
@@ -100,7 +100,7 @@ def check_data() -> None:
                 problems.append(f"id grammar: {rel}{path} = {v!r}")
         # crew records: HARD RULE 1 (no female characters in the crew)
         if "/crew/" in str(f).replace("\\", "/"):
-            recs = d if isinstance(d, list) else d.get("crew", [d]) if isinstance(d, dict) else []
+            recs = d if isinstance(d, list) else d.get("records", d.get("crew", [d])) if isinstance(d, dict) else []
             for r in recs:
                 if isinstance(r, dict) and str(r.get("gender", "male")).lower() not in ("male", "m"):
                     problems.append(f"CONTENT RULE 1: crew record {r.get('id')} in {rel} is not male")
@@ -128,6 +128,19 @@ def check_manifest() -> None:
             warnings.append(f"final art without manifest entry (add it): {p.relative_to(ROOT)}")
 
 
+def check_data_model() -> None:
+    """A5: schema + reference + world-rule validation of every data file, and Python/GDScript validator parity."""
+    sys.path.insert(0, str(ROOT / "tools" / "data_tools"))
+    import validate_data  # noqa: PLC0415
+    import test_parity  # noqa: PLC0415
+    probs, info, res = validate_data.run()
+    problems.extend(f"data model: {p}" for p in probs)
+    warnings.extend(f"data info: {i}" for i in info if i.startswith("world target"))
+    if test_parity.run_all() != 0:
+        problems.append("data model: validator parity fixtures failed (tools/data_tools/test_parity.py)")
+    print("data model:", ", ".join(f"{k}={v}" for k, v in sorted(res["counts"].items())))
+
+
 def check_gdscript() -> None:
     exe = shutil.which("gdparse") or str(Path(sys.executable).parent / "gdparse")
     if not Path(exe).exists() and not shutil.which("gdparse"):
@@ -144,6 +157,7 @@ def main() -> int:
     check_names()
     check_data()
     check_manifest()
+    check_data_model()
     check_gdscript()
     for w in warnings:
         print("WARN ", w)

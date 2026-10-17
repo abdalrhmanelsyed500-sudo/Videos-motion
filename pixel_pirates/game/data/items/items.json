@@ -1,0 +1,302 @@
+{
+ "schema": 1,
+ "kind": "item",
+ "records": [
+  {
+   "id": "item_hardtack",
+   "name": "Hardtack",
+   "category": "food",
+   "weight_kg": 1.0,
+   "base_value": 4,
+   "stack_max": 200,
+   "icon": "ico_item_hardtack",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "nutrition": {
+    "kcal_per_kg": 3500,
+    "protein_g_per_kg": 100
+   },
+   "perishable": {
+    "shelf_days": 365,
+    "moisture_sensitive": true,
+    "rat_attraction": 0.6
+   },
+   "tags": [
+    "ration",
+    "dry"
+   ]
+  },
+  {
+   "id": "item_salt_meat",
+   "name": "Salt Meat",
+   "category": "food",
+   "weight_kg": 1.0,
+   "base_value": 9,
+   "stack_max": 100,
+   "icon": "ico_item_salt_meat",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "nutrition": {
+    "kcal_per_kg": 2200,
+    "protein_g_per_kg": 250
+   },
+   "perishable": {
+    "shelf_days": 540,
+    "moisture_sensitive": false,
+    "rat_attraction": 0.5
+   },
+   "tags": [
+    "ration",
+    "preserved"
+   ]
+  },
+  {
+   "id": "item_fresh_fish",
+   "name": "Fresh Fish",
+   "category": "food",
+   "weight_kg": 1.0,
+   "base_value": 3,
+   "stack_max": 50,
+   "icon": "ico_item_fresh_fish",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "nutrition": {
+    "kcal_per_kg": 1100,
+    "protein_g_per_kg": 200,
+    "vitamin_c_mg_per_kg": 20
+   },
+   "perishable": {
+    "shelf_days": 1.0,
+    "moisture_sensitive": false,
+    "rat_attraction": 0.8
+   },
+   "tags": [
+    "fresh",
+    "catch"
+   ]
+  },
+  {
+   "id": "item_water_barrel",
+   "name": "Water Barrel",
+   "category": "drink",
+   "weight_kg": 120.0,
+   "base_value": 12,
+   "stack_max": 10,
+   "icon": "ico_item_water_barrel",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "capacity_l": 100,
+   "perishable": {
+    "shelf_days": 30,
+    "moisture_sensitive": false,
+    "rat_attraction": 0.0
+   },
+   "tags": [
+    "water"
+   ]
+  },
+  {
+   "id": "item_grog",
+   "name": "Grog",
+   "category": "drink",
+   "weight_kg": 1.0,
+   "base_value": 5,
+   "stack_max": 100,
+   "icon": "ico_item_grog",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "perishable": {
+    "shelf_days": 120,
+    "moisture_sensitive": false,
+    "rat_attraction": 0.1
+   },
+   "tags": [
+    "morale"
+   ]
+  },
+  {
+   "id": "item_gunpowder",
+   "name": "Gunpowder",
+   "category": "ammo",
+   "weight_kg": 25.0,
+   "base_value": 40,
+   "stack_max": 20,
+   "icon": "ico_item_gunpowder",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "perishable": {
+    "shelf_days": 730,
+    "moisture_sensitive": true,
+    "rat_attraction": 0.0
+   },
+   "tags": [
+    "dry_only"
+   ]
+  },
+  {
+   "id": "item_cannonball",
+   "name": "Cannonball",
+   "category": "ammo",
+   "weight_kg": 4.5,
+   "base_value": 6,
+   "stack_max": 100,
+   "icon": "ico_item_cannonball",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "tags": [
+    "shot"
+   ]
+  },
+  {
+   "id": "item_lime",
+   "name": "Lime",
+   "category": "medicine",
+   "weight_kg": 1.0,
+   "base_value": 6,
+   "stack_max": 100,
+   "icon": "ico_item_lime",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "nutrition": {
+    "kcal_per_kg": 300,
+    "vitamin_c_mg_per_kg": 290
+   },
+   "perishable": {
+    "shelf_days": 20,
+    "moisture_sensitive": false,
+    "rat_attraction": 0.2
+   },
+   "tags": [
+    "antiscorbutic"
+   ]
+  },
+  {
+   "id": "item_bandage",
+   "name": "Bandage",
+   "category": "medicine",
+   "weight_kg": 0.1,
+   "base_value": 3,
+   "stack_max": 200,
+   "icon": "ico_item_bandage",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "tags": [
+    "wound"
+   ]
+  },
+  {
+   "id": "item_rope",
+   "name": "Rope",
+   "category": "ship_part",
+   "weight_kg": 5.0,
+   "base_value": 8,
+   "stack_max": 50,
+   "icon": "ico_item_rope",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "tags": [
+    "rigging"
+   ]
+  },
+  {
+   "id": "item_plank",
+   "name": "Plank",
+   "category": "ship_part",
+   "weight_kg": 12.0,
+   "base_value": 7,
+   "stack_max": 100,
+   "icon": "ico_item_plank",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "tags": [
+    "repair"
+   ]
+  },
+  {
+   "id": "item_tar",
+   "name": "Tar",
+   "category": "ship_part",
+   "weight_kg": 10.0,
+   "base_value": 10,
+   "stack_max": 50,
+   "icon": "ico_item_tar",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "tags": [
+    "repair"
+   ]
+  },
+  {
+   "id": "item_canvas",
+   "name": "Canvas",
+   "category": "ship_part",
+   "weight_kg": 8.0,
+   "base_value": 14,
+   "stack_max": 50,
+   "icon": "ico_item_canvas",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "tags": [
+    "sails"
+   ]
+  },
+  {
+   "id": "item_hammer",
+   "name": "Hammer",
+   "category": "tool",
+   "weight_kg": 1.2,
+   "base_value": 15,
+   "stack_max": 5,
+   "icon": "ico_item_hammer",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "tags": [
+    "carpenter"
+   ]
+  },
+  {
+   "id": "item_fishing_line",
+   "name": "Fishing Line",
+   "category": "tool",
+   "weight_kg": 0.2,
+   "base_value": 4,
+   "stack_max": 20,
+   "icon": "ico_item_fishing_line",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "tags": [
+    "fishing"
+   ]
+  },
+  {
+   "id": "item_coin",
+   "name": "Coin",
+   "category": "trade",
+   "weight_kg": 0.01,
+   "base_value": 1,
+   "stack_max": 100000,
+   "icon": "ico_item_coin",
+   "provisional": true,
+   "owner": "N1",
+   "source": "design placeholder",
+   "tags": [
+    "currency"
+   ]
+  }
+ ]
+}

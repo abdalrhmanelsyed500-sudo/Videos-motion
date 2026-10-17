@@ -1,0 +1,694 @@
+{
+ "_doc": "Shared by tools/data_tools/test_parity.py and game/tests/test_schema.gd. ref lookup: kind item knows item_hardtack and item_rope.",
+ "ref_known": {
+  "item": [
+   "item_hardtack",
+   "item_rope"
+  ]
+ },
+ "cases": [
+  {
+   "name": "object ok",
+   "schema": {
+    "type": "object",
+    "required": [
+     "a"
+    ],
+    "props": {
+     "a": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+     },
+     "b": {
+      "type": "string",
+      "pattern": "^x[0-9]$"
+     }
+    }
+   },
+   "value": {
+    "a": 3,
+    "b": "x1"
+   },
+   "error_paths": []
+  },
+  {
+   "name": "missing required",
+   "schema": {
+    "type": "object",
+    "required": [
+     "a"
+    ],
+    "props": {
+     "a": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+     },
+     "b": {
+      "type": "string",
+      "pattern": "^x[0-9]$"
+     }
+    }
+   },
+   "value": {
+    "b": "x1"
+   },
+   "error_paths": [
+    "$.a"
+   ]
+  },
+  {
+   "name": "unknown key is an error",
+   "schema": {
+    "type": "object",
+    "required": [
+     "a"
+    ],
+    "props": {
+     "a": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+     },
+     "b": {
+      "type": "string",
+      "pattern": "^x[0-9]$"
+     }
+    }
+   },
+   "value": {
+    "a": 2,
+    "zzz": 1
+   },
+   "error_paths": [
+    "$.zzz"
+   ]
+  },
+  {
+   "name": "integer below min",
+   "schema": {
+    "type": "object",
+    "required": [
+     "a"
+    ],
+    "props": {
+     "a": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+     },
+     "b": {
+      "type": "string",
+      "pattern": "^x[0-9]$"
+     }
+    }
+   },
+   "value": {
+    "a": 0
+   },
+   "error_paths": [
+    "$.a"
+   ]
+  },
+  {
+   "name": "integer above max",
+   "schema": {
+    "type": "object",
+    "required": [
+     "a"
+    ],
+    "props": {
+     "a": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+     },
+     "b": {
+      "type": "string",
+      "pattern": "^x[0-9]$"
+     }
+    }
+   },
+   "value": {
+    "a": 6
+   },
+   "error_paths": [
+    "$.a"
+   ]
+  },
+  {
+   "name": "integer accepts 3.0",
+   "schema": {
+    "type": "object",
+    "required": [
+     "a"
+    ],
+    "props": {
+     "a": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+     },
+     "b": {
+      "type": "string",
+      "pattern": "^x[0-9]$"
+     }
+    }
+   },
+   "value": {
+    "a": 3.0
+   },
+   "error_paths": []
+  },
+  {
+   "name": "integer rejects 3.5",
+   "schema": {
+    "type": "object",
+    "required": [
+     "a"
+    ],
+    "props": {
+     "a": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+     },
+     "b": {
+      "type": "string",
+      "pattern": "^x[0-9]$"
+     }
+    }
+   },
+   "value": {
+    "a": 3.5
+   },
+   "error_paths": [
+    "$.a"
+   ]
+  },
+  {
+   "name": "bool is not a number",
+   "schema": {
+    "type": "object",
+    "required": [
+     "a"
+    ],
+    "props": {
+     "a": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+     },
+     "b": {
+      "type": "string",
+      "pattern": "^x[0-9]$"
+     }
+    }
+   },
+   "value": {
+    "a": true
+   },
+   "error_paths": [
+    "$.a"
+   ]
+  },
+  {
+   "name": "string pattern fail",
+   "schema": {
+    "type": "object",
+    "required": [
+     "a"
+    ],
+    "props": {
+     "a": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+     },
+     "b": {
+      "type": "string",
+      "pattern": "^x[0-9]$"
+     }
+    }
+   },
+   "value": {
+    "a": 1,
+    "b": "y1"
+   },
+   "error_paths": [
+    "$.b"
+   ]
+  },
+  {
+   "name": "wrong type string for integer",
+   "schema": {
+    "type": "object",
+    "required": [
+     "a"
+    ],
+    "props": {
+     "a": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+     },
+     "b": {
+      "type": "string",
+      "pattern": "^x[0-9]$"
+     }
+    }
+   },
+   "value": {
+    "a": "3"
+   },
+   "error_paths": [
+    "$.a"
+   ]
+  },
+  {
+   "name": "root wrong type",
+   "schema": {
+    "type": "object",
+    "required": [
+     "a"
+    ],
+    "props": {
+     "a": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+     },
+     "b": {
+      "type": "string",
+      "pattern": "^x[0-9]$"
+     }
+    }
+   },
+   "value": [
+    1,
+    2
+   ],
+   "error_paths": [
+    "$"
+   ]
+  },
+  {
+   "name": "number ok",
+   "schema": {
+    "type": "number",
+    "min": 0,
+    "max": 1
+   },
+   "value": 0.5,
+   "error_paths": []
+  },
+  {
+   "name": "number int ok",
+   "schema": {
+    "type": "number",
+    "min": 0,
+    "max": 1
+   },
+   "value": 1,
+   "error_paths": []
+  },
+  {
+   "name": "number high",
+   "schema": {
+    "type": "number",
+    "min": 0,
+    "max": 1
+   },
+   "value": 1.01,
+   "error_paths": [
+    "$"
+   ]
+  },
+  {
+   "name": "number string",
+   "schema": {
+    "type": "number",
+    "min": 0,
+    "max": 1
+   },
+   "value": "0.5",
+   "error_paths": [
+    "$"
+   ]
+  },
+  {
+   "name": "enum ok",
+   "schema": {
+    "type": "string",
+    "enum": [
+     "male"
+    ]
+   },
+   "value": "male",
+   "error_paths": []
+  },
+  {
+   "name": "enum rejects other (content rule 1)",
+   "schema": {
+    "type": "string",
+    "enum": [
+     "male"
+    ]
+   },
+   "value": "female",
+   "error_paths": [
+    "$"
+   ]
+  },
+  {
+   "name": "array ok",
+   "schema": {
+    "type": "array",
+    "min_items": 1,
+    "max_items": 3,
+    "unique_items": true,
+    "items": {
+     "type": "string",
+     "pattern": "^[a-z]+$"
+    }
+   },
+   "value": [
+    "a",
+    "b"
+   ],
+   "error_paths": []
+  },
+  {
+   "name": "array empty",
+   "schema": {
+    "type": "array",
+    "min_items": 1,
+    "max_items": 3,
+    "unique_items": true,
+    "items": {
+     "type": "string",
+     "pattern": "^[a-z]+$"
+    }
+   },
+   "value": [],
+   "error_paths": [
+    "$"
+   ]
+  },
+  {
+   "name": "array too long",
+   "schema": {
+    "type": "array",
+    "min_items": 1,
+    "max_items": 3,
+    "unique_items": true,
+    "items": {
+     "type": "string",
+     "pattern": "^[a-z]+$"
+    }
+   },
+   "value": [
+    "a",
+    "b",
+    "c",
+    "d"
+   ],
+   "error_paths": [
+    "$"
+   ]
+  },
+  {
+   "name": "array duplicate",
+   "schema": {
+    "type": "array",
+    "min_items": 1,
+    "max_items": 3,
+    "unique_items": true,
+    "items": {
+     "type": "string",
+     "pattern": "^[a-z]+$"
+    }
+   },
+   "value": [
+    "a",
+    "b",
+    "a"
+   ],
+   "error_paths": [
+    "$[2]"
+   ]
+  },
+  {
+   "name": "array bad item",
+   "schema": {
+    "type": "array",
+    "min_items": 1,
+    "max_items": 3,
+    "unique_items": true,
+    "items": {
+     "type": "string",
+     "pattern": "^[a-z]+$"
+    }
+   },
+   "value": [
+    "a",
+    "B1"
+   ],
+   "error_paths": [
+    "$[1]"
+   ]
+  },
+  {
+   "name": "nested path",
+   "schema": {
+    "type": "object",
+    "props": {
+     "l": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "required": [
+        "q"
+       ],
+       "props": {
+        "q": {
+         "type": "number"
+        }
+       }
+      }
+     }
+    }
+   },
+   "value": {
+    "l": [
+     {
+      "q": 1
+     },
+     {
+      "z": 2
+     }
+    ]
+   },
+   "error_paths": [
+    "$.l[1].q",
+    "$.l[1].z"
+   ]
+  },
+  {
+   "name": "values ok",
+   "schema": {
+    "type": "object",
+    "values": {
+     "type": "number",
+     "min": 0,
+     "max": 3
+    }
+   },
+   "value": {
+    "x": 1,
+    "y": 2.5
+   },
+   "error_paths": []
+  },
+  {
+   "name": "values bad",
+   "schema": {
+    "type": "object",
+    "values": {
+     "type": "number",
+     "min": 0,
+     "max": 3
+    }
+   },
+   "value": {
+    "x": 1,
+    "y": 4
+   },
+   "error_paths": [
+    "$.y"
+   ]
+  },
+  {
+   "name": "props take precedence over values",
+   "schema": {
+    "type": "object",
+    "props": {
+     "k": {
+      "type": "string"
+     }
+    },
+    "values": {
+     "type": "number"
+    }
+   },
+   "value": {
+    "k": "s",
+    "n": 1
+   },
+   "error_paths": []
+  },
+  {
+   "name": "extra true allows unknown",
+   "schema": {
+    "type": "object",
+    "extra": true,
+    "props": {
+     "a": {
+      "type": "number"
+     }
+    }
+   },
+   "value": {
+    "a": 1,
+    "q": "anything"
+   },
+   "error_paths": []
+  },
+  {
+   "name": "boolean ok",
+   "schema": {
+    "type": "boolean"
+   },
+   "value": false,
+   "error_paths": []
+  },
+  {
+   "name": "boolean bad",
+   "schema": {
+    "type": "boolean"
+   },
+   "value": 0,
+   "error_paths": [
+    "$"
+   ]
+  },
+  {
+   "name": "empty string matches optional pattern",
+   "schema": {
+    "type": "string",
+    "pattern": "^(isl_[0-9]{3})?$"
+   },
+   "value": "",
+   "error_paths": []
+  },
+  {
+   "name": "island id good",
+   "schema": {
+    "type": "string",
+    "pattern": "^isl_[0-9]{3}$"
+   },
+   "value": "isl_042",
+   "error_paths": []
+  },
+  {
+   "name": "island id bad",
+   "schema": {
+    "type": "string",
+    "pattern": "^isl_[0-9]{3}$"
+   },
+   "value": "isl_42",
+   "error_paths": [
+    "$"
+   ]
+  },
+  {
+   "name": "ref ok",
+   "schema": {
+    "type": "object",
+    "props": {
+     "i": {
+      "type": "string",
+      "ref": "item"
+     },
+     "m": {
+      "type": "object",
+      "key_ref": "item",
+      "values": {
+       "type": "number"
+      }
+     }
+    }
+   },
+   "value": {
+    "i": "item_rope",
+    "m": {
+     "item_hardtack": 2
+    }
+   },
+   "error_paths": []
+  },
+  {
+   "name": "ref unknown",
+   "schema": {
+    "type": "object",
+    "props": {
+     "i": {
+      "type": "string",
+      "ref": "item"
+     },
+     "m": {
+      "type": "object",
+      "key_ref": "item",
+      "values": {
+       "type": "number"
+      }
+     }
+    }
+   },
+   "value": {
+    "i": "item_nope"
+   },
+   "error_paths": [
+    "$.i"
+   ]
+  },
+  {
+   "name": "key_ref unknown",
+   "schema": {
+    "type": "object",
+    "props": {
+     "i": {
+      "type": "string",
+      "ref": "item"
+     },
+     "m": {
+      "type": "object",
+      "key_ref": "item",
+      "values": {
+       "type": "number"
+      }
+     }
+    }
+   },
+   "value": {
+    "m": {
+     "item_nope": 1
+    }
+   },
+   "error_paths": [
+    "$.m.item_nope"
+   ]
+  }
+ ]
+}
