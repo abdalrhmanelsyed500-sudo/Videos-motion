@@ -104,13 +104,13 @@ class Episode:
         return {f'arm{side}_up': {'rot': g * D2R(34 + 4 * osc)}, f'arm{side}_lo': {'rot': g * D2R(62 + 8 * osc)}, f'hand{side}': {'rot': g * D2R(6 * osc)}}, {f'hand{side}': 'hand_open'}
 
     # ------------------------------------------------------------ front-view state
-    def front_state(self, A, who, t, x0):
+    def front_state(self, A, who, t, x0, sxt=1.0, syt=1.0):
         rig = A.rigs['front']; ph = 0.0 if who == 'z' else 1.7
         br = 0.012 * math.sin(2 * math.pi * t / 3.2 + ph)
         pose = {'spine': {'sy': 1 + br, 'rot': D2R(0.8) * math.sin(2 * math.pi * t / 5.3 + ph)},
                 'head': {'rot': D2R(1.4) * math.sin(2 * math.pi * t / 4.1 + ph), 'ty': -2.0 * br * 100},
                 'armR_up': {'rot': D2R(-4.0) + D2R(-1.0) * math.sin(2 * math.pi * t / 3.2 + ph)}, 'armL_up': {'rot': D2R(4.0) + D2R(1.0) * math.sin(2 * math.pi * t / 3.2 + ph + .5)},
-                'armR_lo': {'rot': D2R(-7)}, 'armL_lo': {'rot': D2R(7)}, 'hips': {'rot': D2R(1.2) * math.sin(2 * math.pi * t / 6.0 + ph), 'ty': 0.0, 'tx': 3 * math.sin(2 * math.pi * t / 6.0 + ph)}}
+                'armR_lo': {'rot': D2R(-7)}, 'armL_lo': {'rot': D2R(7)}, 'hips': {'rot': D2R(1.2) * math.sin(2 * math.pi * t / 6.0 + ph), 'ty': 4.0, 'tx': 3 * math.sin(2 * math.pi * t / 6.0 + ph)}}
         swap = {}; zov = {}
         face = dict(blinkL=anim.blink_value(t, A.blinks), blinkR=anim.blink_value(t, A.blinks), look=(0.0, 0.0), browL=(.15, 0), browR=(.15, 0), mouth=F.mix_vis(F.VISEMES['rest'], F.VISEMES['smile'], .5))
         # listening
@@ -147,12 +147,14 @@ class Episode:
             if kind in ('wave', 'emph'): face['browL'] = face['browR'] = (max(face['browL'][0], .5 * w), .1)
             if kind == 'point': face['look'] = (0.9 if who == 'z' else -0.9, 0.0)
         # jump
-        root = {'x': x0}; feet_h = 0.0; air = False; shadow = 1.0; tuck = 0.0
+        root = {'x': x0}
+        if sxt != 1.0 or syt != 1.0: root.update(sx=sxt, sy=syt)
+        feet_h = 0.0; free = False; air = False; shadow = 1.0; tuck = 0.0
         sc = self.sc; tj = sc['jump'] + (0.0 if who == 'z' else 0.12); u = t - tj
         if u > -0.05 and u < 1.45:
             jp = jump_profile(u)
             pose['hips'] = {**pose.get('hips', {}), 'ty': pose['hips'].get('ty', 0) + jp['dy'], 'tx': 0.0}
-            root.update(y=-jp['h'], sx=jp['sx'], sy=jp['sy']); feet_h = jp['h']; air = jp['air']; tuck = jp['tuck']
+            root.update(y=-jp['h'], sx=jp['sx'] * sxt, sy=jp['sy'] * syt); feet_h = jp['h'] + max(0.0, jp['sy'] - 1.0) * 176 * 0.95; air = jp['air'] or jp['sy'] > 1.0; tuck = jp['tuck']; free = air
             a = jp['arms']
             pose = lerp_pose(pose, {**pose, 'armR_up': {'rot': D2R(-150)}, 'armL_up': {'rot': D2R(150)}, 'armR_lo': {'rot': D2R(-18)}, 'armL_lo': {'rot': D2R(18)}, 'handR': {'rot': 0}, 'handL': {'rot': 0}}, a)
             if a > .5: swap.update({'handR': 'hand_open', 'handL': 'hand_open'})
@@ -161,9 +163,9 @@ class Episode:
             shadow = 1.0 - clamp(jp['h'] / 160) * 0.6
         # legs: IK planted feet (front view), world targets
         for nm, g in (('L', -1), ('R', 1)):
-            fx = x0 + g * 36; fy = -36 - (feet_h - tuck if air else 0.0)
+            fx = x0 + g * 36 * root.get('sx', 1.0); fy = -36 - (feet_h - tuck if air else 0.0)
             rig.ik2(pose, (f'leg{nm}_up', f'leg{nm}_lo', f'foot{nm}'), (fx, fy), bend=1, end_rot=0.0 if not air else D2R(g * -8), root=root)
-        return dict(view='front', root=root, pose=pose, face=face, swap=swap, zov=({'upperarmR': 60, 'forearmR': 61, 'handR': 62, 'upperarmL': 60, 'forearmL': 61, 'handL': 62}), shadow=shadow, x=x0)
+        return dict(view='front', root=root, pose=pose, face=face, swap=swap, zov=({'upperarmR': 60, 'forearmR': 61, 'handR': 62, 'upperarmL': 60, 'forearmL': 61, 'handL': 62}), shadow=shadow, x=x0, free=free)
 
     def side_state(self, A, who, t, walker, d):
         rig = A.rigs['side']; rx, pose = walker.state(t)
@@ -180,9 +182,8 @@ class Episode:
             st = self.side_state(A, who, t, walker, d); k = ease_io(u / 0.5)
             st['root']['sx'] = lerp(1.0, 0.10, k); st['root']['sy'] = 1 + 0.04 * k
             return st
-        st = self.front_state(A, who, t, x0); k = ease_io((u - 0.5) / 0.5)
-        st['root']['sx'] = lerp(0.10, 1.0, anim.ease_out_back(k, 1.2)) if 'sx' not in st['root'] else st['root']['sx']
-        st['root']['sy'] = st['root'].get('sy', 1.0) * (1 + 0.04 * (1 - k))
+        k = ease_io((u - 0.5) / 0.5); sxv = lerp(0.10, 1.0, anim.ease_out_back(k, 1.2))
+        st = self.front_state(A, who, t, x0, sxt=sxv, syt=1 + 0.04 * (1 - k))
         return st
 
     # ------------------------------------------------------------ build
