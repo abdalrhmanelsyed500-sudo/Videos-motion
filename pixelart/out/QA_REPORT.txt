@@ -1,0 +1,14 @@
+QA
+frames checked: 56; off-palette frames: 0; orphan pixels: 0
+  lowest opaque row idle/down: [29, 29, 29, 29]
+  lowest opaque row idle/up: [29, 29, 29, 29]
+  lowest opaque row idle/right: [29, 29, 29, 29]
+  lowest opaque row idle/left: [29, 29, 29, 29]
+  lowest opaque row walk/down: [29, 29, 29, 29, 29, 29]
+  lowest opaque row walk/up: [29, 29, 29, 29, 29, 29]
+  lowest opaque row walk/right: [29, 29, 29, 29, 29, 29]
+  lowest opaque row walk/left: [29, 29, 29, 29, 29, 29]
+  lowest opaque row shoot/down: [29, 29, 29, 29]
+  lowest opaque row shoot/up: [29, 29, 29, 29]
+  lowest opaque row shoot/right: [29, 29, 29, 29]
+  lowest opaque row shoot/left: [29, 29, 29, 29]

@@ -1,0 +1,34 @@
+GIMP Palette
+Name: Ranger
+Columns: 5
+#
+ 22  29  51  armor_0
+ 43  61  99  armor_1
+ 70 104 160  armor_2
+123 163 214  armor_3
+191 224 247  armor_4
+ 74  29  25  orange_0
+156  58  28  orange_1
+224 112  31  orange_2
+255 164  58  orange_3
+255 215 138  orange_4
+  8  48  63  visor_0
+ 20 112 127  visor_1
+ 47 210 222  visor_2
+143 243 240  visor_3
+242 255 255  visor_4
+ 14  17  28  under_0
+ 29  34  52  under_1
+ 50  58  82  under_2
+ 80  91 120  under_3
+124 136 166  under_4
+ 16  19  28  metal_0
+ 42  48  61  metal_1
+ 80  90 108  metal_2
+135 147 168  metal_3
+201 211 226  metal_4
+ 15  77  94  glow_0
+ 31 167 184  glow_1
+ 95 240 240  glow_2
+200 255 255  glow_3
+255 255 255  glow_4
