@@ -1,0 +1,8 @@
+PENGUIN COMMANDO - QA REPORT (automated)
+
+frames rendered: 260  (7 animations x 4 directions)
+frames touching the 64x64 border with opaque pixels: 0
+off-palette colours (opaque pixels): 0
+isolated single pixels per animation (blood drops, casings, muzzle sparks are intentional): {'idle': 0, 'walk': 0, 'run': 0, 'shoot': 0, 'reload': 0, 'hit': 13, 'death': 14}
+
+not covered by automation: how good the poses look. That was reviewed by eye in zoomed contact sheets (see README, known weaknesses).

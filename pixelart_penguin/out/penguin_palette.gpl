@@ -1,0 +1,69 @@
+GIMP Palette
+Name: Penguin Commando
+Columns: 5
+#
+  9  12  22	body_0
+ 24  32  56	body_1
+ 43  56  88	body_2
+ 69  90 133	body_3
+112 136 184	body_4
+ 10  14  28	flip_0
+ 28  40  68	flip_1
+ 49  67 106	flip_2
+ 79 106 156	flip_3
+130 160 207	flip_4
+ 56  66  95	belly_0
+135 148 182	belly_1
+207 215 234	belly_2
+238 242 250	belly_3
+255 255 255	belly_4
+ 74  26  20	orange_0
+168  67  26	orange_1
+242 122  29	orange_2
+255 174  59	orange_3
+255 224 138	orange_4
+ 50   8  26	red_0
+120  22  40	red_1
+196  40  58	red_2
+236  90  82	red_3
+255 156 140	red_4
+ 22  29  16	olive_0
+ 43  55  28	olive_1
+ 71  90  45	olive_2
+108 130  67	olive_3
+157 180 104	olive_4
+ 11  13  18	metal_0
+ 36  42  53	metal_1
+ 72  81 100	metal_2
+122 133 153	metal_3
+195 205 219	metal_4
+ 36  13   7	wood_0
+ 88  39  15	wood_1
+140  69  32	wood_2
+189 109  51	wood_3
+234 164  92	wood_4
+ 70  41  10	brass_0
+138  90  20	brass_1
+217 162  30	brass_2
+247 214  90	brass_3
+255 243 176	brass_4
+  5   6  10	pupil_0
+  5   6  10	pupil_1
+ 12  15  24	pupil_2
+ 26  32  51	pupil_3
+ 43  56  88	pupil_4
+138  42  16	flash_0
+255 122  26	flash_1
+255 200  58	flash_2
+255 240 160	flash_3
+255 255 255	flash_4
+ 38   5  15	blood_0
+ 90  14  28	blood_1
+140  24  38	blood_2
+194  40  58	blood_3
+232  80  90	blood_4
+106  20  40	hurt_0
+216  72  79	hurt_1
+255 148 140	hurt_2
+255 212 204	hurt_3
+255 255 255	hurt_4
