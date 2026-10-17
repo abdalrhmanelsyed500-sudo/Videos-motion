@@ -7,16 +7,17 @@ from rigkit.vec import Art
 from rigkit.face import _pack, _get, _q, VISEMES, DEFAULT_FACE
 RIGB = os.path.join(HERE, 'characters', 'sufan', 'rig_side')
 PPU = 3.336; OX, OY = 960.0, 2184.0
+LEG_RAISE = 130   # px: hip joint raised INTO the belly (hidden behind it) so the legs can take real strides; visible leg/boots unchanged at rest
 def U(px, py): return [(px - OX) / PPU, (py - OY) / PPU]
 BONES_PX = {
  'root': (None, (960, 2184), None), 'hips': ('root', (960, 1880), [-20, 20]), 'spine': ('hips', (960, 1880), [-25, 25]),
  'head': ('spine', (900, 1060), [-40, 40]), 'hat': ('head', (880, 520), [-35, 35]), 'earR': ('head', (902, 520), [-50, 50]),
  'armL_up': ('spine', (880, 1090), [-170, 100]), 'armL_lo': ('armL_up', (880, 1280), [-140, 8]), 'handL': ('armL_lo', (890, 1550), [-70, 70]),
  'armR_up': ('spine', (880, 1090), [-170, 100]), 'armR_lo': ('armR_up', (880, 1280), [-140, 8]), 'handR': ('armR_lo', (890, 1550), [-70, 70]),
- 'legL_up': ('hips', (960, 1900), [-60, 60]), 'legL_lo': ('legL_up', (960, 1970), [-5, 120]), 'footL': ('legL_lo', (960, 2032), [-65, 65]),
- 'legR_up': ('hips', (960, 1900), [-60, 60]), 'legR_lo': ('legR_up', (960, 1970), [-5, 120]), 'footR': ('legR_lo', (960, 2036), [-65, 65]),
+ 'legL_up': ('hips', (960, 1900 - LEG_RAISE), [-60, 60]), 'legL_lo': ('legL_up', (960, 1970), [-5, 120]), 'footL': ('legL_lo', (960, 2032), [-85, 85]),
+ 'legR_up': ('hips', (960, 1900 - LEG_RAISE), [-60, 60]), 'legR_lo': ('legR_up', (960, 1970), [-5, 120]), 'footR': ('legR_lo', (960, 2036), [-85, 85]),
 }
-EYE_C = (1224.0, 620.0); EYE_RX, EYE_RY = 50.0, 54.0; PUPIL_N = (1238.0, 626.0); PUPIL_R = (22.0, 30.0)
+EYE_C = (1236.5, 606.2); EYE_RX, EYE_RY = 30.0, 87.0; PUPIL_N = (1238.0, 626.0); PUPIL_R = (22.0, 30.0)   # eye = narrow profile lens hole of glasses.png (measured centre 1236.5/606.2, 62x181 px); old 100x108 ellipse overflowed the ring
 MOUTH_C = (1365.0, 810.0); BROW_C = (1226.0, 486.0)
 INK = (86, 24, 31)
 def fix_holes(im):
@@ -42,7 +43,17 @@ def build(outdir=None):
             'armUpL': ('armUp', 'armL_up'), 'armLoL': ('armLo', 'armL_lo'), 'handL': ('hand', 'handL'),
             'thighR': ('thighN', 'legR_up'), 'shinR': ('shinN', 'legR_lo'), 'bootR': ('bootN', 'footR'),
             'thighL': ('thighF', 'legL_up'), 'shinL': ('shinF', 'legL_lo'), 'bootL': ('bootF', 'footL')}
-    for n, (src, b) in spec.items(): save(n, fix_holes(ld(src)) if src == 'armLo' else ld(src), src, b)
+    for n, (src, b) in spec.items():
+        img = fix_holes(ld(src)) if src == 'armLo' else ld(src)
+        if src == 'glasses':    # temple tail poked out behind the ear as a stray dot when the ear/head moved -> end the temple under the ear
+            img = img.copy(); img[:, :44] = 0
+        if src == 'ear':        # remove the baked-in stray dark dot (old glasses-temple end) at the ear's front edge
+            img = img.copy(); dk = ((img[..., :3].max(axis=2) < 80) & (img[..., 3] > 100)).astype(np.uint8); dk[:, :200] = 0
+            dk = cv2.dilate(dk, np.ones((7, 7), np.uint8)); rgb = cv2.inpaint(np.ascontiguousarray(img[..., :3]), dk * 255, 6, cv2.INPAINT_TELEA)
+            img[..., :3] = np.where(dk[..., None] > 0, rgb, img[..., :3])
+        if src in ('thighN', 'thighF'):    # extend the (mostly hidden) thigh upward to the raised hip joint
+            pad = LEG_RAISE + 24; img = np.vstack([np.repeat(img[:1], pad, axis=0), img]); bb = dict(bb); bb[src] = [bb[src][0], bb[src][1] - pad] + list(bb[src][2:])
+        save(n, img, src, b)
     import sufan_hands as _H
     _H.add_variants(outdir, parts, {'handL': ((0.0, 1.0), -1), 'handR': ((0.0, 1.0), -1)})
     bones = [dict(name=n, parent=p, head=U(*h), limit=lim) for n, (p, h, lim) in BONES_PX.items()]
@@ -84,11 +95,11 @@ def eye_sprite(look=(0, 0), blink=0.0, squint=0.0, lidtilt=0.0, pupil=1.0, arc=0
             a.poly([(x, -ry - 16) for x in xs] + [(x, yl + lidtilt * 28 * (x / rx) * -1) for x in xs[::-1]], lc, clip=True)
             if blink > .06: a.curve([(x, yl + lidtilt * 28 * (x / rx) * -1) for x in xs[4:-4]], INK, 6.0, clip=False)
         if squint > .02:
-            ys = ry + 3 - squint * 46
+            ys = ry + 3 - squint * 70
             a.poly([(x, ys - 10 * (1 - (x / rx) ** 2)) for x in xs] + [(x, ry + 14) for x in xs[::-1]], lc, clip=True)
         if arc > .02:
             a.ellipse((0, 0), rx + 1, ry + 1, lc, clip=False)
-            a.curve([(x, ry * .30 - arc * 50 * (1 - (x / 44.0) ** 2)) for x in np.linspace(-44, 44, 32)], INK, 10.0, clip=False)
+            a.curve([(x, 10 - arc * 46 * (1 - (x / 26.0) ** 2)) for x in np.linspace(-26, 26, 32)], INK, 8.0, clip=False)   # arc kept INSIDE the narrow profile lens (inner hole 62 px wide, centre +12/-14 from EYE_C)
         return _tag(_pack(a, 0, 0))
     return _get(key, mk)
 
@@ -102,32 +113,49 @@ def brow_sprite(h=0.0, tilt=0.0):
         return _tag(_pack(a, 0, 0))
     return _get(key, mk)
 
+_XE = [(-110, 50), (-95, 58), (-65, 58), (-50, 54), (-35, 50), (-20, 46), (-5, 39), (10, 31), (25, 22), (40, 7), (55, -17), (70, -43)]
+def _xe(y):   # head silhouette x (relative to the mouth origin) at height y, measured from head.png
+    ys = [p[0] for p in _XE]; xs = [p[1] for p in _XE]; return float(np.interp(y, ys, xs))
 def mouth_sprite(m):
-    """profile mouth; origin = centre of the original smile curve. Back corner is free, the front end stays on the snout edge."""
-    key = ('sufmouthS',) + tuple(_q(m[k]) for k in ('open', 'wide', 'smile', 'round', 'teeth', 'tongue', 'lip'))
+    """PROFILE mouth (v2). Origin = centre of the original smile curve. Closed: the smile curve. Open: a wedge whose apex is the mouth corner (inside the cheek)
+    and whose front end opens onto the snout/chin silhouette (upper lip stays, lower lip drops) - not a frontal 'V' pasted on the cheek."""
+    key = ('sufmouthS2',) + tuple(_q(m[k]) for k in ('open', 'wide', 'smile', 'round', 'teeth', 'tongue', 'lip'))
     def mk():
         a = Art(-120, -110, 70, 200, ppu=1.0, ss=4)
         s = 0.67 + 0.7 * m['wide']; xb = -41 * s; yb = -20; xf, yf = 41.0, -46.0
-        A = 30 + 60 * m['smile']; xs = np.linspace(0, 1, 40); w = 9.0
+        A = 30 + 60 * m['smile']; N = 44; us = np.linspace(0, 1, N); w = 9.0
         line = lambda u: (xb + (xf - xb) * u, yb + (yf - yb) * u + A * math.sin(math.pi * u ** 0.8))
-        up = [line(u) for u in xs]
         if m['open'] < .03:
-            a.curve(up, INK, w); return _tag(_pack(a, 0, 0))
-        H = 6 + 100 * m['open']
-        if m['round'] > .5:
-            cx, cy = 6, 14 + H * .25; rx = 20 + 12 * (1 - m['round']) + 8 * m['wide']; ry = max(H * .5, 18)
-            a.ellipse((cx, cy), rx + 5, ry + 5, INK); a.ellipse((cx, cy), rx, ry, (122, 32, 46))
-            if m['tongue'] > .1: a.ellipse((cx, cy + ry * .5), rx * .6, ry * .45, (238, 110, 120), clip=True)
+            a.curve([line(u) for u in us], INK, w); return _tag(_pack(a, 0, 0))
+        op = min(1.0, m['open']); H = 10 + 60 * op ** .8; rd = m['round']
+        xfo = _xe(yf) - 3.0                                  # upper lip front end sits on the silhouette
+        k = min(1.0, op * 6.0); xF = xf + (xfo - xf) * k
+        if rd > .3:                                           # pursed / round: ring-shaped opening just inside the snout/chin front
+            ry = max(11.0, H * .5); rx = 15 + 9 * (1 - rd) + 8 * m['wide']; cy = yf + ry + 2
+            cx = min(_xe(cy + ry * .7) - rx * .72 - 3.0, _xe(cy) - rx - 1.5)
+            th = np.linspace(0, 2 * math.pi, 48, endpoint=False)
+            ring = [(cx + rx * math.cos(t), cy + ry * math.sin(t)) for t in th]
+            a.poly(ring, INK); a.poly([(cx + (rx - 5) * math.cos(t), cy + (ry - 5) * math.sin(t)) for t in th], (122, 32, 46))
+            if m['tongue'] > .1: a.ellipse((cx - 1, cy + ry * .45), rx * .6, ry * .38, (238, 110, 120), clip=True)
             return _tag(_pack(a, 0, 0))
-        lo = [(x - .22 * H * math.sin(math.pi * u), y + H * math.sin(math.pi * u) ** .8) for (x, y), u in zip(up, xs)][::-1]
-        shape = up + lo
-        a.poly(shape, INK, outline=INK, ow=5); a.poly(shape, (122, 32, 46))
+        if True:
+            Ao = A * (1 - .55 * op)
+            ul = lambda u: (xb + (xF - xb) * u, yb + (yf - yb) * u + Ao * math.sin(math.pi * u ** 0.8))
+            up = [ul(u) for u in us]
+            yl = yf + H; xl = _xe(yl) - 3.0
+            lo = [(x + (xl - xF) * u, y + H * u ** 0.9 + .12 * H * math.sin(math.pi * u)) for (x, y), u in zip(up, us)]
+        shape = up + lo[::-1]
+        a.poly(shape, (122, 32, 46))
         if m['tongue'] > .05:
-            a.ellipse((xb * .1 + 4, line(.45)[1] + H * .8), 30, H * .34 * (.4 + m['tongue'] * .6), (238, 108, 120), clip=True)
+            cx = lo[int(N * .42)][0]; cy = lo[int(N * .42)][1] - .14 * H
+            a.ellipse((cx, cy), 22 + 8 * m['tongue'], max(5, H * .26 * (.5 + m['tongue'] * .5)), (238, 108, 120), clip=True)
         if m['teeth'] > .05:
-            th = min(H * .5, 22 * m['teeth'] + 5)
-            a.poly(up + [(x, y + th * math.sin(math.pi * u) ** .6) for (x, y), u in zip(up, xs)][::-1], (255, 250, 240), clip=True)
-        a.curve(up, INK, w); return _tag(_pack(a, 0, 0))
+            th = min(.42 * H, 20 * m['teeth'] + 3)
+            a.poly(up + [(x, y + th * min(1.0, u * 1.6) ** .8) for (x, y), u in zip(up, us)][::-1], (255, 250, 240), clip=True)
+        if m['lip'] > .5:      # F/V: upper teeth rest on the lower lip
+            a.curve(lo[int(N * .35):], (214, 150, 150), 7.0, clip=True)
+        a.curve(up, INK, w); a.curve(lo, INK, w * .9)
+        return _tag(_pack(a, 0, 0))
     return _get(key, mk)
 
 def face_dyn(face=None):

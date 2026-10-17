@@ -13,9 +13,9 @@ W_, H_, FPS, DUR = 1920, 1080, 30, 20.0
 SC = 1.3; GY = 935; SCREEN_X = 800
 
 rig = Rig(S.build()); WK.BEND = 1
-KW = dict(Ts=0.26, swing=0.20, a=13.0, stand=5.0, lift=6.0, arm_gain=1.3)
-w1 = WK.make(rig, +1, 0.0, 150.0, 0.2, 3.6, **KW)
-w2 = WK.make(rig, +1, 150.0, 235.0, 17.2, 20.3, **KW)
+KW = dict(Ts=0.30, swing=0.22, a=38.0, stand=6.0, lift=9.0, arm_gain=1.4)
+w1 = WK.make(rig, +1, 0.0, 400.0, 0.2, 3.6, **KW)
+w2 = WK.make(rig, +1, 400.0, 790.0, 17.2, 20.3, **KW)
 
 # ------------------------------------------------------------------ script (TEST LINES - not series dialogue)
 LINES = [(3.9, 6.5, 'هيّا يا أولاد، الطريقُ طويلٌ وجميل!'),
@@ -23,23 +23,64 @@ LINES = [(3.9, 6.5, 'هيّا يا أولاد، الطريقُ طويلٌ وجم
          (9.9, 12.6, 'همم... ربّما هذا البابُ يأخذُنا إلى عالَمٍ آخر.'),
          (13.0, 15.0, 'لا بأس، سنمضي معًا ولن نتراجع!'),
          (15.4, 17.0, 'ها ها ها! مغامرةٌ جديدة!')]
-VOW = {'ا': 'A', 'آ': 'A', 'أ': 'A', 'إ': 'I', 'و': 'O', 'ي': 'I', 'ى': 'A', 'ع': 'A', 'ح': 'A', 'ه': 'A', 'ة': 'A'}
-CONS = {'م': 'M', 'ب': 'M', 'ف': 'FV', 'ل': 'L', 'ن': 'L', 'ر': 'L'}
-def line_items(t0, t1, text):
-    """approximate text-driven viseme track (letters -> visemes). Replace with audio envelope lip-sync when the real voice file arrives."""
+# side-view viseme set (moderate openings; profile mouth sprite)
+SV = {'rest': VISEMES['rest'], 'M': VISEMES['M'],
+      'A': dict(open=.80, wide=.65, smile=.10, round=0, teeth=.35, tongue=.5, lip=0),
+      'E': dict(open=.52, wide=1.0, smile=.25, round=0, teeth=.9, tongue=.15, lip=0),
+      'I': dict(open=.38, wide=.95, smile=.30, round=0, teeth=1.0, tongue=0, lip=0),
+      'O': dict(open=.62, wide=.15, smile=0, round=1, teeth=0, tongue=.3, lip=0),
+      'U': dict(open=.40, wide=0.0, smile=0, round=1, teeth=0, tongue=0, lip=0),
+      'FV': dict(open=.26, wide=.65, smile=.10, round=0, teeth=1.0, tongue=0, lip=1),
+      'L': dict(open=.50, wide=.65, smile=.15, round=0, teeth=.8, tongue=1.0, lip=0)}
+HAR = {'\u064e': 'A', '\u064f': 'O', '\u0650': 'I', '\u064b': 'A', '\u064c': 'O', '\u064d': 'I'}   # fatha damma kasra + tanween
+SUK, SHD = '\u0652', '\u0651'
+def syllables(text):
+    """text -> [(viseme, weight)] at SYLLABLE rate (vowel nuclei; bilabial/labiodental closures; word gaps) - not one shape per letter."""
     import re
-    clean = re.sub('[\u064b-\u0652\u0640]', '', text)
-    toks = []   # (kind,payload)
-    for ch in clean:
-        if ch == ' ': toks.append(('gap', .06))
-        elif ch in '،,.؟?!…': toks.append(('gap', .16))
-        else: toks.append(('v', VOW.get(ch) or CONS.get(ch) or ('E' if len(toks) % 2 else 'A'), 1.5 if ch in VOW else 0.7))
-    wt = sum(t[2] if t[0] == 'v' else t[1] * 6 for t in toks); k = (t1 - t0) / wt; t = t0; items = []
-    for tk in toks:
-        if tk[0] == 'gap': t += tk[1] * 6 * k
-        else:
-            d = tk[2] * k; items.append((t, t + d, tk[1])); t += d
+    t = text.replace('\u0640', ''); out = []; alt = 0; i = 0
+    isd = lambda c: c in HAR or c in (SUK, SHD)
+    while i < len(t):
+        c = t[i]; nx = t[i + 1] if i + 1 < len(t) else ''
+        if c == ' ': out.append(('M', .45)); i += 1; continue
+        if c in '،,.؟?!…':
+            if not (out and out[-1] == ('M', 1.3)): out.append(('M', 1.3))
+            i += 1; continue
+        if isd(c): i += 1; continue
+        # skip shadda/diacritic to find the vowel mark of this base letter
+        j = i + 1; mark = None
+        while j < len(t) and isd(t[j]):
+            if t[j] in HAR: mark = HAR[t[j]]
+            j += 1
+        if c in 'مب': out.append(('M', .38))
+        elif c == 'ف': out.append(('FV', .38))
+        if c in 'اآأإى':
+            out.append(((mark or ('I' if c == 'إ' else 'A')), 1.0 if mark else 1.5))
+        elif c in 'وي' and not mark:
+            out.append(('O' if c == 'و' else 'I', 1.5))
+        elif mark: out.append((mark, 1.0 + (.35 if SHD in t[i + 1:j] else 0)))
+        elif j >= len(t) or t[j] in ' ،,.؟?!…' : out.append(('A', .6)) if c in 'ةه' else None
+        elif c not in 'مبف' and not (j < len(t) and t[j] in 'اويى'):
+            alt += 1; out.append(('E' if alt % 2 else 'A', .9))
+        i = j
+    return out
+def line_items(t0, t1, text):
+    sy = syllables(text); W = sum(w for _, w in sy); k = (t1 - t0) / W; t = t0; items = []
+    for v, w in sy:
+        d = w * k
+        if v != 'M' or w > .5: items.append((t, t + d, v))
+        t += d
     return items
+def track(items, t, co=0.045):
+    cur = SV['rest']
+    for i, (a, b, n) in enumerate(items):
+        if a - co <= t <= b + co:
+            v = SV[n]; w = smooth((t - (a - co)) / (2 * co)) if t < a + co else 1.0
+            if t > b - co and i + 1 < len(items) and items[i + 1][0] - b < 0.03:
+                w2 = 1 - smooth((t - (b - co)) / (2 * co)); v = mix_vis(SV[items[i + 1][2]], SV[n], w2); w = 1
+            elif t > b - co:
+                w = 1 - smooth((t - (b - co)) / (2 * co))
+            return mix_vis(cur, v, w)
+    return SV['rest']
 ITEMS = [it for l in LINES for it in line_items(*l)]
 def speaking(t): return any(a - .05 <= t <= b + .05 for a, b, _ in LINES)
 
@@ -51,16 +92,30 @@ def keys_interp(keys, t):
         if t <= tb:
             u = sm((t - ta) / max(tb - ta, 1e-6)); return {k: lerp(A[k], B[k], u) for k in A}
     return dict(keys[-1][1])
-P = lambda spine=0, head=0, hat=0, ear=0, ru=0, rl=0, lu=0, ll=0: dict(spine=spine, head=head, hat=hat, ear=ear, ru=ru, rl=rl, lu=lu, ll=ll)
-BODY = [(3.4, P()), (4.1, P(-2, -4, 0, 5, -55, -10, 6, -4)), (6.4, P(-2, -4, 0, 5, -55, -10, 6, -4)), (6.9, P(0, 0, 0, 0, -5, -5, 0, -3)),
-        (7.25, P(-8, -10, 3, 22, -30, -20, 22, -10)), (9.1, P(-8, -10, 3, 22, -30, -20, 22, -10)),
-        (9.8, P(0, -6, 5, -10, -58, -118, 0, -3)), (12.6, P(0, -6, 5, -10, -58, -118, 0, -3)),
-        (13.0, P(3, -4, -2, 4, 6, -35, 6, -35)), (15.0, P(3, -4, -2, 4, 6, -35, 6, -35)),
-        (15.4, P(-6, -9, 4, -18, -95, -45, 8, -6)), (17.0, P(-6, -9, 4, -18, -95, -45, 8, -6)), (17.5, P())]
+P = lambda spine=0, head=0, hat=0, ear=0, ru=0, rl=0, lu=0, ll=0, hr=6: dict(spine=spine, head=head, hat=hat, ear=ear, ru=ru, rl=rl, lu=lu, ll=ll, hr=hr)
+# arm angles: rest direction = down, forward = negative. (-90,0) = arm horizontal forward; measured in /tmp armtest: hand clears the vest front only when ru <= -85.
+BODY = [(3.4, P()), (4.0, P(-3, -3, 0, 4, -108, -6, 6, -4, 0)), (4.15, P(-3, -3, 0, 4, -100, -6, 6, -4, 0)), (6.4, P(-3, -3, 0, 4, -100, -6, 6, -4, 0)), (6.9, P(0, 0, 0, 0, -8, -6, 0, -3)),
+        (7.2, P(5, 4, 3, 12, -58, -34, 20, -10, -4)), (9.1, P(5, 4, 3, 12, -58, -34, 20, -10, -4)),
+        (9.9, P(0, -7, 5, -10, -46, -114, 0, -3, -8)), (12.6, P(0, -7, 5, -10, -46, -114, 0, -3, -8)),
+        (13.0, P(-2, -3, -2, 4, -22, -82, 6, -35, 0)), (15.0, P(-2, -3, -2, 4, -22, -82, 6, -35, 0)),
+        (15.4, P(-5, -14, 4, -18, -20, -44, 8, -6, 4)), (17.0, P(-5, -14, 4, -18, -20, -44, 8, -6, 4)), (17.5, P())]
 def body_w(t): return sm((t - 3.4) / 0.4) * (1 - sm((t - 17.0) / 0.5))
+def life(t):
+    """small secondary motion layered on the held poses: pointing arm beckons, fists press, laugh shakes the whole body (returns dict of additive degrees + hips bob in units)"""
+    d = dict(ru=0.0, rl=0.0, spine=0.0, head=0.0, hips=0.0, hr=0.0)
+    if 4.2 <= t <= 6.4:
+        e = sm((t - 4.2) / .3) * (1 - sm((t - 6.1) / .3)); d['ru'] = -5 * e * math.sin((t - 4.2) * 2 * math.pi / 1.1); d['rl'] = 3 * e * math.sin((t - 4.2) * 2 * math.pi / 1.1 + 1.0)
+    if 7.0 <= t <= 7.5: u = (t - 7.0) / .5; d['hips'] = -9 * math.sin(math.pi * u) ** 1.5      # startle hop
+    if 10.0 <= t <= 12.5: d['hr'] = 4 * math.sin(t * 3.2)                                       # fist rolls slowly under the chin
+    if 13.3 <= t <= 14.8:
+        e = sm((t - 13.3) / .2) * (1 - sm((t - 14.5) / .3)); d['ru'] = 4 * e * math.sin(t * 13); d['spine'] = 1.6 * e * math.sin(t * 6.5)
+    if 15.5 <= t <= 16.9:
+        e = sm((t - 15.5) / .15) * (1 - sm((t - 16.6) / .3)); d['spine'] = 2.8 * e * math.sin(t * 17); d['hips'] = 2.4 * e * math.sin(t * 17 + .5); d['head'] = 2.0 * e * math.sin(t * 17 - .4)
+    return d
 def hand_swap(t):
     if 4.0 <= t <= 6.6: return {'handR': 'handR_point'}
-    if 9.9 <= t <= 12.7: return {'handR': 'handR_flat'}
+    if 7.2 <= t <= 9.2: return {'handR': 'handR_flat'}
+    if 9.9 <= t <= 12.7: return {'handR': 'handR_fist'}
     if 13.0 <= t <= 15.1: return {'handR': 'handR_fist', 'handL': 'handL_fist'}
     if 15.4 <= t <= 17.1: return {'handR': 'handR_flat'}
     return {}
@@ -79,7 +134,7 @@ def face_at(t):
     for b in BLINKS:
         if b <= t <= b + .2: bl = 1 - abs((t - b) / .1 - 1)
     if speaking(t):
-        m = dict(viseme_track(ITEMS, t)); m['smile'] = clamp(m['smile'] * .5 + f['sm'] * .6, -1, 1); m['open'] = clamp(m['open'] * (1 + f['op']), 0, 1)
+        m = dict(track(ITEMS, t)); m['smile'] = clamp(m['smile'] * .5 + f['sm'] * .6, -1, 1); m['open'] = clamp(m['open'] * (1 + f['op']), 0, 1)
         if f['arc'] > .5: m = mix_vis(m, VISEMES['laugh'], .55)
     else:
         m = dict(VISEMES['rest']); m['smile'] = f['sm']; m['wide'] = f['wd']; m['open'] = f['op'] * .3 if f['arc'] < .5 else .8
@@ -91,11 +146,12 @@ def pose_at(t):
     rx, pose = wk.state(t); pose = {k: dict(v) for k, v in pose.items()}
     wgt = body_w(t)
     if wgt > 0:
-        b = keys_interp(BODY, t); talk = math.sin(t * 9.0) * D(1.2) * (1 if speaking(t) else 0)
+        b = keys_interp(BODY, t); lf = life(t); talk = math.sin(t * 9.0) * D(1.0) * (1 if speaking(t) else 0)
         def mix(name, val):
             base = pose.get(name, {}).get('rot', 0.0); pose.setdefault(name, {})['rot'] = lerp(base, val, wgt)
-        mix('spine', D(b['spine'])); mix('head', D(b['head']) + talk); mix('hat', D(b['hat'])); mix('earR', D(b['ear']))
-        mix('armR_up', D(b['ru'])); mix('armR_lo', D(b['rl'])); mix('armL_up', D(b['lu'])); mix('armL_lo', D(b['ll']))
+        mix('spine', D(b['spine'] + lf['spine'])); mix('head', D(b['head'] + lf['head']) + talk); mix('hat', D(b['hat'])); mix('earR', D(b['ear']))
+        mix('armR_up', D(b['ru'] + lf['ru'])); mix('armR_lo', D(b['rl'] + lf['rl'])); mix('armL_up', D(b['lu'])); mix('armL_lo', D(b['ll'])); mix('handR', D(b['hr'] + lf['hr']))
+        if lf['hips']: pose.setdefault('hips', {})['ty'] = pose.get('hips', {}).get('ty', 0.0) + lf['hips'] * wgt
     return rx, pose
 
 # ------------------------------------------------------------------ placeholder background (parallax strips)
@@ -171,21 +227,21 @@ def build_audio(path):
     out = np.clip(out * fade * 0.9, -1, 1)
     wv = wave.open(path, 'wb'); wv.setnchannels(1); wv.setsampwidth(2); wv.setframerate(SR); wv.writeframes((out * 32767).astype(np.int16).tobytes()); wv.close()
 
-def main(out_mp4, stills=None, nframes=None):
+def render_frame(t):
+    rx, pose = pose_at(t)
+    camx = rx * SC - SCREEN_X; cv = bg_frame(camx); shadow(cv, SCREEN_X)
+    zov = {'armUpR': 56, 'armLoR': 56, 'handR': 57} if pose['armR_up']['rot'] < -D(45) else None
+    cv /= 255.0
+    rig.draw(cv, pose, cam=(SC, SCREEN_X - rx * SC, GY), dyn=S.face_dyn(face_at(t)), swap=hand_swap(t), root={'x': rx}, zov=zov)
+    cv *= 255.0; cv += GRAIN; fo = 1 - sm((t - 19.0) / 1.0); cv = cv * fo + np.array([214, 236, 248], np.float32) * (1 - fo)
+    return np.clip(cv, 0, 255).astype(np.uint8), len(rig.violations(pose))
+
+def main(out_mp4):
     tmp = out_mp4 + '.v.mp4'; wav = out_mp4 + '.wav'; build_audio(wav)
     p = subprocess.Popen([FF, '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-s', f'{W_}x{H_}', '-r', str(FPS), '-i', '-', '-c:v', 'libx264', '-crf', '19', '-pix_fmt', 'yuv420p', tmp], stdin=subprocess.PIPE)
-    nf = nframes or int(DUR * FPS); viol = 0; saved = {}
+    nf = int(DUR * FPS); viol = 0
     for i in range(nf):
-        t = i / FPS; rx, pose = pose_at(t)
-        viol += len(rig.violations(pose))
-        camx = rx * SC - SCREEN_X; cv = bg_frame(camx); shadow(cv, SCREEN_X)
-        zov = {'armUpR': 56, 'armLoR': 56, 'handR': 57} if pose['armR_up']['rot'] < -D(45) else None
-        cv /= 255.0
-        rig.draw(cv, pose, cam=(SC, SCREEN_X - rx * SC, GY), dyn=S.face_dyn(face_at(t)), swap=hand_swap(t), root={'x': rx}, zov=zov)
-        cv *= 255.0
-        cv += GRAIN; fo = 1 - sm((t - 19.0) / 1.0); cv = cv * fo + np.array([214, 236, 248], np.float32) * (1 - fo)
-        fr = np.clip(cv, 0, 255).astype(np.uint8); p.stdin.write(fr.tobytes())
-        if stills and i in stills: cv2.imwrite(stills[i], fr)
+        fr, v = render_frame(i / FPS); viol += v; p.stdin.write(fr.tobytes())
     p.stdin.close(); p.wait()
     subprocess.run([FF, '-y', '-loglevel', 'error', '-i', tmp, '-i', wav, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '160k', '-shortest', '-movflags', '+faststart', out_mp4], check=True)
     os.remove(tmp); os.remove(wav); print('frames', nf, 'limit violations', viol)
