@@ -1,67 +1,64 @@
-# MODULE A1: Tech Stack Decision (PC / Steam)
+# MODULE A1 (revision R1): Tech Stack Decision - hardware-aware
 
-**Goal:** choose the engine, renderer, language, platform and Steam path for a premium Windows 2.5D pixel-art game ("HD-2D" look from the two reference images) with a huge ocean and 50+ islands.
-**Delivers:** reference-driven requirements, 3 options with scoring, one recommendation, risks, hardware targets, Steam plan, decision log, smoke-test project.
+Revision reason: the developer PC is an Intel Core i5-2410M, 3 GB RAM, Intel HD Graphics 3000, 1366x876, Windows 64-bit. The first A1 (Forward+ renderer) could not run there. This revision keeps the intended look and changes HOW it is produced. Steam is NOT a commitment.
 
-## 1. What the references demand
-Both references are pixel art standing inside a real 3D diorama, not a flat 2D scene.
-Image 1 (town square) and image 2 (forest clearing) show:
-1. Pixel sprites for characters/props/tiles with crisp, un-smoothed edges (characters roughly 25-35 px tall at native density; exact numbers come in A3).
-2. A perspective camera pitched steeply down (about 35-45 degrees), narrow field of view.
-3. Tilt-shift: the middle band is sharp, the top and bottom are heavily blurred.
-4. Bloom on bright areas, warm key light, dark vignette, teal-shadow / orange-light colour grade.
-5. Real cast shadows on the ground (dappled under trees), light shafts / haze (image 2), floating dust particles.
-6. Water with reflection and soft depth colour.
-Game needs on top: Windows 64-bit native, Steam, an ocean of many kilometres, 50+ islands loaded from data, deep simulation (survival), controller support.
+## 1. Facts (verified 2026-10-17 from godotengine/godot and godot-docs on GitHub)
+- Godot latest stable 4.7.2 (2026-08-18), MIT licence. Godot 3.6.3 also exists (2026-08-22).
+- Godot docs, system requirements: Forward+ and Mobile renderers need Vulkan 1.0 (example given: Intel HD 510, Skylake). Compatibility renderer needs full OpenGL 3.3 (example: Intel HD 2500, Ivy Bridge). Native editor minimum RAM 4 GB, recommended 8 GB.
+- Godot can fall back to OpenGL ES 3.0 through ANGLE over Direct3D 11 on Windows when OpenGL 3.3 is not available (project settings `rendering/gl_compatibility/fallback_to_angle`, default true; command line `--rendering-driver opengl3_angle`). Whether this works on HD Graphics 3000 is NOT verified: the probe will tell.
+- Compatibility renderer feature table (docs): SUPPORTED glow, depth/height fog, tonemapping, colour adjustments, SSAO, shadows (directional/omni/spot), MSAA 3D, decals, baked lightmap rendering, screen-texture and depth-texture shaders, custom full-screen post-processing. NOT supported: depth-of-field blur, volumetric fog, SSR, SDFGI, VoxelGI, CompositorEffects, FXAA/TAA, HDR colour (it is RGBA8). 8 lights per mesh by default.
+- What I could not do: run Godot (download blocked). I can only syntax-check GDScript with the gdtoolkit parser (done, all scripts parse).
 
-## 2. Options (rule 9)
-| | A. Godot 4.7 (recommended) | B. Unity 6 (URP) | C. Unreal Engine 5 |
-|---|---|---|---|
-| HD-2D look (sprites in 3D, DOF, bloom, shadows, fog) | 4/5 built in (Forward+) | 4/5 (URP + post volumes) | 5/5 (Octopath-style HD-2D was originally made in UE4) |
-| Content as plain text (scenes, data, code) so I can write and you can diff it | 5/5 (.tscn .tres .gd .json) | 3/5 (YAML scenes, .meta GUIDs) | 1/5 (binary .uasset) |
-| Small-team iteration speed | 5/5 | 4/5 | 2/5 (long compiles, heavy editor) |
-| Huge-world control | 4/5 (no built-in streaming; we build it, J7) | 4/5 | 5/5 (World Partition, but heavy) |
-| Cost / licence | 5/5 MIT, no royalties | 3/5 (licence terms change; verify) | 3/5 (royalty terms; verify) |
-| Steam | 4/5 (GodotSteam) | 5/5 | 5/5 |
-| Risk for a 2D-pixel-art-in-3D project | low-medium | medium | medium-high (overkill) |
-Scores are my judgement. I did not verify Unity/Unreal current versions or licence terms: check them yourself if you want B or C.
-**Recommendation: A. Godot 4.7.2 (standard, non-.NET), Forward+ renderer.** The deciding reason is text-native authoring: everything I produce (scenes, resources, data, code) is plain text you can open, diff and fix, which fits this one-module-at-a-time process.
+## 2. What this means for your PC (honest)
+- HD Graphics 3000 is below Godot's documented OpenGL 3.3 requirement and has no Vulkan. The game may only run through the ANGLE fallback, or not at all. 3 GB RAM is below the editor's 4 GB minimum.
+- No setting I choose can make this PC render the final look in real time. The final look is decided by the player's hardware, not yours. What I can do: (a) keep the final look independent of expensive engine features, (b) give your PC a "Dev-Lite" mode, (c) keep game logic testable with no GPU, (d) verify the real look through other channels (section 5).
 
-## 3. Verified facts (checked against the GitHub API on 2026-10-17)
-- Latest stable Godot: 4.7.2-stable, released 2026-08-18 (4.7 on 2026-06-18). MIT licence.
-- GodotSteam latest: v4.23, released 2026-10-05, built on Steamworks SDK 1.65 and labelled "Godot 4.x". Whether it supports 4.7.x must be confirmed on its release page at install time (not verified).
-- Windows 64-bit export of Godot is native (.exe + .pck). The official export-templates package is about 1.3 GB (one-time download).
-- NOT verified: I could not run Godot in my sandbox (release downloads are blocked), so no code I give is executed by me. See HOW TO TEST.
+## 3. Decision: "Authored HD-2D", Compatibility-first
+The look is built from cheap, authored techniques that exist in the Compatibility renderer, so one project runs from old hardware up to modern GPUs:
+| Reference feature | Expensive way (not used as base) | Our method (works in Compatibility) |
+|---|---|---|
+| Tilt-shift blur | built-in DOF (Forward+/Mobile only) | own full-screen shader (ColorRect reading the screen texture), band-shaped blur + vignette |
+| Bloom | HDR glow | Environment glow in LDR with lowered threshold, plus emissive pixel sprites |
+| Light shafts / haze | volumetric fog | authored additive gradient quads + depth/height fog + dust particles |
+| Soft global light | VoxelGI / SDFGI | hand-placed light pools (decals / omni lights), baked LightmapGI per island (baking needs a RenderingDevice PC, done once, see 5) |
+| Cast shadows | n/a | directional light shadows on, blob shadows for far crowds |
+| Colour grade | n/a | Environment adjustments / LUT per region |
+Optional later ("Ultra" tier, Forward+): real DOF, HDR bloom, volumetric fog. Decision gate: only after the vertical slice, never required.
 
-## 4. Technical decisions
-1. **Look = high-resolution 3D diorama with pixel textures** (not a low-res image upscaled). Sprites are `Sprite3D` billboards with nearest-filtering, no mipmaps, integer texel density; ground/props are pixel textures; effects (DOF, bloom, fog) run at full screen resolution. Narrow FOV (~22 degrees) keeps texel size almost constant.
-2. **Free tilt-shift (original idea #1):** because the camera is pitched, distance grows from the bottom of the screen to the top, so ordinary distance-based depth of field (near + far) produces a horizontal sharp band, exactly like the references, with no custom shader. The smoke test proves this on your PC.
-3. **Ship-fixed origin (original idea #2):** the world is stored in 64-bit data (GDScript `float` is 64-bit) and the ship always stays near render origin; the ocean and islands slide past. Reason: single-precision vectors (Godot default) have about 8 mm spacing at 100 km from origin, which makes sprites and wave shaders jitter on long voyages. Bonus: the "dead ocean" can be an endless shader plane and speed is felt as the world sliding. Detailed in J7.
-4. **Language:** typed GDScript for everything. C# rejected (extra .NET dependency, larger exports, weaker GodotSteam path). Heavy loops (ocean sim, ecosystems, streaming) start as data-oriented GDScript (PackedArrays); a GDExtension (C++/Rust) is a decision gate at J7 and J22 only if profiling proves it.
-5. **Renderer:** Forward+ only. Compatibility/Mobile renderers cannot give the volumetric fog / DOF quality of the references, so they are out.
-6. **Engine lock:** 4.7.2-stable for the entire production. No engine upgrade without your approval.
-7. **Platform:** Windows 10/11 x86_64 primary. Steam Deck is a stretch target through Proton (not verified).
-8. **Steam:** GodotSteam behind a `PlatformService` interface, so the game also runs without Steam (dev builds, DRM-free). Features: achievements, cloud saves (saves live in `user://`), Steam Input/controller, rich presence. Details J28/M6. Steam needs a Steamworks partner account and a per-game fee (I believe $100; verify). For testing without an app id use the public Spacewar id 480 in `steam_appid.txt`.
+## 4. Quality ladder (same content, different cost)
+- **Dev-Lite (your PC):** internal render size 683x438 (exactly half of 1366x876: 1 art pixel = 2 screen pixels, nearest upscale, 4x less GPU work), shadows off, bloom off, cheaper blur (2 px), small island streaming radius, texture budget under 256 MB, game process under about 1.2 GB RAM.
+- **Standard:** full resolution, shadows, bloom, fog, shafts, tilt-shift (5 px). Target GPU class: GTX 650 / Radeon HD 7750 and up (those are the docs' Compatibility "recommended" examples) - to be measured in M3.
+- **Ultra (optional):** Forward+ extras.
+Quality is a data profile (`quality_profiles.json`, A5), not code branches.
 
-## 5. Risks and mitigations
+## 5. Development and testing plan for a weak PC
+1. **Everything is text.** I write scenes/data/code/assets; you do not need the editor for most work.
+2. **Headless logic tests.** `--headless` needs no GPU. Survival simulation (Part N), economy, data validation and island generation are written as scripts with self-tests you can run on your PC (`selftest.gd` proves headless works).
+3. **Syntax check on my side.** I run gdtoolkit on every GDScript before delivering. That finds syntax errors, not runtime errors.
+4. **Look Lab (proposal for A3/A4):** a Python tool in my sandbox that renders still images of the HD-2D look (pixel scene + same tilt-shift, bloom, grade, vignette parameters as the Godot shader). You approve the look from PNGs without any GPU; the Godot shader then copies those numbers.
+5. **Visual verification needs one capable machine at some point.** Options (your choice, some cost money): borrow a friend's PC for test sessions; a cheap used PC with a GTX 650-class or newer GPU; a rented cloud Windows GPU desktop (paid, I will not choose one for you); or upgrade this laptop's RAM to 8 GB if the model allows (check its maximum). Run the probe first; the numbers decide.
+6. **Probe first.** Run `a1_smoke_test` (README.txt inside): step 1 headless self-test, step 2 visual probe. Send me `probe_result.txt` or the error text.
+
+## 6. Other decisions
+- **Engine:** Godot 4.7.2 standard, locked. Godot 3.6.3 (OpenGL ES 2/3, runs on very old GPUs) is rejected as the base: end-of-line architecture and a lower ceiling; kept only as a documented emergency fallback if the probe proves 4.7.2 cannot start at all and no other machine is available.
+- **Language:** typed GDScript. **Look:** pixel textures, nearest filter, integer texel density, FOV about 22 degrees, camera pitch about 39 degrees.
+- **World:** ship-fixed origin with 64-bit world data (unchanged; reason: 32-bit vectors have about 8 mm spacing at 100 km from origin).
+- **Distribution:** undecided. No Steam SDK, no GodotSteam, no steam_appid. Export is a plain Windows x86_64 .exe + .pck (itch.io, direct download or any store). Achievements are internal events on our own event bus; a store adapter can listen later. A thin `Platform` seam (no third-party code) is created only when needed (A2/J4).
+
+## 7. Hardware targets (design targets, not measured)
+- **Minimum (shipping):** Windows 10 64-bit, 4 GB RAM, GPU with OpenGL 3.3, 2-core CPU, Standard at 720p-1080p; Dev-Lite as the in-game "Low".
+- **Recommended:** 8 GB RAM, GTX 650 / HD 7750 class or better, quad-core, 1080p Standard at 60 fps.
+- **Dev PC (yours):** Dev-Lite at 683x438 internal, goal 30 fps if the probe runs at all.
+- Budgets: 16.6 ms frame (Standard), under 1000 draw calls at sea, textures under 1 GB (Standard) / 256 MB (Dev-Lite), RAM peak under 3 GB (Standard) / 1.2 GB (Dev-Lite).
+
+## 8. Risks
 | Risk | Mitigation |
 |---|---|
-| HD-2D polish needs tuning (DOF, bloom, grading) | I21/J10 prototype early; vertical slice before mass content |
-| Thousands of sprites (foliage, crowds, fish) | MultiMeshInstance3D with a sprite shader; per-scene counts in budgets |
-| Float precision on long voyages | Ship-fixed origin + 64-bit data (decision 3) |
-| Sprite shimmer when scaled by perspective | Narrow FOV, integer texel density rules in A3/J1 |
-| GodotSteam vs Godot 4.7.x compatibility | Check at install; fall back to prior GodotSteam or a pinned build |
-| I cannot execute Godot in my sandbox | Every code module ships with a self-test and expected output; you run it and paste errors back |
+| Godot does not start on HD 3000 | Probe; borrowed/cheap/cloud GPU machine; emergency fallback in section 6 |
+| Visual sign-off impossible on dev PC | Look Lab stills, then periodic sessions on a capable machine |
+| LDR (RGBA8) bloom looks weaker than HDR | emissive sprites, tuned threshold, authored glow halos; Ultra tier optional |
+| LightmapGI baking needs RenderingDevice hardware | bake on a capable machine once per island, commit the result; or hand-placed light pools |
+| I cannot run Godot | gdtoolkit syntax check + self-tests + you report errors |
 
-## 6. Hardware targets (design targets, to be measured in M3, not measured yet)
-- **Minimum:** Windows 10 64-bit, quad-core CPU (Intel i5-6600 / Ryzen 3 1200 class), 8 GB RAM, Vulkan-capable GPU with 2-4 GB VRAM (GTX 960 / RX 470 class), 12 GB disk. Target 30 fps at 1080p, Low effects.
-- **Recommended:** Windows 10/11, 6-core CPU (i5-10400 / Ryzen 5 3600 class), 16 GB RAM, GTX 1660 / RTX 2060 / RX 5600 XT class, SSD, 20 GB disk. Target 60 fps at 1080p, High effects.
-- **Budgets:** frame 16.6 ms; below 1500 draw calls at sea; texture memory below 2 GB; peak RAM below 6 GB; island load without a visible stall (below 100 ms per frame, loaded in background threads).
-- **Resolutions:** 16:9 base, 1280x720 to 4K, ultrawide supported, UI scales.
-The exact GPU driver floor for Forward+ will be confirmed on real machines in M3.
-
-## 7. Decision log
-A1-1 Godot 4.7.2 standard | A1-2 Forward+ | A1-3 typed GDScript, GDExtension only by profiling | A1-4 high-res 3D diorama, nearest-filter integer texel density | A1-5 pitched camera + distance DOF = tilt-shift | A1-6 ship-fixed origin with 64-bit world data | A1-7 Windows x86_64 primary, Steam via GodotSteam behind PlatformService | A1-8 hardware targets above | A1-9 engine locked for the project.
-
-## 8. Smoke test
-Folder `a1_smoke_test/` (Godot project). Open it in Godot 4.7.2, press F5. Expected: a diorama of 9 pixel pirates receding in depth, sharp in the middle band and blurred toward top and bottom, warm shadows, bloom, fog; HUD shows engine, GPU, API, renderer. Keys D/G/F/S toggle depth of field/glow/fog/shadows. Console prints a system report. In a single-precision build `Vector3.x for 100000.001` prints `100000`.
+## 9. Decision log (supersedes the first A1 where noted)
+A1-1 Godot 4.7.2 standard (kept) | A1-2 **Compatibility renderer first, Forward+ optional "Ultra" later (changed)** | A1-3 typed GDScript (kept) | A1-4 pixel textures, nearest, integer density (kept; internal render size is a quality-ladder setting) | A1-5 **tilt-shift = own screen shader, not built-in DOF (changed)** | A1-6 ship-fixed origin (kept) | A1-7 **distribution undecided, no Steam dependency (changed)** | A1-8 **targets above (changed)** | A1-9 engine locked (kept) | A1-10 quality ladder Dev-Lite / Standard / (Ultra) | A1-11 headless-testable logic | A1-12 Look Lab proposal.

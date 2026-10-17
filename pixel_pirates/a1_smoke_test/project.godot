@@ -1,11 +1,12 @@
-; Engine configuration file.  Pixel Pirates - Module A1 smoke test (Godot 4.7.x, Forward+)
+; Engine configuration file.  Pixel Pirates - Module A1 (revision R1) GPU probe + HD-2D smoke test.
+; Godot 4.7.x, COMPATIBILITY renderer (OpenGL 3.3, or OpenGL ES 3.0 through ANGLE/Direct3D 11 as automatic fallback).
 config_version=5
 
 [application]
 
-config/name="Pixel Pirates A1 Smoke Test"
+config/name="Pixel Pirates A1 Probe"
 run/main_scene="res://smoke.tscn"
-config/features=PackedStringArray("4.7", "Forward Plus")
+config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [display]
 
@@ -14,4 +15,6 @@ window/size/viewport_height=720
 
 [rendering]
 
-renderer/rendering_method="forward_plus"
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+gl_compatibility/fallback_to_angle=true
