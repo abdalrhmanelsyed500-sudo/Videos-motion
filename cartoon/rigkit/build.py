@@ -20,14 +20,14 @@ def skeleton(view):
             add(f'hand{s}', f'arm{s}_lo', (g * 82, -206), [-70, 70])
             add(f'leg{s}_up', 'hips', (g * 36, -212), [-45, 60] if g < 0 else [-60, 45])
             add(f'leg{s}_lo', f'leg{s}_up', (g * 36, -116), [-130, 130])
-            add(f'foot{s}', f'leg{s}_lo', (g * 36, -28), [-60, 60])
+            add(f'foot{s}', f'leg{s}_lo', (g * 36, -36), [-60, 60])
     else:
         add('pigtailR', 'head', (-98, -512), [-70, 70])
         for s, x in (('L', -3), ('R', 3)):
             add(f'arm{s}_up', 'spine', (x, -372), [-170, 60]); add(f'arm{s}_lo', f'arm{s}_up', (x, -286), [-150, 10])
             add(f'hand{s}', f'arm{s}_lo', (x, -206), [-70, 70])
             add(f'leg{s}_up', 'hips', (x, -212), [-90, 60]); add(f'leg{s}_lo', f'leg{s}_up', (x, -116), [-5, 150])
-            add(f'foot{s}', f'leg{s}_lo', (x, -28), [-60, 60])
+            add(f'foot{s}', f'leg{s}_lo', (x, -36), [-60, 60])
     return B
 
 def slots(view, kind):

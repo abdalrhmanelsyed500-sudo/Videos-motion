@@ -14,7 +14,7 @@ SPECS = {
               bottom=(136, 86, 200), bottom_sh=(100, 60, 160), shoe=(30, 170, 160), shoe_hi=(110, 224, 214), sock=(255, 255, 255),
               cheek=(255, 132, 140), iris=(54, 92, 150), brow=(40, 26, 34), tie=(255, 208, 60)),
 }
-LIM = dict(upper=86, fore=80, thigh=96, shin=88)
+LIM = dict(upper=86, fore=80, thigh=96, shin=80)
 
 def _mix(a, b, t): return tuple(int(a[i] * (1 - t) + b[i] * t) for i in range(3))
 
@@ -40,6 +40,10 @@ def head_part(s, view):
             fr = [(106, -108), (100, -140), (82, -164), (52, -176), (22, -168), (-8, -182), (-40, -170), (-66, -176), (-90, -156), (-102, -134), (-106, -108)]
         else:
             fr = [(110, -106), (104, -146), (84, -170), (50, -180), (14, -184), (-24, -182), (-58, -178), (-88, -160), (-104, -134), (-110, -106)]
+        def _cl(p):
+            x, y = p; lim = 112 * np.sqrt(max(0.0, 1 - ((y + 98) / 110) ** 2)) - 14
+            return (float(np.sign(x)) * min(abs(x), max(lim, 0)), y)
+        fr = [_cl(p) for p in fr]
         a.poly(top + fr, s['hair'])
         a.ellipse((-40, -192), 34, 9, s['hair_hi'], rot=-.2, clip=True, alpha=.9)
         if not boy:   # centre parting
@@ -186,23 +190,23 @@ def thigh_part(s):
 def shin_part(s):
     a = _new(-40, -30, 40, 120)
     a.capsule((0, 0), (0, LIM['shin']), 20, 16, s['skin'])
-    a.rrect(-19, 36, 19, 90, 10, s['sock'])
-    a.rrect(-19, 36, 19, 48, 5, s['shoe'], clip=True, alpha=.9)
+    a.rrect(-19, 32, 19, 86, 10, s['sock'])
+    a.rrect(-19, 32, 19, 44, 5, s['shoe'], clip=True, alpha=.9)
     a.ellipse((9, 66), 6, 22, (0, 0, 0), clip=True, alpha=.06)
     return _fin(a, 0, 0)
 
 def shoe_part(s, view):
     a = _new(-60, -30, 110, 50)
     if view == 'front':   # right foot, toe slightly outward (+x)
-        a.rrect(-26, -4, 34, 30, 15, s['shoe'])
-        a.rrect(-27, 22, 35, 34, 6, (250, 250, 250))
+        a.rrect(-26, -4, 34, 32, 15, s['shoe'])
+        a.rrect(-27, 25, 35, 36, 6, (250, 250, 250))
         a.ellipse((12, 8), 15, 9, s['shoe_hi'], clip=True, alpha=.8)
         a.rrect(-18, -6, 18, 6, 4, s['shoe_hi'], clip=True, alpha=.0)
         a.curve([(-14, 2), (10, 2)], (255, 255, 255), 3, clip=True, alpha=.9)
     else:
         a.poly([(-26, -6), (14, -8), (22, 6), (58, 12), (74, 24), (70, 36), (-30, 36), (-34, 12)], s['shoe'])
         a.ellipse((52, 24), 22, 11, s['shoe_hi'], clip=True, alpha=.7)
-        a.rrect(-34, 28, 76, 40, 6, (250, 250, 250))
+        a.rrect(-34, 27, 76, 36, 5, (250, 250, 250))
         a.rrect(-22, -8, 16, 4, 3, (255, 255, 255), clip=True, alpha=.9)
     return _fin(a, 0, 0)
 
