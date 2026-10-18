@@ -131,7 +131,7 @@ with tempfile.TemporaryDirectory() as t:
         m = modes[mode]["multipliers"][r["scale"]]
         return r["value"] / max(m, 0.0001) if r.get("scale_mode", "mul") == "div" else r["value"] * m
     checks = [(eff("food.need_kcal_per_man_day", "mode_normal"), 3200), (eff("food.need_kcal_per_man_day", "mode_story"), 1600), (eff("food.need_kcal_per_man_day", "mode_hardcore"), 4000),
-              (eff("health.scurvy_onset_days_no_vitc", "mode_hardcore"), 50), (eff("health.scurvy_onset_days_no_vitc", "mode_story"), 140), (eff("crew.watch_length_hours", "mode_hardcore"), 4),
+              (eff("health.scurvy_onset_days_no_vitc", "mode_hardcore"), 10), (eff("health.scurvy_onset_days_no_vitc", "mode_story"), 28), (eff("crew.watch_length_hours", "mode_hardcore"), 4),
               (eff("water.need_l_per_man_day_min", "mode_hardcore"), 3.125), (round(eff("crew.awake_limit_hours", "mode_hardcore")), 13)]
     expect("tuning scaling matches the GDScript test expectations", [str(c) for c in checks if abs(c[0] - c[1]) > 1e-9])
 

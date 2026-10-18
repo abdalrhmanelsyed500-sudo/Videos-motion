@@ -14,9 +14,9 @@ func run(t: Object) -> void:
 	t.check(is_equal_approx(story.f(k), 1600.0), "story: x0.5")
 	t.check(is_equal_approx(hard.f(k), 4000.0), "hardcore: x1.25")
 	var d := "health.scurvy_onset_days_no_vitc"
-	t.check(is_equal_approx(normal.f(d), 70.0), "scurvy base 70 days")
-	t.check(is_equal_approx(hard.f(d), 50.0), "hardcore scurvy comes sooner (div by 1.4)")
-	t.check(is_equal_approx(story.f(d), 140.0), "story scurvy comes later (div by 0.5)")
+	t.check(is_equal_approx(normal.f(d), 14.0), "scurvy base 14 days (compressed, patch T1)")
+	t.check(is_equal_approx(hard.f(d), 10.0), "hardcore scurvy comes sooner (div by 1.4)")
+	t.check(is_equal_approx(story.f(d), 28.0), "story scurvy comes later (div by 0.5)")
 	t.check(is_equal_approx(hard.f("crew.watch_length_hours"), 4.0), "unscaled key ignores difficulty")
 	# per-system toning: hardcore realism, but food needs eased back to normal
 	var toned: RefCounted = Tuning.from_registry(reg, "mode_hardcore", {"hunger_rate": 1.0})

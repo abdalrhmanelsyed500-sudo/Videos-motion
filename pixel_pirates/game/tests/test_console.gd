@@ -88,6 +88,39 @@ func _data_and_tuning(t: Object, c: RefCounted) -> void:
 	_ok(t, c, "mode mode_normal")
 
 
+## Patch T1: the world clock through the console (watch line, real-time tick, pause reasons, debug jumps).
+func _time_commands(t: Object, c: RefCounted) -> void:
+	_ok(t, c, "time set 1 0")
+	_ok(t, c, "time watch", "band night, daylight 0.04")
+	_ok(t, c, "time watch", "1 day = 15 real min (1 game hour = 37.5 s)")
+	_ok(t, c, "time watch", "paused: no")
+	_ok(t, c, "time tick 37.5", "3600.0 game s")
+	t.check(c.state.clock_text() == "Day 1, 01:00", "37.5 real seconds = one game hour")
+	_ok(t, c, "time pause report", "paused by report")
+	_ok(t, c, "time tick 100", "0.0 game s")
+	t.check(c.state.clock_text() == "Day 1, 01:00", "a paused clock does not move")
+	_ok(t, c, "time watch", "paused: report")
+	_ok(t, c, "time pause planning", "paused by planning, report")
+	_ok(t, c, "time resume report", "paused by planning")
+	_ok(t, c, "time resume planning", "time runs")
+	_ok(t, c, "time tick 450", "43200.0 game s")
+	t.check(c.state.clock_text() == "Day 1, 13:00", "450 real seconds = 12 game hours")
+	_ok(t, c, "time watch", "band day, daylight 1.00")
+	_bad(t, c, "time tick abc", "usage")
+	_bad(t, c, "time tick -5", "between")
+	_bad(t, c, "time pause BAD!", "usage")
+	_bad(t, c, "time live maybe", "usage")
+	_ok(t, c, "time live on", "live clock ON")
+	var hud: String = c.hud_text()
+	t.check(c.live and "| day |" in hud and "daylight 1.00" in hud, "live mode is on; the HUD line shows band and light")
+	_ok(t, c, "time pause menu")
+	t.check("PAUSED: menu" in c.hud_text(), "the HUD line shows a pause")
+	_ok(t, c, "time resume menu")
+	_ok(t, c, "time live off", "live clock OFF")
+	t.check(not c.live, "live mode is off again")
+	_ok(t, c, "time set 1 0")
+
+
 func _inventory_time_seed(t: Object, c: RefCounted, reg: Node) -> void:
 	_ok(t, c, "give item_rope 3", "item_rope: 3")
 	t.check(c.state.inventory["item_rope"] == 3, "inventory holds 3 rope")
@@ -103,6 +136,7 @@ func _inventory_time_seed(t: Object, c: RefCounted, reg: Node) -> void:
 	_ok(t, c, "time add 10", "Day 4, 00:30")
 	_ok(t, c, "time add -100000", "Day 1, 00:00")
 	_bad(t, c, "time add abc", "usage")
+	_time_commands(t, c)
 	_ok(t, c, "seed world 18446744073709551615", "18446744073709551615")
 	_bad(t, c, "seed world abc", "usage")
 	_ok(t, c, "seed weather 99")
@@ -113,8 +147,11 @@ func _teleport(t: Object, c: RefCounted) -> void:
 	var m: RefCounted = IslandMap.from_file("res://tests/fixtures/islands/maps/isl_901.map.json")
 	var l: Dictionary = m.landings[0]
 	var want: Vector2 = m.cell_to_local(int(l["x"]), int(l["y"]))
+	_ok(t, c, "time set 2 9.5", "Day 2, 09:30")
 	_ok(t, c, "tp island isl_901", "teleported")
 	t.check(c.state.at_island == "isl_901", "at_island set")
+	var kept: bool = c.state.clock_text() == "Day 2, 09:30" and c.state.clock.where == "island"
+	t.check(kept, "landfall does not touch the clock")
 	var at_landing: bool = is_equal_approx(c.state.x_m, want.x) and is_equal_approx(c.state.y_m, want.y)
 	t.check(at_landing, "position equals the landing cell in metres")
 	var hook: String = str(m.pois_of_kind("hook")[0]["slot"])
@@ -125,6 +162,8 @@ func _teleport(t: Object, c: RefCounted) -> void:
 	_ok(t, c, "tp xy 100 -200.5", "open sea")
 	var at_xy: bool = is_equal_approx(c.state.x_m, 100.0) and is_equal_approx(c.state.y_m, -200.5)
 	t.check(c.state.at_island == "" and at_xy, "tp xy sets open-sea position")
+	kept = c.state.clock_text() == "Day 2, 09:30" and c.state.clock.where == "sea"
+	t.check(kept, "leaving the island does not touch the clock")
 	_bad(t, c, "tp xy 1", "usage")
 
 

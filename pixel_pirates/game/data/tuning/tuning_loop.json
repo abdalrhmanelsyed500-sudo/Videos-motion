@@ -3,39 +3,6 @@
  "kind": "tuning",
  "records": [
   {
-   "key": "time.real_minutes_per_game_day",
-   "value": 2.4,
-   "unit": "min/day",
-   "min": 1.2,
-   "max": 4.8,
-   "provisional": true,
-   "owner": "N13",
-   "source": "B2 design target; provisional until its owner module",
-   "note": "Default time scale: one game day takes this many real minutes at x1. Chosen so a 14-day crossing is 33.6 min (inside the Crossing band) and a 70-day scurvy clock is 168 min."
-  },
-  {
-   "key": "time.ashore_game_minutes_per_real_minute",
-   "value": 24,
-   "unit": "game min/real min",
-   "min": 6,
-   "max": 60,
-   "provisional": true,
-   "owner": "N13",
-   "source": "B2 design target; provisional until its owner module",
-   "note": "Ashore the clock runs 24 game minutes per real minute (1 game day = 60 real minutes), so a 45-minute Tier 1 visit costs 18 game hours, not 19 days. At sea 1 game day = 2.4 real minutes."
-  },
-  {
-   "key": "time.accel_fast_factor",
-   "value": 4,
-   "unit": "x",
-   "min": 2,
-   "max": 8,
-   "provisional": true,
-   "owner": "B2",
-   "source": "B2 design target; provisional until its owner module",
-   "note": "Fast-forward factor at sea; drops to x1 at every warning rung, event and Morning Report (decision B1-2)."
-  },
-  {
    "key": "loop.report_max_seconds",
    "value": 20,
    "unit": "s",
@@ -125,14 +92,14 @@
   },
   {
    "key": "loop.island_engagement",
-   "value": 0.6,
+   "value": 0.7,
    "unit": "ratio",
    "min": 0.3,
    "max": 1.0,
    "provisional": true,
    "owner": "B7",
-   "source": "B2 design target; provisional until its owner module",
-   "note": "Fraction of an island's explore budget a typical visit actually uses."
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Fraction of an island's explore budget a typical visit actually uses (T1: 0.6 -> 0.7)."
   },
   {
    "key": "loop.plan_minutes",
@@ -177,6 +144,17 @@
    "owner": "B7",
    "source": "B2 design target; provisional until its owner module",
    "note": "Share of a voyage's time spent in combat (ships, creatures)."
+  },
+  {
+   "key": "loop.visit_cost_days_max",
+   "value": 3.5,
+   "unit": "game days",
+   "min": 1,
+   "max": 5,
+   "provisional": true,
+   "owner": "B7",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Cap on the game time a FULL island visit may cost. At 15 min/day a full Tier 1 visit (45 min) is 3.0 days; the Reckoning shows the cost before landing."
   }
  ]
 }

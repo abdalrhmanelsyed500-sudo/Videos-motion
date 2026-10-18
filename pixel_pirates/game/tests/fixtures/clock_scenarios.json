@@ -1,0 +1,43 @@
+{
+ "note": "Hand-calculated scenarios for the ONE world clock (patch T1). At 15 min/day, 1 real second = 96 game seconds. Python: test_design_checks.py. GDScript: tests/test_world_clock.gd.",
+ "scenarios": [
+  {"name": "sea to island and back, with stacked pauses", "minutes_per_day": 15, "steps": [
+   {"op": "tick", "dt": 10, "expect_dt": 960, "expect_t": 960},
+   {"op": "where", "place": "island", "expect_t": 960},
+   {"op": "tick", "dt": 10, "expect_dt": 960, "expect_t": 1920},
+   {"op": "pause", "reason": "report", "expect_paused": true},
+   {"op": "tick", "dt": 100, "expect_dt": 0, "expect_t": 1920},
+   {"op": "pause", "reason": "planning", "expect_paused": true},
+   {"op": "tick", "dt": 5, "expect_dt": 0, "expect_t": 1920},
+   {"op": "resume", "reason": "report", "expect_paused": true},
+   {"op": "tick", "dt": 5, "expect_dt": 0, "expect_t": 1920},
+   {"op": "resume", "reason": "planning", "expect_paused": false},
+   {"op": "tick", "dt": 1, "expect_dt": 96, "expect_t": 2016},
+   {"op": "where", "place": "sea", "expect_t": 2016},
+   {"op": "tick", "dt": 0.5, "expect_dt": 48, "expect_t": 2064},
+   {"op": "pause", "reason": "report"},
+   {"op": "pause", "reason": "report"},
+   {"op": "resume", "reason": "report", "expect_paused": false},
+   {"op": "tick", "dt": 1, "expect_dt": 96, "expect_t": 2160},
+   {"op": "tick", "dt": -5, "expect_dt": 0, "expect_t": 2160}
+  ]},
+  {"name": "one full day is exactly 15 real minutes, wherever you are", "minutes_per_day": 15, "steps": [
+   {"op": "tick", "dt": 450, "expect_t": 43200, "expect_hour": 12.0, "expect_day": 1},
+   {"op": "where", "place": "island", "expect_t": 43200},
+   {"op": "tick", "dt": 450, "expect_t": 86400, "expect_hour": 0.0, "expect_day": 2},
+   {"op": "tick", "dt": 30, "expect_t": 89280, "expect_hour": 0.8, "expect_day": 2}
+  ]},
+  {"name": "the sea clock and the shore clock are the same clock", "minutes_per_day": 15, "steps": [
+   {"op": "where", "place": "sea"},
+   {"op": "tick", "dt": 37.5, "expect_dt": 3600, "expect_hour": 1.0},
+   {"op": "where", "place": "island"},
+   {"op": "tick", "dt": 37.5, "expect_dt": 3600, "expect_hour": 2.0},
+   {"op": "where", "place": "sea"},
+   {"op": "tick", "dt": 150, "expect_dt": 14400, "expect_hour": 6.0}
+  ]},
+  {"name": "starting mid-day keeps continuity across midnight", "minutes_per_day": 15, "start_t": 86000, "steps": [
+   {"op": "tick", "dt": 1, "expect_t": 86096, "expect_day": 1},
+   {"op": "tick", "dt": 4, "expect_t": 86480, "expect_day": 2, "expect_hour": 0.0222222222}
+  ]}
+ ]
+}

@@ -5,6 +5,8 @@ extends CanvasLayer
 const Commands := preload("res://core/console_commands.gd")
 const GameState := preload("res://core/game_state.gd")
 const MAX_HISTORY := 100
+const HUD_REFRESH_S := 0.25
+const MAX_LIVE_STEP_S := 0.25  # a stalled frame never moves the debug clock by more than this
 
 var commands: RefCounted
 var state: RefCounted
@@ -13,6 +15,8 @@ var _out: RichTextLabel
 var _line: LineEdit
 var _history: PackedStringArray = PackedStringArray()
 var _hist_pos := 0
+var _hud: Label
+var _hud_timer := 0.0
 
 
 func _ready() -> void:
@@ -30,6 +34,7 @@ func _ready() -> void:
 	commands = Commands.new(data, state, get_node_or_null("/root/Quality"), get_node_or_null("/root/Log"))
 	_build_ui()
 	_panel.visible = false
+	set_process(true)
 	_print("[color=#ffd9a0]Crown of the Seas debug console.[/color] Type 'help'. F1 or ` closes it.")
 
 
@@ -53,10 +58,31 @@ func _build_ui() -> void:
 	_out.scroll_following = true
 	_out.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	box.add_child(_out)
+	_hud = Label.new()
+	_hud.visible = false
+	_hud.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_hud.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_hud.add_theme_color_override("font_color", Color(1.0, 0.85, 0.63))
+	_hud.add_theme_color_override("font_outline_color", Color(0.05, 0.07, 0.1))
+	_hud.add_theme_constant_override("outline_size", 4)
+	add_child(_hud)
 	_line = LineEdit.new()
 	_line.placeholder_text = "command (try: help)"
 	_line.text_submitted.connect(_on_submit)
 	box.add_child(_line)
+
+
+## Debug live clock (`time live on`): real frame time drives the ONE world clock; pauses are honoured by tick().
+func _process(delta: float) -> void:
+	if commands == null or _hud == null:
+		return
+	if commands.live:
+		state.tick(minf(delta, MAX_LIVE_STEP_S))
+	_hud.visible = commands.live
+	_hud_timer += delta
+	if commands.live and _hud_timer >= HUD_REFRESH_S:
+		_hud_timer = 0.0
+		_hud.text = commands.hud_text()
 
 
 func _print(bbcode: String) -> void:

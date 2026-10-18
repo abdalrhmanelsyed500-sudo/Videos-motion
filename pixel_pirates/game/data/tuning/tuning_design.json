@@ -3,37 +3,37 @@
  "kind": "tuning",
  "records": [
   {
-   "key": "warn.advisory_days",
-   "value": 7,
-   "unit": "days",
-   "min": 3,
-   "max": 14,
+   "key": "warn.advisory_hours",
+   "value": 48,
+   "unit": "game hours",
+   "min": 12,
+   "max": 120,
    "provisional": true,
    "owner": "N13",
-   "source": "B1 design target; provisional until its owner module",
-   "note": "Rung 1 of the warning ladder: a stock will run out in this many days at the CURRENT consumption."
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Rung 1 of the Warning Ladder: a stock will run out within this many GAME hours at the CURRENT consumption (48 h = 30 real min)."
   },
   {
-   "key": "warn.warning_days",
-   "value": 3,
-   "unit": "days",
+   "key": "warn.warning_hours",
+   "value": 16,
+   "unit": "game hours",
+   "min": 4,
+   "max": 48,
+   "provisional": true,
+   "owner": "N13",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Rung 2: loud warning (16 h = 10 real min); the quartermaster speaks up and the HUD icon pulses."
+  },
+  {
+   "key": "warn.critical_hours",
+   "value": 6,
+   "unit": "game hours",
    "min": 1,
-   "max": 7,
+   "max": 12,
    "provisional": true,
    "owner": "N13",
-   "source": "B1 design target; provisional until its owner module",
-   "note": "Rung 2: loud warning, the quartermaster speaks up, the HUD icon pulses."
-  },
-  {
-   "key": "warn.critical_days",
-   "value": 1,
-   "unit": "days",
-   "min": 0.25,
-   "max": 3,
-   "provisional": true,
-   "owner": "N13",
-   "source": "B1 design target; provisional until its owner module",
-   "note": "Rung 3: last call, the ship's log marks the page, every recovery option is listed."
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Rung 3: last call (6 h = 3.75 real min); the recovery panel opens (a planning screen, so time pauses) and every option is listed."
   },
   {
    "key": "warn.min_steps_before_loss",
@@ -114,36 +114,36 @@
   },
   {
    "key": "voyage.passage_max_minutes",
-   "value": 20,
+   "value": 25,
    "unit": "min",
    "min": 12,
-   "max": 30,
+   "max": 40,
    "provisional": true,
    "owner": "E2",
-   "source": "B1 design target; provisional until its owner module",
-   "note": "Upper end of the Passage band (neighbouring islands, same sea)."
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Upper end of the Passage band (0.5-1.7 game days). T1: was 20 min; real-minute bands were stretched because a game day is now 15 min."
   },
   {
    "key": "voyage.crossing_max_minutes",
-   "value": 45,
+   "value": 60,
    "unit": "min",
-   "min": 25,
-   "max": 60,
+   "min": 30,
+   "max": 90,
    "provisional": true,
    "owner": "E2",
-   "source": "B1 design target; provisional until its owner module",
-   "note": "Upper end of the Crossing band (between regions)."
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Upper end of the Crossing band (1.7-4 game days). T1: was 45 min; real-minute bands were stretched because a game day is now 15 min."
   },
   {
    "key": "voyage.dead_max_minutes",
-   "value": 90,
+   "value": 120,
    "unit": "min",
-   "min": 45,
-   "max": 120,
+   "min": 60,
+   "max": 180,
    "provisional": true,
    "owner": "E9",
-   "source": "B1 design target; provisional until its owner module",
-   "note": "Upper end of a Dead Ocean crossing (needs full preparation, planner required)."
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Upper end of a Dead Ocean crossing (4-8 game days, up to 11.2 with the +40 percent band); needs full preparation. T1: was 90 min; real-minute bands were stretched because a game day is now 15 min."
   },
   {
    "key": "share.sea_pct",

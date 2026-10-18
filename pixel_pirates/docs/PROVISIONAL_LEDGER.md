@@ -4,22 +4,23 @@ Every balance number in `game/data/` carries `provisional`, `owner` and `source`
 who is expected to finalise them, and where each came from. `owner` uses PROPOSED module numbers (N1..N14, B3); the N-module list is not
 fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is finalised only when this ledger has no `N*` rows left.
 
-**91 provisional records** | B2: 2, B3: 3, B6: 2, B7: 9, B8: 4, E2: 7, E7: 9, E8: 1, E9: 2, F0: 10, I17: 5, N1: 18, N10: 1, N11: 1, N13: 6, N4: 3, N5: 1, N6: 2, N7: 3, N8: 1, N9: 1
+**112 provisional records** | B2: 2, B3: 3, B6: 2, B7: 10, B8: 4, E2: 7, E7: 9, E8: 1, E9: 2, F0: 10, I17: 5, I19: 9, N1: 19, N10: 4, N11: 3, N13: 5, N2: 1, N3: 1, N4: 3, N5: 1, N6: 5, N7: 4, N8: 1, N9: 1
 
 | owner | kind | key | source |
 |---|---|---|---|
 | B2 | tuning | `loop.report_max_seconds` | B2 design target; provisional until its owner module |
-| B2 | tuning | `time.accel_fast_factor` | B2 design target; provisional until its owner module |
+| B2 | tuning | `time.report_hour` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | B3 | difficulty_mode | `mode_hardcore` | design placeholder |
 | B3 | difficulty_mode | `mode_normal` | design placeholder |
 | B3 | difficulty_mode | `mode_story` | design placeholder |
 | B6 | tuning | `recovery.min_options` | B1 design target; provisional until its owner module |
 | B6 | tuning | `warn.min_steps_before_loss` | B1 design target; provisional until its owner module |
 | B7 | tuning | `loop.combat_fraction_of_voyage` | B2 design target; provisional until its owner module |
-| B7 | tuning | `loop.island_engagement` | B2 design target; provisional until its owner module |
+| B7 | tuning | `loop.island_engagement` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | B7 | tuning | `loop.plan_minutes` | B2 design target; provisional until its owner module |
 | B7 | tuning | `loop.provision_minutes` | B2 design target; provisional until its owner module |
 | B7 | tuning | `loop.ship_fraction_of_voyage` | B2 design target; provisional until its owner module |
+| B7 | tuning | `loop.visit_cost_days_max` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | B7 | tuning | `share.combat_pct_max` | B1 design target; provisional until its owner module |
 | B7 | tuning | `share.island_pct` | B1 design target; provisional until its owner module |
 | B7 | tuning | `share.sea_pct` | B1 design target; provisional until its owner module |
@@ -31,10 +32,10 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | E2 | tuning | `loop.choice_moments_per_10min` | B2 design target; provisional until its owner module |
 | E2 | tuning | `loop.crisis_moments_per_10min_max` | B2 design target; provisional until its owner module |
 | E2 | tuning | `loop.max_quiet_minutes` | B2 design target; provisional until its owner module |
-| E2 | tuning | `voyage.crossing_max_minutes` | B1 design target; provisional until its owner module |
+| E2 | tuning | `voyage.crossing_max_minutes` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | E2 | tuning | `voyage.hop_max_minutes` | B1 design target; provisional until its owner module |
 | E2 | tuning | `voyage.hop_min_minutes` | B1 design target; provisional until its owner module |
-| E2 | tuning | `voyage.passage_max_minutes` | B1 design target; provisional until its owner module |
+| E2 | tuning | `voyage.passage_max_minutes` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | E7 | tuning | `island.explore_budget_min_t1` | design placeholder |
 | E7 | tuning | `island.explore_budget_min_t2` | design placeholder |
 | E7 | tuning | `island.explore_budget_min_t3` | design placeholder |
@@ -46,7 +47,7 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | E7 | tuning | `island.size_tiles_t3` | design placeholder |
 | E8 | tuning | `plan.forecast_spread_min` | B1 design target; provisional until its owner module |
 | E9 | tuning | `plan.forecast_spread_dead` | B1 design target; provisional until its owner module |
-| E9 | tuning | `voyage.dead_max_minutes` | B1 design target; provisional until its owner module |
+| E9 | tuning | `voyage.dead_max_minutes` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | F0 | island_template | `tpl_atoll_ring` | A6 design; tuned by baking and viewing |
 | F0 | island_template | `tpl_blob_isle` | A6 design; tuned by baking and viewing |
 | F0 | island_template | `tpl_cone_volcano` | A6 design; tuned by baking and viewing |
@@ -62,6 +63,15 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | I17 | kit | `kit_temperate` | placeholder art mapping (A4 assets); final biome art replaces it in I17 |
 | I17 | kit | `kit_tropical` | placeholder art mapping (A4 assets); final biome art replaces it in I17 |
 | I17 | kit | `kit_volcanic` | placeholder art mapping (A4 assets); final biome art replaces it in I17 |
+| I19 | tuning | `light.dawn_end_level` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| I19 | tuning | `light.night_floor` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| I19 | tuning | `light.sunset_end_level` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| I19 | tuning | `time.dawn_start_hour` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| I19 | tuning | `time.day_start_hour` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| I19 | tuning | `time.evening_start_hour` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| I19 | tuning | `time.morning_start_hour` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| I19 | tuning | `time.night_start_hour` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| I19 | tuning | `time.sunset_start_hour` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N1 | item | `item_bandage` | design placeholder |
 | N1 | item | `item_cannonball` | design placeholder |
 | N1 | item | `item_canvas` | design placeholder |
@@ -78,24 +88,35 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | N1 | item | `item_salt_meat` | design placeholder |
 | N1 | item | `item_tar` | design placeholder |
 | N1 | item | `item_water_barrel` | design placeholder |
+| N1 | tuning | `crew.meals_per_day` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N1 | tuning | `food.hardtack_kg_per_man_day` | historical figure from general knowledge, not source-checked (about 1 lb biscuit per day) |
 | N1 | tuning | `food.need_kcal_per_man_day` | design placeholder |
 | N10 | tuning | `cargo.overload_speed_penalty_pct_per_pct` | design placeholder |
+| N10 | tuning | `ship.stores_hold_days_late` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N10 | tuning | `ship.stores_hold_days_mid` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N10 | tuning | `ship.stores_hold_days_start` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N11 | tuning | `weather.gale_duration_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N11 | tuning | `weather.gale_wave_height_m` | design placeholder |
+| N11 | tuning | `weather.season_length_days` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N13 | tuning | `plan.forecast_spread_sea` | B1 design target; provisional until its owner module |
-| N13 | tuning | `time.ashore_game_minutes_per_real_minute` | B2 design target; provisional until its owner module |
-| N13 | tuning | `time.real_minutes_per_game_day` | B2 design target; provisional until its owner module |
-| N13 | tuning | `warn.advisory_days` | B1 design target; provisional until its owner module |
-| N13 | tuning | `warn.critical_days` | B1 design target; provisional until its owner module |
-| N13 | tuning | `warn.warning_days` | B1 design target; provisional until its owner module |
-| N4 | tuning | `water.foul_after_days_warm` | design placeholder |
+| N13 | tuning | `time.real_minutes_per_game_day` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N13 | tuning | `warn.advisory_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N13 | tuning | `warn.critical_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N13 | tuning | `warn.warning_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N2 | tuning | `activity.fish_cast_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N3 | tuning | `activity.cook_meal_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N4 | tuning | `water.foul_after_days_warm` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N4 | tuning | `water.need_l_per_man_day_comfort` | design placeholder |
 | N4 | tuning | `water.need_l_per_man_day_min` | design placeholder |
-| N5 | tuning | `health.scurvy_onset_days_no_vitc` | historical figure from general knowledge, not source-checked (weeks to months) |
-| N6 | tuning | `ship.barnacle_speed_penalty_pct_per_month` | design placeholder |
-| N6 | tuning | `ship.hull_wear_pct_per_day_at_sea` | design placeholder |
+| N5 | tuning | `health.scurvy_onset_days_no_vitc` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N6 | tuning | `activity.careen_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N6 | tuning | `activity.patch_leak_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N6 | tuning | `activity.replace_plank_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N6 | tuning | `ship.barnacle_speed_penalty_pct_per_month` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N6 | tuning | `ship.hull_wear_pct_per_day_at_sea` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N7 | tuning | `crew.awake_limit_hours` | design placeholder |
+| N7 | tuning | `crew.sleep_need_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N7 | tuning | `crew.watch_length_hours` | historical figure from general knowledge, not source-checked (four-hour watches) |
 | N7 | tuning | `move.walk_speed_mps` | design placeholder |
-| N8 | tuning | `morale.daily_decay_base` | design placeholder |
+| N8 | tuning | `morale.daily_decay_base` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N9 | tuning | `ammo.powder_loss_pct_per_day_wet` | design placeholder |

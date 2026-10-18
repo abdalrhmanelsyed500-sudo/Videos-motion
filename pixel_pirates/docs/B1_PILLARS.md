@@ -15,11 +15,11 @@ Crossing the ocean is the core experience, not the gap between content.
 - **Demands:** long, dense, varied voyages; the sea is never empty (weather, wildlife, ships, wrecks, fishing, events); islands are never visible from each other unless a deliberate landmark.
 - **Forbids:** loading-screen travel, fast-travel between islands, empty stretches longer than one event window (E2 sets the window), a voyage you can finish with the screen off.
 - **Test:** *"Is the player doing something interesting on the water here, or just waiting?"*
-- **Commitments `[tuning]`:** voyage length bands at default time scale, no events, in real minutes: **Hop 3-8**, **Passage 8-20**, **Crossing 20-45**, **Dead Ocean 45-90** (`voyage.*`, owners E2/E9). Target play-time split: **sea 40 %**, **islands 35 %**, **ship and crew 17 %**, **combat at most 8 %** (`share.*`, owner B7).
+- **Commitments `[tuning]`:** voyage length bands at the fixed time scale (1 game day = 15 real minutes, patch T1), no events, in real minutes: **Hop 3-8** (0.2-0.5 days), **Passage 8-25** (to 1.7 days), **Crossing 25-60** (to 4 days), **Dead Ocean 60-120** (to 8 days) (`voyage.*`, owners E2/E9; the bands were re-scoped by T1). Target play-time split: **sea 40 %**, **islands 35 %**, **ship and crew 17 %**, **combat at most 8 %** (`share.*`, owner B7).
 
 ### P2. EVERY VOYAGE IS A SUM
 Logistics is the puzzle. Before you leave you can work out what you need; the sea decides how right you were.
-- **Demands:** the Reckoning (section 2): all stocks shown as *days left at the current consumption*; a planner that gives an honest range, not a promise; preparation choices that matter (what to load, which ration, which route, which watch plan).
+- **Demands:** the Reckoning (section 2): all stocks shown as *time left at the current consumption* (days above 2, hours below); a planner that gives an honest range, not a promise; preparation choices that matter (what to load, which ration, which route, which watch plan).
 - **Forbids:** hidden arithmetic, surprise consumption that the planner could not have shown, a stock bar with no number behind it.
 - **Test:** *"Could a careful player have known this was coming, from numbers the game itself showed?"*
 - **Commitments `[tuning]`:** forecast band is **plus/minus 25 %** on ordinary sea and **plus/minus 40 %** on dead ocean (`plan.forecast_spread_*`, owners N13/E9). The band is wider, never hidden.
@@ -29,7 +29,7 @@ The journey is brutal and scarce, and the game never kills you from a direction 
 - **Demands:** the **Warning Ladder** (section 3); at least two recovery options at every critical state; every loss traceable to a decision or a visible risk.
 - **Forbids:** instant death without warning, unrecoverable soft-locks, random events that delete a run, a stat that changes with no visible cause, a punishment the player cannot learn from.
 - **Test:** *"If the player loses here, can they point to the moment they could have acted?"*
-- **Commitments `[tuning]`:** ladder rungs at **7 / 3 / 1 days** left at current consumption (`warn.*`, owner N13); **3 warning steps minimum** before any survival loss (`warn.min_steps_before_loss`, owner B6); **2 recovery options minimum** (`recovery.min_options`, owner B6). Difficulty may narrow the ladder in Hardcore; it may not remove it (decision B1-3).
+- **Commitments `[tuning]`:** ladder rungs at **48 / 16 / 6 game hours** left at current consumption = **30 / 10 / 3.75 real minutes** (`warn.*_hours`, owner N13; T1 replaced the old 7 / 3 / 1 days); **3 warning steps minimum** before any survival loss (`warn.min_steps_before_loss`, owner B6); **2 recovery options minimum** (`recovery.min_options`, owner B6). Difficulty may narrow the ladder in Hardcore; it may not remove it (decision B1-3).
 
 ### P4. A SHIP IS PEOPLE
 The systems are the crew. Food is the cook's pot, a leak is the carpenter's sleepless night, scurvy is a man in a bunk with a name. (B1 uses role names only; the real crew come from the D modules and are all male.)
@@ -54,31 +54,31 @@ Most survival games hide the numbers and let the player discover them by dying. 
 
 At the chart table the captain opens the **Reckoning**:
 1. Choose route, ration level, watch plan, cargo.
-2. The table shows the **forecast band** in days: low / expected / high. The band comes from the season's weather, the sea's currents, the navigator's skill and the chart you hold.
+2. The table shows the **forecast band** in days or hours: low / expected / high. The band comes from the season's weather, the sea's currents, the navigator's skill and the chart you hold.
 3. It shows every stock as *days of stock* and the **margin in days against the HIGH end** of the band.
 4. Two stocks in the same voyage can be fine and thin at once; the table shows both.
 
 **Information is cargo.** Navigator skill, bought charts, bird and cloud lore, and tips from islanders **narrow the band** (never below plus/minus 10 %, `plan.forecast_spread_min`, owner E8). A better chart is as valuable as a barrel of water. This ties P2 to exploration and to the navigation module (E8).
 
-### Worked example (12 men, one 14-day crossing; produced by `design_checks.py`)
+### Worked example (12 men, one 3-day crossing = 45 real minutes; produced by `design_checks.py`; rescaled by T1)
 | | value |
 |---|---|
-| band (plus/minus 25 %) | **10.5 / 14 / 17.5 days** |
-| hardtack need | 12 x 0.45 kg = **5.4 kg/day** -> 75.6 kg expected, 94.5 kg worst |
-| water need (minimum 2.5 L) | 12 x 2.5 = **30 L/day** -> 420 L expected, 525 L worst |
-| loaded: 90 kg hardtack, 480 L water | 16.7 and 16.0 days of stock |
-| margin against the worst case | hardtack **-0.8 days**, water **-1.5 days** |
+| band (plus/minus 25 %) | **2.25 / 3 / 3.75 days** (34 / 45 / 56 real minutes) |
+| hardtack need | 12 x 0.45 kg = **5.4 kg/day** -> 16.2 kg expected, 20.2 kg worst |
+| water need (minimum 2.5 L) | 12 x 2.5 = **30 L/day** -> 90 L expected, 112.5 L worst |
+| loaded: 21 kg hardtack, 100 L water | 3.9 and 3.3 days of stock |
+| margin against the worst case | hardtack **+0.1 days**, water **-0.4 days** |
 
-The Reckoning shows **ENOUGH for the expected 14 days, SHORT in the worst case**. The captain decides: load the exact gap (45 L of water and 5 kg of hardtack), take the half-ration plan, or trust the sea. Both outcomes are fair: the number was on the table.
+The Reckoning shows **ENOUGH for the expected 3 days, hardtack fine in the worst case, water SHORT in the worst case**. The captain decides: load the exact gap (13 L of water), take the two-thirds water plan, plan to catch rain, or trust the sea. Both outcomes are fair: the number was on the table.
 
 ## 3. The Warning Ladder
-Every stock and condition (food, water, hull, powder, morale, health, fatigue) climbs the same ladder, measured in **days left at the current consumption**:
+Every stock and condition (food, water, hull, powder, morale, health, fatigue) climbs the same ladder, measured in **game hours left at the current consumption** (T1; one game hour = 37.5 real seconds, so the rungs give 30 / 10 / 3.75 real minutes to act):
 
 | rung | when | what the player gets | the quartermaster says |
 |---|---|---|---|
-| 1 Advisory | 7 days or less | HUD tint, note in the log | "Biscuit is good for seven days at full ration, Captain. The chart says eight to the next landfall. A short week." |
-| 2 Warning | 3 days or less | pulsing icon, the quartermaster comes to the table, options listed | "Three days of biscuit, Captain. Half rations stretch it to six. Your call, or we put the nets out." |
-| 3 Critical | 1 day or less | the log marks the page, every recovery listed with its cost | "One day, Captain. The nets are out, the men know. Quarter ration, the spring on the charted shore, or the officers' own locker. I'd take the locker." |
+| 1 Advisory | 48 hours or less (2 days) | HUD tint, note in the log | "Biscuit is good for two days at full ration, Captain. The chart says up to three to the next landfall. A short margin." |
+| 2 Warning | 16 hours or less | pulsing icon, the quartermaster comes to the table, options listed | "Sixteen hours of biscuit, Captain. Half rations stretch it to a day and a third. Your call, or we put the nets out." |
+| 3 Critical | 6 hours or less | the log marks the page, every recovery listed with its cost | "Six hours, Captain. The nets are out, the men know. Quarter ration, the spring on the charted shore, or the officers' own locker. I'd take the locker." |
 | 4 Loss | only after rungs 1-3 | a consequence with a cause, never a game-over screen by itself | (the crew speaks about it afterwards) |
 
 Rules: a rung may be skipped only by an **event the player chose to enter** (sailing into a storm on purpose); the ladder never resets silently; Hardcore Realism removes recommendations and map hints but keeps the numbers honest.
@@ -116,7 +116,7 @@ Plus the three HARD CONTENT RULES, enforced automatically: no female crew, no se
 ## 6. Anti-pillars (what this game is not)
 - **Not a combat game.** Combat is at most 8 % of play time and always a consequence of the sea (ships met, creatures disturbed, a mutiny avoided or lost).
 - **Not a base-builder or a grind.** No fetch loop longer than one island visit; gathering has a point (a number in the Reckoning).
-- **Not a reflex test.** No quick-time events; planning screens pause the clock.
+- **Not a reflex test.** No quick-time events; planning screens pause the clock (and only those: patch T1).
 - **No hidden timers.** A timer exists only if it is in the log.
 - **No pirate clichés** as design: no "arr" dialect, no shoulder parrot, no peg-leg-as-joke, no literal X-marks-the-spot puzzles, no plank-walking, no rum as the only drink. Pirate life is *accounting under stress*; that is the fresh angle.
 
@@ -125,17 +125,17 @@ Plus the three HARD CONTENT RULES, enforced automatically: no female crew, no se
 - A. Ironman: any loss is the end of the run. Brutal, but breaks P3 (fair) and the length of the game.
 - B. No game over at all, only setbacks. Safe, but the voyage loses its stakes.
 - C. **Fair loss (recommended, adopted):** setbacks climb the ladder; the ship can be lost and the captain can fall only after rungs 1-3, with a last-chance rescue whose terms depend on the mode (Story: always; Normal: once per act; Hardcore: none). Save slots are not the rescue.
-**B1-2. Time model.**
+**B1-2. Time model (acceleration part SUPERSEDED by T1).**
 - A. Strict real time, no pause. Tense, but unfair for reading numbers.
 - B. Turn-based voyage. Fair, but kills the sense of an enormous live ocean.
-- C. **Real time at sea with a pause-to-plan rule (recommended, adopted):** all planning screens (Reckoning, galley, crew) pause the clock; the player may also accelerate time (x1 / x4); acceleration drops to x1 automatically at every ladder rung and event. B2 finalises controls.
-**B1-3. Hardcore Realism** changes widths and recommendations, not the contract: the ladder stays (it may narrow to 5 / 2 / 0.5 days), the Reckoning stays honest, the recovery minimum stays. (B3 finalises the numbers.)
+- C. Real time at sea with a pause-to-plan rule; the player may also accelerate time (x1 / x4). **The acceleration part is SUPERSEDED by T1-2.** The rest stands: planning screens (Reckoning, galley, crew) and the Morning Report pause the clock; there is no acceleration at all, and the clock is the same at sea and ashore (T1-1).
+**B1-3. Hardcore Realism** changes widths and recommendations, not the contract: the ladder stays (it may narrow to about 30 / 10 / 4 game hours, T1), the Reckoning stays honest, the recovery minimum stays. (B3 finalises the numbers.)
 
 ## 8. Open questions for later modules
-- N13 owns the voyage clock (game days per real minute) that turns the real-minute bands into day counts; B1 only fixes the bands.
+- N13 owns the world clock rates and the slow-process compression (T1 fixed the day at 15 real minutes); B1 only fixes the bands and the ladder.
 - B6 owns the exact last-chance rescue per mode and the lose conditions.
 - B7 owns whether the 40 / 35 / 17 / 8 split holds after the vertical slice.
 - D owns the crew voices; B1 uses role names only.
 
 ## 9. How B1 is enforced
-`python tools/check_all.py` fails if: the warning ladder is out of order or has fewer than 3 steps or 2 recovery options; the forecast band is not wider on dead ocean; voyage bands do not increase; play-time shares do not total 100 or the sea has less than the islands; combat exceeds 12 %; any data file contains a banned content word. 25 tests prove each rule fires.
+`python tools/check_all.py` fails if: the warning ladder is out of order or has fewer than 3 steps or 2 recovery options; the forecast band is not wider on dead ocean; voyage bands do not increase; the day is not 15 minutes, or the clock model has two scales or an acceleration key; play-time shares do not total 100 or the sea has less than the islands; combat exceeds 12 %; any data file contains a banned content word. 25 tests prove each rule fires.

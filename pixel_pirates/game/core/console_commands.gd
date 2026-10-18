@@ -12,6 +12,8 @@ const SAVE_DIR := "user://saves/"
 const LOG_LEVELS: Array[String] = ["debug", "info", "warn", "error"]
 const MAX_STACK := 1000000
 
+## Debug live mode (`time live on`): the console UI feeds real frame time to the world clock.
+var live := false
 var state: RefCounted
 var data: Node
 var quality: Node = null
@@ -37,7 +39,8 @@ func _register_all() -> void:
 	_reg("mode", "mode [id] | mode override <rate> <0-3> | mode clear", "Difficulty and per-system toning.", "_c_mode")
 	_reg("island", "island list | island info <isl_id>", "Island registry and baked-map facts.", "_c_island")
 	_reg("tp", "tp island <isl_id> [landing|<poi_slot>] | tp xy <x_m> <y_m>", "Teleport the player.", "_c_tp")
-	_reg("time", "time | time watch | time add <h> | time set <day> <hour>", "Show or change the game clock.", "_c_time")
+	_reg("time", "time | watch | tick <real_s> | live on|off | pause|resume <reason> | add <h> | set <day> <hour>",
+		"World clock: show, tick by real seconds, pause. add/set are debug-only jumps.", "_c_time")
 	_reg("give", "give <item_id> [n]", "Add (or with a negative n remove) items.", "_c_give")
 	_reg("inv", "inv", "List the inventory and total cargo weight.", "_c_inv")
 	_reg("seed", "seed | seed world|weather <digits>", "Show or set the 64-bit seeds.", "_c_seed")
@@ -298,6 +301,7 @@ func _c_tp(args: PackedStringArray) -> Dictionary:
 		state.x_m = float(args[1])
 		state.y_m = float(args[2])
 		state.at_island = ""
+		state.clock.set_location("sea")
 		return _ok("teleported to open sea at x=%s m, y=%s m" % [state.x_m, state.y_m])
 	var island_id := args[1] if args[0] == "island" and args.size() > 1 else args[0]
 	var target_idx := 2 if args[0] == "island" else 1
@@ -331,6 +335,7 @@ func _tp_island(island_id: String, target: String) -> Dictionary:
 	state.x_m = origin.x + local.x
 	state.y_m = origin.y + local.y
 	state.at_island = island_id
+	state.clock.set_location("island")
 	var where := "%s %s (cell %d,%d)" % [island_id, target, cell.x, cell.y]
 	return _ok("teleported to %s x=%.1f m, y=%.1f m" % [where, state.x_m, state.y_m])
 
@@ -338,17 +343,102 @@ func _tp_island(island_id: String, target: String) -> Dictionary:
 func _c_time(args: PackedStringArray) -> Dictionary:
 	if args.is_empty():
 		return _ok(state.clock_text())
-	if args[0] == "watch":
-		var h: float = state.hour_of_day()
-		var wl: float = _tuning().f("crew.watch_length_hours")
-		return _ok("%s - %s watch, last bell %d (Morning Report due at 08:00)" % [state.clock_text(),
-				VoyageClock.watch_name(VoyageClock.watch_index(h, wl)), VoyageClock.last_bell(h, wl)])
+	var result := _usage("time")
+	match args[0]:
+		"watch":
+			result = _ok(_time_watch_text())
+		"tick":
+			result = _time_tick(args)
+		"live":
+			result = _time_live(args)
+		"pause", "resume":
+			result = _time_pause(args)
+		"add", "set":
+			result = _time_debug_jump(args)
+	return result
+
+
+func _band_starts(tun: RefCounted) -> Array:
+	var out: Array = []
+	for k in ["dawn", "morning", "day", "sunset", "evening", "night"]:
+		out.append(tun.f("time.%s_start_hour" % k))
+	return out
+
+
+func _time_watch_text() -> String:
+	var tun := _tuning()
+	var h: float = state.hour_of_day()
+	var wl: float = tun.f("crew.watch_length_hours")
+	var starts := _band_starts(tun)
+	var level := VoyageClock.daylight(h, starts, tun.f("light.night_floor"), tun.f("light.dawn_end_level"),
+			tun.f("light.sunset_end_level"))
+	var rate: float = state.clock.minutes_per_day
+	var to_report := VoyageClock.hours_to_real_seconds(fposmod(tun.f("time.report_hour") - h, 24.0), rate)
+	var paused := "no"
+	if state.clock.is_paused():
+		paused = ", ".join(state.clock.pause_reasons())
+	var line1 := "%s - %s watch, last bell %d | band %s, daylight %.2f" % [state.clock_text(),
+			VoyageClock.watch_name(VoyageClock.watch_index(h, wl)), VoyageClock.last_bell(h, wl),
+			VoyageClock.band_of_hour(h, starts), level]
+	var line2 := "1 day = %.0f real min (1 game hour = %.1f s) | next Morning Report in %.0f real s | paused: %s" % [
+			rate, VoyageClock.hours_to_real_seconds(1.0, rate), to_report, paused]
+	return line1 + "\n" + line2
+
+
+## One line for the debug HUD: clock, band, daylight level, where the ship is, pause state.
+func hud_text() -> String:
+	var tun := _tuning()
+	var h: float = state.hour_of_day()
+	var starts := _band_starts(tun)
+	var level := VoyageClock.daylight(h, starts, tun.f("light.night_floor"), tun.f("light.dawn_end_level"),
+			tun.f("light.sunset_end_level"))
+	var where: String = state.at_island if state.at_island != "" else "sea"
+	var line := "%s | %s | daylight %.2f | %s" % [state.clock_text(), VoyageClock.band_of_hour(h, starts), level, where]
+	if state.clock.is_paused():
+		line += " | PAUSED: " + ", ".join(state.clock.pause_reasons())
+	return line
+
+
+func _time_live(args: PackedStringArray) -> Dictionary:
+	if args.size() < 2 or not (args[1] in ["on", "off"]):
+		return _usage("time")
+	live = args[1] == "on"
+	if live:
+		return _ok("live clock ON: the clock follows real time, 1 game day = %.0f real min. HUD line at the top right." %
+				state.clock.minutes_per_day)
+	return _ok("live clock OFF: the clock holds still until you tick it.")
+
+
+func _time_tick(args: PackedStringArray) -> Dictionary:
+	if args.size() < 2 or not args[1].is_valid_float():
+		return _usage("time")
+	var real_s := float(args[1])
+	if real_s < 0.0 or real_s > 86400.0:
+		return _fail("real seconds must be between 0 and 86400")
+	var game_s: float = state.tick(real_s)
+	return _ok("%.1f real s -> %.1f game s (%.2f h) | %s" % [real_s, game_s, game_s / 3600.0, state.clock_text()])
+
+
+func _time_pause(args: PackedStringArray) -> Dictionary:
+	var re := RegEx.create_from_string("^[a-z_]{1,24}$")
+	if args.size() < 2 or re.search(args[1]) == null:
+		return _fail("usage: time %s <reason> (reason: lowercase letters and _, e.g. report, planning, menu)" % args[0])
+	if args[0] == "pause":
+		state.clock.pause(args[1])
+	else:
+		state.clock.resume(args[1])
+	var reasons: PackedStringArray = state.clock.pause_reasons()
+	var now := "time runs" if reasons.is_empty() else "paused by " + ", ".join(reasons)
+	return _ok("%s %s: %s" % [args[0], args[1], now])
+
+
+func _time_debug_jump(args: PackedStringArray) -> Dictionary:
 	if args[0] == "add" and args.size() > 1 and args[1].is_valid_float():
 		state.add_hours(float(args[1]))
-		return _ok(state.clock_text())
+		return _ok("[debug jump] " + state.clock_text())
 	if args[0] == "set" and args.size() > 2 and args[1].is_valid_int() and args[2].is_valid_float():
 		state.set_clock(int(args[1]), float(args[2]))
-		return _ok(state.clock_text())
+		return _ok("[debug jump] " + state.clock_text())
 	return _usage("time")
 
 

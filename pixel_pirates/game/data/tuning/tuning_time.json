@@ -1,0 +1,259 @@
+{
+ "schema": 1,
+ "kind": "tuning",
+ "records": [
+  {
+   "key": "time.real_minutes_per_game_day",
+   "value": 15,
+   "unit": "min/day",
+   "min": 12,
+   "max": 20,
+   "provisional": true,
+   "owner": "N13",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "DECISION T1: one game day = 15 real minutes, identical at sea and ashore, fixed rate, no acceleration. 1 game hour = 37.5 s, a 4 h watch = 150 s. Time stops only for planning screens and the Morning Report."
+  },
+  {
+   "key": "time.dawn_start_hour",
+   "value": 5,
+   "unit": "hour",
+   "min": 4,
+   "max": 6,
+   "provisional": true,
+   "owner": "I19",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Dawn starts: sky lightens, first colour. Provisional band, subject to visual testing."
+  },
+  {
+   "key": "time.morning_start_hour",
+   "value": 7,
+   "unit": "hour",
+   "min": 6,
+   "max": 8,
+   "provisional": true,
+   "owner": "I19",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Morning starts: sun clear of the horizon. Provisional band, subject to visual testing."
+  },
+  {
+   "key": "time.day_start_hour",
+   "value": 10,
+   "unit": "hour",
+   "min": 9,
+   "max": 11,
+   "provisional": true,
+   "owner": "I19",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Day starts: full daylight. Provisional band, subject to visual testing."
+  },
+  {
+   "key": "time.sunset_start_hour",
+   "value": 17,
+   "unit": "hour",
+   "min": 16,
+   "max": 18,
+   "provisional": true,
+   "owner": "I19",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Sunset starts: light falls and warms. Provisional band, subject to visual testing."
+  },
+  {
+   "key": "time.evening_start_hour",
+   "value": 19,
+   "unit": "hour",
+   "min": 18,
+   "max": 19.5,
+   "provisional": true,
+   "owner": "I19",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Evening starts: dusk, lamps needed soon. Provisional band, subject to visual testing."
+  },
+  {
+   "key": "time.night_start_hour",
+   "value": 20,
+   "unit": "hour",
+   "min": 19,
+   "max": 21,
+   "provisional": true,
+   "owner": "I19",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Night starts (until the next dawn). Provisional band, subject to visual testing."
+  },
+  {
+   "key": "time.report_hour",
+   "value": 8,
+   "unit": "hour",
+   "min": 7.5,
+   "max": 9.5,
+   "provisional": true,
+   "owner": "B2",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Hour of the daily Morning Report (eight bells of the Morning watch); must fall inside the Morning band."
+  },
+  {
+   "key": "light.night_floor",
+   "value": 0.04,
+   "unit": "ratio",
+   "min": 0.0,
+   "max": 0.15,
+   "provisional": true,
+   "owner": "I19",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Daylight level at full night (moonlight); never 0 so night stays readable on weak hardware."
+  },
+  {
+   "key": "light.dawn_end_level",
+   "value": 0.55,
+   "unit": "ratio",
+   "min": 0.3,
+   "max": 0.8,
+   "provisional": true,
+   "owner": "I19",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Daylight level when Dawn ends (start of Morning)."
+  },
+  {
+   "key": "light.sunset_end_level",
+   "value": 0.3,
+   "unit": "ratio",
+   "min": 0.1,
+   "max": 0.5,
+   "provisional": true,
+   "owner": "I19",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Daylight level when Sunset ends (start of Evening)."
+  },
+  {
+   "key": "activity.fish_cast_hours",
+   "value": 1.5,
+   "unit": "game hours",
+   "min": 0.5,
+   "max": 4,
+   "provisional": true,
+   "owner": "N2",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "One cast-and-wait at sea or on shore = 56 real seconds."
+  },
+  {
+   "key": "activity.cook_meal_hours",
+   "value": 1.0,
+   "unit": "game hours",
+   "min": 0.5,
+   "max": 3,
+   "provisional": true,
+   "owner": "N3",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "One galley meal = 37.5 real seconds of work."
+  },
+  {
+   "key": "activity.patch_leak_hours",
+   "value": 2.0,
+   "unit": "game hours",
+   "min": 0.5,
+   "max": 8,
+   "provisional": true,
+   "owner": "N6",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Patching a leak = 75 real seconds."
+  },
+  {
+   "key": "activity.replace_plank_hours",
+   "value": 6.0,
+   "unit": "game hours",
+   "min": 2,
+   "max": 12,
+   "provisional": true,
+   "owner": "N6",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Replacing a hull plank = 3.75 real minutes."
+  },
+  {
+   "key": "activity.careen_hours",
+   "value": 24.0,
+   "unit": "game hours",
+   "min": 12,
+   "max": 48,
+   "provisional": true,
+   "owner": "N6",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Careening on a beach (historically 1-2 weeks) is compressed to one game day = 15 real minutes; one camp slot of an island visit."
+  },
+  {
+   "key": "crew.sleep_need_hours",
+   "value": 8.0,
+   "unit": "game hours",
+   "min": 6,
+   "max": 10,
+   "provisional": true,
+   "owner": "N7",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Sleep each man needs per day (5 real minutes); taken off-watch. There is no skip-the-night button: nights are played."
+  },
+  {
+   "key": "crew.meals_per_day",
+   "value": 3,
+   "unit": "count",
+   "min": 2,
+   "max": 4,
+   "provisional": true,
+   "owner": "N1",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Galley meals per game day (a meal every 5 real minutes)."
+  },
+  {
+   "key": "ship.stores_hold_days_start",
+   "value": 8,
+   "unit": "days of full-crew rations",
+   "min": 4,
+   "max": 14,
+   "provisional": true,
+   "owner": "N10",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Starting ship's stores hold. Crossing worst case (5 d) fits; Dead Ocean worst case (11.2 d) does not: preparation or a better ship is required."
+  },
+  {
+   "key": "ship.stores_hold_days_mid",
+   "value": 14,
+   "unit": "days of full-crew rations",
+   "min": 8,
+   "max": 24,
+   "provisional": true,
+   "owner": "N10",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Mid-game ship: covers the Dead Ocean worst case (11.2 d)."
+  },
+  {
+   "key": "ship.stores_hold_days_late",
+   "value": 24,
+   "unit": "days of full-crew rations",
+   "min": 14,
+   "max": 40,
+   "provisional": true,
+   "owner": "N10",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "Late ship: comfortable Dead Ocean with cargo space left."
+  },
+  {
+   "key": "weather.season_length_days",
+   "value": 20,
+   "unit": "days",
+   "min": 8,
+   "max": 40,
+   "provisional": true,
+   "owner": "N11",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "A season lasts 20 game days (5 real hours); a campaign of about 160 days passes through 8 seasons."
+  },
+  {
+   "key": "weather.gale_duration_hours",
+   "value": 12.0,
+   "unit": "game hours",
+   "min": 4,
+   "max": 36,
+   "provisional": true,
+   "owner": "N11",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
+   "note": "A typical gale lasts 12 game hours (7.5 real minutes)."
+  }
+ ]
+}

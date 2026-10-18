@@ -26,7 +26,7 @@ def load_tuning(data_dir: Path = DATA) -> dict[str, float]:
 
 def invariants(t: dict[str, float]) -> list[str]:
     """Rules the pillars promise. Returns problem strings; missing keys are problems too."""
-    need = ["warn.advisory_days", "warn.warning_days", "warn.critical_days", "warn.min_steps_before_loss", "recovery.min_options",
+    need = ["warn.advisory_hours", "warn.warning_hours", "warn.critical_hours", "warn.min_steps_before_loss", "recovery.min_options",
             "plan.forecast_spread_sea", "plan.forecast_spread_dead", "plan.forecast_spread_min", "voyage.hop_min_minutes", "voyage.hop_max_minutes",
             "voyage.passage_max_minutes", "voyage.crossing_max_minutes", "voyage.dead_max_minutes", "share.sea_pct", "share.island_pct",
             "share.ship_crew_pct", "share.combat_pct_max"]
@@ -34,8 +34,10 @@ def invariants(t: dict[str, float]) -> list[str]:
     if miss:
         return [f"pillar: missing tuning keys {miss}"]
     p: list[str] = []
-    if not t["warn.advisory_days"] > t["warn.warning_days"] > t["warn.critical_days"] > 0:
-        p.append("pillar P3: warning ladder must satisfy advisory > warning > critical > 0 days")
+    if not t["warn.advisory_hours"] > t["warn.warning_hours"] > t["warn.critical_hours"] > 0:
+        p.append("pillar P3: warning ladder must satisfy advisory > warning > critical > 0 game hours")
+    if "time.real_minutes_per_game_day" in t and t["warn.critical_hours"] * t["time.real_minutes_per_game_day"] * 60.0 / 24.0 < 120.0:
+        p.append("pillar P3: the critical rung must leave at least 2 real minutes to act (recovery window)")
     if t["warn.min_steps_before_loss"] < 3:
         p.append("pillar P3: at least 3 warning steps before any loss")
     if t["recovery.min_options"] < 2:
@@ -116,7 +118,7 @@ def reckoning(t: dict[str, float], crew: int, expected_days: float, spread: floa
     water_pm = water_l_per_man if water_l_per_man is not None else t["water.need_l_per_man_day_min"]
     lo, hi = expected_days * (1 - spread), expected_days * (1 + spread)
     per_day = {"hardtack_kg": crew * t["food.hardtack_kg_per_man_day"], "water_l": crew * water_pm}
-    out = {"band_days": (round(lo, 1), round(expected_days, 1), round(hi, 1)), "per_day": per_day, "rows": []}
+    out = {"band_days": (round(lo, 2), round(expected_days, 2), round(hi, 2)), "per_day": per_day, "rows": []}
     for k, per in per_day.items():
         have = stock[k]
         out["rows"].append({"stock": k, "have": have, "need_expected": round(per * expected_days, 1), "need_worst": round(per * hi, 1),
@@ -124,20 +126,20 @@ def reckoning(t: dict[str, float], crew: int, expected_days: float, spread: floa
     return out
 
 
-def rung(days_left: float, t: dict[str, float]) -> str:
-    """Warning ladder rung for a stock with this many days left at current consumption."""
-    if days_left <= t["warn.critical_days"]:
+def rung(hours_left: float, t: dict[str, float]) -> str:
+    """Warning ladder rung for a stock with this many GAME hours left at current consumption."""
+    if hours_left <= t["warn.critical_hours"]:
         return "critical"
-    if days_left <= t["warn.warning_days"]:
+    if hours_left <= t["warn.warning_hours"]:
         return "warning"
-    if days_left <= t["warn.advisory_days"]:
+    if hours_left <= t["warn.advisory_hours"]:
         return "advisory"
     return "ok"
 
 
 def main() -> int:
     t = load_tuning()
-    r = reckoning(t, 12, 14, t["plan.forecast_spread_sea"], {"hardtack_kg": 90, "water_l": 480})
+    r = reckoning(t, 12, 3, t["plan.forecast_spread_sea"], {"hardtack_kg": 21, "water_l": 100})
     print(json.dumps(r, indent=1))
     return 0
 

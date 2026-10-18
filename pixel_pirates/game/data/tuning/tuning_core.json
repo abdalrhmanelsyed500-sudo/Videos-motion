@@ -51,51 +51,55 @@
   },
   {
    "key": "water.foul_after_days_warm",
-   "value": 30,
+   "value": 10,
    "unit": "days",
-   "min": 5,
-   "max": 180,
+   "min": 3,
+   "max": 60,
    "provisional": true,
    "owner": "N4",
-   "source": "design placeholder",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
    "scale": "spoilage_rate",
-   "scale_mode": "div"
+   "scale_mode": "div",
+   "note": "T1: was 30 days under the old 2.4 min/day clock. Slow process re-paced: 10 days = 150 real min, longer than a worst-case Crossing (5 d) and shorter than a worst-case Dead Ocean crossing (11.2 d), so Dead Ocean forces rain, boiling or a spring."
   },
   {
    "key": "health.scurvy_onset_days_no_vitc",
-   "value": 70,
+   "value": 14,
    "unit": "days",
-   "min": 20,
-   "max": 200,
+   "min": 7,
+   "max": 120,
    "provisional": true,
    "owner": "N5",
-   "source": "historical figure from general knowledge, not source-checked (weeks to months)",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
    "scale": "disease_rate",
-   "scale_mode": "div"
+   "scale_mode": "div",
+   "note": "T1: was 70 days under the old 2.4 min/day clock. Slow process re-paced: 14 days = 210 real min (3.5 h) without fruit; longer than any single crossing, about 4 average cycles."
   },
   {
    "key": "ship.hull_wear_pct_per_day_at_sea",
-   "value": 0.08,
+   "value": 0.5,
    "unit": "% hull/day",
    "min": 0.0,
-   "max": 2.0,
+   "max": 3.0,
    "provisional": true,
    "owner": "N6",
-   "source": "design placeholder",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
    "scale": "ship_wear_rate",
-   "scale_mode": "mul"
+   "scale_mode": "mul",
+   "note": "T1: was 0.08 % hull/day under the old 2.4 min/day clock. Slow process re-paced: a 160-day campaign would otherwise wear the hull only 13 percent."
   },
   {
    "key": "ship.barnacle_speed_penalty_pct_per_month",
-   "value": 3.0,
+   "value": 12.0,
    "unit": "% speed/month",
    "min": 0.0,
-   "max": 20.0,
+   "max": 40.0,
    "provisional": true,
    "owner": "N6",
-   "source": "design placeholder",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
    "scale": "ship_wear_rate",
-   "scale_mode": "mul"
+   "scale_mode": "mul",
+   "note": "T1: was 3.0 % speed/month under the old 2.4 min/day clock. A month is 30 game days = 7.5 real hours; careen about every 10-12 hours of play."
   },
   {
    "key": "crew.watch_length_hours",
@@ -121,15 +125,16 @@
   },
   {
    "key": "morale.daily_decay_base",
-   "value": 1.0,
+   "value": 2.0,
    "unit": "points/day",
    "min": 0.0,
-   "max": 10.0,
+   "max": 6.0,
    "provisional": true,
    "owner": "N8",
-   "source": "design placeholder",
+   "source": "T1 time revision (1 game day = 15 real min); provisional until its owner module",
    "scale": "morale_decay_rate",
-   "scale_mode": "mul"
+   "scale_mode": "mul",
+   "note": "T1: was 1.0 points/day under the old 2.4 min/day clock. Per game day (15 real min); an unpaid crew reaches mutiny pressure in about 12 real hours."
   },
   {
    "key": "ammo.powder_loss_pct_per_day_wet",

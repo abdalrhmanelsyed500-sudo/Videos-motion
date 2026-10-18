@@ -36,7 +36,7 @@ Open with **F1** or **`** (backtick). Up/Down = history, Tab = complete, Esc = c
 | `mode [id]` / `mode override <rate> <0-3>` / `mode clear` | difficulty and per-system toning |
 | `island list` / `island info <isl_id>` | registry and baked-map facts (explore minutes, POIs, landings) |
 | `tp island <isl_id> [landing\|<slot>]` / `tp xy <x_m> <y_m>` | teleport (world position in metres) |
-| `time` / `time add <h>` / `time set <day> <hour>` | game clock |
+| `time` / `time watch` / `time tick <real_s>` / `time live on|off` / `time pause|resume <reason>` / `time add <h>` / `time set <day> <hour>` | the one world clock (T1); `add` and `set` are debug-only jumps |
 | `give <item_id> [n]` / `inv` | items and cargo weight |
 | `seed` / `seed world\|weather <digits>` | 64-bit seeds |
 | `save [name]` / `load [name]` | `user://saves/<name>.json` with the A5 hashed, atomic format |

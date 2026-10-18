@@ -207,6 +207,57 @@ def check_design() -> None:
     problems.extend(loop_model.loop_invariants(design_checks.load_tuning(), loop_model.load_ranges()))
 
 
+OLD_TIME_WORDS = ("accel_fast", "ashore_game", "time_scale_fast", "fast_forward", "ashore_clock")
+OLD_TIME_DOC_PHRASES = ("fast-forward", "x4 ", "2.4 min", "60 min per day", "two-clock", "two clocks")
+SUPERSEDED_MARK = re.compile(r"supersed|removed|replaced|no longer|T1", re.IGNORECASE)
+
+
+def check_time_rules() -> None:
+    """Patch T1: one world clock. Code defaults must equal the tuning records (Godot cannot run here), the removed identifiers must
+    be gone, nothing may touch Engine.time_scale (hidden acceleration), and the docs may only mention the old model as superseded."""
+    tun = {}
+    for p in sorted((GAME / "data" / "tuning").glob("*.json")):
+        for r in json.loads(p.read_text())["records"]:
+            tun[r["key"]] = r["value"]
+    wc = (GAME / "core" / "world_clock.gd").read_text()
+    m = re.search(r"DEFAULT_MINUTES_PER_DAY\s*:=\s*([0-9.]+)", wc)
+    if not m or float(m.group(1)) != tun.get("time.real_minutes_per_game_day"):
+        problems.append("time: world_clock.gd DEFAULT_MINUTES_PER_DAY must equal tuning time.real_minutes_per_game_day")
+    vc = (GAME / "core" / "voyage_clock.gd").read_text()
+    m = re.search(r"DEFAULT_STARTS[^=]*=\s*\[([^\]]+)\]", vc)
+    names = ["dawn", "morning", "day", "sunset", "evening", "night"]
+    if not m or [float(x) for x in m.group(1).split(",")] != [tun[f"time.{n}_start_hour"] for n in names]:
+        problems.append("time: voyage_clock.gd DEFAULT_STARTS must equal the tuning time.*_start_hour values")
+    m = re.search(r"DEFAULT_REPORT_HOUR\s*:=\s*([0-9.]+)", vc)
+    if not m or float(m.group(1)) != tun["time.report_hour"]:
+        problems.append("time: voyage_clock.gd DEFAULT_REPORT_HOUR must equal tuning time.report_hour")
+    py = (ROOT / "tools" / "data_tools" / "voyage_clock.py").read_text()
+    m = re.search(r"DEFAULT_STARTS = \[([^\]]+)\]", py)
+    if not m or [float(x) for x in m.group(1).split(",")] != [tun[f"time.{n}_start_hour"] for n in names]:
+        problems.append("time: voyage_clock.py DEFAULT_STARTS must equal the tuning time.*_start_hour values")
+    for f in sorted(GAME.rglob("*.gd")):
+        for ln, line in enumerate(f.read_text().splitlines(), 1):
+            code = line.split("#", 1)[0]
+            if "Engine.time_scale" in code:
+                problems.append(f"time: {f.relative_to(ROOT)}:{ln} Engine.time_scale is forbidden (no hidden or player acceleration)")
+            if any(w in code for w in OLD_TIME_WORDS):
+                problems.append(f"time: {f.relative_to(ROOT)}:{ln} uses an identifier of the removed two-clock model")
+    for f in sorted((ROOT / "tools").rglob("*.py")):
+        if f.name in ("check_project.py", "loop_model.py", "test_design_checks.py"):
+            continue
+        for ln, line in enumerate(f.read_text().splitlines(), 1):
+            if any(w in line for w in OLD_TIME_WORDS):
+                problems.append(f"time: {f.relative_to(ROOT)}:{ln} uses an identifier of the removed two-clock model")
+    for doc in ("CANON_BIBLE.md", "B1_PILLARS.md", "B2_CORE_LOOP.md"):
+        p = ROOT / "docs" / doc
+        if not p.exists():
+            continue
+        for ln, line in enumerate(p.read_text().splitlines(), 1):
+            if any(w in line for w in OLD_TIME_DOC_PHRASES) and not SUPERSEDED_MARK.search(line):
+                problems.append(f"time: docs/{doc}:{ln} states an old time rule without marking it superseded: {line.strip()[:80]}")
+    print("time rules: code defaults match tuning, no removed identifiers, docs consistent")
+
+
 def check_registry_doc() -> None:
     sys.path.insert(0, str(ROOT / "tools" / "data_tools"))
     import registry_doc  # noqa: PLC0415
@@ -258,6 +309,7 @@ def main() -> int:
     check_manifest()
     check_data_model()
     check_island_kit()
+    check_time_rules()
     check_design()
     check_registry_doc()
     check_godot_static()
