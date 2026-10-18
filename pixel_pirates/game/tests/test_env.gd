@@ -28,6 +28,8 @@ func run(t: Object) -> void:
 	for c in fx["wave"]:
 		t.check(absf(WaveModel.crest_bias(float(c["p"])) - float(c["bias"])) < 0.000001, "crest bias p=%.1f" % float(c["p"]))
 	_waves(t, fx["wave_build"], tuning)
+	for wb in fx["wave_builds"]:
+		_waves(t, wb, tuning)
 	for tr in fx["env"]:
 		_transition(t, tr, tuning)
 	for m in fx["motion"]:

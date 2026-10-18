@@ -20,7 +20,9 @@ KN_TO_MS = 0.514444
 G = 9.81
 DIR_OFFSETS_DEG = [0.0, 22.0, -38.0, 65.0]
 LENGTHS_M = [46.0, 27.0, 15.0, 8.5]
-SHARES = [0.55, 0.28, 0.12, 0.05]
+SHARES = [0.55, 0.28, 0.12, 0.05]  # the rough sea (legacy values)
+SHARES_CALM = [0.80, 0.17, 0.025, 0.005]  # H2D-0.3: a calm sea is a long swell with hardly any short waves
+SHARES_GALE = [0.42, 0.30, 0.18, 0.10]  # a gale carries much more short, steep wind-sea
 SHIP_LEN = 22.0
 SHIP_BEAM = 6.2
 CAM_PITCH_DEG = 48.0
@@ -170,15 +172,29 @@ def crest_bias(p: float) -> float:
     return 2.0 * (s / n) - 1.0
 
 
+def wave_mix(sea: float) -> tuple[list[float], float]:
+    """Wave-energy shares of the four waves and the wavelength multiplier for a sea-state index (H2D-0.3)."""
+    if sea < 0.5:
+        u = sea / 0.5
+        shares = [SHARES_CALM[i] + (SHARES[i] - SHARES_CALM[i]) * u for i in range(4)]
+        len_mult = 1.25 - 0.25 * u
+    else:
+        u = (sea - 0.5) / 0.5
+        shares = [SHARES[i] + (SHARES_GALE[i] - SHARES[i]) * u for i in range(4)]
+        len_mult = 1.0 - 0.10 * u
+    return shares, len_mult
+
+
 def wave_build(wave_vis_m: float, wave_to_deg: float, sea: float, ice: float, P: dict[str, float]) -> dict:
     p = P["env.crest_p_calm"] + (P["env.crest_p_gale"] - P["env.crest_p_calm"]) * sea
     spread = 1.0 - 0.3 * sea
+    shares, len_mult = wave_mix(sea)
     amp_total = 0.5 * wave_vis_m * (1.0 - 0.85 * clamp(ice, 0.0, 1.0))
     waves = []
     for i in range(4):
         a = math.radians(wave_to_deg + DIR_OFFSETS_DEG[i] * spread)
-        wl = LENGTHS_M[i] * (0.8 + 0.06 * wave_vis_m)
-        waves.append([math.sin(a), -math.cos(a), math.tau / wl, amp_total * SHARES[i]])
+        wl = LENGTHS_M[i] * (0.8 + 0.06 * wave_vis_m) * len_mult
+        waves.append([math.sin(a), -math.cos(a), math.tau / wl, amp_total * shares[i]])
     return {"waves": waves, "p": p, "bias": crest_bias(p)}
 
 
@@ -349,6 +365,13 @@ def make_fixture() -> dict:
     pts = [(0.0, 0.0, 0.0), (13.0, -7.0, 2.5), (-40.0, 22.0, 9.1), (250.0, 80.0, 31.7)]
     out["wave_build"] = {"wave_m": 3.0, "to_deg": 45.0, "sea": 0.5, "ice": 0.0, "p": b["p"], "bias": b["bias"], "waves": b["waves"],
                          "heights": [{"x": x, "z": z, "t": t, "h": wave_height(b, x, z, t)} for x, z, t in pts]}
+    # one wave build per sea state: calm swell, breezy, rough (legacy mix), gale (H2D-0.3 composition)
+    out["wave_builds"] = []
+    for sea_i, wm_i in ((0.05, 0.4), (0.3, 1.5), (0.8, 4.0), (1.0, 6.0)):
+        bi = wave_build(wm_i, 45.0, sea_i, 0.0, P)
+        out["wave_builds"].append({"wave_m": wm_i, "to_deg": 45.0, "sea": sea_i, "ice": 0.0, "p": bi["p"], "bias": bi["bias"],
+                                   "waves": bi["waves"],
+                                   "heights": [{"x": x, "z": z, "t": t, "h": wave_height(bi, x, z, t)} for x, z, t in pts]})
     # an environment transition replayed at dt = 1/60, sampled every 5 s
     for name_from, name_to, secs in (("calm", "gale", 60), ("storm", "calm", 90)):
         e = Env(P)
@@ -400,9 +423,9 @@ if __name__ == "__main__":
     elif len(sys.argv) > 1 and sys.argv[1] == "--check":
         dst = ROOT / "game" / "tests" / "fixtures" / "env_cases.json"
         ok = json.loads(dst.read_text()) == json.loads(json.dumps(make_fixture()))
-        gd_env = (ROOT / "game" / "h2d" / "env_model.gd").read_text() + (ROOT / "game" / "h2d" / "ship_motion.gd").read_text()
+        gd_env = "".join((ROOT / "game" / "h2d" / n).read_text() for n in ("env_model.gd", "ship_motion.gd", "sail_model.gd", "weather_look.gd"))
         for key, val in load_params().items():
-            if not key.startswith(("env.", "motion.")):
+            if not key.startswith(("env.", "motion.", "sail.", "look.")):
                 continue
             short = key.split(".", 1)[1]
             if f'"{short}": {val}' not in gd_env and f'"{short}": {float(val)}' not in gd_env:

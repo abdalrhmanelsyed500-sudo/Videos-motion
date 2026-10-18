@@ -49,6 +49,28 @@ TABLE = [
     ("motion.slam_cooldown_calm_s", 4.0, "seconds", 0.3, 10, "Shortest time between spray bursts from one point of the hull in a moderate sea."),
     ("motion.slam_cooldown_gale_s", 1.6, "seconds", 0.3, 10, "Same in a gale."),
     ("motion.slam_min_sea", 0.3, "index", 0, 1, "No spray bursts below this sea-state index."),
+    # ---- H2D-0.3: sail response (sail.*) and weather look (look.*) ----
+    ("sail.fill_period_s", 2.8, "seconds", 0.8, 8, "How slowly the sail answers a change of wind or sailing angle (period of the damped spring that fills it). Larger = slower, heavier cloth."),
+    ("sail.fill_zeta", 0.55, "ratio", 0.2, 1.5, "Damping of the sail filling: lower = a gust makes it overshoot and settle, higher = it just eases in."),
+    ("sail.max_belly_px", 2.2, "pixels", 0, 5, "How far a full sail bellies to leeward, in art pixels (the pixel-art silhouette is kept; keep this small)."),
+    ("sail.light_air_kn", 2.0, "knots", 0, 10, "Below this wind the sail hangs slack."),
+    ("sail.full_air_kn", 14.0, "knots", 4, 30, "From this wind the sail is fully filled (if it is not luffing)."),
+    ("sail.gust_fill", 0.35, "ratio", 0, 1, "How much a gust fills the sail beyond its steady shape."),
+    ("sail.gale_flat", 0.35, "ratio", 0, 0.8, "How much a gale pulls the sail flat and taut (less belly, not more)."),
+    ("sail.flap_max_px", 1.0, "pixels", 0, 3, "Largest flutter of a luffing sail, in art pixels."),
+    ("sail.flap_rise_s", 0.6, "seconds", 0.1, 5, "How fast flutter builds up."),
+    ("sail.flap_fall_s", 1.4, "seconds", 0.1, 8, "How slowly flutter dies away."),
+    ("sail.flap_hz_base", 0.4, "hertz", 0.1, 3, "Flutter rate in very light wind."),
+    ("sail.flap_hz_per_kn", 0.025, "hertz per knot", 0, 0.3, "Flutter gets faster with the wind by this much per knot."),
+    ("sail.flap_gust_gain", 0.6, "ratio", 0, 3, "How much the ARRIVAL of a gust (wind rising fast) makes the sail shiver once."),
+    ("sail.breath_px", 0.45, "pixels", 0, 1.5, "Slow breathing of the sail in light air (sub-pixel, so it moves only now and then)."),
+    ("sail.breath_period_s", 6.0, "seconds", 2, 20, "Main period of that breathing (a second, unrelated period is mixed in so it never repeats)."),
+    ("look.rain_fall_ms", 19.0, "m/s", 8, 40, "Fall speed of a raindrop in scene metres per second (light rain 15 percent slower, heavy rain 15 percent faster)."),
+    ("look.rain_streak_m", 1.5, "metres", 0.4, 4, "Length of a streak in heavy rain (light rain is about half of it)."),
+    ("look.rain_drift_factor", 0.55, "ratio", 0, 1.2, "How much of the wind speed the falling drops pick up sideways."),
+    ("look.rain_gust_bend", 0.8, "ratio", 0, 2, "Extra sideways drift inside a gust patch (the rain bends where the gust is)."),
+    ("look.rain_density", 1.0, "ratio", 0.2, 2, "Scale on how many of the simulated drops are visible. 1 = the default look; lower for a cleaner sky."),
+    ("look.fog_start_shift_m", 45.0, "metres", 0, 120, "In thick fog the fog starts this much closer to the camera (so it reaches the ship)."),
 ]
 
 

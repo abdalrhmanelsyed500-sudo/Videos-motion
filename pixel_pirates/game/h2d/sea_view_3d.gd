@@ -10,6 +10,8 @@ const WaveModel := preload("res://h2d/wave_model.gd")
 const LightModel := preload("res://h2d/light_model.gd")
 const ShipMotion := preload("res://h2d/ship_motion.gd")
 const EnvModel := preload("res://h2d/env_model.gd")
+const SailModel := preload("res://h2d/sail_model.gd")
+const WeatherLook := preload("res://h2d/weather_look.gd")
 const DataLoader := preload("res://core/data_loader.gd")
 const SHADER_DIR := "res://h2d/shaders/"
 const ART_DIR := "res://h2d/art/"
@@ -67,6 +69,10 @@ var _rain_mat: ShaderMaterial
 var _spray: MultiMeshInstance3D
 var _spray_mat: ShaderMaterial
 var _motion: ShipMotion = ShipMotion.new()
+var _sail: SailModel = SailModel.new()
+var _look: WeatherLook = WeatherLook.new()
+var _sail_boxes: Array = []
+var _trim_row := 2
 var _bursts: Array = [[0.0, 0.0, -100.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, -100.0, 0.0, 0.0, 0.0, 0.0, 0.0],
 		[0.0, 0.0, -100.0, 0.0, 0.0, 0.0, 0.0, 0.0]]
 var _burst_next := 0
@@ -117,6 +123,14 @@ func setup(host: Node) -> void:
 
 
 # ---- interface -------------------------------------------------------------------------------------------------
+## Hands the tuning table to the parts of this view that have tuning keys (motion.*, sail.*, look.*).
+## H2D-0.2 never did this for the ship motion, so edits to motion.* in the JSON were ignored until now.
+func configure_env(values: Dictionary) -> void:
+	_motion.configure(values)
+	_sail.configure(values)
+	_look.configure(values)
+
+
 func path_name() -> String:
 	return "3D"
 
@@ -207,7 +221,7 @@ func update_view(v: Dictionary, ship: Dictionary, dt: float) -> void:
 	_step_motion(dt, v, ship)
 	_update_ocean(v, ship, lm)
 	_update_weather_fx(v, ship)
-	_update_ship(v, ship)
+	_update_ship(v, ship, dt)
 	_update_camera(ship)
 	_update_post(v, lm)
 
@@ -385,6 +399,7 @@ func _build_ship() -> void:
 	_ship_mat.set_shader_parameter("hull_grid", Vector2(float(meta["headings"]), 1.0))
 	_ship_mat.set_shader_parameter("sail_grid", Vector2(float(meta["headings"]), float(n_trims)))
 	_ship_mat.set_shader_parameter("m_per_px", 1.0 / float(meta["px_per_m"]))
+	_sail_boxes = DataLoader.load_dict(ART_DIR + "ship_sloop_sailbox.json").get("boxes", [])
 	_ship = MeshInstance3D.new()
 	_ship.mesh = QuadMesh.new()
 	_ship.material_override = _ship_mat
@@ -519,11 +534,12 @@ func _step_motion(dt: float, v: Dictionary, ship: Dictionary) -> void:
 
 
 ## Visible state of the drawn ship from the sea and the wind: lean, belly, flutter, lift.
-func _update_ship(v: Dictionary, ship: Dictionary) -> void:
+func _update_ship(v: Dictionary, ship: Dictionary, dt: float) -> void:
 	var env: Dictionary = v["env"]
 	var hd := float(ship["heading_deg"])
 	var frame := ShipSprite.heading_frame(hd)
-	var row := ShipSprite.trim_row(hd, float(v["wind_from_deg"]))
+	_trim_row = ShipSprite.trim_row_sticky(hd, float(v["wind_from_deg"]), _trim_row)
+	var row := _trim_row
 	_ship_mat.set_shader_parameter("hull_cell", Vector2(float(frame), 0.0))
 	_ship_mat.set_shader_parameter("sail_cell", Vector2(float(frame), float(row)))
 	var x := float(ship["x"])
@@ -538,11 +554,16 @@ func _update_ship(v: Dictionary, ship: Dictionary) -> void:
 	var wind := float(env["wind_inst_kn"])
 	var no_go := float(v["no_go_deg"])
 	var off := absf(EnvModel.wrap180(hd - float(v["wind_from_deg"])))
-	var luff := 1.0 - smoothstep(no_go - 4.0, no_go + 12.0, off)
-	var billow := (1.0 - luff) * (1.0 + 2.0 * smoothstep(4.0, 16.0, wind)) * (1.0 - 0.3 * smoothstep(26.0, 40.0, wind))
-	var slack := 1.0 - smoothstep(3.0, 8.0, wind)
-	_ship_mat.set_shader_parameter("billow_px", 0.8 * billow)
-	_ship_mat.set_shader_parameter("flutter", clampf(luff + 0.5 * slack + 0.35 * float(env["gust"]), 0.0, 1.0))
+	_sail.step(minf(dt, 0.1), wind, float(env["gust"]), off, no_go, _time)
+	var so := _sail.out()
+	var loose := maxf(float(so["slack"]), float(so["luff"]))
+	var folds := clampf(loose * (1.0 - 0.5 * clampf(float(so["fill"]), 0.0, 1.0)), 0.0, 1.0)
+	_ship_mat.set_shader_parameter("sail_belly", float(so["belly_px"]))
+	_ship_mat.set_shader_parameter("sail_flap", Vector2(float(so["flap_px"]), float(so["flap_phase"])))
+	_ship_mat.set_shader_parameter("sail_folds", folds)
+	if row < _sail_boxes.size() and frame < (_sail_boxes[row] as Array).size():
+		var bx: Array = _sail_boxes[row][frame]
+		_ship_mat.set_shader_parameter("sail_box", Vector4(float(bx[0]), float(bx[1]), float(bx[2]), float(bx[3])))
 	var wt: Vector2 = env["wind_to"]
 	_ship_mat.set_shader_parameter("lee", Vector2(wt.x, wt.y * 0.74))
 	_ship.position = Vector3(x, 0.0, z)

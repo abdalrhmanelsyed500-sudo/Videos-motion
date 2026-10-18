@@ -113,6 +113,7 @@ func _ready() -> void:
 	_build_helm_widgets(layer)
 	_helm.configure(_oc.tuning())
 	_env.configure(_oc.tuning())
+	(_v3 as View3D).configure_env(_oc.tuning())
 	_jump(2)
 	_reset_ship()
 	_set_path("3d")
