@@ -661,6 +661,17 @@
    "owner": "F1",
    "source": "B4 economy design; provisional until its owner module",
    "note": "A Dead Ocean landfall has never been picked over: its salvage and treasure are worth this much more. Risk pays; it is the reason to prepare for the crossing."
+  },
+  {
+   "key": "start.purse_reales",
+   "value": 600,
+   "unit": "reales",
+   "min": 200,
+   "max": 2000,
+   "provisional": true,
+   "owner": "B4",
+   "source": "B4 economy design; provisional until its owner module",
+   "note": "The captain's purse at the start: about 8 days of running cost (16 kg of silver). Enough to provision a first voyage and buy a small first trade lot, not enough to skip the early game."
   }
  ]
 }

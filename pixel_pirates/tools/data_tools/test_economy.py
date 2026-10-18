@@ -99,6 +99,8 @@ expect("a bulk good denser than silver is caught", any("ordered" in x or "bulk g
 dense_spice = {k: dict(v) for k, v in IT.items()}
 dense_spice["item_spice"]["base_value"] = 900
 expect("a trade good denser than gold is caught", any("denser" in x for x in broken(dense_spice)))
+expect("a starting purse of nothing is caught", has("starting purse", **{"start.purse_reales": 50}))
+expect("a starting purse of a fortune is caught", has("starting purse", **{"start.purse_reales": 5000}))
 expect("crew size must grow", has("crew size", **{"crew.size_mid": 10}))
 
 # ---- the model itself ---------------------------------------------------------------------------------------------------------

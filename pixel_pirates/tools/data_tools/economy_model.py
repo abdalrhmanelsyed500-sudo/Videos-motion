@@ -32,7 +32,7 @@ NEED = ["coin.real_weight_g", "coin.doubloon_value_reales", "coin.changer_fee_pc
         "upgrade.price_small", "upgrade.price_mid_ship", "upgrade.price_late_ship", "time.real_minutes_per_game_day"]
 NEED += [f"{p}_{s}" for p in ("crew.size", "crew.officers", "running.upkeep_per_day", "ship.trade_capacity_kg") for s in STAGES]
 NEED += [f"{p}_t{n}" for p in ("salvage.value", "treasure.value", "treasure.windfall_chance") for n in (1, 2, 3)]
-NEED += ["treasure.windfall_bars", "dead.untouched_mult"]
+NEED += ["treasure.windfall_bars", "dead.untouched_mult", "start.purse_reales"]
 
 
 def load_items(data_dir: Path = D.DATA) -> dict[str, dict]:
@@ -217,6 +217,9 @@ def invariants(t: dict, items: dict) -> list[str]:
     fee_cost = windfall_value(t, items, "start") * t["coin.changer_fee_pct"] / 100.0
     if fee_cost > 0.6 * e_run_start(t, items) * start_days:
         p.append("economy: converting a windfall to gold may not cost more than 60 percent of the starter hold's days of running cost")
+    purse_days = t["start.purse_reales"] / e_run_start(t, items)
+    if not 6.0 <= purse_days <= 12.0:
+        p.append(f"economy: the starting purse covers {purse_days:.1f} days of running cost; it must be 6-12 (a first voyage, no skipping the early game)")
     if 2 * t["coin.changer_fee_pct"] < 6 or 2 * t["coin.changer_fee_pct"] > 25:
         p.append("economy: the changer round trip must cost between 6 and 25 percent")
     # --- prices and the market ---------------------------------------------------------------------------------------------

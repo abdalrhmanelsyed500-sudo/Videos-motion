@@ -4,7 +4,7 @@ Every balance number in `game/data/` carries `provisional`, `owner` and `source`
 who is expected to finalise them, and where each came from. `owner` uses PROPOSED module numbers (N1..N14, B3); the N-module list is not
 fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is finalised only when this ledger has no `N*` rows left.
 
-**112 provisional records** | B2: 2, B3: 3, B6: 2, B7: 10, B8: 4, E2: 7, E7: 9, E8: 1, E9: 2, F0: 10, I17: 5, I19: 9, N1: 19, N10: 4, N11: 3, N13: 5, N2: 1, N3: 1, N4: 3, N5: 1, N6: 5, N7: 4, N8: 1, N9: 1
+**182 provisional records** | B2: 2, B3: 3, B4: 28, B5: 5, B6: 7, B7: 10, B8: 4, C1: 3, D1: 6, E2: 7, E7: 9, E8: 2, E9: 2, F0: 10, F1: 9, I17: 5, I19: 9, N1: 19, N10: 7, N11: 3, N13: 5, N2: 2, N3: 1, N4: 4, N5: 2, N6: 5, N7: 4, N8: 8, N9: 1
 
 | owner | kind | key | source |
 |---|---|---|---|
@@ -13,7 +13,45 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | B3 | difficulty_mode | `mode_hardcore` | design placeholder |
 | B3 | difficulty_mode | `mode_normal` | design placeholder |
 | B3 | difficulty_mode | `mode_story` | design placeholder |
+| B4 | item | `item_cloth` | B4 economy: trade good or treasure, value per kg set by density class |
+| B4 | item | `item_coin` | B4 economy: silver piece of eight, 27 g |
+| B4 | item | `item_doubloon` | B4 economy: trade good or treasure, value per kg set by density class |
+| B4 | item | `item_furs` | B4 economy: trade good or treasure, value per kg set by density class |
+| B4 | item | `item_pearls` | B4 economy: trade good or treasure, value per kg set by density class |
+| B4 | item | `item_salt` | B4 economy: trade good or treasure, value per kg set by density class |
+| B4 | item | `item_silver_bar` | B4 economy: trade good or treasure, value per kg set by density class |
+| B4 | item | `item_spice` | B4 economy: trade good or treasure, value per kg set by density class |
+| B4 | item | `item_sugar` | B4 economy: trade good or treasure, value per kg set by density class |
+| B4 | item | `item_tobacco` | B4 economy: trade good or treasure, value per kg set by density class |
+| B4 | tuning | `coin.changer_fee_pct` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `coin.doubloon_value_reales` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `coin.real_weight_g` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `market.depth_reales_t1` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `market.depth_reales_t2` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `market.depth_reales_t3` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `market.differential_base` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `market.differential_cap` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `market.differential_per_day` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `market.recovery_half_life_days` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `market.safe_sale_fraction` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `market.spread_pct` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `running.misc_per_man_day` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `running.upkeep_per_day_late` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `running.upkeep_per_day_mid` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `running.upkeep_per_day_start` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `start.purse_reales` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `trade.cargo_fill_fraction` | B4 economy design; provisional until its owner module |
+| B5 | tuning | `stage.wealth_mult_late` | B4 economy design; provisional until its owner module |
+| B5 | tuning | `stage.wealth_mult_mid` | B4 economy design; provisional until its owner module |
+| B5 | tuning | `upgrade.price_late_ship` | B4 economy design; provisional until its owner module |
+| B5 | tuning | `upgrade.price_mid_ship` | B4 economy design; provisional until its owner module |
+| B5 | tuning | `upgrade.price_small` | B4 economy design; provisional until its owner module |
+| B6 | tuning | `prize.reales_per_combat_minute` | B4 economy design; provisional until its owner module |
 | B6 | tuning | `recovery.min_options` | B1 design target; provisional until its owner module |
+| B6 | tuning | `repair.cost_mult_late` | B4 economy design; provisional until its owner module |
+| B6 | tuning | `repair.cost_mult_mid` | B4 economy design; provisional until its owner module |
+| B6 | tuning | `repair.cost_per_hull_pct` | B4 economy design; provisional until its owner module |
+| B6 | tuning | `repair.expected_damage_pct_per_day` | B4 economy design; provisional until its owner module |
 | B6 | tuning | `warn.min_steps_before_loss` | B1 design target; provisional until its owner module |
 | B7 | tuning | `loop.combat_fraction_of_voyage` | B2 design target; provisional until its owner module |
 | B7 | tuning | `loop.island_engagement` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
@@ -29,6 +67,15 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | B8 | tuning | `loop.mix_dead_pct` | B2 design target; provisional until its owner module |
 | B8 | tuning | `loop.mix_hop_pct` | B2 design target; provisional until its owner module |
 | B8 | tuning | `loop.mix_passage_pct` | B2 design target; provisional until its owner module |
+| C1 | tuning | `treasure.value_t1` | B4 economy design; provisional until its owner module |
+| C1 | tuning | `treasure.value_t2` | B4 economy design; provisional until its owner module |
+| C1 | tuning | `treasure.value_t3` | B4 economy design; provisional until its owner module |
+| D1 | tuning | `crew.officers_late` | B4 economy design; provisional until its owner module |
+| D1 | tuning | `crew.officers_mid` | B4 economy design; provisional until its owner module |
+| D1 | tuning | `crew.officers_start` | B4 economy design; provisional until its owner module |
+| D1 | tuning | `crew.size_late` | B4 economy design; provisional until its owner module |
+| D1 | tuning | `crew.size_mid` | B4 economy design; provisional until its owner module |
+| D1 | tuning | `crew.size_start` | B4 economy design; provisional until its owner module |
 | E2 | tuning | `loop.choice_moments_per_10min` | B2 design target; provisional until its owner module |
 | E2 | tuning | `loop.crisis_moments_per_10min_max` | B2 design target; provisional until its owner module |
 | E2 | tuning | `loop.max_quiet_minutes` | B2 design target; provisional until its owner module |
@@ -45,6 +92,7 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | E7 | tuning | `island.size_tiles_t1` | design placeholder |
 | E7 | tuning | `island.size_tiles_t2` | design placeholder |
 | E7 | tuning | `island.size_tiles_t3` | design placeholder |
+| E8 | tuning | `info.chart_price_t1_region` | B4 economy design; provisional until its owner module |
 | E8 | tuning | `plan.forecast_spread_min` | B1 design target; provisional until its owner module |
 | E9 | tuning | `plan.forecast_spread_dead` | B1 design target; provisional until its owner module |
 | E9 | tuning | `voyage.dead_max_minutes` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
@@ -58,6 +106,15 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | F0 | island_template | `tpl_stack_field` | A6 design; tuned by baking and viewing |
 | F0 | island_template | `tpl_tidal_flats` | A6 design; tuned by baking and viewing |
 | F0 | island_template | `tpl_twin_lobes` | A6 design; tuned by baking and viewing |
+| F1 | tuning | `dead.untouched_mult` | B4 economy design; provisional until its owner module |
+| F1 | tuning | `salvage.fraction_of_islands` | B4 economy design; provisional until its owner module |
+| F1 | tuning | `salvage.value_t1` | B4 economy design; provisional until its owner module |
+| F1 | tuning | `salvage.value_t2` | B4 economy design; provisional until its owner module |
+| F1 | tuning | `salvage.value_t3` | B4 economy design; provisional until its owner module |
+| F1 | tuning | `treasure.windfall_bars` | B4 economy design; provisional until its owner module |
+| F1 | tuning | `treasure.windfall_chance_t1` | B4 economy design; provisional until its owner module |
+| F1 | tuning | `treasure.windfall_chance_t2` | B4 economy design; provisional until its owner module |
+| F1 | tuning | `treasure.windfall_chance_t3` | B4 economy design; provisional until its owner module |
 | I17 | kit | `kit_arid` | placeholder art mapping (A4 assets); final biome art replaces it in I17 |
 | I17 | kit | `kit_frozen` | placeholder art mapping (A4 assets); final biome art replaces it in I17 |
 | I17 | kit | `kit_temperate` | placeholder art mapping (A4 assets); final biome art replaces it in I17 |
@@ -75,7 +132,6 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | N1 | item | `item_bandage` | design placeholder |
 | N1 | item | `item_cannonball` | design placeholder |
 | N1 | item | `item_canvas` | design placeholder |
-| N1 | item | `item_coin` | design placeholder |
 | N1 | item | `item_fishing_line` | design placeholder |
 | N1 | item | `item_fresh_fish` | design placeholder |
 | N1 | item | `item_grog` | design placeholder |
@@ -91,10 +147,14 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | N1 | tuning | `crew.meals_per_day` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N1 | tuning | `food.hardtack_kg_per_man_day` | historical figure from general knowledge, not source-checked (about 1 lb biscuit per day) |
 | N1 | tuning | `food.need_kcal_per_man_day` | design placeholder |
+| N1 | tuning | `ration.salt_meat_kg_per_man_day` | B4 economy design; provisional until its owner module |
 | N10 | tuning | `cargo.overload_speed_penalty_pct_per_pct` | design placeholder |
 | N10 | tuning | `ship.stores_hold_days_late` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N10 | tuning | `ship.stores_hold_days_mid` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N10 | tuning | `ship.stores_hold_days_start` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N10 | tuning | `ship.trade_capacity_kg_late` | B4 economy design; provisional until its owner module |
+| N10 | tuning | `ship.trade_capacity_kg_mid` | B4 economy design; provisional until its owner module |
+| N10 | tuning | `ship.trade_capacity_kg_start` | B4 economy design; provisional until its owner module |
 | N11 | tuning | `weather.gale_duration_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N11 | tuning | `weather.gale_wave_height_m` | design placeholder |
 | N11 | tuning | `weather.season_length_days` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
@@ -104,11 +164,14 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | N13 | tuning | `warn.critical_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N13 | tuning | `warn.warning_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N2 | tuning | `activity.fish_cast_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N2 | tuning | `catch.reales_per_sea_minute` | B4 economy design; provisional until its owner module |
 | N3 | tuning | `activity.cook_meal_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N4 | tuning | `ration.water_l_per_man_day` | B4 economy design; provisional until its owner module |
 | N4 | tuning | `water.foul_after_days_warm` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N4 | tuning | `water.need_l_per_man_day_comfort` | design placeholder |
 | N4 | tuning | `water.need_l_per_man_day_min` | design placeholder |
 | N5 | tuning | `health.scurvy_onset_days_no_vitc` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N5 | tuning | `ration.lime_kg_per_man_day` | B4 economy design; provisional until its owner module |
 | N6 | tuning | `activity.careen_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N6 | tuning | `activity.patch_leak_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N6 | tuning | `activity.replace_plank_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
@@ -119,4 +182,11 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | N7 | tuning | `crew.watch_length_hours` | historical figure from general knowledge, not source-checked (four-hour watches) |
 | N7 | tuning | `move.walk_speed_mps` | design placeholder |
 | N8 | tuning | `morale.daily_decay_base` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
+| N8 | tuning | `pay.expected_share_per_hand_day` | B4 economy design; provisional until its owner module |
+| N8 | tuning | `pay.interval_game_days` | B4 economy design; provisional until its owner module |
+| N8 | tuning | `pay.share_pool_pct_of_prize` | B4 economy design; provisional until its owner module |
+| N8 | tuning | `pay.shares_captain` | B4 economy design; provisional until its owner module |
+| N8 | tuning | `pay.shares_hand` | B4 economy design; provisional until its owner module |
+| N8 | tuning | `pay.shares_officer` | B4 economy design; provisional until its owner module |
+| N8 | tuning | `ration.grog_kg_per_man_day` | B4 economy design; provisional until its owner module |
 | N9 | tuning | `ammo.powder_loss_pct_per_day_wet` | design placeholder |
