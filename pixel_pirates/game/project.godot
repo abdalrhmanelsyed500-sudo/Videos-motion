@@ -92,6 +92,22 @@ h2d_sea={
 "type": "float",
 "value": 0.0
 }
+h2d_overcast={
+"type": "float",
+"value": 0.0
+}
+h2d_fog_start={
+"type": "float",
+"value": 190.0
+}
+h2d_focus={
+"type": "vec2",
+"value": Vector2(0, 0)
+}
+h2d_rain_dens={
+"type": "float",
+"value": 0.75
+}
 
 [rendering]
 

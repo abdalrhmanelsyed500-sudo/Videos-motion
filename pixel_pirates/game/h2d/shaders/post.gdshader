@@ -1,6 +1,8 @@
-// H2D-0 post-process on the upscaled 3D picture: tilt-shift depth of field, bloom (Standard and up), lightning, haze, colour grade and vignette. Numbers come from data/look/look_profiles.json.
+// H2D-0 post-process on the upscaled 3D picture: tilt-shift depth of field, bloom (Standard and up), colour grade and vignette. Numbers come from data/look/look_profiles.json.
 // TEXTURE is the SubViewport's image, so no screen texture is needed.
 // H2D-0.2: the rain streaks that used to be drawn here are gone. Rain is real drops in the 3D scene (rain.gdshader).
+// H2D-0.3: the haze and lightning overlays are gone too: fog is distance fog in every 3D shader, and lightning is a boost of
+// the scene's own light (light_model.gd), so weather is never a flat layer on top of the picture.
 shader_type canvas_item;
 
 uniform float focus_y = 0.55;
@@ -18,9 +20,6 @@ uniform float con = 1.06;
 uniform float shadow_lift = 0.03;
 uniform vec3 lift_col = vec3(0.165, 0.086, 0.125);
 uniform vec3 tint = vec3(1.0);
-uniform float flash = 0.0;
-uniform float haze = 0.0;
-uniform vec3 haze_col = vec3(0.55, 0.64, 0.64);
 uniform vec2 grid = vec2(640.0, 360.0);
 
 void fragment() {
@@ -54,8 +53,6 @@ void fragment() {
 		c += b * (bloom_i / 8.0) * 2.0;
 	}
 
-	c = mix(c, haze_col, haze * smoothstep(0.75, 0.0, uv.y));
-	c += flash * vec3(0.80, 0.85, 1.0) * 0.55;
 
 	float lum = dot(c, vec3(0.299, 0.587, 0.114));
 	c = mix(vec3(lum), c, sat);

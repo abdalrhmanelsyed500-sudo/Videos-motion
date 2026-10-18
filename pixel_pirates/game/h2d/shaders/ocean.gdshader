@@ -31,6 +31,7 @@ uniform float ship_roll = 0.0;      // roll in units of 10 degrees, + = starboar
 uniform float wash = 0.0;           // 0..1 water thrown up along the hull
 uniform float slam = 0.0;           // 0..1 pulse after the bow hits a wave: an expanding foam ring at the bow
 uniform float rain_cell_m = 3.4;    // the rain grid, same value as rain.gdshader so the rings match the drops
+uniform float ring_size = 1.0;      // 0.6 .. 1.0: rings and crowns are smaller in light rain
 uniform float ring_k = 2.0;         // drops per cell that get a ring (effects budget)
 uniform float normal_gain = 1.0;    // steeper shading as the sea builds
 
@@ -45,17 +46,13 @@ void vertex() {
 
 void fragment() {
 	vec3 g = h2d_wave(w_pos.xz);
-	vec2 spr = w_pos.xz - ship_pos;
 	// a gust patch is a drifting darker, rougher area; it is guaranteed over the ship while a gust blows
-	float gp = 0.0;
-	if (h2d_gust > 0.02) {
-		float gthr = mix(0.80, 0.45, h2d_gust) - 0.25 * (1.0 - smoothstep(10.0, 70.0, length(spr)));
-		gp = smoothstep(gthr, gthr + 0.22, h2d_noise(w_pos.xz * 0.02 - h2d_adv * 0.02)) * h2d_gust;
-	}
+	float gp = h2d_gust_field(w_pos.xz);
 	vec3 n = normalize(vec3(-g.y * normal_gain, 1.0, -g.z * normal_gain));
 	// ripples drift downwind with the air; they roughen with the sea state and inside a gust
 	vec2 rq = w_pos.xz - h2d_adv * 0.5;
-	float rg = 0.05 + 0.20 * h2d_sea + 0.35 * gp;
+	// glass: a calm sea has almost no ripples; rain pits the surface; a gale and a gust roughen it
+	float rg = (0.05 + 0.20 * h2d_sea + 0.35 * gp) * mix(0.35, 1.0, smoothstep(0.05, 0.30, h2d_sea)) + 0.10 * h2d_rain;
 	float r1 = h2d_noise(rq * 0.8) - 0.5;
 	float r2 = 0.0;
 	if (detail > 0.5) {
@@ -82,11 +79,15 @@ void fragment() {
 	float shal = 1.0 - smoothstep(0.2, 6.0, depth_m);
 	col = mix(col, lagoon_col, shal * 0.85);
 	float ndl = clamp(dot(n, h2d_sun_dir), 0.0, 1.0);
-	vec3 lightc = h2d_amb_col + h2d_sun_col * ndl;
+	vec3 lightc = h2d_amb_col + h2d_sun_col * mix(ndl, 0.55, h2d_overcast);   // overcast light is flat
 	col *= lightc;
 	col *= h2d_cloud_shadow(w_pos.xz);
 	col *= 1.0 - 0.22 * gp;
-	col = mix(col, vec3(dot(col, vec3(0.333))) * 0.95, 0.25 * h2d_rain);
+	// the water greys under rain, fog and a gale; a calm sea mirrors the sky, more so towards the horizon
+	float grey_k = clamp(0.20 * h2d_rain + 0.30 * h2d_overcast + 0.15 * h2d_sea, 0.0, 0.7);
+	col = mix(col, vec3(dot(col, vec3(0.333))) * vec3(0.93, 0.98, 1.0), grey_k);
+	float glass = 1.0 - smoothstep(0.06, 0.30, h2d_sea);
+	col = mix(col, h2d_fog_col, glass * (1.0 - 0.6 * h2d_overcast) * (0.20 + 0.45 * smoothstep(100.0, 300.0, dist)));
 	if (posterize > 1.0) {
 		col = floor(col * posterize + 0.5) / posterize;
 	}
@@ -169,33 +170,35 @@ void fragment() {
 	// rain rings: every ring is the landing of a drop that rain.gdshader draws falling (same cell, same hash, same phase)
 	if (h2d_rain > 0.02 && ring_k > 0.5) {
 		vec2 rcell = floor(w_pos.xz / rain_cell_m);
-		float rain_c = h2d_rain_local((rcell + 0.5) * rain_cell_m);
+		float rain_c = h2d_rain_local((rcell + 0.5) * rain_cell_m) * h2d_rain_dens;
 		float acc = 0.0;
 		for (int k = 0; k < 3; k++) {
 			float kf = float(k);
 			if (kf >= ring_k - 0.5) {
 				break;
 			}
-			float tt = h2d_time / DROP_PERIOD + h2d_drop_phase(rcell, kf);
+			float period = h2d_drop_period(rcell, kf);
+			float tt = h2d_time / period + h2d_drop_phase(rcell, kf);
 			float cyc = floor(tt);
 			float u = tt - cyc;
 			// the ring belongs to the drop that LANDED: this cycle's drop once u passes the fall, otherwise the last one
 			float seed = h2d_drop_seed(kf, cyc - step(u, DROP_FALL_FRAC));
 			float on = step(h2d_drop_on(rcell, seed), rain_c);
-			float since = fract(u - DROP_FALL_FRAC) * DROP_PERIOD;
-			float splashing = step(since, 0.6);
+			float since = fract(u - DROP_FALL_FRAC) * period;   // seconds since it landed
+			float splashing = step(since, SPLASH_T);
 			float rr = length(w_pos.xz - h2d_drop_impact(rcell, seed, rain_cell_m));
-			float ring = (1.0 - smoothstep(0.08, 0.2, abs(rr - since * 0.65))) * (1.0 - since / 0.6);
-			float core = step(rr, 0.3) * step(since, 0.12);
+			float life = since / SPLASH_T;
+			float ring = (1.0 - smoothstep(0.10, 0.26, abs(rr - (0.2 + 1.0 * since) * ring_size))) * (1.0 - life);
+			float core = step(rr, 0.33 * ring_size) * step(since, 0.12);
 			acc += on * splashing * (ring * 0.55 + core * 0.9);
 		}
 		col += vec3(clamp(acc, 0.0, 1.0) * 0.4);
 	}
 	// sun glints: hard pixels, not a smooth highlight
 	vec3 r = reflect(-h2d_sun_dir, n);
-	float sp = pow(max(dot(r, vdir), 0.0), 90.0);
-	float spk = step(0.5, sp) * step(0.45, h2d_hash(floor(w_pos.xz * 1.6 + floor(h2d_time * 3.0))));
-	col += h2d_sun_col * 2.0 * spk * (1.0 - h2d_cloud * 0.9);
+	float sp = pow(max(dot(r, vdir), 0.0), mix(90.0, 28.0, glass));   // calm: a broad glitter path, breeze: small sharp glints
+	float spk = step(0.5, sp) * step(0.45, h2d_hash(floor(w_pos.xz * 1.6 + floor(h2d_time * mix(3.0, 1.2, glass)))));
+	col += h2d_sun_col * 2.0 * spk * (1.0 - h2d_cloud * 0.9) * (1.0 - h2d_overcast);   // no glints under an overcast sky
 
 	col = h2d_fog_mix(col, dist);
 	ALBEDO = h2d_out(col);

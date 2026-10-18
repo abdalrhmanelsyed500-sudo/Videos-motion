@@ -60,6 +60,7 @@
   "look.rain_gust_bend": 0.8,
   "look.rain_density": 1.0,
   "look.fog_start_shift_m": 45.0,
+  "look.fog_density_cap": 0.02,
   "ocean.visibility_clear_km": 10.0,
   "ocean.fog_vis_coeff": 3.2,
   "ocean.rain_vis_coeff": 1.0

@@ -29,12 +29,10 @@ const PROFILES := {
 ## Effects budget (key E): how many real raindrops, ring slots and spray droplets are simulated. The look is the same
 ## at every level, only the density and the cost change. Dev-Lite defaults to "medium"; measure before raising it.
 const EFFECTS := {
-	"low": {"grid": Vector2i(40, 32), "cell_m": 4.6, "k": 1, "spin": 120, "burst": 24},
-	"medium": {"grid": Vector2i(56, 44), "cell_m": 3.4, "k": 2, "spin": 250, "burst": 32},
-	"high": {"grid": Vector2i(64, 50), "cell_m": 3.0, "k": 3, "spin": 600, "burst": 48},
+	"low": {"grid": Vector2i(40, 32), "cell_m": 4.6, "k": 1, "spin": 120, "burst": 24, "dens": 1.0},
+	"medium": {"grid": Vector2i(56, 44), "cell_m": 3.4, "k": 2, "spin": 250, "burst": 32, "dens": 0.75},
+	"high": {"grid": Vector2i(64, 50), "cell_m": 3.0, "k": 3, "spin": 600, "burst": 48, "dens": 0.5},
 }
-const RAIN_FALL_MS := 22.0
-const RAIN_DRIFT_FACTOR := 0.6
 const RAIN_DRIFT_MAX_MS := 12.0
 ## The rain grid sits a little south of the focus: drops that land just below the screen edge are seen high up.
 const RAIN_CENTER_SOUTH_M := 14.0
@@ -185,7 +183,6 @@ func set_effects(level: String) -> void:
 	_fill_identity(_spray.multimesh as MultiMesh, n_spray)
 	_rain_mat.set_shader_parameter("grid", Vector2(float(g.x), float(g.y)))
 	_rain_mat.set_shader_parameter("cell_m", float(e["cell_m"]))
-	_rain_mat.set_shader_parameter("fall_ms", RAIN_FALL_MS)
 	_spray_mat.set_shader_parameter("n_spin", float(e["spin"]))
 	_spray_mat.set_shader_parameter("n_burst", float(e["burst"]))
 	_ocean_mat.set_shader_parameter("rain_cell_m", float(e["cell_m"]))
@@ -214,7 +211,7 @@ func land_height_at(x: float, z: float) -> float:
 func update_view(v: Dictionary, ship: Dictionary, dt: float) -> void:
 	_time = float(v["time"])
 	var env: Dictionary = v["env"]
-	var lm := LightModel.compute(v)
+	var lm := LightModel.compute(v, _look.param("fog_density_cap"))
 	_wave_b = WaveModel.build(float(env["wave_vis_m"]), float(env["wave_to"]), float(env["sea"]), float(v["ice"]),
 			float(env["crest_calm"]), float(env["crest_gale"]))
 	_set_globals(v, lm)
@@ -273,7 +270,8 @@ func _global_defaults() -> Array:
 		["h2d_fog_density", flt, 0.002], ["h2d_gamma", flt, 2.2], ["h2d_exposure", flt, 1.25], ["h2d_time", flt, 0.0],
 		["h2d_wind_to", vec2, Vector2(0.0, 1.0)], ["h2d_cloud", flt, 0.2], ["h2d_storm", flt, 0.0],
 		["h2d_rain", flt, 0.0], ["h2d_adv", vec2, Vector2.ZERO], ["h2d_wind_ms", flt, 0.0], ["h2d_gust", flt, 0.0],
-		["h2d_sea", flt, 0.0],
+		["h2d_sea", flt, 0.0], ["h2d_overcast", flt, 0.0], ["h2d_fog_start", flt, 190.0],
+		["h2d_focus", vec2, Vector2.ZERO], ["h2d_rain_dens", flt, 0.75],
 	]
 
 
@@ -460,6 +458,10 @@ func _set_globals(v: Dictionary, lm: Dictionary) -> void:
 	g.global_shader_parameter_set("h2d_wind_ms", float(env["wind_ms"]))
 	g.global_shader_parameter_set("h2d_gust", float(env["gust"]))
 	g.global_shader_parameter_set("h2d_sea", float(env["sea"]))
+	g.global_shader_parameter_set("h2d_overcast", float(lm["overcast"]))
+	g.global_shader_parameter_set("h2d_fog_start", _look.fog_start_m(float(v["fog"])))
+	var dens: float = (EFFECTS[effects] as Dictionary)["dens"]
+	g.global_shader_parameter_set("h2d_rain_dens", dens * _look.param("rain_density"))
 
 
 func _set_waves(m: ShaderMaterial) -> void:
@@ -579,7 +581,19 @@ func _update_weather_fx(v: Dictionary, ship: Dictionary) -> void:
 	var e: Dictionary = EFFECTS[effects]
 	var g: Vector2i = e["grid"]
 	var cell: float = e["cell_m"]
-	var drift := wt * minf(wms * RAIN_DRIFT_FACTOR, RAIN_DRIFT_MAX_MS)
+	# the rain leans with the MEAN wind everywhere (gusts add lean inside the gust patch, in rain.gdshader), and light rain
+	# stays nearly upright while a downpour is driven
+	var rain_i := float(env["rain_inst"])
+	var mean_ms := float(env["wind_kn"]) * EnvModel.KN_TO_MS
+	var drift := wt * minf(mean_ms * _look.param("rain_drift_factor") * lerpf(0.5, 1.0, rain_i), RAIN_DRIFT_MAX_MS)
+	var rc := _look.rain_character(rain_i)
+	RenderingServer.global_shader_parameter_set("h2d_focus", Vector2(float(ship["x"]), float(ship["z"])))
+	_rain_mat.set_shader_parameter("fall_ms", float(rc["fall_ms"]))
+	_rain_mat.set_shader_parameter("streak_m", float(rc["streak_m"]))
+	_rain_mat.set_shader_parameter("alpha_k", float(rc["alpha"]))
+	_rain_mat.set_shader_parameter("splash_k", float(rc["splash"]))
+	_rain_mat.set_shader_parameter("gust_bend", _look.param("rain_gust_bend"))
+	_ocean_mat.set_shader_parameter("ring_size", lerpf(0.6, 1.0, rain_i))
 	var center := _focus + Vector2(0.0, RAIN_CENTER_SOUTH_M) + drift * 0.6
 	var base := Vector2(floorf(center.x / cell) - float(g.x) * 0.5, floorf(center.y / cell) - float(g.y) * 0.5)
 	_rain_mat.set_shader_parameter("base_cell", Vector2(roundf(base.x), roundf(base.y)))
@@ -609,11 +623,9 @@ func _update_camera(ship: Dictionary) -> void:
 	_ship_mat.set_shader_parameter("cam_tan", tan(p))
 
 
-func _update_post(v: Dictionary, lm: Dictionary) -> void:
-	var storm := float(v["storm"])
-	_post_mat.set_shader_parameter("flash", LightModel.flash(_time, storm))
-	_post_mat.set_shader_parameter("haze", clampf(0.35 * float(v["fog"]) + 0.15 * storm, 0.0, 0.6))
-	_post_mat.set_shader_parameter("haze_col", lm["fog_col"])
+## Colour grade only. H2D-0.3 removed the screen-space haze and lightning flash that H2D-0.2 laid over the picture:
+## fog is real distance fog in every 3D shader and lightning is a boost of the scene's own light (light_model.gd).
+func _update_post(_v: Dictionary, lm: Dictionary) -> void:
 	_post_mat.set_shader_parameter("sat", float(lm["sat"]))
 	_post_mat.set_shader_parameter("con", float(lm["con"]))
 	_post_mat.set_shader_parameter("tint", lm["tint"])

@@ -15,7 +15,7 @@ extends RefCounted
 const PREFIX := "look."
 const DEFAULTS := {
 	"rain_fall_ms": 19.0, "rain_streak_m": 1.5, "rain_drift_factor": 0.55, "rain_gust_bend": 0.8, "rain_density": 1.0,
-	"fog_start_shift_m": 45.0,
+	"fog_start_shift_m": 45.0, "fog_density_cap": 0.02,
 }
 const FOG_START_BASE_M := 190.0  ## about the camera distance to the ship
 

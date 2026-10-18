@@ -12,6 +12,7 @@ const NIGHT_AMB := Color(0.07, 0.10, 0.22)
 const MIN_ELEVATION_DEG := 5.0
 ## Always a little aerial perspective, so the top of the screen looks farther away than the bottom.
 const HAZE_BASE := 0.0016
+const WeatherLook := preload("res://h2d/weather_look.gd")
 
 
 static func rgb(a: Array) -> Color:
@@ -58,13 +59,19 @@ static func night_tint(c: Color, k: float) -> Color:
 	return night.lerp(c, k)
 
 
-static func compute(v: Dictionary) -> Dictionary:
+## `fog_cap` is the densest the fog may get per scene metre (look.fog_density_cap): thick enough that the fog
+## reaches the ship and the far sea disappears, thin enough that the ship never vanishes.
+static func compute(v: Dictionary, fog_cap: float = 0.02) -> Dictionary:
 	var look: Dictionary = v["look"]
+	var env: Dictionary = v.get("env", {})
+	var rain := float(env.get("rain_inst", 0.0))
+	var fogk := WeatherLook.fog_thickness(float(v["fog"]))
+	var overcast := WeatherLook.overcast(float(v["cloud"]), rain, float(v["storm"]), float(v["fog"]))
 	var s := sun(float(v["hour"]), float(v["lat"]))
 	var k := lit_k(v)
 	var cloud: float = v["cloud"]
 	var storm: float = v["storm"]
-	var veil := clampf(0.8 * cloud + 0.9 * storm, 0.0, 1.0)
+	var veil := clampf(0.8 * cloud + 0.9 * storm + 0.8 * float(v["fog"]) + 0.5 * rain, 0.0, 1.0)
 	var el: float = s["elevation_deg"]
 	var sun_col: Color
 	var strength: float
@@ -79,19 +86,27 @@ static func compute(v: Dictionary) -> Dictionary:
 	var dusk := clampf(1.0 - el / 25.0, 0.0, 1.0) if not s["is_moon"] else 0.0
 	var day_amb := sky_day.lerp(sky_dusk, dusk * 0.6) * 0.55 + Color(0.16, 0.15, 0.14)
 	var amb := NIGHT_AMB.lerp(day_amb, k).lerp(STORM_GREY * 0.55, storm * 0.5 * k)
-	var fog_c := night_tint(rgb(look["fog_color"]).lerp(STORM_GREY, veil * 0.5), k)
+	# overcast light is flat but not dark: a little diffuse light comes back from the whole sky
+	amb = amb.lerp(amb + Color(0.06, 0.065, 0.07), overcast * k)
+	# fog is milky and bright, rain and storm clouds are grey
+	var fog_c := rgb(look["fog_color"]).lerp(STORM_GREY, veil * 0.5).lerp(Color(0.82, 0.85, 0.86), 0.55 * fogk)
+	fog_c = night_tint(fog_c, k)
+	# lightning is LIGHT, not a screen overlay: it brightens the ambient, the fog and the sun for a moment
+	var fl := flash(float(v.get("time", 0.0)), storm)
+	fog_c = fog_c.lerp(Color(0.86, 0.90, 1.0), 0.55 * fl)
 	var vis_scene_m := maxf(float(v["visibility_km"]), 0.15) * 1000.0 / WORLD_M_PER_SCENE_M
-	var density := clampf(maxf(HAZE_BASE, 3.0 / vis_scene_m) + 0.012 * float(v["fog"]), HAZE_BASE, 0.09)
+	var density := clampf(maxf(HAZE_BASE, 3.0 / vis_scene_m) + 0.012 * float(v["fog"]), HAZE_BASE, fog_cap)
 	var deep := rgb(look["deep"]).lerp(STORM_GREY * 0.35, storm * 0.45)
 	var shallow := rgb(look["shallow"]).lerp(STORM_GREY * 0.6, storm * 0.4)
 	var wind_to := deg_to_rad(float(v["wind_from_deg"]) + 180.0)
 	return {
 		"sun_dir": s["dir"], "elevation_deg": el, "is_moon": s["is_moon"],
-		"sun_col": vec(sun_col * (0.65 * strength)), "amb_col": vec(amb * 0.62),
+		"sun_col": vec(sun_col * (0.65 * strength) + Color(0.35, 0.38, 0.5) * fl),
+		"amb_col": vec(amb * 0.62 + Color(0.40, 0.44, 0.58) * fl), "overcast": overcast, "flash": fl,
 		"fog_col": vec(fog_c), "fog_density": density,
 		"deep": vec(deep), "shallow": vec(shallow), "foam": vec(Color(0.93, 0.97, 0.97).lerp(rgb(look["fog_color"]), 0.15)),
 		"night": 1.0 - k, "wind_to": Vector2(sin(wind_to), -cos(wind_to)),
-		"sat": 1.12 * (1.0 - 0.28 * storm) * (1.0 - 0.2 * float(v["fog"])),
+		"sat": 1.12 * (1.0 - 0.28 * storm) * (1.0 - 0.2 * float(v["fog"])) * (1.0 - 0.1 * rain),
 		"con": 1.06 + 0.06 * storm,
 		"tint": vec(Color(1.0, 1.0, 1.0).lerp(Color(0.86, 0.95, 1.06), clampf(float(v["ice"]), 0.0, 1.0) * 0.7)),
 	}

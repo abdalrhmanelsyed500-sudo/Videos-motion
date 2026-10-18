@@ -98,7 +98,7 @@ void fragment() {
 	}
 	float lit = clamp(dot(h2d_amb_col, vec3(0.33)) * 1.8 + dot(h2d_sun_col, vec3(0.33)) * 0.6, 0.3, 1.1);
 	vec3 col = vec3(0.92, 0.96, 1.0) * lit;
-	float fogf = 1.0 - exp(-h2d_fog_density * max(v_dist - FOG_START, 0.0) * 1.5);
+	float fogf = 1.0 - exp(-h2d_fog_density * max(v_dist - h2d_fog_start, 0.0) * 1.5);
 	col = mix(col, h2d_fog_col, fogf);
 	ALBEDO = h2d_out(col);
 	ALPHA = v_alpha * (1.0 - 0.5 * fogf);
