@@ -1,0 +1,418 @@
+{
+ "schema": 1,
+ "kind": "species",
+ "records": [
+  {
+   "id": "spc_tiger_shark",
+   "name": "Tiger Shark",
+   "scientific": "Galeocerdo cuvier",
+   "real": true,
+   "group": "shark_ray",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_glass_sea",
+     "abundance": 0.1
+    }
+   ],
+   "temp_c": [
+    20,
+    30
+   ],
+   "depth_m": [
+    0,
+    350
+   ],
+   "group_size": [
+    1,
+    1
+   ],
+   "activity": "nocturnal",
+   "speed_kn": 18,
+   "diet": [
+    "turtle",
+    "fish",
+    "carrion"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe",
+    "harpoon"
+   ],
+   "lod": "instance",
+   "value": 6,
+   "danger": 0.7,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_hammerhead",
+   "name": "Great Hammerhead",
+   "scientific": "Sphyrna mokarran",
+   "real": true,
+   "group": "shark_ray",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    22,
+    30
+   ],
+   "depth_m": [
+    1,
+    300
+   ],
+   "group_size": [
+    1,
+    3
+   ],
+   "activity": "crepuscular",
+   "speed_kn": 15,
+   "diet": [
+    "ray",
+    "fish"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe",
+    "harpoon"
+   ],
+   "lod": "instance",
+   "value": 6,
+   "danger": 0.6,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_caribbean_reef_shark",
+   "name": "Reef Shark",
+   "scientific": "Carcharhinus perezi",
+   "real": true,
+   "group": "shark_ray",
+   "habitat": "reef",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.9
+    }
+   ],
+   "temp_c": [
+    22,
+    31
+   ],
+   "depth_m": [
+    1,
+    60
+   ],
+   "group_size": [
+    1,
+    8
+   ],
+   "activity": "always",
+   "speed_kn": 14,
+   "diet": [
+    "fish"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe",
+    "line"
+   ],
+   "lod": "instance",
+   "value": 5,
+   "danger": 0.35,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_whale_shark",
+   "name": "Whale Shark",
+   "scientific": "Rhincodon typus",
+   "real": true,
+   "group": "shark_ray",
+   "habitat": "surface",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_glass_sea",
+     "abundance": 0.3
+    }
+   ],
+   "temp_c": [
+    21,
+    30
+   ],
+   "depth_m": [
+    0,
+    700
+   ],
+   "group_size": [
+    1,
+    1
+   ],
+   "activity": "diurnal",
+   "speed_kn": 3,
+   "diet": [
+    "plankton"
+   ],
+   "rarity": "rare",
+   "methods": [
+    "observe",
+    "report"
+   ],
+   "lod": "instance",
+   "value": 400,
+   "needs_productivity": 0.6,
+   "sensitivity": 0.3,
+   "note": "Follows the Sunward bloom. Harmless. A sighting report pays; harming one costs the crew's goodwill in every port.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_manta_ray",
+   "name": "Giant Manta",
+   "scientific": "Mobula birostris",
+   "real": true,
+   "group": "shark_ray",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.6
+    }
+   ],
+   "temp_c": [
+    21,
+    30
+   ],
+   "depth_m": [
+    0,
+    120
+   ],
+   "group_size": [
+    1,
+    5
+   ],
+   "activity": "diurnal",
+   "speed_kn": 9,
+   "diet": [
+    "plankton"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe"
+   ],
+   "lod": "instance",
+   "value": 120,
+   "needs_productivity": 0.5,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_great_white",
+   "name": "Great White Shark",
+   "scientific": "Carcharodon carcharias",
+   "real": true,
+   "group": "shark_ray",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_dead_ocean",
+     "abundance": 0.2
+    }
+   ],
+   "temp_c": [
+    8,
+    22
+   ],
+   "depth_m": [
+    0,
+    1000
+   ],
+   "group_size": [
+    1,
+    1
+   ],
+   "activity": "diurnal",
+   "speed_kn": 22,
+   "diet": [
+    "seal",
+    "tuna"
+   ],
+   "rarity": "rare",
+   "methods": [
+    "observe",
+    "harpoon"
+   ],
+   "lod": "instance",
+   "value": 7,
+   "danger": 0.9,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_basking_shark",
+   "name": "Basking Shark",
+   "scientific": "Cetorhinus maximus",
+   "real": true,
+   "group": "shark_ray",
+   "habitat": "surface",
+   "regions": [
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    6,
+    18
+   ],
+   "depth_m": [
+    0,
+    900
+   ],
+   "group_size": [
+    1,
+    12
+   ],
+   "activity": "diurnal",
+   "speed_kn": 3,
+   "diet": [
+    "copepods"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe",
+    "harpoon"
+   ],
+   "lod": "instance",
+   "value": 5,
+   "needs_productivity": 0.7,
+   "note": "Looks like a fin the length of a longboat. Takes no notice of ships.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_greenland_shark",
+   "name": "Greenland Shark",
+   "scientific": "Somniosus microcephalus",
+   "real": true,
+   "group": "shark_ray",
+   "habitat": "deep",
+   "regions": [
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_white_hollow",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.2
+    }
+   ],
+   "temp_c": [
+    -1,
+    8
+   ],
+   "depth_m": [
+    200,
+    2000
+   ],
+   "group_size": [
+    1,
+    1
+   ],
+   "activity": "always",
+   "speed_kn": 1,
+   "diet": [
+    "fish",
+    "carrion"
+   ],
+   "rarity": "rare",
+   "methods": [
+    "observe",
+    "line"
+   ],
+   "lod": "instance",
+   "value": 4,
+   "danger": 0.1,
+   "note": "Slowest shark; its flesh is poisonous raw. Lives for centuries.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  }
+ ]
+}

@@ -1,0 +1,739 @@
+{
+ "schema": 1,
+ "kind": "species",
+ "records": [
+  {
+   "id": "spc_common_octopus",
+   "name": "Common Octopus",
+   "scientific": "Octopus vulgaris",
+   "real": true,
+   "group": "cephalopod",
+   "habitat": "reef",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    8,
+    28
+   ],
+   "depth_m": [
+    1,
+    200
+   ],
+   "group_size": [
+    1,
+    1
+   ],
+   "activity": "nocturnal",
+   "speed_kn": 3,
+   "diet": [
+    "crab",
+    "clam"
+   ],
+   "rarity": "common",
+   "methods": [
+    "trap",
+    "dive"
+   ],
+   "lod": "ambient",
+   "value": 10,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_giant_squid",
+   "name": "Giant Squid",
+   "scientific": "Architeuthis dux",
+   "real": true,
+   "group": "cephalopod",
+   "habitat": "deep",
+   "regions": [
+    {
+     "region": "reg_dead_ocean",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.2
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.2
+    }
+   ],
+   "temp_c": [
+    3,
+    14
+   ],
+   "depth_m": [
+    300,
+    1500
+   ],
+   "group_size": [
+    1,
+    1
+   ],
+   "activity": "always",
+   "speed_kn": 8,
+   "diet": [
+    "fish",
+    "squid"
+   ],
+   "rarity": "legendary",
+   "methods": [
+    "observe",
+    "report"
+   ],
+   "lod": "bespoke",
+   "value": 800,
+   "danger": 0.5,
+   "sensitivity": 0.5,
+   "note": "Washes up dead in the Verge; never seen alive. A carcass sighting is a report worth 800 reales.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_humboldt_squid",
+   "name": "Jumbo Flying Squid",
+   "scientific": "Dosidicus gigas",
+   "real": true,
+   "group": "cephalopod",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_dead_ocean",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    10,
+    26
+   ],
+   "depth_m": [
+    0,
+    700
+   ],
+   "group_size": [
+    50,
+    1000
+   ],
+   "activity": "nocturnal",
+   "speed_kn": 12,
+   "diet": [
+    "small_fish"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "line",
+    "net",
+    "observe"
+   ],
+   "lod": "school",
+   "value": 5,
+   "danger": 0.45,
+   "note": "Red, fast, and aggressive. Jig them at night; keep hands off the hook.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_chambered_nautilus",
+   "name": "Chambered Nautilus",
+   "scientific": "Nautilus pompilius",
+   "real": true,
+   "group": "cephalopod",
+   "habitat": "deep",
+   "regions": [
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.2
+    },
+    {
+     "region": "reg_glass_sea",
+     "abundance": 0.1
+    }
+   ],
+   "temp_c": [
+    10,
+    25
+   ],
+   "depth_m": [
+    100,
+    700
+   ],
+   "group_size": [
+    1,
+    6
+   ],
+   "activity": "nocturnal",
+   "speed_kn": 1,
+   "diet": [
+    "crab"
+   ],
+   "rarity": "rare",
+   "methods": [
+    "trap",
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 180,
+   "note": "Shell trades as a curio. Slow to breed; trapping wipes a reef.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_spiny_lobster",
+   "name": "Spiny Lobster",
+   "scientific": "Panulirus argus",
+   "real": true,
+   "group": "crustacean",
+   "habitat": "reef",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.9
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    20,
+    30
+   ],
+   "depth_m": [
+    1,
+    90
+   ],
+   "group_size": [
+    1,
+    30
+   ],
+   "activity": "nocturnal",
+   "speed_kn": 1,
+   "diet": [
+    "snail",
+    "clam"
+   ],
+   "rarity": "common",
+   "methods": [
+    "trap",
+    "dive"
+   ],
+   "lod": "ambient",
+   "value": 20,
+   "note": "Best-value food in the game: nearly 20 reales a kilo, no preservation needed if eaten the same day.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_mud_crab",
+   "name": "Mud Crab",
+   "scientific": "Scylla serrata",
+   "real": true,
+   "group": "crustacean",
+   "habitat": "coastal",
+   "regions": [
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.9
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    22,
+    32
+   ],
+   "depth_m": [
+    0,
+    30
+   ],
+   "group_size": [
+    1,
+    10
+   ],
+   "activity": "nocturnal",
+   "speed_kn": 1,
+   "diet": [
+    "mussel",
+    "carrion"
+   ],
+   "rarity": "common",
+   "methods": [
+    "trap"
+   ],
+   "lod": "ambient",
+   "value": 9,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_king_crab",
+   "name": "King Crab",
+   "scientific": "Paralithodes camtschaticus",
+   "real": true,
+   "group": "crustacean",
+   "habitat": "deep",
+   "regions": [
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_white_hollow",
+     "abundance": 0.2
+    }
+   ],
+   "temp_c": [
+    0,
+    8
+   ],
+   "depth_m": [
+    10,
+    400
+   ],
+   "group_size": [
+    1,
+    40
+   ],
+   "activity": "always",
+   "speed_kn": 1,
+   "diet": [
+    "urchin",
+    "clam"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "trap"
+   ],
+   "lod": "ambient",
+   "value": 22,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_portuguese_man_o_war",
+   "name": "Man-o'-war",
+   "scientific": "Physalia physalis",
+   "real": true,
+   "group": "cnidarian",
+   "habitat": "surface",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_glass_sea",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_dead_ocean",
+     "abundance": 0.3
+    }
+   ],
+   "temp_c": [
+    18,
+    31
+   ],
+   "depth_m": [
+    0,
+    1
+   ],
+   "group_size": [
+    1,
+    800
+   ],
+   "activity": "always",
+   "speed_kn": 1,
+   "diet": [
+    "small_fish"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 0,
+   "danger": 0.6,
+   "note": "Blue floats down the wind in fleets. Spot them and keep the swimmers aboard.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_moon_jelly",
+   "name": "Moon Jelly",
+   "scientific": "Aurelia aurita",
+   "real": true,
+   "group": "cnidarian",
+   "habitat": "surface",
+   "regions": [
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.3
+    }
+   ],
+   "temp_c": [
+    3,
+    25
+   ],
+   "depth_m": [
+    0,
+    100
+   ],
+   "group_size": [
+    5,
+    5000
+   ],
+   "activity": "always",
+   "speed_kn": 1,
+   "diet": [
+    "plankton"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 0,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_sea_cucumber",
+   "name": "Sea Cucumber",
+   "scientific": "Holothuria scabra",
+   "real": true,
+   "group": "invertebrate",
+   "habitat": "coastal",
+   "regions": [
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.3
+    }
+   ],
+   "temp_c": [
+    22,
+    32
+   ],
+   "depth_m": [
+    0,
+    40
+   ],
+   "group_size": [
+    5,
+    200
+   ],
+   "activity": "always",
+   "speed_kn": 0,
+   "diet": [
+    "detritus"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "dredge",
+    "dive"
+   ],
+   "lod": "ambient",
+   "value": 14,
+   "note": "Dried, it keeps for years and trades in every port.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_blue_mussel",
+   "name": "Blue Mussel",
+   "scientific": "Mytilus edulis",
+   "real": true,
+   "group": "invertebrate",
+   "habitat": "coastal",
+   "regions": [
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.9
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.2
+    }
+   ],
+   "temp_c": [
+    -1,
+    20
+   ],
+   "depth_m": [
+    0,
+    30
+   ],
+   "group_size": [
+    20,
+    2000
+   ],
+   "activity": "always",
+   "speed_kn": 0,
+   "diet": [
+    "plankton"
+   ],
+   "rarity": "common",
+   "methods": [
+    "dredge",
+    "dive"
+   ],
+   "lod": "ambient",
+   "value": 3,
+   "note": "Never gather from red tide water; the surgeon's book lists it.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_krill",
+   "name": "Krill",
+   "scientific": "Euphausia superba",
+   "real": true,
+   "group": "plankton",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.9
+    },
+    {
+     "region": "reg_white_hollow",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    -2,
+    10
+   ],
+   "depth_m": [
+    0,
+    300
+   ],
+   "group_size": [
+    100000,
+    100000
+   ],
+   "activity": "always",
+   "speed_kn": 1,
+   "diet": [
+    "algae"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 0,
+   "needs_productivity": 0.8,
+   "note": "Pink water at dawn: the whales are coming.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_copepod",
+   "name": "Copepod",
+   "scientific": "Calanus finmarchicus",
+   "real": true,
+   "group": "plankton",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.9
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.6
+    }
+   ],
+   "temp_c": [
+    0,
+    14
+   ],
+   "depth_m": [
+    0,
+    200
+   ],
+   "group_size": [
+    100000,
+    100000
+   ],
+   "activity": "always",
+   "speed_kn": 1,
+   "diet": [
+    "algae"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 0,
+   "needs_productivity": 0.7,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_noctiluca",
+   "name": "Sea Sparkle",
+   "scientific": "Noctiluca scintillans",
+   "real": true,
+   "group": "plankton",
+   "habitat": "surface",
+   "regions": [
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.3
+    }
+   ],
+   "temp_c": [
+    10,
+    28
+   ],
+   "depth_m": [
+    0,
+    10
+   ],
+   "group_size": [
+    100000,
+    100000
+   ],
+   "activity": "nocturnal",
+   "speed_kn": 0,
+   "diet": [
+    "algae"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 0,
+   "needs_productivity": 0.6,
+   "note": "Glowing wake at night. Also reveals the ship to anyone watching; lights-out routines matter near hostile coasts.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  }
+ ]
+}

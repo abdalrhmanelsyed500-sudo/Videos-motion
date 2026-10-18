@@ -1,0 +1,846 @@
+{
+ "schema": 1,
+ "kind": "species",
+ "records": [
+  {
+   "id": "spc_bottlenose_dolphin",
+   "name": "Bottlenose Dolphin",
+   "scientific": "Tursiops truncatus",
+   "real": true,
+   "group": "cetacean",
+   "habitat": "coastal",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.9
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.3
+    }
+   ],
+   "temp_c": [
+    8,
+    30
+   ],
+   "depth_m": [
+    0,
+    300
+   ],
+   "group_size": [
+    4,
+    30
+   ],
+   "activity": "diurnal",
+   "speed_kn": 20,
+   "diet": [
+    "fish",
+    "squid"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "instance",
+   "value": 0,
+   "sensitivity": 0.5,
+   "note": "Rides the bow wave. Crews log it; the morale lift is real.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_spinner_dolphin",
+   "name": "Spinner Dolphin",
+   "scientific": "Stenella longirostris",
+   "real": true,
+   "group": "cetacean",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_glass_sea",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    22,
+    31
+   ],
+   "depth_m": [
+    0,
+    300
+   ],
+   "group_size": [
+    20,
+    200
+   ],
+   "activity": "nocturnal",
+   "speed_kn": 18,
+   "diet": [
+    "small_fish",
+    "squid"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe"
+   ],
+   "lod": "school",
+   "value": 0,
+   "sensitivity": 0.4,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_humpback_whale",
+   "name": "Humpback Whale",
+   "scientific": "Megaptera novaeangliae",
+   "real": true,
+   "group": "cetacean",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.3
+    }
+   ],
+   "temp_c": [
+    2,
+    28
+   ],
+   "depth_m": [
+    0,
+    400
+   ],
+   "group_size": [
+    1,
+    6
+   ],
+   "activity": "always",
+   "speed_kn": 9,
+   "diet": [
+    "krill",
+    "herring"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe",
+    "harpoon",
+    "report"
+   ],
+   "lod": "instance",
+   "value": 150,
+   "season": [
+    0.0,
+    0.6
+   ],
+   "needs_productivity": 0.5,
+   "sensitivity": 0.8,
+   "note": "Breaches in the Sunward bloom. Its song carries through the hull; the hull-watch hears it before the lookout sees it.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_blue_whale",
+   "name": "Blue Whale",
+   "scientific": "Balaenoptera musculus",
+   "real": true,
+   "group": "cetacean",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.2
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.2
+    }
+   ],
+   "temp_c": [
+    2,
+    24
+   ],
+   "depth_m": [
+    0,
+    500
+   ],
+   "group_size": [
+    1,
+    2
+   ],
+   "activity": "always",
+   "speed_kn": 12,
+   "diet": [
+    "krill"
+   ],
+   "rarity": "rare",
+   "methods": [
+    "observe",
+    "report"
+   ],
+   "lod": "instance",
+   "value": 300,
+   "needs_productivity": 0.7,
+   "sensitivity": 0.9,
+   "note": "The largest living thing. A sloop is a third of its length.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_fin_whale",
+   "name": "Fin Whale",
+   "scientific": "Balaenoptera physalus",
+   "real": true,
+   "group": "cetacean",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_white_hollow",
+     "abundance": 0.2
+    }
+   ],
+   "temp_c": [
+    0,
+    22
+   ],
+   "depth_m": [
+    0,
+    500
+   ],
+   "group_size": [
+    1,
+    4
+   ],
+   "activity": "always",
+   "speed_kn": 20,
+   "diet": [
+    "krill",
+    "herring"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe",
+    "report",
+    "harpoon"
+   ],
+   "lod": "instance",
+   "value": 120,
+   "sensitivity": 0.7,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_sperm_whale",
+   "name": "Sperm Whale",
+   "scientific": "Physeter macrocephalus",
+   "real": true,
+   "group": "cetacean",
+   "habitat": "deep",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_dead_ocean",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.3
+    }
+   ],
+   "temp_c": [
+    4,
+    28
+   ],
+   "depth_m": [
+    200,
+    3000
+   ],
+   "group_size": [
+    1,
+    12
+   ],
+   "activity": "always",
+   "speed_kn": 8,
+   "diet": [
+    "squid"
+   ],
+   "rarity": "rare",
+   "methods": [
+    "observe",
+    "harpoon",
+    "report"
+   ],
+   "lod": "instance",
+   "value": 220,
+   "danger": 0.6,
+   "sensitivity": 0.8,
+   "note": "Dives an hour, surfaces breathing for ten minutes. A ramming whale is a famous way for a ship to end.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_orca",
+   "name": "Orca",
+   "scientific": "Orcinus orca",
+   "real": true,
+   "group": "cetacean",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_white_hollow",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    -1,
+    20
+   ],
+   "depth_m": [
+    0,
+    500
+   ],
+   "group_size": [
+    3,
+    12
+   ],
+   "activity": "always",
+   "speed_kn": 27,
+   "diet": [
+    "seal",
+    "fish",
+    "whale"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe"
+   ],
+   "lod": "instance",
+   "value": 0,
+   "danger": 0.2,
+   "sensitivity": 0.9,
+   "note": "Never attacks ships in this world; will clear a seal colony from a rock in 4 minutes if you watch.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_narwhal",
+   "name": "Narwhal",
+   "scientific": "Monodon monoceros",
+   "real": true,
+   "group": "cetacean",
+   "habitat": "ice_edge",
+   "regions": [
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.7
+    }
+   ],
+   "temp_c": [
+    -2,
+    6
+   ],
+   "depth_m": [
+    0,
+    1500
+   ],
+   "group_size": [
+    3,
+    20
+   ],
+   "activity": "always",
+   "speed_kn": 8,
+   "diet": [
+    "cod",
+    "squid"
+   ],
+   "rarity": "rare",
+   "methods": [
+    "observe",
+    "report"
+   ],
+   "lod": "instance",
+   "value": 250,
+   "sensitivity": 0.8,
+   "note": "The 'unicorn of the sea' of old charts.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_beluga",
+   "name": "Beluga",
+   "scientific": "Delphinapterus leucas",
+   "real": true,
+   "group": "cetacean",
+   "habitat": "ice_edge",
+   "regions": [
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.2
+    }
+   ],
+   "temp_c": [
+    -2,
+    8
+   ],
+   "depth_m": [
+    0,
+    600
+   ],
+   "group_size": [
+    5,
+    40
+   ],
+   "activity": "always",
+   "speed_kn": 8,
+   "diet": [
+    "cod",
+    "capelin"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe"
+   ],
+   "lod": "school",
+   "value": 0,
+   "sensitivity": 0.7,
+   "note": "Chatters through the hull. Crews call them canaries of the ice.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_bowhead_whale",
+   "name": "Bowhead Whale",
+   "scientific": "Balaena mysticetus",
+   "real": true,
+   "group": "cetacean",
+   "habitat": "ice_edge",
+   "regions": [
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_white_hollow",
+     "abundance": 0.1
+    }
+   ],
+   "temp_c": [
+    -2,
+    6
+   ],
+   "depth_m": [
+    0,
+    300
+   ],
+   "group_size": [
+    1,
+    4
+   ],
+   "activity": "always",
+   "speed_kn": 6,
+   "diet": [
+    "copepods",
+    "krill"
+   ],
+   "rarity": "rare",
+   "methods": [
+    "observe",
+    "report",
+    "harpoon"
+   ],
+   "lod": "instance",
+   "value": 200,
+   "sensitivity": 0.9,
+   "note": "Breaks 20 cm of ice with its back.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_southern_right_whale",
+   "name": "Southern Right Whale",
+   "scientific": "Eubalaena australis",
+   "real": true,
+   "group": "cetacean",
+   "habitat": "coastal",
+   "regions": [
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_white_hollow",
+     "abundance": 0.2
+    },
+    {
+     "region": "reg_dead_ocean",
+     "abundance": 0.2
+    }
+   ],
+   "temp_c": [
+    1,
+    18
+   ],
+   "depth_m": [
+    0,
+    200
+   ],
+   "group_size": [
+    1,
+    6
+   ],
+   "activity": "always",
+   "speed_kn": 5,
+   "diet": [
+    "copepods",
+    "krill"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe",
+    "report"
+   ],
+   "lod": "instance",
+   "value": 150,
+   "season": [
+    0.4,
+    1.0
+   ],
+   "sensitivity": 0.9,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_harbour_seal",
+   "name": "Harbour Seal",
+   "scientific": "Phoca vitulina",
+   "real": true,
+   "group": "pinniped",
+   "habitat": "coastal",
+   "regions": [
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    2,
+    18
+   ],
+   "depth_m": [
+    0,
+    200
+   ],
+   "group_size": [
+    1,
+    30
+   ],
+   "activity": "diurnal",
+   "speed_kn": 12,
+   "diet": [
+    "fish"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe",
+    "harpoon"
+   ],
+   "lod": "ambient",
+   "value": 5,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_walrus",
+   "name": "Walrus",
+   "scientific": "Odobenus rosmarus",
+   "real": true,
+   "group": "pinniped",
+   "habitat": "ice_edge",
+   "regions": [
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.7
+    }
+   ],
+   "temp_c": [
+    -2,
+    8
+   ],
+   "depth_m": [
+    0,
+    90
+   ],
+   "group_size": [
+    5,
+    200
+   ],
+   "activity": "always",
+   "speed_kn": 5,
+   "diet": [
+    "clam"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe",
+    "harpoon"
+   ],
+   "lod": "instance",
+   "value": 12,
+   "danger": 0.5,
+   "note": "Colonies on floes stink for 4 km downwind. Useful as a smell-compass in fog.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_leopard_seal",
+   "name": "Leopard Seal",
+   "scientific": "Hydrurga leptonyx",
+   "real": true,
+   "group": "pinniped",
+   "habitat": "ice_edge",
+   "regions": [
+    {
+     "region": "reg_white_hollow",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.2
+    }
+   ],
+   "temp_c": [
+    -2,
+    5
+   ],
+   "depth_m": [
+    0,
+    300
+   ],
+   "group_size": [
+    1,
+    2
+   ],
+   "activity": "always",
+   "speed_kn": 18,
+   "diet": [
+    "penguin",
+    "krill"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe"
+   ],
+   "lod": "instance",
+   "value": 3,
+   "danger": 0.6,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_elephant_seal",
+   "name": "Elephant Seal",
+   "scientific": "Mirounga leonina",
+   "real": true,
+   "group": "pinniped",
+   "habitat": "coastal",
+   "regions": [
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_white_hollow",
+     "abundance": 0.5
+    }
+   ],
+   "temp_c": [
+    -1,
+    10
+   ],
+   "depth_m": [
+    0,
+    1500
+   ],
+   "group_size": [
+    1,
+    40
+   ],
+   "activity": "always",
+   "speed_kn": 9,
+   "diet": [
+    "squid",
+    "fish"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe",
+    "harpoon"
+   ],
+   "lod": "instance",
+   "value": 8,
+   "danger": 0.3,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_sea_otter",
+   "name": "Sea Otter",
+   "scientific": "Enhydra lutris",
+   "real": true,
+   "group": "pinniped",
+   "habitat": "kelp",
+   "regions": [
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.7
+    }
+   ],
+   "temp_c": [
+    4,
+    16
+   ],
+   "depth_m": [
+    0,
+    40
+   ],
+   "group_size": [
+    1,
+    12
+   ],
+   "activity": "diurnal",
+   "speed_kn": 4,
+   "diet": [
+    "urchin",
+    "crab"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 0,
+   "sensitivity": 0.9,
+   "note": "Holds paws while asleep, tied into the kelp. Hunting them is the one act on any island that the Verge towns will never forgive.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  }
+ ]
+}

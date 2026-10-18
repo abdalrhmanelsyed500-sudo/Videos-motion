@@ -1,0 +1,651 @@
+{
+ "schema": 1,
+ "kind": "species",
+ "records": [
+  {
+   "id": "spc_oystercatcher",
+   "name": "Oystercatcher",
+   "scientific": "Haematopus ostralegus",
+   "real": true,
+   "group": "seabird",
+   "habitat": "coastal",
+   "regions": [
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.3
+    }
+   ],
+   "temp_c": [
+    3,
+    28
+   ],
+   "depth_m": [
+    0,
+    0
+   ],
+   "group_size": [
+    3,
+    40
+   ],
+   "activity": "always",
+   "speed_kn": 20,
+   "diet": [
+    "shellfish"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 0,
+   "note": "Feeds along tidelines: a flock on a bare reef means the reef is a tide-flat at low water.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_magnificent_frigatebird",
+   "name": "Frigatebird",
+   "scientific": "Fregata magnificens",
+   "real": true,
+   "group": "seabird",
+   "habitat": "surface",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.9
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_glass_sea",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_dead_ocean",
+     "abundance": 0.2
+    }
+   ],
+   "temp_c": [
+    22,
+    31
+   ],
+   "depth_m": [
+    0,
+    0
+   ],
+   "group_size": [
+    1,
+    20
+   ],
+   "activity": "diurnal",
+   "speed_kn": 25,
+   "diet": [
+    "flying_fish",
+    "squid"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "instance",
+   "value": 0,
+   "note": "Never lands on water. A frigatebird at sunset means land is within 150 km.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_brown_booby",
+   "name": "Brown Booby",
+   "scientific": "Sula leucogaster",
+   "real": true,
+   "group": "seabird",
+   "habitat": "coastal",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.7
+    }
+   ],
+   "temp_c": [
+    22,
+    31
+   ],
+   "depth_m": [
+    0,
+    0
+   ],
+   "group_size": [
+    1,
+    30
+   ],
+   "activity": "diurnal",
+   "speed_kn": 20,
+   "diet": [
+    "flying_fish",
+    "squid"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "instance",
+   "value": 0,
+   "note": "Plunge-dives; roosts on land at night: seen at dusk, land is within 80 km.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_red_billed_tropicbird",
+   "name": "Tropicbird",
+   "scientific": "Phaethon aethereus",
+   "real": true,
+   "group": "seabird",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_dead_ocean",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_glass_sea",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    20,
+    31
+   ],
+   "depth_m": [
+    0,
+    0
+   ],
+   "group_size": [
+    1,
+    4
+   ],
+   "activity": "diurnal",
+   "speed_kn": 25,
+   "diet": [
+    "flying_fish",
+    "squid"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe"
+   ],
+   "lod": "instance",
+   "value": 0,
+   "note": "Ranges over 400 km from land; a rare messenger of open water.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_northern_gannet",
+   "name": "Northern Gannet",
+   "scientific": "Morus bassanus",
+   "real": true,
+   "group": "seabird",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    4,
+    20
+   ],
+   "depth_m": [
+    0,
+    0
+   ],
+   "group_size": [
+    5,
+    200
+   ],
+   "activity": "diurnal",
+   "speed_kn": 30,
+   "diet": [
+    "herring",
+    "mackerel"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "school",
+   "value": 0,
+   "note": "Plunging gannets mark the bait ball. The white column from 40 m is visible 8 km away.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_wandering_albatross",
+   "name": "Wandering Albatross",
+   "scientific": "Diomedea exulans",
+   "real": true,
+   "group": "seabird",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.9
+    },
+    {
+     "region": "reg_dead_ocean",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_white_hollow",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.2
+    }
+   ],
+   "temp_c": [
+    -1,
+    20
+   ],
+   "depth_m": [
+    0,
+    0
+   ],
+   "group_size": [
+    1,
+    3
+   ],
+   "activity": "diurnal",
+   "speed_kn": 40,
+   "diet": [
+    "squid",
+    "carrion"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe"
+   ],
+   "lod": "instance",
+   "value": 0,
+   "note": "Rides the westerlies for 1,000 km without a wingbeat. Follows ships for days: a companion on empty water.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_european_storm_petrel",
+   "name": "Storm Petrel",
+   "scientific": "Hydrobates pelagicus",
+   "real": true,
+   "group": "seabird",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.5
+    }
+   ],
+   "temp_c": [
+    3,
+    20
+   ],
+   "depth_m": [
+    0,
+    0
+   ],
+   "group_size": [
+    1,
+    60
+   ],
+   "activity": "crepuscular",
+   "speed_kn": 20,
+   "diet": [
+    "plankton",
+    "small_fish"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 0,
+   "note": "Gathers in the lee of the ship before a gale. Sailors have called them 'storm chickens' for centuries; they are an early warning, not an omen.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_arctic_tern",
+   "name": "Arctic Tern",
+   "scientific": "Sterna paradisaea",
+   "real": true,
+   "group": "seabird",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_white_hollow",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_dead_ocean",
+     "abundance": 0.2
+    },
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.1
+    }
+   ],
+   "temp_c": [
+    -2,
+    25
+   ],
+   "depth_m": [
+    0,
+    0
+   ],
+   "group_size": [
+    5,
+    200
+   ],
+   "activity": "diurnal",
+   "speed_kn": 22,
+   "diet": [
+    "small_fish",
+    "krill"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 0,
+   "season": [
+    0.0,
+    1.0
+   ],
+   "note": "Migrates pole to pole every year, so its position in a given month is a hint about where you are on the compass.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_great_skua",
+   "name": "Great Skua",
+   "scientific": "Stercorarius skua",
+   "real": true,
+   "group": "seabird",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    0,
+    14
+   ],
+   "depth_m": [
+    0,
+    0
+   ],
+   "group_size": [
+    1,
+    6
+   ],
+   "activity": "diurnal",
+   "speed_kn": 28,
+   "diet": [
+    "fish",
+    "carrion",
+    "seabird"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe"
+   ],
+   "lod": "instance",
+   "value": 0,
+   "danger": 0.1,
+   "note": "Robs gulls of catches. A crew that leaves fish drying on the rail will notice.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_black_legged_kittiwake",
+   "name": "Kittiwake",
+   "scientific": "Rissa tridactyla",
+   "real": true,
+   "group": "seabird",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_storm_belt",
+     "abundance": 0.3
+    }
+   ],
+   "temp_c": [
+    -1,
+    16
+   ],
+   "depth_m": [
+    0,
+    0
+   ],
+   "group_size": [
+    5,
+    300
+   ],
+   "activity": "diurnal",
+   "speed_kn": 22,
+   "diet": [
+    "capelin",
+    "krill"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 0,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_atlantic_puffin",
+   "name": "Puffin",
+   "scientific": "Fratercula arctica",
+   "real": true,
+   "group": "seabird",
+   "habitat": "coastal",
+   "regions": [
+    {
+     "region": "reg_grey_marches",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.3
+    }
+   ],
+   "temp_c": [
+    0,
+    14
+   ],
+   "depth_m": [
+    0,
+    60
+   ],
+   "group_size": [
+    2,
+    60
+   ],
+   "activity": "diurnal",
+   "speed_kn": 20,
+   "diet": [
+    "capelin",
+    "herring"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 0,
+   "season": [
+    0.1,
+    0.6
+   ],
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_emperor_penguin",
+   "name": "Emperor Penguin",
+   "scientific": "Aptenodytes forsteri",
+   "real": true,
+   "group": "seabird",
+   "habitat": "ice_edge",
+   "regions": [
+    {
+     "region": "reg_white_hollow",
+     "abundance": 0.7
+    }
+   ],
+   "temp_c": [
+    -2,
+    4
+   ],
+   "depth_m": [
+    0,
+    500
+   ],
+   "group_size": [
+    5,
+    400
+   ],
+   "activity": "always",
+   "speed_kn": 5,
+   "diet": [
+    "fish",
+    "krill",
+    "squid"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe"
+   ],
+   "lod": "school",
+   "value": 0,
+   "sensitivity": 0.7,
+   "note": "The only real birds of the White Hollow. A colony on a floe is a landmark you can sail toward.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  }
+ ]
+}

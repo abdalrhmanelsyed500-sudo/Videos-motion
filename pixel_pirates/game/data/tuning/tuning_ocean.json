@@ -224,7 +224,7 @@
   },
   {
    "key": "ocean.weather_scale_km",
-   "value": 320,
+   "value": 400,
    "unit": "km",
    "min": 100,
    "max": 1000,
@@ -463,6 +463,50 @@
    "owner": "E1",
    "source": "E1 world design; provisional until its owner module",
    "note": "A region is a place inside a climate belt: every km (north-south) outside its latitude range counts this many km of distance. Keeps polar corners from belonging to temperate regions."
+  },
+  {
+   "key": "world.islands_t1",
+   "value": 14,
+   "unit": "count",
+   "min": 10,
+   "max": 30,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; island budget from the brief (T1 12-15, T2 20-25, T3 15-25)",
+   "note": "Tier 1 major islands (11-module chain each). The regions' island budgets must sum to this."
+  },
+  {
+   "key": "world.islands_t2",
+   "value": 22,
+   "unit": "count",
+   "min": 10,
+   "max": 30,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; island budget from the brief (T1 12-15, T2 20-25, T3 15-25)",
+   "note": "Tier 2 medium islands (4 modules each). The regions' island budgets must sum to this."
+  },
+  {
+   "key": "world.islands_t3",
+   "value": 22,
+   "unit": "count",
+   "min": 10,
+   "max": 30,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; island budget from the brief (T1 12-15, T2 20-25, T3 15-25)",
+   "note": "Tier 3 minor islands (hook batches). The regions' island budgets must sum to this."
+  },
+  {
+   "key": "ship.hull_speed_factor",
+   "value": 1.3,
+   "unit": "ratio",
+   "min": 1.0,
+   "max": 2.0,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 ship polar; provisional until J (ship physics)",
+   "note": "Cap on speed relative to the reference (14 kn) wind speed: a sloop cannot outrun its hull. Above the reef wind speed falls from this value."
   }
  ]
 }

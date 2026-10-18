@@ -1,0 +1,210 @@
+{
+ "schema": 1,
+ "kind": "species",
+ "records": [
+  {
+   "id": "spc_green_turtle",
+   "name": "Green Turtle",
+   "scientific": "Chelonia mydas",
+   "real": true,
+   "group": "reptile",
+   "habitat": "coastal",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.7
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.8
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    22,
+    31
+   ],
+   "depth_m": [
+    0,
+    80
+   ],
+   "group_size": [
+    1,
+    6
+   ],
+   "activity": "diurnal",
+   "speed_kn": 4,
+   "diet": [
+    "seagrass"
+   ],
+   "rarity": "common",
+   "methods": [
+    "observe",
+    "harpoon",
+    "dive"
+   ],
+   "lod": "instance",
+   "value": 8,
+   "note": "Keeps alive in the hold for weeks: the sailor's fresh meat. Catching too many lowers the next visit's catch.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_hawksbill_turtle",
+   "name": "Hawksbill Turtle",
+   "scientific": "Eretmochelys imbricata",
+   "real": true,
+   "group": "reptile",
+   "habitat": "reef",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.8
+    }
+   ],
+   "temp_c": [
+    22,
+    31
+   ],
+   "depth_m": [
+    0,
+    70
+   ],
+   "group_size": [
+    1,
+    2
+   ],
+   "activity": "diurnal",
+   "speed_kn": 4,
+   "diet": [
+    "sponge"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe",
+    "dive"
+   ],
+   "lod": "instance",
+   "value": 10,
+   "sensitivity": 0.5,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_leatherback_turtle",
+   "name": "Leatherback",
+   "scientific": "Dermochelys coriacea",
+   "real": true,
+   "group": "reptile",
+   "habitat": "open_water",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_green_verge",
+     "abundance": 0.3
+    },
+    {
+     "region": "reg_fogbound_expanse",
+     "abundance": 0.3
+    }
+   ],
+   "temp_c": [
+    4,
+    30
+   ],
+   "depth_m": [
+    0,
+    1200
+   ],
+   "group_size": [
+    1,
+    1
+   ],
+   "activity": "always",
+   "speed_kn": 5,
+   "diet": [
+    "jellyfish"
+   ],
+   "rarity": "rare",
+   "methods": [
+    "observe"
+   ],
+   "lod": "instance",
+   "value": 90,
+   "sensitivity": 0.6,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  },
+  {
+   "id": "spc_yellow_bellied_sea_snake",
+   "name": "Pelagic Sea Snake",
+   "scientific": "Hydrophis platurus",
+   "real": true,
+   "group": "reptile",
+   "habitat": "surface",
+   "regions": [
+    {
+     "region": "reg_kettle_seas",
+     "abundance": 0.6
+    },
+    {
+     "region": "reg_shattered_reaches",
+     "abundance": 0.4
+    },
+    {
+     "region": "reg_sunward_banks",
+     "abundance": 0.5
+    },
+    {
+     "region": "reg_glass_sea",
+     "abundance": 0.4
+    }
+   ],
+   "temp_c": [
+    20,
+    31
+   ],
+   "depth_m": [
+    0,
+    50
+   ],
+   "group_size": [
+    5,
+    5000
+   ],
+   "activity": "always",
+   "speed_kn": 2,
+   "diet": [
+    "small_fish"
+   ],
+   "rarity": "uncommon",
+   "methods": [
+    "observe"
+   ],
+   "lod": "ambient",
+   "value": 0,
+   "danger": 0.5,
+   "note": "Drifting slicks of thousands on the Glass Sea. Do not bring one aboard in a net.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife seed; real species from standard natural history, numbers provisional"
+  }
+ ]
+}

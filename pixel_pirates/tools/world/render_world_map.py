@@ -32,11 +32,17 @@ def main() -> None:
     nx, ny = int(W / CELL), int(H / CELL)
     img = Image.new("RGB", (nx, ny))
     px = img.load()
+    acc = {r["id"]: [0.0, 0.0, 0] for r in oc.regions}
     for j in range(ny):
         for i in range(nx):
             x, y = (i + 0.5) * CELL, (j + 0.5) * CELL
             w = oc.region_weights(x, y)
             lk = [(wi, O.hex_rgb(r["water"]["deep"]), O.hex_rgb(r["water"]["shallow"])) for wi, r in zip(w, oc.regions)]
+            k = max(range(len(w)), key=lambda q: w[q])
+            a = acc[oc.regions[k]["id"]]
+            a[0] += x
+            a[1] += y
+            a[2] += 1
             col = [sum(wi * (0.45 * d[k] + 0.55 * s[k]) for wi, d, s in lk) for k in range(3)]
             smp = oc.sample(x, y, 0.0)
             ice = smp["ice"]
@@ -56,14 +62,6 @@ def main() -> None:
             if oc.region_index((i + 0.5) * CELL, (j + 0.5) * CELL) != oc.region_index((i - 0.5) * CELL, (j + 0.5) * CELL) or \
                oc.region_index((i + 0.5) * CELL, (j + 0.5) * CELL) != oc.region_index((i + 0.5) * CELL, (j - 0.5) * CELL):
                 d.point((i * CELL * PX, j * CELL * PX), fill=(20, 20, 30))
-    for r in oc.regions:
-        cx, cy = r["seed"]["x_km"] * PX, r["seed"]["y_km"] * PX
-        label = r["name"].upper()
-        tw = d.textlength(label, font=f)
-        d.rectangle([cx - tw / 2 - 4, cy - 9, cx + tw / 2 + 4, cy + 22], fill=(10, 20, 35))
-        d.text((cx - tw / 2, cy - 7), label, fill=(255, 245, 210), font=f)
-        isl = r["islands"]
-        d.text((cx - tw / 2, cy + 8), f"{isl['t1']}/{isl['t2']}/{isl['t3']} islands  {r['nav_rule']}", fill=(160, 210, 240), font=fs)
     # wind arrows and currents
     for gy in range(300, int(H), 600):
         for gx in range(450, int(W), 900):
@@ -82,7 +80,16 @@ def main() -> None:
         d.line(pts, fill=(255, 90, 60), width=3)
         for k, (x, y) in enumerate(pts):
             d.ellipse([x - 6, y - 6, x + 6, y + 6], outline=(255, 90, 60), width=3, fill=(255, 255, 255))
-            d.text((x + 9, y - 18), rt["waypoints"][k]["name"], fill=(255, 220, 200), font=f)
+            d.text((x + 10, y + 6), rt["waypoints"][k]["name"], fill=(255, 190, 160), font=fs)
+    for r in oc.regions:
+        a = acc[r["id"]]
+        cx, cy = a[0] / a[2] * PX, a[1] / a[2] * PX
+        label = r["name"].upper()
+        tw = d.textlength(label, font=f)
+        d.rectangle([cx - tw / 2 - 4, cy - 9, cx + tw / 2 + 4, cy + 22], fill=(10, 20, 35))
+        d.text((cx - tw / 2, cy - 7), label, fill=(255, 245, 210), font=f)
+        isl = r["islands"]
+        d.text((cx - tw / 2, cy + 8), f"{isl['t1']}/{isl['t2']}/{isl['t3']} islands  {r['nav_rule']}", fill=(160, 210, 240), font=fs)
     # scale bar: 1000 km and the sailing time at 14.9 km/real minute
     sb = 1000 * PX
     d.rectangle([20, big.height - 54, 20 + sb, big.height - 48], fill=(255, 255, 255))

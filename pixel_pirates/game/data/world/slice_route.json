@@ -2,26 +2,131 @@
  "name": "The Three Weathers",
  "note": "E1 vertical-slice test route (provisional). Tropical heat -> monsoon coast -> fog -> grey cold -> pack ice, about 3,430 km = 230 real minutes at the reference speed. Checkpoints are DEBUG jumps: they place the ship and set the clock; they never accelerate time.",
  "waypoints": [
-  {"id": "wp_kettle_anchorage", "name": "Kettle Anchorage", "x_km": 7000, "y_km": 2550},
-  {"id": "wp_sunward_well", "name": "Sunward Well", "x_km": 7350, "y_km": 2000},
-  {"id": "wp_bell_buoy", "name": "Bell Buoy", "x_km": 6000, "y_km": 1250},
-  {"id": "wp_grey_landing", "name": "Grey Landing", "x_km": 5600, "y_km": 520},
-  {"id": "wp_ice_edge", "name": "Ice Edge", "x_km": 5600, "y_km": 40}
+  {
+   "id": "wp_kettle_anchorage",
+   "name": "Kettle Anchorage",
+   "x_km": 7000,
+   "y_km": 2650
+  },
+  {
+   "id": "wp_sunward_well",
+   "name": "Sunward Well",
+   "x_km": 7350,
+   "y_km": 2000
+  },
+  {
+   "id": "wp_bell_buoy",
+   "name": "Bell Buoy",
+   "x_km": 6000,
+   "y_km": 1250
+  },
+  {
+   "id": "wp_grey_landing",
+   "name": "Grey Landing",
+   "x_km": 5600,
+   "y_km": 520
+  },
+  {
+   "id": "wp_ice_edge",
+   "name": "Ice Edge",
+   "x_km": 5600,
+   "y_km": 40
+  }
  ],
  "checkpoints": [
-  {"id": 1, "name": "Kettle dawn squall", "x_km": 7000, "y_km": 2550, "heading_deg": 0, "t_days": 0.25,
-   "expect": {"region": "reg_kettle_seas", "rain_min": 0.8, "air_c_min": 25}, "why": "Warm rain squall at first light. The reference tropical look."},
-  {"id": 2, "name": "Kettle edge, noon", "x_km": 7227, "y_km": 2194, "heading_deg": 340, "t_days": 1.5,
-   "expect": {"region": "reg_kettle_seas", "visibility_km_min": 8}, "why": "Clear noon, 9 km sight, 60 km before the Sunward border. The calm baseline."},
-  {"id": 3, "name": "Sunward, monsoon coast", "x_km": 6518, "y_km": 1538, "heading_deg": 315, "t_days": 3.25,
-   "expect": {"region": "reg_sunward_banks", "sst_c_max": 23}, "why": "Cooler water than Kettle, light wind: the monsoon turning season. Sea colour and swell change."},
-  {"id": 4, "name": "Fogbound dawn", "x_km": 5889, "y_km": 1047, "heading_deg": 330, "t_days": 8.25,
-   "expect": {"region": "reg_fogbound_expanse", "visibility_km_max": 0.8}, "why": "Sight drops to about half a kilometre. Fog bell and pilotage take over."},
-  {"id": 5, "name": "Grey Landing, Herald Swell", "x_km": 5600, "y_km": 520, "heading_deg": 0, "t_days": 11.25,
-   "expect": {"region": "reg_grey_marches", "herald_min": 0.8, "storm_max": 0.2}, "why": "Heavy long swell with no wind yet. The gale (checkpoint 6) arrives one game day later. This is the warning."},
-  {"id": 6, "name": "Grey Landing, the gale", "x_km": 5600, "y_km": 520, "heading_deg": 0, "t_days": 12.25,
-   "expect": {"region": "reg_grey_marches", "storm_min": 0.8}, "why": "The gale the swell promised, 15 real minutes later."},
-  {"id": 7, "name": "Ice Edge", "x_km": 5600, "y_km": 40, "heading_deg": 0, "t_days": 14.25,
-   "expect": {"region": "reg_grey_marches", "ice_min": 0.6, "air_c_max": 0}, "why": "Sea ice and freezing air at the north rim. The end of the slice."}
+  {
+   "id": 1,
+   "name": "Kettle dawn squall",
+   "x_km": 7000,
+   "y_km": 2650,
+   "heading_deg": 0,
+   "t_days": 0.25,
+   "expect": {
+    "region": "reg_kettle_seas",
+    "rain_min": 0.5,
+    "air_c_min": 25
+   },
+   "why": "Warm rain squall at first light. The reference tropical look."
+  },
+  {
+   "id": 2,
+   "name": "Kettle edge, noon",
+   "x_km": 7227,
+   "y_km": 2194,
+   "heading_deg": 340,
+   "t_days": 1.5,
+   "expect": {
+    "region": "reg_kettle_seas",
+    "visibility_km_min": 8
+   },
+   "why": "Clear noon, 9 km sight, 60 km before the Sunward border. The calm baseline."
+  },
+  {
+   "id": 3,
+   "name": "Sunward, monsoon coast",
+   "x_km": 6518,
+   "y_km": 1538,
+   "heading_deg": 315,
+   "t_days": 3.25,
+   "expect": {
+    "region": "reg_sunward_banks",
+    "sst_c_max": 23
+   },
+   "why": "Cooler water than Kettle, light wind: the monsoon turning season. Sea colour and swell change."
+  },
+  {
+   "id": 4,
+   "name": "Fogbound dawn",
+   "x_km": 5889,
+   "y_km": 1047,
+   "heading_deg": 330,
+   "t_days": 8.25,
+   "expect": {
+    "region": "reg_fogbound_expanse",
+    "visibility_km_max": 0.8
+   },
+   "why": "Sight drops to about half a kilometre. Fog bell and pilotage take over."
+  },
+  {
+   "id": 5,
+   "name": "Grey Landing, Herald Swell",
+   "x_km": 5640,
+   "y_km": 560,
+   "heading_deg": 0,
+   "t_days": 12.5,
+   "expect": {
+    "region": "reg_grey_marches",
+    "herald_min": 0.6,
+    "storm_max": 0.2
+   },
+   "why": "Heavy long swell with no wind yet. The gale (checkpoint 6) arrives one game day later. This is the warning."
+  },
+  {
+   "id": 6,
+   "name": "Grey Landing, the gale",
+   "x_km": 5640,
+   "y_km": 560,
+   "heading_deg": 0,
+   "t_days": 13.5,
+   "expect": {
+    "region": "reg_grey_marches",
+    "storm_min": 0.6
+   },
+   "why": "The gale the swell promised, 15 real minutes later."
+  },
+  {
+   "id": 7,
+   "name": "Ice Edge",
+   "x_km": 5600,
+   "y_km": 40,
+   "heading_deg": 0,
+   "t_days": 14.25,
+   "expect": {
+    "region": "reg_grey_marches",
+    "ice_min": 0.6,
+    "air_c_max": 0
+   },
+   "why": "Sea ice and freezing air at the north rim. The end of the slice."
+  }
  ]
 }

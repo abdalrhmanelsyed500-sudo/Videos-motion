@@ -62,6 +62,7 @@ def main() -> int:
         ("data tools tests", [PY, "tools/data_tools/test_data_tools.py"], ROOT),
         ("design checks tests (pillar invariants, content lint)", [PY, "tools/data_tools/test_design_checks.py"], ROOT),
         ("economy tests (market maths fixtures, invariants, mutations)", [PY, "tools/data_tools/test_economy.py"], ROOT),
+        ("ocean tests (world invariants, wildlife seed, slice route, golden fixtures)", [PY, "tools/data_tools/test_ocean.py"], ROOT),
     ]
     if not a.quick:
         steps.append(("island kit tests", [PY, "tools/island_kit/test_island_kit.py"], ROOT))

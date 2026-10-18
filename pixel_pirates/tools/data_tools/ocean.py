@@ -21,7 +21,7 @@ DATA = HERE.parents[1] / "game" / "data"
 KN_KMH = 1.852
 SEED = 1
 T_STORM_GAIN = 0.34      # how far a region's storminess shifts the weather index
-GALE_LO, GALE_HI = 0.80, 1.02
+GALE_LO, GALE_HI = 0.66, 1.20   # wide on purpose: a gale builds over >= 3 real minutes of sailing, never a wall
 
 
 def smoothstep(a: float, b: float, x: float) -> float:
@@ -290,10 +290,11 @@ class Ocean:
         else:
             f = 0.95 - 0.15 * (off - 135.0) / 45.0
         ref, reef = T["ship.ref_wind_kn"], T["ship.reef_wind_kn"]
+        hull = T["ship.hull_speed_factor"]    # a sloop cannot outrun its hull however hard it blows
         if wind_kn <= reef:
-            g = (wind_kn / ref) ** 0.6
+            g = min(hull, (wind_kn / ref) ** 0.6)
         else:
-            g = max(0.5, (reef / ref) ** 0.6 * (1.0 - 0.02 * (wind_kn - reef)))
+            g = max(0.5, hull * (1.0 - 0.02 * (wind_kn - reef)))     # reefed down: slower again
         v = T["ship.sail_speed_kmh"] * f * g * (1.0 - T["ship.ice_speed_loss"] * ice)
         if ice > 0.95:
             return 0.0
