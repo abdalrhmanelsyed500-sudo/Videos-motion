@@ -6,7 +6,6 @@ const Painter := preload("res://ui/sea_painter.gd")
 
 var _layer: CanvasLayer
 var _canvas: Node2D
-var _v: Dictionary = {}
 
 
 class PainterCanvas:

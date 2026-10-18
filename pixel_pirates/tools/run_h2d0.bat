@@ -2,7 +2,7 @@
 rem Starts the H2D-0 HD-2D prototype (Windows). Godot lookup: GODOT_EXE or tools\godot_path.txt (same as run_slice.bat).
 rem   run_h2d0.bat          normal start
 rem   run_h2d0.bat angle    force the ANGLE (Direct3D 11) OpenGL driver, for GPUs whose own OpenGL driver is too old
-rem Keys: A/D steer, 1-7 weather, F1 quality, F2 3D/2D, F3 HUD, F4 colour transfer, F12 screenshot, B benchmark.
+rem Keys: A/D steer, Z/X turn sensitivity, 1-7 weather, F1 quality, F2 3D/2D, F3 HUD, F4 colour transfer, F12 screenshot, B benchmark.
 rem Everything Godot prints goes to build\h2d0_console.txt (shader errors would show up there).
 rem Screenshots (F12) are copied to build\ when you close the window.
 setlocal

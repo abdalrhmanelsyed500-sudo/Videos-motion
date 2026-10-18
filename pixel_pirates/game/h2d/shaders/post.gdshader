@@ -59,7 +59,7 @@ void fragment() {
 			}
 			float a = float(i) * 2.39996;
 			float r = sqrt((float(i) + 0.5) / float(taps)) * blur;
-			acc += texture(TEXTURE, uv + vec2(cos(a), sin(a)) * r * px).rgb;
+			acc += textureLod(TEXTURE, uv + vec2(cos(a), sin(a)) * r * px, 0.0).rgb;
 			wsum += 1.0;
 		}
 		c = acc / wsum;
@@ -68,7 +68,7 @@ void fragment() {
 		vec3 b = vec3(0.0);
 		for (int i = 0; i < 8; i++) {
 			float a = float(i) * 0.785398;
-			vec3 s = texture(TEXTURE, uv + vec2(cos(a), sin(a)) * 7.0 * px).rgb;
+			vec3 s = textureLod(TEXTURE, uv + vec2(cos(a), sin(a)) * 7.0 * px, 0.0).rgb;
 			b += max(s - vec3(bloom_thr), vec3(0.0));
 		}
 		c += b * (bloom_i / 8.0) * 2.0;

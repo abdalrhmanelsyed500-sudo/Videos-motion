@@ -109,7 +109,9 @@ static func frame_stats(img: Image) -> Dictionary:
 	var n := 0
 	for gy in 24:
 		for gx in 40:
-			var c := img.get_pixel((gx * img.get_width()) / 40 + 3, (gy * img.get_height()) / 24 + 3)
+			var sx := int(float(gx * img.get_width()) / 40.0) + 3
+			var sy := int(float(gy * img.get_height()) / 24.0) + 3
+			var c := img.get_pixel(sx, sy)
 			var lum := 0.299 * c.r + 0.587 * c.g + 0.114 * c.b
 			sum += lum
 			sum2 += lum * lum

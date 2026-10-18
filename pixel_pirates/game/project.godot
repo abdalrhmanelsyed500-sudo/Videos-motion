@@ -6,7 +6,7 @@ config_version=5
 
 config/name="Crown of the Seas"
 config/description="Open-world pirate survival adventure (working title)."
-run/main_scene="res://ui/asset_viewer.tscn"
+run/main_scene="res://h2d/h2d0.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/version="0.0.1"
 
@@ -25,6 +25,57 @@ window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="keep"
+
+[shader_globals]
+
+h2d_sun_dir={
+"type": "vec3",
+"value": Vector3(0.3, 0.8, -0.5)
+}
+h2d_sun_col={
+"type": "vec3",
+"value": Vector3(0.6, 0.55, 0.45)
+}
+h2d_amb_col={
+"type": "vec3",
+"value": Vector3(0.3, 0.35, 0.4)
+}
+h2d_fog_col={
+"type": "vec3",
+"value": Vector3(0.55, 0.64, 0.64)
+}
+h2d_fog_density={
+"type": "float",
+"value": 0.002
+}
+h2d_gamma={
+"type": "float",
+"value": 2.2
+}
+h2d_exposure={
+"type": "float",
+"value": 1.25
+}
+h2d_time={
+"type": "float",
+"value": 0.0
+}
+h2d_wind_to={
+"type": "vec2",
+"value": Vector2(0, 1)
+}
+h2d_cloud={
+"type": "float",
+"value": 0.2
+}
+h2d_storm={
+"type": "float",
+"value": 0.0
+}
+h2d_rain={
+"type": "float",
+"value": 0.0
+}
 
 [rendering]
 

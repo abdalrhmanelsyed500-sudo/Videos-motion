@@ -1,10 +1,11 @@
 extends Node
 ## H2D-0: one playable HD-2D ocean scene. The simulation is the validated E1 one (Ocean, SeaState, world clock, weather
 ## smoothing); only the PICTURE changed, behind the single SeaView interface (3D Compatibility path or 2D fallback).
-## Keys: A/D steer | 1-7 weather checkpoints (1 squall, 2 fair, 4 fog, 5 swell, 6 gale, 7 ice) | P pause | R reset ship
-##       F1 quality (Dev-Lite / Standard / Ultra) | F2 path (3D / 2D) | F3 HUD | F4 flip colour transfer | F12 shot
-##       [ ] camera pitch | - = exposure | , . visual speed | B benchmark (about 80 s)
-## Start from the project folder with tools\run_h2d0.bat. NOT YET RUN IN GODOT.
+## Keys: A/D (or Left/Right) steer | Z/X turn sensitivity | 1-7 weather (1 squall 2 fair 4 fog 5 swell 6 gale 7 ice)
+##       P pause | R reset ship | F1 quality (Dev-Lite / Standard / Ultra) | F2 path (3D / 2D) | F3 HUD | F4 flip colour
+##       transfer | F12 screenshot | [ ] camera pitch | - = exposure | , . visual speed | B benchmark (about 80 s)
+## Open the project in Godot and press F5 (main scene = this one). Sailing feel: helm.gd + data/tuning/tuning_helm.json.
+## NOT YET RUN IN GODOT.
 const Ocean := preload("res://core/ocean.gd")
 const SeaState := preload("res://core/sea_state.gd")
 const VoyageClock := preload("res://core/voyage_clock.gd")
@@ -15,13 +16,14 @@ const View3D := preload("res://h2d/sea_view_3d.gd")
 const View2D := preload("res://h2d/sea_view_2d.gd")
 const ShipSprite := preload("res://h2d/ship_sprite.gd")
 const Bench := preload("res://h2d/bench.gd")
-const TURN_DEG_PER_S := 14.0
+const Helm := preload("res://h2d/helm.gd")
+const HelmHud := preload("res://h2d/helm_hud.gd")
 const MAX_STEP_S := 0.25
 const SMOOTH_S := 2.0
 const START_POS := Vector2(-150.0, 190.0)
 const START_HEADING := 39.0
 const SMOOTH_KEYS: Array[String] = ["wind_kn", "wave_m", "visibility_km", "cloud", "storm", "herald", "rain", "fog",
-		"ice", "sst_c", "air_c", "light_peak", "light_floor", "speed_kn"]
+		"ice", "sst_c", "air_c", "light_peak", "light_floor"]
 const COMPASS: Array[String] = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
 const QUALITIES: Array[String] = ["dev_lite", "standard", "ultra"]
 
@@ -35,10 +37,18 @@ var _look: Dictionary = {}
 var _look_target: Dictionary = {}
 var _look_t := 0.0
 var _heading_disp := 0.0
+var _helm: Helm = Helm.new()
+var _helm_snap := true
+var _helm_hud: HelmHud
+var _alert: Label
+var _alert_sub: Label
+var _advice := ""
+var _renderer_line := ""
 var _hour := 6.0
 var _light := 1.0
 var _real := 0.0
 var _turn := 0.0
+var _curve := 0.0
 var _pos := START_POS
 var _speed_mul := 1.0
 var _grounded := false
@@ -82,12 +92,17 @@ func _ready() -> void:
 	_hud.add_theme_color_override("font_outline_color", Color(0.05, 0.08, 0.1))
 	_hud.add_theme_constant_override("outline_size", 5)
 	layer.add_child(_hud)
+	_build_helm_widgets(layer)
+	_helm.configure(_oc.tuning())
 	_jump(2)
 	_reset_ship()
 	_set_path("3d")
 	_bench_cli = OS.get_cmdline_user_args().has("--bench")
+	_renderer_line = _renderer_summary()
+	_write_diagnostics()
 	await (_v3 as View3D).calibrate_gamma()
-	_say((_v3 as View3D).calibration_note)
+	_write_diagnostics()
+	_say("A / D steer the ship. Z / X change how sharply it turns. Red wedge = where the sails cannot draw.")
 	if _bench_cli:
 		_start_bench()
 
@@ -96,9 +111,9 @@ func _ready() -> void:
 func _jump(number: int) -> void:
 	for c in _route:
 		if int(c["id"]) == number:
-			var keep: float = _sea.heading_deg
 			_sea.place(float(c["x_km"]), float(c["y_km"]), float(c["heading_deg"]))
-			_sea.heading_deg = keep
+			_sea.heading_deg = _helm.heading_deg
+			_helm_snap = true
 			_state.t_seconds = roundi(float(c["t_days"]) * 86400.0)
 			_state.clock.set_location("sea")
 			_region_id = ""
@@ -108,8 +123,11 @@ func _jump(number: int) -> void:
 func _reset_ship() -> void:
 	_pos = START_POS
 	_sea.heading_deg = START_HEADING
+	_helm.reset(START_HEADING, 0.0)
+	_helm_snap = true
 	_heading_disp = START_HEADING
 	_turn = 0.0
+	_curve = 0.0
 	_grounded = false
 
 
@@ -134,34 +152,47 @@ func _process(delta: float) -> void:
 		if not (_bench as Bench).active:
 			_finish_bench()
 	var dt := minf(delta, MAX_STEP_S)
-	var steer := _steer_axis()
-	_sea.heading_deg = fposmod(_sea.heading_deg + steer * TURN_DEG_PER_S * dt, 360.0)
-	_turn = lerpf(_turn, steer * TURN_DEG_PER_S, 1.0 - exp(-dt / 0.25))
 	var t0 := float(_state.clock.t) / 86400.0
 	var gs: float = _state.tick(dt)
 	if _sea.last_sample.is_empty():
 		_sea.refresh(t0)
+	# the helm: A/D -> rudder -> turn rate -> heading; the sails' speed at this heading -> actual speed (with momentum)
+	var target_kn: float = _sea.speed_kn()
+	if _helm_snap:
+		_helm.speed_kn = target_kn
+		_helm_snap = false
+	if gs > 0.0:
+		_helm.step(dt, _steer_axis(), target_kn)
+		_sea.heading_deg = _helm.heading_deg
+	_heading_disp = _helm.heading_deg
+	_turn = _helm.yaw_rate * 0.5
 	_smooth(dt)
-	var speed_scene := ShipSprite.scene_speed_ms(float(_d["speed_kn"])) * _speed_mul
+	_d["speed_kn"] = _helm.speed_kn
+	var speed_scene := ShipSprite.scene_speed_ms(_helm.speed_kn) * _speed_mul
 	if gs > 0.0:
 		var hd := deg_to_rad(_sea.heading_deg)
 		var np := _pos + Vector2(sin(hd), -cos(hd)) * speed_scene * dt
 		if _v3.land_height_at(np.x, np.y) > 0.3:
 			_grounded = true
+			_helm.speed_kn = 0.0
 		else:
 			_grounded = false
 			_pos = np
 			_sea.advance(t0, gs)
 	if _grounded:
 		speed_scene = 0.0
+	_curve = clampf(deg_to_rad(_helm.yaw_rate) / maxf(speed_scene, 3.0), -0.04, 0.04)
 	_update_light(float(_state.clock.t) / 86400.0)
 	_update_region()
 	_active.update_view(_view(), {"x": _pos.x, "z": _pos.y, "heading_deg": _heading_disp,
-			"speed_kn": float(_d["speed_kn"]), "scene_speed": speed_scene}, delta)
+			"speed_kn": float(_d["speed_kn"]), "scene_speed": speed_scene, "curve": _curve}, delta)
+	var advice := _helm_state(target_kn)
+	_helm_hud.set_state(advice)
+	_update_alert(advice)
 	_hud_t -= delta
 	if _hud_t <= 0.0:
 		_hud_t = 0.2
-		_draw_hud(speed_scene)
+		_draw_hud(speed_scene, advice)
 
 
 func _steer_axis() -> float:
@@ -184,8 +215,6 @@ func _smooth(dt: float) -> void:
 		_d[key] = target if first else lerpf(float(_d[key]), target, k)
 	var wf := deg_to_rad(float(smp["wind_from_deg"]))
 	_d["wind_from"] = rad_to_deg(wf) if first else rad_to_deg(lerp_angle(deg_to_rad(float(_d["wind_from"])), wf, k))
-	var hk := 1.0 - exp(-dt / 0.35)
-	_heading_disp = rad_to_deg(lerp_angle(deg_to_rad(_heading_disp), deg_to_rad(_sea.heading_deg), hk))
 	_look_t -= dt
 	if _look_t <= 0.0 or _look.is_empty():
 		_look_t = 2.0
@@ -277,6 +306,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		v3.adjust_exposure(1.0 / 1.1)
 	elif k.keycode == KEY_EQUAL:
 		v3.adjust_exposure(1.1)
+	elif k.keycode == KEY_Z:
+		_helm.set_sensitivity(_helm.sensitivity - 0.2)
+		_say("turn sensitivity x%.1f" % _helm.sensitivity)
+	elif k.keycode == KEY_X:
+		_helm.set_sensitivity(_helm.sensitivity + 0.2)
+		_say("turn sensitivity x%.1f" % _helm.sensitivity)
 	elif k.keycode == KEY_COMMA:
 		_speed_mul = maxf(_speed_mul * 0.5, 0.125)
 	elif k.keycode == KEY_PERIOD:
@@ -348,32 +383,146 @@ func _region_name() -> String:
 	return ""
 
 
-func _draw_hud(speed_scene: float) -> void:
+## Everything the helm display and the plain-language advice need, from the helm and the wind.
+func _helm_state(target_kn: float) -> Dictionary:
+	var wind_from := float(_d["wind_from"])
+	var wind_kn := float(_d["wind_kn"])
+	var no_go: float = _oc.tuning_value("ship.no_go_deg")
+	var off := Helm.off_wind_deg(_helm.heading_deg, wind_from)
+	var best_kmh: float = _oc.speed_through_water_kmh(fposmod(wind_from + 100.0, 360.0), wind_kn, wind_from,
+			float(_d["ice"]))
+	var best_kn := best_kmh / SeaState.KN_KMH
+	var irons := off < no_go and wind_kn > 3.0
+	var sail := "In irons" if irons else Helm.point_of_sail(maxf(off, no_go), no_go)
+	var esc := Helm.escape_direction(_helm.heading_deg, wind_from)
+	return {"heading": _helm.heading_deg, "wind_from": wind_from, "no_go": no_go, "in_irons": irons,
+			"rudder": _helm.rudder, "speed_kn": _helm.speed_kn, "target_kn": target_kn, "best_kn": best_kn,
+			"sail_name": sail, "off": off, "escape_key": "A" if esc < 0 else "D", "wind_kn": wind_kn}
+
+
+## One or two plain sentences that say what the ship is doing and why its speed is what it is.
+func _advice_for(st: Dictionary) -> String:
+	var eff := float(st["target_kn"]) / maxf(float(st["best_kn"]), 0.1)
+	if _grounded:
+		return "AGROUND on Anvil Cay. Turn away from the island with A or D (or press R to start again)."
+	if bool(st["in_irons"]):
+		var msg := "IN IRONS: the bow is within %d deg of the wind, so the sails cannot draw and the ship is losing speed."
+		msg += " Turn away from the red wedge: press %s."
+		return msg % [int(st["no_go"]), str(st["escape_key"])]
+	if float(st["speed_kn"]) < float(st["target_kn"]) - 0.4:
+		return "%s: picking up speed (%.1f kn now, the sails can give %.1f kn at this heading)." % [
+				str(st["sail_name"]), float(st["speed_kn"]), float(st["target_kn"])]
+	if eff < 0.75:
+		return "%s: the sails give %d%% of the best speed. Turn towards the green zone to go faster." % [
+				str(st["sail_name"]), int(eff * 100.0)]
+	return "%s: good speed (%d%% of the best the wind allows)." % [str(st["sail_name"]), int(minf(eff, 1.0) * 100.0)]
+
+
+func _build_helm_widgets(layer: CanvasLayer) -> void:
+	_helm_hud = HelmHud.new()
+	_helm_hud.anchor_top = 1.0
+	_helm_hud.anchor_bottom = 1.0
+	_helm_hud.offset_left = 10.0
+	_helm_hud.offset_right = 10.0 + HelmHud.WIDTH
+	_helm_hud.offset_top = -HelmHud.HEIGHT - 8.0
+	_helm_hud.offset_bottom = -8.0
+	layer.add_child(_helm_hud)
+	_alert = Label.new()
+	_alert.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_alert.offset_top = 40.0
+	_alert.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_alert.add_theme_font_size_override("font_size", 38)
+	_alert.add_theme_color_override("font_color", Color(1.0, 0.32, 0.26))
+	_alert.add_theme_color_override("font_outline_color", Color(0.05, 0.05, 0.08))
+	_alert.add_theme_constant_override("outline_size", 8)
+	_alert.visible = false
+	layer.add_child(_alert)
+	_alert_sub = Label.new()
+	_alert_sub.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_alert_sub.offset_top = 88.0
+	_alert_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_alert_sub.add_theme_font_size_override("font_size", 17)
+	_alert_sub.add_theme_color_override("font_color", Color(1.0, 0.95, 0.85))
+	_alert_sub.add_theme_color_override("font_outline_color", Color(0.05, 0.05, 0.08))
+	_alert_sub.add_theme_constant_override("outline_size", 5)
+	_alert_sub.visible = false
+	layer.add_child(_alert_sub)
+
+
+## The big IN IRONS / AGROUND banner. Pulses so it cannot be missed, and says which key to press.
+func _update_alert(st: Dictionary) -> void:
+	var alarm := _hud_on and (bool(st["in_irons"]) or _grounded)
+	_alert.visible = alarm
+	_alert_sub.visible = alarm
+	_helm_hud.visible = _hud_on
+	if not alarm:
+		return
+	_alert.text = "AGROUND" if _grounded else "IN IRONS"
+	_alert_sub.text = _advice_for(st)
+	var pulse := 0.65 + 0.35 * sin(_real * 6.0)
+	_alert.modulate = Color(1.0, 1.0, 1.0, pulse)
+
+
+func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 	_hud.visible = _hud_on
 	if not _hud_on:
 		return
-	var hd := fposmod(_sea.heading_deg, 360.0)
 	var wind_from := float(_d["wind_from"])
-	var off := absf(fposmod(_sea.heading_deg - wind_from + 540.0, 360.0) - 180.0)
 	var lines: Array[String] = []
-	lines.append("CROWN OF THE SEAS - H2D-0   [%s]   %.0f fps" % [_active.describe(), _fps])
+	lines.append("CROWN OF THE SEAS - H2D-0.1   [%s]   %.0f fps" % [_active.describe(), _fps])
+	lines.append(_renderer_line)
 	lines.append("%s   %02d:%02d   wind %.0f kn from %s   waves %.1f m   visibility %.1f km" % [
 			_region_name(), int(_hour), int((_hour - floorf(_hour)) * 60.0), float(_d["wind_kn"]),
 			_compass(wind_from), float(_d["wave_m"]), float(_d["visibility_km"])])
-	lines.append("heading %03d %s   %.1f kn   scene %.1f m/s (x%.2f)   sail row %d   frame %d/16" % [
-			int(hd), _compass(hd), float(_d["speed_kn"]), speed_scene, _speed_mul,
-			ShipSprite.trim_row(_heading_disp, wind_from), ShipSprite.heading_frame(_heading_disp)])
+	lines.append("turn rate %.0f deg/s (sensitivity x%.1f, Z/X)   scene speed %.1f m/s (x%.2f)   sprite frame %d/16" % [
+			absf(_helm.yaw_rate), _helm.sensitivity, speed_scene, _speed_mul, ShipSprite.heading_frame(_heading_disp)])
 	lines.append("rain %.2f  storm %.2f  fog %.2f  ice %.2f  swell warning %.2f" % [
 			float(_d["rain"]), float(_d["storm"]), float(_d["fog"]), float(_d["ice"]), float(_d["herald"])])
-	if off < _oc.tuning_value("ship.no_go_deg") and float(_d["wind_kn"]) > 3.0:
-		lines.append("IN IRONS: head to wind (%.0f deg off it). Bear away with A or D" % off)
-	if _grounded:
-		lines.append("AGROUND on Anvil Cay: turn away with A or D, or press R")
+	lines.append(_advice_for(st))
 	if _state.clock.is_paused():
 		lines.append("PAUSED")
 	if _bench != null and (_bench as Bench).active:
 		lines.append("BENCHMARK " + (_bench as Bench).current_label())
 	if _real < _banner_until:
 		lines.append(_banner)
-	lines.append("A/D steer  1-7 weather  P pause  R reset  F1 quality  F2 3D/2D  F3 HUD  F4 colour  F12 shot  B bench")
+	lines.append("A/D steer   Z/X turn sensitivity   1-7 weather   P pause   R reset   F1 quality   F2 3D/2D   F3 HUD")
 	_hud.text = "\n".join(PackedStringArray(lines))
+
+
+# ---- renderer diagnostics ------------------------------------------------------------------------------------------
+## Which OpenGL path is really running. The Windows build tries native OpenGL 3.3 first and, if the driver reports less
+## (an Intel HD 3000 reports 3.1), switches to ANGLE = OpenGL ES 3.0 on top of Direct3D 11 and prints the warning
+## "Your video card drivers seem not to support the required OpenGL 3.3 version, switching to ANGLE". That fallback is
+## by design (project setting rendering/gl_compatibility/fallback_to_angle), not a fault of this project.
+func _renderer_summary() -> String:
+	var drv := RenderingServer.get_current_rendering_driver_name()
+	var path := drv
+	if drv == "opengl3":
+		path = "native OpenGL 3.3"
+	elif drv == "opengl3_angle":
+		path = "OpenGL ES 3.0 via ANGLE (Direct3D 11)"
+	elif drv == "opengl3_es":
+		path = "native OpenGL ES 3.0"
+	return "renderer: %s [%s]  GPU: %s" % [path, drv, RenderingServer.get_video_adapter_name()]
+
+
+func _write_diagnostics() -> void:
+	var lines: Array[String] = []
+	lines.append("H2D-0.1 renderer diagnostics")
+	lines.append("godot: %s" % Engine.get_version_info()["string"])
+	lines.append("os: %s" % OS.get_name())
+	lines.append("rendering method: %s" % RenderingServer.get_current_rendering_method())
+	lines.append("rendering driver: %s" % RenderingServer.get_current_rendering_driver_name())
+	lines.append(_renderer_summary())
+	lines.append("adapter vendor: %s" % RenderingServer.get_video_adapter_vendor())
+	lines.append("adapter api version: %s" % RenderingServer.get_video_adapter_api_version())
+	lines.append("driver info: %s" % str(OS.get_video_adapter_driver_info()))
+	lines.append("window size: %s" % str(DisplayServer.window_get_size()))
+	lines.append("colour transfer: %s" % (_v3 as View3D).calibration_note)
+	var declared := ProjectSettings.has_setting("shader_globals/h2d_gamma")
+	lines.append("shader globals declared in project.godot: %s" % str(declared))
+	var f := FileAccess.open("user://h2d0_diagnostics.txt", FileAccess.WRITE)
+	for line in lines:
+		print("H2D0 ", line)
+		if f != null:
+			f.store_line(line)

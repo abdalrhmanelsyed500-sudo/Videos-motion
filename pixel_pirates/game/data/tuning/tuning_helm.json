@@ -1,0 +1,15 @@
+{
+ "schema": 1,
+ "kind": "tuning",
+ "records": [
+  {"key": "helm.max_turn_deg_s", "value": 36, "unit": "deg per real second", "min": 8, "max": 90, "provisional": true, "owner": "N13", "source": "H2D-0.1 sailing feel, tuned by simulation; confirm by hand on the dev PC", "note": "Turn rate with the helm fully over and full steerage. Multiplied by the player's sensitivity (keys Z/X). 90 degrees takes about 3 s."},
+  {"key": "helm.min_steerage", "value": 0.45, "unit": "ratio", "min": 0.1, "max": 1.0, "provisional": true, "owner": "N13", "source": "H2D-0.1 sailing feel", "note": "Fraction of the turn rate left when the ship has lost all way (for example in irons). Above 0 so the player can always bear away."},
+  {"key": "helm.steerage_full_kn", "value": 3.0, "unit": "knots", "min": 0.5, "max": 8, "provisional": true, "owner": "N13", "source": "H2D-0.1 sailing feel", "note": "Speed through the water at which the rudder bites fully."},
+  {"key": "helm.rudder_rise_s", "value": 0.12, "unit": "seconds", "min": 0.05, "max": 1.5, "provisional": true, "owner": "N13", "source": "H2D-0.1 sailing feel", "note": "Time constant for the helm to go over when A or D is pressed. Smaller = snappier."},
+  {"key": "helm.rudder_return_s", "value": 0.1, "unit": "seconds", "min": 0.05, "max": 1.5, "provisional": true, "owner": "N13", "source": "H2D-0.1 sailing feel", "note": "Time constant for the helm to centre when the key is released."},
+  {"key": "helm.yaw_build_s", "value": 0.18, "unit": "seconds", "min": 0.05, "max": 2.0, "provisional": true, "owner": "N13", "source": "H2D-0.1 sailing feel", "note": "Time constant for the turn rate to build up to what the helm asks for (hull inertia)."},
+  {"key": "helm.yaw_brake_s", "value": 0.1, "unit": "seconds", "min": 0.05, "max": 2.0, "provisional": true, "owner": "N13", "source": "H2D-0.1 sailing feel", "note": "Time constant for the turn to die away once the helm is centred. Small, so the ship stops turning almost when you let go."},
+  {"key": "helm.speed_gain_s", "value": 2.5, "unit": "seconds", "min": 0.3, "max": 10, "provisional": true, "owner": "N13", "source": "H2D-0.1 sailing feel", "note": "Time constant for the ship to speed up to what its sails can give at the current heading."},
+  {"key": "helm.speed_loss_s", "value": 3.5, "unit": "seconds", "min": 0.3, "max": 12, "provisional": true, "owner": "N13", "source": "H2D-0.1 sailing feel", "note": "Time constant for the ship to lose way when the sails stop drawing (head to wind). Longer than the gain, like real momentum, so the drop in speed is gradual and readable."}
+ ]
+}

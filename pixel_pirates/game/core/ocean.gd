@@ -25,9 +25,9 @@ var _t: Dictionary = {}
 var _seed: int = SEED
 
 
-## Build from plain dictionaries: tuning {key: value}, region records, climate band records.
-func _init(tuning: Dictionary, region_records: Array, band_records: Array, seed_value: int = SEED) -> void:
-	_t = tuning
+## Build from plain dictionaries: tuning_map {key: value}, region records, climate band records.
+func _init(tuning_map: Dictionary, region_records: Array, band_records: Array, seed_value: int = SEED) -> void:
+	_t = tuning_map
 	regions = region_records
 	bands = band_records.duplicate()
 	bands.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["lat_deg"]) < float(b["lat_deg"]))
@@ -39,10 +39,10 @@ func _init(tuning: Dictionary, region_records: Array, band_records: Array, seed_
 ## Load the shipped data files (no autoload needed, so headless tests can use it).
 static func load_default() -> RefCounted:
 	var script: GDScript = load("res://core/ocean.gd")
-	var tuning := load_tuning()
+	var tuning_map := load_tuning()
 	var rg: Dictionary = DataLoader.load_dict("res://data/world/regions.json")
 	var bd: Dictionary = DataLoader.load_dict("res://data/world/climate_bands.json")
-	return script.new(tuning, rg.get("records", []), bd.get("records", []))
+	return script.new(tuning_map, rg.get("records", []), bd.get("records", []))
 
 
 static func load_tuning() -> Dictionary:

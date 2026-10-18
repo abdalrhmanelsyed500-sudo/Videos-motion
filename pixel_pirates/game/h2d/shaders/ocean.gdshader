@@ -26,6 +26,7 @@ uniform float island_size = 160.0;
 uniform vec2 ship_pos = vec2(0.0);
 uniform vec2 ship_dir = vec2(0.0, -1.0);
 uniform float ship_speed = 0.0;     // scene metres per second
+uniform float ship_curve = 0.0;     // path curvature in 1/m, + = turning to starboard: bends the wake the way the ship turned
 uniform float ship_len = 22.0;
 uniform float ship_beam = 6.2;
 
@@ -117,7 +118,8 @@ void fragment() {
 	vec2 perp = vec2(-ship_dir.y, ship_dir.x);
 	vec2 pr = w_pos.xz - ship_pos;
 	float back = -dot(pr, ship_dir);
-	float lat = abs(dot(pr, perp));
+	float behind = max(back, 0.0);
+	float lat = abs(dot(pr, perp) + 0.5 * ship_curve * behind * behind);
 	float spd = clamp(ship_speed / 8.0, 0.0, 1.0);
 	float wl = 55.0 * clamp(ship_speed / 25.0, 0.25, 1.4);
 	if (spd > 0.0 && back > -14.0 && back < wl) {

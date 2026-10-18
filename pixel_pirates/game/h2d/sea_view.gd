@@ -5,7 +5,8 @@ extends Node
 ##
 ## `v` is the sea view dictionary: light, floor, hour, lat, cloud, storm, herald, rain, fog, ice, wave_m, wind_kn,
 ## wind_from_deg, visibility_km, look (Ocean.look_at), time (real seconds), heading_deg, speed_kn, turn.
-## `ship` is {x, z (scene metres), heading_deg, speed_kn, scene_speed}.
+## `ship` is {x, z (scene metres), heading_deg, speed_kn, scene_speed, curve}; curve (optional) is the path
+## curvature in 1/m and bends the wake.
 
 
 func setup(_host: Node) -> void:

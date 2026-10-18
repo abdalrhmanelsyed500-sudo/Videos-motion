@@ -1,5 +1,7 @@
 # H2D-0: the representative HD-2D ocean scene (PROTOTYPE, NOT YET RUN IN GODOT)
 
+> **Updated by H2D-0.1** (`H2D0_1_SAILING_AND_COMPAT.md`): new helm and keys (Z/X added), runtime fixes, F5 launches this scene.
+
 **Status, stated plainly.** Everything below was written and statically checked in a sandbox that cannot run Godot. No shader has been compiled by Godot, no script has run, no frame has been rendered, and **no performance number exists**. What did run: the Python art bakers, the art checker, a GLSL syntax pass over the shaders, gdparse/gdlint on the scripts, and a Python replay of the pure logic. The look, the colour transfer and the speed on the dev PC are all unknown until the user runs it.
 Also unconfirmed: the E1b self-test. The user reported "it works", but `build\slice_selftest.txt` never arrived, so the GPU, driver and OpenGL version of the HD 3000 are still unknown, and E2 stays blocked.
 
@@ -32,7 +34,7 @@ Per phase: average fps, 1% low fps, worst frame ms, draw calls, objects, triangl
 - **Ship art:** 112 x 112 px frames, pivot (56, 66), 3.6 px per metre, 22 colours from 6 palette ramps. Sheet = 16 headings (22.5 deg) x 5 trim rows (-80, -45, 0, 45, 80 deg boom angle). The sail row comes from the wind angle: |rel| < 50 deg row 2; 50-110 rows 1/3; >= 110 rows 0/4; side by wind side.
 - **Waves:** four summed sines (46/27/15/8.5 m wavelengths), computed in the ocean shader and mirrored in `wave_model.gd` so the ship bobs with the water (bob snapped to whole art pixels).
 - **Light:** `light_model.gd`: sun 05-19 h, noon elevation = clamp(78 - 0.55|lat|, 18, 78), moon at night, cloud/storm grey the key light, fog density from visibility, lightning pulse about every 7 s in a storm.
-- **Loading:** PNGs are loaded with `Image.load_from_file` (not the import pipeline), to avoid VRAM compression that would corrupt pixel art. Global shader uniforms `h2d_*` are registered at start-up.
+- **Loading (superseded in H2D-0.1):** the first version read PNGs with `Image.load_from_file` and registered the shader globals at run time; both were wrong. See `H2D0_1_SAILING_AND_COMPAT.md`: textures are imported (lossless) and the globals are declared in `project.godot`.
 - **Colour transfer:** the Compatibility 3D pass may or may not apply an sRGB encode; the scene draws a known 0.5 grey quad, reads it back and picks gamma 2.2 or 1.0 (`calibration_note`, F4 flips it by hand).
 - **Grounding:** the ship cannot enter cells where the island height is above 0.3 m; it stops and says AGROUND.
 

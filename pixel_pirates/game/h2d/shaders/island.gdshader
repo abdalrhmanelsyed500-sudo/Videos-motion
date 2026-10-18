@@ -48,7 +48,7 @@ void fragment() {
 			if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) {
 				break;
 			}
-			float occ = texture(data_tex, suv).g * 48.0 - 8.0;
+			float occ = textureLod(data_tex, suv, 0.0).g * 48.0 - 8.0;
 			if (occ > h + slope * sm + 0.25) {
 				shadow = 0.0;
 				break;

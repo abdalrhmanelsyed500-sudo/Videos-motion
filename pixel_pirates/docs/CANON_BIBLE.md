@@ -1,4 +1,4 @@
-# CANON BIBLE - Crown of the Seas (working title) - v1.4 (after A2-A7, B1, B2, T1 time revision, B4 economy, E1 ocean and slice, V1 visual lock, D1-D4 decisions, H2D-0 prototype written)
+# CANON BIBLE - Crown of the Seas (working title) - v1.5 (after A2-A7, B1, B2, T1 time revision, B4 economy, E1 ocean and slice, V1 visual lock, D1-D4 decisions, H2D-0 prototype written, H2D-0.1 compatibility and sailing controls written)
 Drive folder: "Pixel Pirates". Repo path: pixel_pirates/.
 
 ## Hard content rules
@@ -152,11 +152,17 @@ The final game is **HD-2D in the manner of Octopath Traveler / Octopath Traveler
 ## H2D-0 prototype (written, NOT run in Godot) - full text in docs/H2D0_PROTOTYPE.md
 One playable HD-2D scene: `tools\run_h2d0.bat`; benchmark `tools\run_h2d0_bench.bat` (about 80 s, writes build\h2d0_bench.txt + screenshots). 3D Compatibility path (FOV 22, pitch 48, north-up, SubViewport at the art grid, own tilt-shift/grade post) and 2D fallback behind one `SeaView` interface. Profiles dev_lite 640x360 / standard 1280x720 / ultra 1920x1080. Sloop sprite: 16 headings x 5 sail trims, 112x112 frames, pivot (56,66), 3.6 px/m, 22 colours. Anvil Cay demo island (160 m). Provisional scale: 1 scene m = 10 world m. Dev-Lite target (mine, provisional): avg >= 30 fps, 1% low >= 20 fps. No performance figure exists; the shader checker is lenient and is not Godot.
 
+## H2D-0.1 compatibility, cleanup and helm (written, NOT run in Godot) - full text in docs/H2D0_1_SAILING_AND_COMPAT.md
+- The user's console log was never received; causes were found from source. **Unverified:** the HD 3000 almost certainly runs ANGLE (OpenGL ES 3.0 over Direct3D 11) because it reports OpenGL < 3.3; that fallback is a kept project setting, so the notice is by design. The HUD shows the real driver and `user://h2d0_diagnostics.txt` records it.
+- `_register_globals` fault: `global_shader_parameter_get_list()` is editor-only. Fix: shader globals declared in `project.godot` `[shader_globals]`, runtime only `set`. Image warnings: art is imported (`.png.import`, lossless) and loaded with `load()`. Genuine warnings fixed (2 integer divisions, one shadowed name, two unused variables).
+- Sailing: new `h2d/helm.gd` (A/D rudder -> turn rate -> heading, speed with momentum, Z/X sensitivity), tuning in `data/tuning/tuning_helm.json` (9 keys, owner N13, provisional), helm display `h2d/helm_hud.gd` (compass, red no-go wedge, green fast zone, wind, rudder, speed vs possible), IN IRONS banner with the key that escapes, curved wake. Sail polar, wind and no-go (40 deg) unchanged. Default feel by simulation: 90 deg in 2.8 s, coast 6.6 deg, 0.2 s tap = 5 deg, 8 s head to wind = 5 kn to 1 kn.
+- `F5` launches `res://h2d/h2d0.tscn` (main scene). H2D-1, H2D-2 and E2 are still not started.
+
 ## Island registry (50+ planned)
 Generated: docs/ISLAND_REGISTRY.md. Currently empty. Format: ID (isl_NNN) | name | tier | biome | position | distances to neighbours | status (planned/designed/built/tested). Filled from E3.
 
 ## Open questions
-H2D-0: run `tools\run_h2d0_bench.bat` on the dev PC and send build\h2d0_bench.txt, the screenshots and build\h2d0_console.txt. The E1b self-test file (build\slice_selftest.txt) was never received (the user said only that it works), so GPU and driver are still unknown. E2 stays blocked until the H2D-0 results are in and the next step is defined.
+H2D-0.1: open the project, press F5 and follow docs/H2D0_1_SAILING_AND_COMPAT.md section 7; report the Output lines, the HUD renderer line (or `user://h2d0_diagnostics.txt`) and how the helm feels. (Older, still open: H2D-0: run `tools\run_h2d0_bench.bat` on the dev PC and send build\h2d0_bench.txt, the screenshots and build\h2d0_console.txt. The E1b self-test file (build\slice_selftest.txt) was never received (the user said only that it works), so GPU and driver are still unknown. E2 stays blocked until the H2D-0 results are in and the next step is defined.
 E1: run tools\\run_godot_tests.bat (new: test_ocean, test_sea_state, test_console), then tools\\run_slice.bat and answer the 10-point checklist in docs/E1_WORLD_SPEC.md section 11; confirm the E1 decisions, especially the reference speed and the sea-view direction. E2 must place islands against the region quotas and the exact times above.
 B4: first run of core/market.gd and tests/test_market.gd on the user's PC; confirm the B4 decisions (Heavy Money, shares from prizes only, deterministic prices); B5 must price the ships against the windfall size.
 T1: first run of core/voyage_clock.gd, core/world_clock.gd, tests/test_voyage_clock.gd, tests/test_world_clock.gd on the user's PC; confirm the T1 decisions; visual test of the six day/night bands (I19).

@@ -182,39 +182,52 @@ func calibrate_gamma() -> void:
 	await RenderingServer.frame_post_draw
 	await RenderingServer.frame_post_draw
 	var img := _vp.get_texture().get_image()
-	var px := img.get_pixel(img.get_width() / 2, img.get_height() / 2)
+	var px := img.get_pixel(int(img.get_width() * 0.5), int(img.get_height() * 0.5))
 	set_gamma(2.2 if px.g > 0.38 else 1.0)
 	calibration_note = "gamma probe read %.3f (0.5 wanted) -> h2d_gamma %.1f" % [px.g, gamma]
 	q.queue_free()
 
 
 # ---- construction ----------------------------------------------------------------------------------------------
-func _register_globals() -> void:
-	var existing: Array = RenderingServer.global_shader_parameter_get_list()
+func _global_defaults() -> Array:
 	var vec3 := RenderingServer.GLOBAL_VAR_TYPE_VEC3
 	var vec2 := RenderingServer.GLOBAL_VAR_TYPE_VEC2
 	var flt := RenderingServer.GLOBAL_VAR_TYPE_FLOAT
-	var defs: Array = [
+	return [
 		["h2d_sun_dir", vec3, Vector3(0.3, 0.8, -0.5)], ["h2d_sun_col", vec3, Vector3(0.6, 0.55, 0.45)],
 		["h2d_amb_col", vec3, Vector3(0.3, 0.35, 0.4)], ["h2d_fog_col", vec3, Vector3(0.55, 0.64, 0.64)],
 		["h2d_fog_density", flt, 0.002], ["h2d_gamma", flt, 2.2], ["h2d_exposure", flt, 1.25], ["h2d_time", flt, 0.0],
 		["h2d_wind_to", vec2, Vector2(0.0, 1.0)], ["h2d_cloud", flt, 0.2], ["h2d_storm", flt, 0.0],
 		["h2d_rain", flt, 0.0],
 	]
-	for d in defs:
-		if not existing.has(StringName(d[0])):
-			RenderingServer.global_shader_parameter_add(d[0], d[1], d[2])
+
+
+## The h2d_* global shader uniforms are DECLARED in project.godot ([shader_globals]); a declared global must exist
+## before any shader that uses it compiles, which only a project setting guarantees. Here we only SET values.
+## (RenderingServer.global_shader_parameter_get_list() is editor-only: outside the editor the engine rejects the call
+## with "This function should never be used outside the editor", which was the error at the old line 193.)
+func _register_globals() -> void:
+	for d in _global_defaults():
+		var gname := str(d[0])
+		if not ProjectSettings.has_setting("shader_globals/" + gname):
+			# Only reachable if project.godot lost its [shader_globals] section. Adding at run time works, but a shader
+			# compiled earlier would already have failed, so say so loudly.
+			push_error("H2D: global shader uniform '%s' is not declared in project.godot [shader_globals]" % gname)
+			RenderingServer.global_shader_parameter_add(gname, d[1], d[2])
+		else:
+			RenderingServer.global_shader_parameter_set(gname, d[2])
 	RenderingServer.global_shader_parameter_set("h2d_gamma", gamma)
 	RenderingServer.global_shader_parameter_set("h2d_exposure", exposure)
 
 
-func _tex(file: String) -> ImageTexture:
-	var img := Image.load_from_file(ART_DIR + file)
-	if img == null:
-		push_error("H2D: cannot load " + ART_DIR + file)
+## Imported resource, loaded the normal way (ResourceLoader). The import settings live in the .import file next to
+## each PNG (lossless, no VRAM compression, no mipmaps), so pixel art is never altered by the importer.
+func _tex(file: String) -> Texture2D:
+	var path := ART_DIR + file
+	if not ResourceLoader.exists(path):
+		push_error("H2D: %s is not imported. Open the project in the Godot editor once (it imports it), then run." % path)
 		return null
-	img.convert(Image.FORMAT_RGBA8)
-	return ImageTexture.create_from_image(img)
+	return load(path) as Texture2D
 
 
 func _mat(shader_file: String) -> ShaderMaterial:
@@ -243,10 +256,10 @@ func _build_island() -> void:
 	_island_meta = DataLoader.load_dict(ART_DIR + "island_anvil.json")
 	var files: Dictionary = _island_meta["files"]
 	var size: float = float(_island_meta["size_m"])
-	var data_img := Image.load_from_file(ART_DIR + str(files["data"]))
-	data_img.convert(Image.FORMAT_RGBA8)
-	_island_img = data_img
-	var data_tex := ImageTexture.create_from_image(data_img)
+	var data_tex := _tex(str(files["data"]))
+	if data_tex != null:
+		_island_img = data_tex.get_image()
+		_island_img.convert(Image.FORMAT_RGBA8)
 	_ocean_mat.set_shader_parameter("island_data", data_tex)
 	_ocean_mat.set_shader_parameter("island_origin", _island_origin())
 	_ocean_mat.set_shader_parameter("island_size", size)
@@ -352,6 +365,7 @@ func _update_ocean(v: Dictionary, ship: Dictionary, lm: Dictionary) -> void:
 	_ocean_mat.set_shader_parameter("ship_pos", Vector2(float(ship["x"]), float(ship["z"])))
 	_ocean_mat.set_shader_parameter("ship_dir", Vector2(sin(h), -cos(h)))
 	_ocean_mat.set_shader_parameter("ship_speed", float(ship["scene_speed"]))
+	_ocean_mat.set_shader_parameter("ship_curve", float(ship.get("curve", 0.0)))
 	var cell := OCEAN_SIZE_M / float(PROFILES[quality]["ocean_div"])
 	_ocean.position = Vector3(roundf(float(ship["x"]) / cell) * cell, 0.0, roundf(float(ship["z"]) / cell) * cell)
 

@@ -44,7 +44,6 @@ func _ready() -> void:
 		s.centered = false
 		var sz: Array = e["size"]
 		var w := float(sz[0]) * SCALE
-		var h := float(sz[1]) * SCALE
 		if cx + w > 1260.0:
 			cx = 24.0
 			cy += 130.0
