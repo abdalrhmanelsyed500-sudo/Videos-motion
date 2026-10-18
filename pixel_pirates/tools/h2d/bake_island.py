@@ -238,7 +238,7 @@ def _outline(canvas, name):
 def sprite_palm(variant: int) -> np.ndarray:
     c = np.zeros((CELL_H, CELL_W, 4), dtype=np.uint8)
     rs = np.random.RandomState(100 + variant)
-    lean = [-2.0, 2.6][variant]
+    lean = [-2.0, 1.4][variant]
     pts = []
     for i in range(0, 25):
         t = i / 24.0
@@ -257,7 +257,7 @@ def sprite_palm(variant: int) -> np.ndarray:
     n_f = 11
     for f in range(n_f):
         ang = (f / n_f) * 2 * math.pi + 0.3 * variant
-        length = 14 + 3 * math.sin(f * 2.1)
+        length = 13 + 2.5 * math.sin(f * 2.1)
         for s in range(0, 41):
             t = s / 40.0
             fx = top[0] + math.cos(ang) * length * t

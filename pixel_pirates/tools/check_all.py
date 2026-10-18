@@ -65,6 +65,8 @@ def main() -> int:
         ("ocean tests (world invariants, wildlife seed, slice route, golden fixtures)", [PY, "tools/data_tools/test_ocean.py"], ROOT),
         ("GDScript logic parity (ocean.gd, wildlife.gd and sea_state.gd translated and replayed; NOT a Godot run)", [PY, "tools/data_tools/gd_logic_check.py"], ROOT),
     ]
+    steps.append(("H2D-0 art checks (borders, palette, heading silhouettes)", [PY, "tools/h2d/check_h2d_art.py"], ROOT))
+    steps.append(("H2D-0 shader checks (transpile to GLSL + glslang; lenient, NOT Godot)", [PY, "tools/h2d/check_shaders.py"], ROOT))
     if not a.quick:
         steps.append(("island kit tests", [PY, "tools/island_kit/test_island_kit.py"], ROOT))
     gdlint, gdparse = tool("gdlint"), tool("gdparse")
