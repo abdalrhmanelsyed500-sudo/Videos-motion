@@ -1,4 +1,4 @@
-"""Checks the H2D-0 baked art (ship sheets, island maps, tree atlas). Fails on hard errors, only WARNS on readability.
+"""Checks the baked art (ship sheets, Anvil Cay maps, vegetation and structure atlases). Fails on hard errors, only WARNS on readability.
 
   python tools/h2d/check_h2d_art.py            # run the checks
   python tools/h2d/check_h2d_art.py --sheet    # also write art_bible/h2d0/ship_adjacent_xor.png
@@ -121,10 +121,30 @@ def check_ship(sheet: bool) -> None:
         print("wrote", dst)
 
 
+def check_atlas(name: str, cw: int, ch: int, cap: int, owner: dict[str, str], label: str) -> None:
+    atlas = load(name)
+    tc = colours(atlas)
+    out_t = sorted(c for c in tc if c not in owner)
+    if out_t:
+        fail(f"{label} colours not in palette.json: {out_t[:6]}")
+    if len(tc) > cap:
+        fail(f"{label} colours {len(tc)} > {cap}")
+    if atlas.shape[1] % cw or atlas.shape[0] % ch:
+        fail(f"{label} size is not a multiple of {cw} x {ch}")
+    else:
+        for r in range(atlas.shape[0] // ch):
+            for c in range(atlas.shape[1] // cw):
+                cell = atlas[r * ch:(r + 1) * ch, c * cw:(c + 1) * cw, 3] >= 128
+                if cell.any() and (cell[0].any() or cell[-1].any() or cell[:, 0].any() or cell[:, -1].any()):
+                    fail(f"{label} cell ({c},{r}) touches its border")
+    print(f"{label}: {len(tc)} colours, atlas {atlas.shape[1]}x{atlas.shape[0]}")
+
+
 def check_island() -> None:
+    """H2D-1 Anvil Cay (the older H2D-0 island files stay in the repo, unused, and are no longer checked)."""
     owner, limits = palette()
-    meta = json.loads((ART / "island_anvil.json").read_text())
-    albedo = load("island_anvil_albedo.png")
+    meta = json.loads((ART / "anvil_cay.json").read_text())
+    albedo = load("anvil_cay_albedo.png")
     cols = colours(albedo)
     outside = sorted(c for c in cols if c not in owner)
     if outside:
@@ -132,29 +152,14 @@ def check_island() -> None:
     cap = limits["max_colours_per_sheet"]["tiles"] + limits["max_colours_per_sheet"]["props"]
     if len(cols) > cap:
         fail(f"island albedo colours {len(cols)} > {cap}")
-    data = load("island_anvil_data.png")
-    if data.shape[:2] != albedo.shape[:2]:
+    if load("anvil_cay_data.png").shape[:2] != albedo.shape[:2]:
         fail("island data map size differs from albedo")
-    if load("island_anvil_normal.png").shape[:2] != albedo.shape[:2]:
+    if load("anvil_cay_normal.png").shape[:2] != albedo.shape[:2]:
         fail("island normal map size differs from albedo")
     print(f"island: {albedo.shape[1]}x{albedo.shape[0]} px, {len(cols)} albedo colours, size {meta.get('size_m')} m")
-    atlas = load("trees_atlas.png")
-    tc = colours(atlas)
-    out_t = sorted(c for c in tc if c not in owner)
-    if out_t:
-        fail(f"tree atlas colours not in palette.json: {out_t[:6]}")
-    if len(tc) > limits["max_colours_per_sheet"]["props"]:
-        fail(f"tree atlas colours {len(tc)} > {limits['max_colours_per_sheet']['props']}")
-    cw, ch = 48, 56
-    if atlas.shape[1] % cw or atlas.shape[0] % ch:
-        fail("tree atlas size is not a multiple of 48 x 56")
-    else:
-        for r in range(atlas.shape[0] // ch):
-            for c in range(atlas.shape[1] // cw):
-                cell = atlas[r * ch:(r + 1) * ch, c * cw:(c + 1) * cw, 3] >= 128
-                if cell.any() and (cell[0].any() or cell[-1].any() or cell[:, 0].any() or cell[:, -1].any()):
-                    fail(f"tree cell ({c},{r}) touches its border")
-    print(f"trees: {len(tc)} colours, atlas {atlas.shape[1]}x{atlas.shape[0]}")
+    props = limits["max_colours_per_sheet"]["props"]
+    check_atlas("anvil_veg_atlas.png", 48, 56, props, owner, "vegetation atlas")
+    check_atlas("anvil_struct_atlas.png", 80, 72, props, owner, "structure atlas")
 
 
 def main() -> int:

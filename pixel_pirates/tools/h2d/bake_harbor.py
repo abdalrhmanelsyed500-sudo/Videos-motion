@@ -423,7 +423,7 @@ def sprite_palm_c() -> np.ndarray:
     pts = []
     for i in range(0, 31):
         t = i / 30.0
-        pts.append((PIVOT[0] + (-3.4) * (t ** 1.5) * 3.2 + 1.6 * math.sin(t * 3.0) * t, PIVOT[1] - 36.0 * t))
+        pts.append((PIVOT[0] + (-1.2) * (t ** 1.5) * 3.2 + 1.6 * math.sin(t * 3.0) * t, PIVOT[1] - 36.0 * t))
     for i, (x, y) in enumerate(pts):
         wdt = 3 if i < 16 else 2
         d.rectangle([x - wdt / 2 - 0.5, y, x + wdt / 2 - 0.5, y + 1], fill=col("wood", 2))
@@ -434,7 +434,7 @@ def sprite_palm_c() -> np.ndarray:
     top = pts[-1]
     for f in range(9):
         ang = (f / 9.0) * 2 * math.pi + 0.5
-        length = 15 + 2.0 * math.sin(f * 1.7)
+        length = 14 + 2.0 * math.sin(f * 1.7)
         for s in range(0, 41):
             t = s / 40.0
             fx = top[0] + math.cos(ang) * length * t
@@ -462,7 +462,7 @@ def sprite_fern() -> np.ndarray:
     d = ImageDraw.Draw(img)
     bx, by = 24, 50
     for b in range(11):
-        ang = math.radians(-100 + b * 20)   # fan of blades
+        ang = math.radians(-80 + b * 16)   # fan of blades
         length = 15 + 4 * math.sin(b * 1.9)
         for s in range(0, 31):
             t = s / 30.0
@@ -480,12 +480,14 @@ def sprite_grass() -> np.ndarray:
     img = new_img(CELL_W, CELL_H)
     d = ImageDraw.Draw(img)
     for b in range(8):
-        x0 = 19 + b * 1.4
-        h = 9 + (b * 5) % 6
+        x0 = 15 + b * 2.4
+        h = 11 + (b * 5) % 7
         lean = (b - 3.5) * 0.9
         for s in range(h):
             t = s / h
-            d.point((x0 + lean * t, 50 - s), fill=col("grass", 4 if t > 0.55 else (3 if b % 2 else 2)))
+            c0 = col("grass", 4 if t > 0.55 else (3 if b % 2 else 2))
+            d.point((x0 + lean * t, 50 - s), fill=c0)
+            d.point((x0 + lean * t + 1, 50 - s), fill=col("grass", 2 if t < 0.55 else 3))
     return _out_grass(img)
 
 
