@@ -18,6 +18,7 @@ var _tex: ImageTexture = null
 var _zoom := 3
 var _overlays := true
 var _label := Label.new()
+var _info := Label.new()
 
 
 func _ready() -> void:
@@ -54,7 +55,7 @@ func _load(i: int) -> void:
 				c = c.lightened(0.02 * _map.elev_at(x, y))
 			img.set_pixel(x, y, c)
 	_tex = ImageTexture.create_from_image(img)
-	_label.text = "%s  %s  explore %.1f min  land %.0f%%   [SPACE next, TAB overlays, +/- zoom]" % [
+	_label.text = "%s  %s  explore %.1f min  land %.0f%%   [SPACE next, TAB overlays, +/- zoom, click = inspect]" % [
 		_map.island_id, _map.template_id, _map.explore_minutes(), float(_map.stats.get("land_fraction", 0.0)) * 100.0]
 	queue_redraw()
 

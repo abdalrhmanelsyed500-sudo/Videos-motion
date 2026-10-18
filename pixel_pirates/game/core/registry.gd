@@ -9,6 +9,7 @@ extends Node
 ## data.
 const DataLoader := preload("res://core/data_loader.gd")
 const Schema := preload("res://core/schema.gd")
+const WorldRules := preload("res://core/world_rules.gd")
 const DATA_ROOT := "res://data"
 const MANIFEST_PATH := "res://art/manifest/sprites.json"
 
@@ -43,6 +44,8 @@ func load_all(root: String = DATA_ROOT) -> PackedStringArray:
 	for f in files:
 		_load_file(f)
 	_check_refs()
+	for f in WorldRules.findings(tables.get("island", {})):
+		errors.append("WORLD: " + str(f[3]))
 	return errors
 
 
@@ -60,6 +63,12 @@ func all(kind: String) -> Array:
 
 func count(kind: String) -> int:
 	return (tables.get(kind, {}) as Dictionary).size()
+
+
+func multiplier_names() -> PackedStringArray:
+	var out := PackedStringArray(_multipliers.keys())
+	out.sort()
+	return out
 
 
 ## Reference lookup used by schema `ref` / `key_ref`.

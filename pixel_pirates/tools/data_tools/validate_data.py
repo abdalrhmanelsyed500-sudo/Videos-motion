@@ -1,4 +1,4 @@
-"""Validate ALL game data (Module A5). Python twin of game/core/registry.gd (+ world rules, which only exist here until A7).
+"""Validate ALL game data (Module A5). Python twin of game/core/registry.gd (+ world rules; GDScript twin game/core/world_rules.gd since A7).
 
     python tools/data_tools/validate_data.py            # validates game/data
     python tools/data_tools/validate_data.py --ledger   # also writes docs/PROVISIONAL_LEDGER.md
@@ -86,9 +86,10 @@ def check_refs(tables: dict, schemas: dict, lookup, problems: list[str]) -> None
             problems.append(f"{rec['_file']} tuning '{key}': value {rec['value']} outside [{rec['min']}, {rec['max']}]")
 
 
-def world_rules(islands: dict[str, dict]) -> tuple[list[str], dict]:
-    """WORLD RULES (Canon): returns (problems, stats). Cross-record, so a schema cannot express them."""
-    pr: list[str] = []
+def world_findings(islands: dict[str, dict]) -> list[tuple[str, str, str, str]]:
+    """WORLD RULES (Canon), cross-record so a schema cannot express them. Returns (code, island_a, island_b, message).
+    Codes: dist_short, not_mutual, asym, visible_no_landmark, visible_self. GDScript twin: game/core/world_rules.gd."""
+    out: list[tuple[str, str, str, str]] = []
     for iid, isl in islands.items():
         px, py = isl["position"]["x_km"], isl["position"]["y_km"]
         for n in isl.get("neighbors", []):
@@ -97,17 +98,26 @@ def world_rules(islands: dict[str, dict]) -> tuple[list[str], dict]:
                 continue  # unknown ref is reported by check_refs
             d_straight = math.hypot(px - other["position"]["x_km"], py - other["position"]["y_km"])
             if n["distance_km"] + 0.01 < d_straight:
-                pr.append(f"WORLD: {iid}->{n['id']} sail distance {n['distance_km']} km is shorter than the straight line {d_straight:.2f} km")
+                out.append(("dist_short", iid, n["id"], f"{iid}->{n['id']} sail distance {n['distance_km']} km is shorter than the straight line {d_straight:.2f} km"))
             back = next((m for m in other.get("neighbors", []) if m["id"] == iid), None)
             if back is None:
-                pr.append(f"WORLD: {iid} lists {n['id']} as neighbour but {n['id']} does not list {iid}")
+                out.append(("not_mutual", iid, n["id"], f"{iid} lists {n['id']} as neighbour but {n['id']} does not list {iid}"))
             elif abs(back["distance_km"] - n["distance_km"]) > 0.01 or abs(back["sail_hours_sloop"] - n["sail_hours_sloop"]) > 0.01:
-                pr.append(f"WORLD: {iid}<->{n['id']} distance/time differs between the two directions")
+                out.append(("asym", iid, n["id"], f"{iid}<->{n['id']} distance/time differs between the two directions"))
         if isl.get("visible_from") and not isl["landmark"]:
-            pr.append(f"WORLD: {iid} is visible from {isl['visible_from']} but is not flagged landmark (no island may be seen from another unless a deliberate landmark)")
+            out.append(("visible_no_landmark", iid, "", f"{iid} is visible from {isl['visible_from']} but is not flagged landmark (no island may be seen from another unless a deliberate landmark)"))
         for v in isl.get("visible_from", []):
             if v == iid:
-                pr.append(f"WORLD: {iid} lists itself in visible_from")
+                out.append(("visible_self", iid, "", f"{iid} lists itself in visible_from"))
+    return out
+
+
+def world_codes(islands: dict[str, dict]) -> list[str]:
+    return sorted(f"{c}|{a}|{b}" for c, a, b, _ in world_findings(islands))
+
+
+def world_rules(islands: dict[str, dict]) -> tuple[list[str], dict]:
+    pr = [f"WORLD: {m}" for _, _, _, m in world_findings(islands)]
     tiers = {1: 0, 2: 0, 3: 0}
     for isl in islands.values():
         tiers[isl["tier"]] += 1

@@ -17,6 +17,7 @@ Bus="*res://core/bus.gd"
 Quality="*res://core/quality.gd"
 Assets="*res://core/assets.gd"
 Data="*res://core/registry.gd"
+DebugConsole="*res://ui/debug_console.gd"
 
 [display]
 

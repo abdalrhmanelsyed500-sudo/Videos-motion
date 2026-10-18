@@ -150,5 +150,44 @@ b["hook_kind"] = a["hook_kind"]
 pr, _, _ = S.check_catalog([(a, saved["isl_901"]), (b, saved["isl_903"])], ctx)
 expect("neighbours with the same hook kind are flagged", any("neighbours" in p for p in pr))
 
+# --- workbench (A7) ---
+import new_island as NI  # noqa: E402
+
+wb = {"id": "isl_950", "name": "Testrock", "tier": 3, "template": "tpl_blob_isle", "kits": ["kit_tropical"], "offers": ["fresh_water"],
+      "hook_kind": "ruin", "hook": None, "region": "reg_test", "x_km": 1.0, "y_km": 2.0, "seed": None}
+rec1, map1, info1 = NI.create(wb, ctx, [], {})
+rec1b, map1b, _ = NI.create(wb, ctx, [], {})
+sys.path.insert(0, str(B.ROOT / "tools" / "data_tools"))
+import minischema as MS  # noqa: E402
+
+isl_schema = json.loads((B.GAME_DATA / "schemas" / "island.schema.json").read_text())["record"]
+expect("workbench record passes the island schema", MS.validate(rec1, isl_schema, lambda kind, i: True) == [])
+expect("workbench is deterministic", rec1 == rec1b and map1["content_sha256"] == map1b["content_sha256"])
+expect("workbench record bakes clean", IC.check_map(map1, rec1, ctx) == [] and not IC.is_stale(map1, rec1, ctx))
+expect("workbench record is provisional + planned", rec1["provisional"] and rec1["status"] == "planned" and rec1["owner"] == "E3")
+wb2 = dict(wb, id="isl_951", name="Testrock Two", hook_kind="hermit")
+rec2, map2, info2 = NI.create(wb2, ctx, [rec1], {"isl_950": map1})
+expect("second island with the same template gets a different silhouette",
+       S.iou(S.silhouette(map1), S.silhouette(map2)) < ctx["tuning"]["island.sameness_max_iou"], f"{info2['closest']}")
+
+
+def rejects(spec, existing=(), what=""):
+    try:
+        NI.create(spec, ctx, list(existing), {})
+    except NI.SpecError as e:
+        return what in str(e)
+    return False
+
+
+expect("workbench rejects a duplicate id", rejects(dict(wb), [rec1], "already exists"))
+expect("workbench rejects a bad id", rejects(dict(wb, id="island7"), (), "isl_012"))
+bad_tier = next((t for t, v in ctx["templates"].items() if 1 not in v["tiers"]), None)
+expect("workbench rejects a template not allowed for the tier", bad_tier is not None and rejects(dict(wb, tier=1, template=bad_tier), (), "not allowed"))
+expect("workbench rejects an unknown kit", rejects(dict(wb, kits=["kit_nope"]), (), "unknown kit"))
+expect("workbench rejects an unknown offer", rejects(dict(wb, offers=["gold"]), (), "offers"))
+expect("workbench rejects an unknown hook kind", rejects(dict(wb, hook_kind="dragon"), (), "hook kind"))
+full = [dict(rec1, id=f"isl_96{k}") for k in range(int(ctx["tuning"]["island.max_per_hook_kind"]))]
+expect("workbench enforces the hook-kind quota", rejects(dict(wb, id="isl_970"), full, "quota"))
+
 print("island kit tests:", "PASS" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

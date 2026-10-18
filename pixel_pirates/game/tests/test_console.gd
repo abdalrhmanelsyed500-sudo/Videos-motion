@@ -1,0 +1,150 @@
+extends RefCounted
+## Debug console commands (A7), run headless against the real data and the fixture islands.
+const Console := preload("res://core/console_commands.gd")
+const IslandMap := preload("res://core/island_map.gd")
+const SaveIO := preload("res://core/save_io.gd")
+const SAVE_BASE := "user://saves/a7_console_test.json"
+
+
+func _cleanup() -> void:
+	for suffix in ["", ".bak", ".tmp"]:
+		if FileAccess.file_exists(SAVE_BASE + suffix):
+			DirAccess.remove_absolute(SAVE_BASE + suffix)
+
+
+func _ok(t: Object, c: RefCounted, line: String, must_contain: String = "") -> Dictionary:
+	var r: Dictionary = c.execute(line)
+	var msg := "'%s' ok and contains '%s' (got: %s)" % [line, must_contain, r["text"]]
+	t.check(r["ok"] and must_contain in str(r["text"]), msg)
+	return r
+
+
+func _bad(t: Object, c: RefCounted, line: String, must_contain: String = "") -> void:
+	var r: Dictionary = c.execute(line)
+	var msg := "'%s' fails with '%s' (got: %s)" % [line, must_contain, r["text"]]
+	t.check(not r["ok"] and must_contain in str(r["text"]), msg)
+
+
+func run(t: Object) -> void:
+	_cleanup()
+	var reg: Node = load("res://core/registry.gd").new()
+	reg.load_all()
+	var c: RefCounted = Console.new(reg)
+	_tokenizer(t)
+	_dispatch(t, c)
+	_data_and_tuning(t, c)
+	_inventory_time_seed(t, c, reg)
+	_teleport(t, c)
+	_save_load(t, c)
+	_islands(t, c)
+	t.check(SaveIO.validate_state(c.state.to_dict(), reg).is_empty(), "state is still valid after all commands")
+	_cleanup()
+	reg.free()
+
+
+func _tokenizer(t: Object) -> void:
+	t.check(Console.tokenize("give item_rope 3") == PackedStringArray(["give", "item_rope", "3"]), "tokenize plain words")
+	var quoted := Console.tokenize("echo \"hello big world\" x")
+	t.check(quoted == PackedStringArray(["echo", "hello big world", "x"]), "double quotes")
+	t.check(Console.tokenize("echo 'a b'  c") == PackedStringArray(["echo", "a b", "c"]), "single quotes, extra spaces")
+	t.check(Console.tokenize("a \"\" b") == PackedStringArray(["a", "", "b"]), "empty quoted token is kept")
+	t.check(Console.tokenize("   ").is_empty(), "blank line has no tokens")
+
+
+func _dispatch(t: Object, c: RefCounted) -> void:
+	_bad(t, c, "frobnicate", "unknown command")
+	_ok(t, c, "")
+	_ok(t, c, "help", "tuning")
+	_ok(t, c, "help tp", "tp island")
+	_bad(t, c, "help nothing", "no such command")
+	_ok(t, c, "ECHO Hello", "Hello")
+	var cl: Dictionary = c.execute("clear")
+	t.check(cl.get("clear", false), "clear sets the clear flag")
+	var comp: PackedStringArray = c.complete("t")
+	t.check(comp.has("tp") and comp.has("time") and comp.has("tuning"), "Tab completion for 't'")
+	t.check(c.complete("zzz").is_empty(), "no completion for unknown prefix")
+
+
+func _data_and_tuning(t: Object, c: RefCounted) -> void:
+	_ok(t, c, "data counts", "item: 16")
+	_ok(t, c, "data list difficulty_mode", "mode_hardcore")
+	_ok(t, c, "data show item item_hardtack", "weight_kg")
+	_bad(t, c, "data show item item_nope")
+	_bad(t, c, "data list nokind", "kinds:")
+	_ok(t, c, "check", "0 problems")
+	_ok(t, c, "tuning food.need_kcal_per_man_day", "3200")
+	_ok(t, c, "tuning food.need_kcal_per_man_day", "PROVISIONAL")
+	_ok(t, c, "mode mode_hardcore")
+	_ok(t, c, "tuning food.need_kcal_per_man_day", "4000")
+	_ok(t, c, "mode override hunger_rate 1")
+	_ok(t, c, "tuning food.need_kcal_per_man_day", "3200")
+	_bad(t, c, "mode override hunger_rate 9", "between 0 and 3")
+	_bad(t, c, "mode override bogus_rate 1")
+	_ok(t, c, "mode clear")
+	_ok(t, c, "tuning food.need_kcal_per_man_day", "4000")
+	_bad(t, c, "mode mode_nope", "unknown mode")
+	_bad(t, c, "tuning no.such.key", "unknown tuning key")
+	_ok(t, c, "tuning list water.", "water.need_l_per_man_day_min")
+	_ok(t, c, "mode mode_normal")
+
+
+func _inventory_time_seed(t: Object, c: RefCounted, reg: Node) -> void:
+	_ok(t, c, "give item_rope 3", "item_rope: 3")
+	t.check(c.state.inventory["item_rope"] == 3, "inventory holds 3 rope")
+	_ok(t, c, "give item_rope -5", "item_rope: 0")
+	t.check(not c.state.inventory.has("item_rope"), "removing more than owned removes the entry, never negative")
+	_bad(t, c, "give item_nothing 2", "unknown item")
+	_bad(t, c, "give item_rope abc", "whole number")
+	_ok(t, c, "give item_hardtack 10")
+	var kg := float(reg.record("item", "item_hardtack")["weight_kg"]) * 10.0
+	_ok(t, c, "inv", "total cargo weight: %.1f kg" % kg)
+	_ok(t, c, "time set 3 14.5", "Day 3, 14:30")
+	_ok(t, c, "time add 10", "Day 4, 00:30")
+	_ok(t, c, "time add -100000", "Day 1, 00:00")
+	_bad(t, c, "time add abc", "usage")
+	_ok(t, c, "seed world 18446744073709551615", "18446744073709551615")
+	_bad(t, c, "seed world abc", "usage")
+	_ok(t, c, "seed weather 99")
+	t.check(c.state.world_seed == "18446744073709551615" and c.state.weather_seed == "99", "seeds stored as strings")
+
+
+func _teleport(t: Object, c: RefCounted) -> void:
+	var m: RefCounted = IslandMap.from_file("res://tests/fixtures/islands/maps/isl_901.map.json")
+	var l: Dictionary = m.landings[0]
+	var want: Vector2 = m.cell_to_local(int(l["x"]), int(l["y"]))
+	_ok(t, c, "tp island isl_901", "teleported")
+	t.check(c.state.at_island == "isl_901", "at_island set")
+	var at_landing: bool = is_equal_approx(c.state.x_m, want.x) and is_equal_approx(c.state.y_m, want.y)
+	t.check(at_landing, "position equals the landing cell in metres")
+	var hook: String = str(m.pois_of_kind("hook")[0]["slot"])
+	_ok(t, c, "tp isl_901 " + hook, hook)
+	_bad(t, c, "tp isl_901 nothing_here", "try landing")
+	_bad(t, c, "tp island isl_999", "no usable baked map")
+	_bad(t, c, "tp island", "usage")
+	_ok(t, c, "tp xy 100 -200.5", "open sea")
+	var at_xy: bool = is_equal_approx(c.state.x_m, 100.0) and is_equal_approx(c.state.y_m, -200.5)
+	t.check(c.state.at_island == "" and at_xy, "tp xy sets open-sea position")
+	_bad(t, c, "tp xy 1", "usage")
+
+
+func _save_load(t: Object, c: RefCounted) -> void:
+	_ok(t, c, "give item_rope 7")
+	_ok(t, c, "time set 5 6")
+	_ok(t, c, "save a7_console_test", "saved")
+	_ok(t, c, "give item_rope 100")
+	_ok(t, c, "time set 9 9")
+	_ok(t, c, "load a7_console_test", "Day 5, 06:00")
+	t.check(c.state.inventory["item_rope"] == 7, "load restored the inventory")
+	_bad(t, c, "save ../evil", "letters, digits")
+	_bad(t, c, "load no_such_save")
+	c.state.inventory["item_not_real"] = 1
+	_bad(t, c, "save a7_console_test", "not saved")
+	c.state.inventory.erase("item_not_real")
+
+
+func _islands(t: Object, c: RefCounted) -> void:
+	_ok(t, c, "island list", "isl_901")
+	_ok(t, c, "island info isl_901", "explore time")
+	_bad(t, c, "island info isl_nope", "unknown island")
+	_bad(t, c, "quality", "not available")
+	_bad(t, c, "log", "not available")

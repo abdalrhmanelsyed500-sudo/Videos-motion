@@ -195,6 +195,39 @@ def check_island_kit() -> None:
     print(f"island kit: {len(ctx['templates'])} templates, {len(ctx['kits'])} kits, {len(sets[1][1])} fixture islands checked")
 
 
+def check_registry_doc() -> None:
+    sys.path.insert(0, str(ROOT / "tools" / "data_tools"))
+    import registry_doc  # noqa: PLC0415
+
+    if not registry_doc.DOC.exists() or registry_doc.DOC.read_text() != registry_doc.build():
+        problems.append("docs/ISLAND_REGISTRY.md is out of date: run python tools/data_tools/registry_doc.py")
+
+
+def check_godot_static() -> None:
+    """Godot cannot run in CI here, so catch what gdparse cannot: duplicate member names (var vs func) and dead res:// paths."""
+    member = re.compile(r"^(?:static\s+)?(var|const|signal|func|enum)\s+([A-Za-z_][A-Za-z0-9_]*)")
+    for f in sorted(GAME.rglob("*.gd")):
+        seen: dict[str, str] = {}
+        for ln, line in enumerate(f.read_text().splitlines(), 1):
+            m = member.match(line)
+            if not m:
+                continue
+            kind, name = m.groups()
+            if name in seen and not (kind == "enum" and name == ""):
+                problems.append(f"gdscript: {f.relative_to(ROOT)}:{ln} member '{name}' already defined as {seen[name]} (name collision)")
+            seen[name] = kind
+    for f in sorted(list(GAME.rglob("*.gd")) + list(GAME.rglob("*.tscn")) + [GAME / "project.godot"]):
+        for ln, line in enumerate(f.read_text().splitlines(), 1):
+            if line.lstrip().startswith(("#", "##")):
+                continue
+            for m in re.finditer(r"res://([^\"'\s)]+)", line):
+                rel = m.group(1)
+                if rel.endswith("/") or "*" in rel or "%" in rel:
+                    continue
+                if not (GAME / rel).exists():
+                    problems.append(f"godot path: {f.relative_to(ROOT)}:{ln} res://{rel} does not exist")
+
+
 def check_gdscript() -> None:
     exe = shutil.which("gdparse") or str(Path(sys.executable).parent / "gdparse")
     if not Path(exe).exists() and not shutil.which("gdparse"):
@@ -213,6 +246,8 @@ def main() -> int:
     check_manifest()
     check_data_model()
     check_island_kit()
+    check_registry_doc()
+    check_godot_static()
     check_gdscript()
     for w in warnings:
         print("WARN ", w)

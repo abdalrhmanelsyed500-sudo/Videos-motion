@@ -27,7 +27,17 @@ def run_all(verbose: bool = True) -> int:
             print("MISMATCH", c["name"], "expected", c["error_paths"], "got", got)
     if verbose:
         print(f"validator cases: {len(fx['cases'])}, mismatches: {bad}")
-    return 1 if bad else 0
+    import validate_data as V  # noqa: PLC0415
+    wf = json.loads((FIXTURE.parent / "world_cases.json").read_text())
+    wbad = 0
+    for c in wf["cases"]:
+        got = V.world_codes({i["id"]: i for i in c["islands"]})
+        if got != c["codes"]:
+            wbad += 1
+            print("WORLD MISMATCH", c["name"], "expected", c["codes"], "got", got)
+    if verbose:
+        print(f"world-rule cases: {len(wf['cases'])}, mismatches: {wbad}")
+    return 1 if (bad or wbad) else 0
 
 
 if __name__ == "__main__":

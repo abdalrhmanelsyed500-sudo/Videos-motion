@@ -1,0 +1,480 @@
+{
+ "_doc": "Shared by tools/data_tools/test_parity.py and game/tests/test_world_rules.gd. codes = sorted 'code|island_a|island_b'.",
+ "cases": [
+  {
+   "name": "empty world",
+   "islands": [],
+   "codes": []
+  },
+  {
+   "name": "single island",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": []
+    }
+   ],
+   "codes": []
+  },
+  {
+   "name": "mutual pair, sail longer than straight line",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_002",
+       "distance_km": 12,
+       "sail_hours_sloop": 3
+      }
+     ]
+    },
+    {
+     "id": "isl_002",
+     "tier": 2,
+     "position": {
+      "x_km": 9,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_001",
+       "distance_km": 12,
+       "sail_hours_sloop": 3
+      }
+     ]
+    }
+   ],
+   "codes": []
+  },
+  {
+   "name": "sail distance equals straight line",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_002",
+       "distance_km": 9,
+       "sail_hours_sloop": 2
+      }
+     ]
+    },
+    {
+     "id": "isl_002",
+     "tier": 2,
+     "position": {
+      "x_km": 9,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_001",
+       "distance_km": 9,
+       "sail_hours_sloop": 2
+      }
+     ]
+    }
+   ],
+   "codes": []
+  },
+  {
+   "name": "sail distance shorter than straight line (both directions)",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_002",
+       "distance_km": 5,
+       "sail_hours_sloop": 1
+      }
+     ]
+    },
+    {
+     "id": "isl_002",
+     "tier": 2,
+     "position": {
+      "x_km": 9,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_001",
+       "distance_km": 5,
+       "sail_hours_sloop": 1
+      }
+     ]
+    }
+   ],
+   "codes": [
+    "dist_short|isl_001|isl_002",
+    "dist_short|isl_002|isl_001"
+   ]
+  },
+  {
+   "name": "tolerance: 0.005 km shorter is accepted",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_002",
+       "distance_km": 8.995,
+       "sail_hours_sloop": 2
+      }
+     ]
+    },
+    {
+     "id": "isl_002",
+     "tier": 2,
+     "position": {
+      "x_km": 9,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_001",
+       "distance_km": 8.995,
+       "sail_hours_sloop": 2
+      }
+     ]
+    }
+   ],
+   "codes": []
+  },
+  {
+   "name": "one-sided neighbour",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_002",
+       "distance_km": 12,
+       "sail_hours_sloop": 3
+      }
+     ]
+    },
+    {
+     "id": "isl_002",
+     "tier": 2,
+     "position": {
+      "x_km": 9,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": []
+    }
+   ],
+   "codes": [
+    "not_mutual|isl_001|isl_002"
+   ]
+  },
+  {
+   "name": "different hours per direction",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_002",
+       "distance_km": 12,
+       "sail_hours_sloop": 3
+      }
+     ]
+    },
+    {
+     "id": "isl_002",
+     "tier": 2,
+     "position": {
+      "x_km": 9,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_001",
+       "distance_km": 12,
+       "sail_hours_sloop": 4
+      }
+     ]
+    }
+   ],
+   "codes": [
+    "asym|isl_001|isl_002",
+    "asym|isl_002|isl_001"
+   ]
+  },
+  {
+   "name": "different distance per direction",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_002",
+       "distance_km": 12,
+       "sail_hours_sloop": 3
+      }
+     ]
+    },
+    {
+     "id": "isl_002",
+     "tier": 2,
+     "position": {
+      "x_km": 9,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_001",
+       "distance_km": 13,
+       "sail_hours_sloop": 3
+      }
+     ]
+    }
+   ],
+   "codes": [
+    "asym|isl_001|isl_002",
+    "asym|isl_002|isl_001"
+   ]
+  },
+  {
+   "name": "unknown neighbour is ignored here",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_099",
+       "distance_km": 12,
+       "sail_hours_sloop": 3
+      }
+     ]
+    }
+   ],
+   "codes": []
+  },
+  {
+   "name": "visible without landmark",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [
+      "isl_002"
+     ],
+     "neighbors": []
+    },
+    {
+     "id": "isl_002",
+     "tier": 2,
+     "position": {
+      "x_km": 9,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": []
+    }
+   ],
+   "codes": [
+    "visible_no_landmark|isl_001|"
+   ]
+  },
+  {
+   "name": "visible with landmark flag is allowed",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": true,
+     "visible_from": [
+      "isl_002"
+     ],
+     "neighbors": []
+    },
+    {
+     "id": "isl_002",
+     "tier": 2,
+     "position": {
+      "x_km": 9,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": []
+    }
+   ],
+   "codes": []
+  },
+  {
+   "name": "landmark lists itself",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": true,
+     "visible_from": [
+      "isl_001"
+     ],
+     "neighbors": []
+    }
+   ],
+   "codes": [
+    "visible_self|isl_001|"
+   ]
+  },
+  {
+   "name": "three islands, two separate problems",
+   "islands": [
+    {
+     "id": "isl_001",
+     "tier": 2,
+     "position": {
+      "x_km": 0,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_002",
+       "distance_km": 12,
+       "sail_hours_sloop": 3
+      }
+     ]
+    },
+    {
+     "id": "isl_002",
+     "tier": 2,
+     "position": {
+      "x_km": 9,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [],
+     "neighbors": [
+      {
+       "id": "isl_001",
+       "distance_km": 12,
+       "sail_hours_sloop": 3
+      },
+      {
+       "id": "isl_003",
+       "distance_km": 40,
+       "sail_hours_sloop": 8
+      }
+     ]
+    },
+    {
+     "id": "isl_003",
+     "tier": 2,
+     "position": {
+      "x_km": 60,
+      "y_km": 0
+     },
+     "landmark": false,
+     "visible_from": [
+      "isl_001"
+     ],
+     "neighbors": []
+    }
+   ],
+   "codes": [
+    "dist_short|isl_002|isl_003",
+    "not_mutual|isl_002|isl_003",
+    "visible_no_landmark|isl_003|"
+   ]
+  }
+ ]
+}
