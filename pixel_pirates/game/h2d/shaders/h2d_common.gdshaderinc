@@ -12,6 +12,18 @@ global uniform vec2 h2d_wind_to;       // unit vector the wind blows TOWARDS (x 
 global uniform float h2d_cloud;
 global uniform float h2d_storm;
 global uniform float h2d_rain;
+global uniform vec2 h2d_adv;           // metres the wind has carried the air since the start: rain cells, gust patches, ripples drift with it
+global uniform float h2d_wind_ms;      // wind speed now, gust included, in m/s
+global uniform float h2d_gust;         // 0..1 gust strength now
+global uniform float h2d_sea;          // 0..1 sea-state index (calm .. storm), from the shared environment model
+
+// The wave field (h2d/env_model.gd -> wave_model.gd build()): four waves [dir_x, dir_z, k, amplitude] and the crest shape
+// (x = exponent p, y = mean correction). Per-material uniforms, set from the same numbers for every shader that needs them.
+uniform vec4 w0;
+uniform vec4 w1;
+uniform vec4 w2;
+uniform vec4 w3;
+uniform vec2 crest_pb = vec2(1.0, 0.0);
 
 const float FOG_START = 190.0;         // roughly the camera distance to the ship
 
@@ -53,6 +65,56 @@ float h2d_cloud_shadow(vec2 xz) {
 vec3 h2d_fog_mix(vec3 c, float dist) {
 	float f = 1.0 - exp(-h2d_fog_density * max(dist - FOG_START, 0.0));
 	return mix(c, h2d_fog_col, clamp(f, 0.0, 1.0));
+}
+
+// ---- waves: the same function as wave_model.gd height_b(), plus the slope for shading ------------------------------
+void h2d_wave_add(vec4 w, vec2 p, inout float h, inout vec2 d) {
+	float k = w.z;
+	float ph = k * dot(w.xy, p) - sqrt(9.81 * k) * h2d_time;
+	float q = max(0.5 + 0.5 * cos(ph), 0.0001);
+	h += w.w * (2.0 * pow(q, crest_pb.x) - 1.0 - crest_pb.y);
+	float dd = w.w * k * (-crest_pb.x * pow(q, crest_pb.x - 1.0) * sin(ph));
+	d += dd * w.xy;
+}
+
+// x = height, yz = slope (d height / d x, d height / d z)
+vec3 h2d_wave(vec2 p) {
+	float h = 0.0;
+	vec2 d = vec2(0.0);
+	h2d_wave_add(w0, p, h, d);
+	h2d_wave_add(w1, p, h, d);
+	h2d_wave_add(w2, p, h, d);
+	h2d_wave_add(w3, p, h, d);
+	return vec3(h, d);
+}
+
+float h2d_wave_h(vec2 p) {
+	return h2d_wave(p).x;
+}
+
+// ---- rain: ONE drop per (grid cell, k). The falling streak (rain.gdshader) and the splash ring on the water (ocean.gdshader)
+// both read these functions, so every ring on the sea is the landing of a drop you saw fall. -------------------------------
+const float DROP_PERIOD = 1.5;         // seconds between two drops of the same slot
+const float DROP_FALL_FRAC = 0.84;     // fraction of the period spent falling; the rest is the splash
+
+// Rain is patchy when it is light (bands drift downwind with the air) and nearly uniform when it is heavy.
+float h2d_rain_local(vec2 xz) {
+	float n = h2d_noise(xz * 0.011 - h2d_adv * 0.011);
+	return clamp((h2d_rain - 0.55 * (1.0 - n) * (1.0 - 0.9 * h2d_rain)) * 1.25, 0.0, 1.0);
+}
+
+vec2 h2d_drop_impact(vec2 cell, float k, float cell_m) {
+	vec2 c = mod(cell, 1024.0);
+	vec2 j = vec2(h2d_hash(c + k * 7.31), h2d_hash(c.yx * 1.7 + k * 5.17 + 11.0));
+	return (cell + mix(vec2(0.2), vec2(0.8), j)) * cell_m;
+}
+
+float h2d_drop_phase(vec2 cell, float k) {
+	return h2d_hash(mod(cell, 1024.0) * 0.37 + k * 3.7 + 3.0);
+}
+
+float h2d_drop_on(vec2 cell, float k) {
+	return h2d_hash(mod(cell, 1024.0) + k * 9.1 + 29.0);
 }
 
 vec3 h2d_out(vec3 c) {

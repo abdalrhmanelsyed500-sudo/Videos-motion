@@ -1,6 +1,6 @@
-// H2D-0 post-process on the upscaled 3D picture: tilt-shift depth of field, bloom (Standard and up), rain streaks on the
-// 640 x 360 art grid, lightning, haze, colour grade and vignette. Numbers come from data/look/look_profiles.json.
+// H2D-0 post-process on the upscaled 3D picture: tilt-shift depth of field, bloom (Standard and up), lightning, haze, colour grade and vignette. Numbers come from data/look/look_profiles.json.
 // TEXTURE is the SubViewport's image, so no screen texture is needed.
+// H2D-0.2: the rain streaks that used to be drawn here are gone. Rain is real drops in the 3D scene (rain.gdshader).
 shader_type canvas_item;
 
 uniform float focus_y = 0.55;
@@ -18,30 +18,10 @@ uniform float con = 1.06;
 uniform float shadow_lift = 0.03;
 uniform vec3 lift_col = vec3(0.165, 0.086, 0.125);
 uniform vec3 tint = vec3(1.0);
-uniform float rain = 0.0;
-uniform float rain_slant = 0.25;
 uniform float flash = 0.0;
 uniform float haze = 0.0;
 uniform vec3 haze_col = vec3(0.55, 0.64, 0.64);
-uniform float time = 0.0;
 uniform vec2 grid = vec2(640.0, 360.0);
-
-float hash(vec2 p) {
-	p = fract(p * vec2(123.34, 456.21));
-	p += dot(p, p + 45.32);
-	return fract(p.x * p.y);
-}
-
-float streaks(vec2 g, float layer) {
-	float speed = 70.0 + layer * 55.0;
-	float len = 20.0 + layer * 8.0;
-	vec2 q = vec2(g.x + g.y * rain_slant, g.y);
-	float col = floor(q.x);
-	float rnd = hash(vec2(col, layer + 3.0));
-	float t = fract((q.y + time * speed * (0.7 + rnd * 0.6) + rnd * 91.0) / len);
-	float on = step(hash(vec2(col, layer + 17.0)), rain * (0.16 - 0.03 * layer));
-	return on * step(t, 0.30) * (1.0 - t / 0.30);
-}
 
 void fragment() {
 	vec2 uv = UV;
@@ -75,11 +55,6 @@ void fragment() {
 	}
 
 	c = mix(c, haze_col, haze * smoothstep(0.75, 0.0, uv.y));
-	if (rain > 0.01) {
-		vec2 g = floor(uv * grid);
-		float s = max(streaks(g, 0.0), max(streaks(g, 1.0), streaks(g, 2.0)));
-		c = mix(c, vec3(0.78, 0.86, 0.95), s * 0.55);
-	}
 	c += flash * vec3(0.80, 0.85, 1.0) * 0.55;
 
 	float lum = dot(c, vec3(0.299, 0.587, 0.114));
