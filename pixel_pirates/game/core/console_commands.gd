@@ -6,6 +6,7 @@ const SaveIO := preload("res://core/save_io.gd")
 const IslandMap := preload("res://core/island_map.gd")
 const Tuning := preload("res://core/tuning.gd")
 const GameState := preload("res://core/game_state.gd")
+const VoyageClock := preload("res://core/voyage_clock.gd")
 const MAP_DIRS: Array[String] = ["res://data/islands/maps/", "res://tests/fixtures/islands/maps/"]
 const SAVE_DIR := "user://saves/"
 const LOG_LEVELS: Array[String] = ["debug", "info", "warn", "error"]
@@ -36,7 +37,7 @@ func _register_all() -> void:
 	_reg("mode", "mode [id] | mode override <rate> <0-3> | mode clear", "Difficulty and per-system toning.", "_c_mode")
 	_reg("island", "island list | island info <isl_id>", "Island registry and baked-map facts.", "_c_island")
 	_reg("tp", "tp island <isl_id> [landing|<poi_slot>] | tp xy <x_m> <y_m>", "Teleport the player.", "_c_tp")
-	_reg("time", "time | time add <hours> | time set <day> <hour>", "Show or change the game clock.", "_c_time")
+	_reg("time", "time | time watch | time add <h> | time set <day> <hour>", "Show or change the game clock.", "_c_time")
 	_reg("give", "give <item_id> [n]", "Add (or with a negative n remove) items.", "_c_give")
 	_reg("inv", "inv", "List the inventory and total cargo weight.", "_c_inv")
 	_reg("seed", "seed | seed world|weather <digits>", "Show or set the 64-bit seeds.", "_c_seed")
@@ -337,6 +338,11 @@ func _tp_island(island_id: String, target: String) -> Dictionary:
 func _c_time(args: PackedStringArray) -> Dictionary:
 	if args.is_empty():
 		return _ok(state.clock_text())
+	if args[0] == "watch":
+		var h: float = state.hour_of_day()
+		var wl: float = _tuning().f("crew.watch_length_hours")
+		return _ok("%s - %s watch, last bell %d (Morning Report due at 08:00)" % [state.clock_text(),
+				VoyageClock.watch_name(VoyageClock.watch_index(h, wl)), VoyageClock.last_bell(h, wl)])
 	if args[0] == "add" and args.size() > 1 and args[1].is_valid_float():
 		state.add_hours(float(args[1]))
 		return _ok(state.clock_text())

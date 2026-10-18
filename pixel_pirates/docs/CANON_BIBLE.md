@@ -1,4 +1,4 @@
-# CANON BIBLE - Crown of the Seas (working title) - v0.7 (after A2, A3, A4, A5, A6, A7, B1)
+# CANON BIBLE - Crown of the Seas (working title) - v0.8 (after A2, A3, A4, A5, A6, A7, B1, B2)
 Drive folder: "Pixel Pirates". Repo path: pixel_pirates/.
 
 ## Hard content rules
@@ -97,10 +97,22 @@ Survival coverage table (11 systems with question, warning, recovery, island off
 Decisions: B1-1 fair-loss model (setbacks climb the ladder; ship/captain loss only after rungs 1-3; last-chance rescue by mode: Story always, Normal once per act, Hardcore none; B6 finalises). B1-2 real time at sea with pause-to-plan, x1/x4 acceleration that drops to x1 on every rung and event (B2 finalises controls). B1-3 Hardcore narrows widths and removes recommendations but keeps the ladder, honest numbers and recovery minimum.
 Not decided here: game days per real minute (N13), exact lose conditions (B6), crew names and voices (D).
 
+## Core loop (B2) - full text in docs/B2_CORE_LOOP.md
+Wheel: PLAN the sum -> SAIL the days -> ANSWER the island -> PROVISION -> collect the CLUE -> PLAN. Average cycle 40 real min, 9.1 game days at sea. Modelled play-time split sea 39.3 / islands 35.4 / ship+crew 20.9 / combat 4.4 percent (targets 40 / 35 / 17 / max 8; ranges 30-50, 25-45, 10-25, 0-12).
+Five loops: L1 Moment (max 4 min quiet), L2 Watch (24 s at sea), L3 Day (2.4 min, Morning Report), L4 Voyage (B1 bands), L5 Visit (6/16/45 min explore + 2 min provision).
+Original idea: EIGHT BELLS. Ship's bells every half hour, eight bells ends a 4 h watch; six watches: Middle 00-04, Morning 04-08, Forenoon 08-12, Afternoon 12-16, Dog 16-20, First 20-24. The Morning Report at eight bells of the Morning watch (08:00) is a pause screen (20 s read) and the one place fast-forward always stops (with every ladder rung and crisis); it carries stocks as days left, ship, one crew line, a 24 h outlook band, one decision card, and writes the captain's Log line automatically.
+Time (PROVISIONAL, owner N13): at sea 1 game day = 2.4 real min (1 game hour = 6 s, watch = 24 s); ashore 24 game min per real min (1 game day = 60 real min; full Tier 1 visit 45 min = 18 game h, Tier 2 16 min = 6.4 h, Tier 3 6 min = 2.4 h). A visit never costs more than one game day. Fast-forward x4, drops to x1 at every rung, crisis and report. 14 days = 33.6 min (a Crossing); 37.5 days = 90 min (longest Dead Ocean); 30 days = 72 min (water goes foul); 70 days = 168 min (scurvy).
+Moments: ambient (free), choice (at least 2 per 10 min), crisis (at most 1 per 10 min).
+Cycle mix (campaign, owner B8): Hop 25 / Passage 40 / Crossing 25 / Dead 10 percent, ending at Tier 3 / 2 / 1 / 1 islands. Visiting all 50 islands is about 33 h of play.
+Flags handed to owners: Dead Ocean (37.5 days, 1125 L for 12 men, water foul after 30 days) forces rain catching, boiling or a spring (N4, N10); scurvy clock 168 min means fruit/herb islands every few cycles (N5, E3).
+Code: core/voyage_clock.gd + tools/data_tools/voyage_clock.py (50-case hand-written fixture), tools/data_tools/loop_model.py, console command `time watch`. Tuning: tuning_loop.json (16 provisional keys). All machine-checked.
+Decisions: B2-1 time scales (2.4 min/day at sea, 24 game min per real min ashore). B2-2 daily Morning Report pause screen. B2-3 consumption continues ashore, a full visit never costs more than one day.
+
 ## Island registry (50+ planned)
 Generated: docs/ISLAND_REGISTRY.md. Currently empty. Format: ID (isl_NNN) | name | tier | biome | position | distances to neighbours | status (planned/designed/built/tested). Filled from E3.
 
 ## Open questions
+B2: confirm B2-1 to B2-3 (two clocks, Morning Report, island cost rule). First run of core/voyage_clock.gd and tests/test_voyage_clock.gd on the user's PC.
 B1: confirm the three decisions (fair-loss model, pause-to-plan real time, Hardcore keeps the ladder) or change them before B2 builds on them.
 First run of the A6 + A7 GDScript on the user's PC (tools\run_godot_tests.bat, then the console commands in docs/A7_TOOLING.md section 6). Console command naming (short names like tp, give): keep or rename before J-modules build on them.
 First run of the A6 GDScript test (test_island_map) and island_viewer on the user's PC. Whether T1 islands should be bigger or carry more content (budget 45 min vs about 11 min of pure walking). Template count (10 now, about 16 proposed).

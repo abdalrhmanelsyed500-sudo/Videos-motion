@@ -202,6 +202,9 @@ def check_design() -> None:
 
     problems.extend(design_checks.invariants(design_checks.load_tuning()))
     problems.extend(design_checks.scan_data())
+    import loop_model  # noqa: PLC0415
+
+    problems.extend(loop_model.loop_invariants(design_checks.load_tuning(), loop_model.load_ranges()))
 
 
 def check_registry_doc() -> None:

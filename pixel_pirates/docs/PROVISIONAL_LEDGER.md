@@ -4,19 +4,33 @@ Every balance number in `game/data/` carries `provisional`, `owner` and `source`
 who is expected to finalise them, and where each came from. `owner` uses PROPOSED module numbers (N1..N14, B3); the N-module list is not
 fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is finalised only when this ledger has no `N*` rows left.
 
-**75 provisional records** | B3: 3, B6: 2, B7: 4, E2: 4, E7: 9, E8: 1, E9: 2, F0: 10, I17: 5, N1: 18, N10: 1, N11: 1, N13: 4, N4: 3, N5: 1, N6: 2, N7: 3, N8: 1, N9: 1
+**91 provisional records** | B2: 2, B3: 3, B6: 2, B7: 9, B8: 4, E2: 7, E7: 9, E8: 1, E9: 2, F0: 10, I17: 5, N1: 18, N10: 1, N11: 1, N13: 6, N4: 3, N5: 1, N6: 2, N7: 3, N8: 1, N9: 1
 
 | owner | kind | key | source |
 |---|---|---|---|
+| B2 | tuning | `loop.report_max_seconds` | B2 design target; provisional until its owner module |
+| B2 | tuning | `time.accel_fast_factor` | B2 design target; provisional until its owner module |
 | B3 | difficulty_mode | `mode_hardcore` | design placeholder |
 | B3 | difficulty_mode | `mode_normal` | design placeholder |
 | B3 | difficulty_mode | `mode_story` | design placeholder |
 | B6 | tuning | `recovery.min_options` | B1 design target; provisional until its owner module |
 | B6 | tuning | `warn.min_steps_before_loss` | B1 design target; provisional until its owner module |
+| B7 | tuning | `loop.combat_fraction_of_voyage` | B2 design target; provisional until its owner module |
+| B7 | tuning | `loop.island_engagement` | B2 design target; provisional until its owner module |
+| B7 | tuning | `loop.plan_minutes` | B2 design target; provisional until its owner module |
+| B7 | tuning | `loop.provision_minutes` | B2 design target; provisional until its owner module |
+| B7 | tuning | `loop.ship_fraction_of_voyage` | B2 design target; provisional until its owner module |
 | B7 | tuning | `share.combat_pct_max` | B1 design target; provisional until its owner module |
 | B7 | tuning | `share.island_pct` | B1 design target; provisional until its owner module |
 | B7 | tuning | `share.sea_pct` | B1 design target; provisional until its owner module |
 | B7 | tuning | `share.ship_crew_pct` | B1 design target; provisional until its owner module |
+| B8 | tuning | `loop.mix_crossing_pct` | B2 design target; provisional until its owner module |
+| B8 | tuning | `loop.mix_dead_pct` | B2 design target; provisional until its owner module |
+| B8 | tuning | `loop.mix_hop_pct` | B2 design target; provisional until its owner module |
+| B8 | tuning | `loop.mix_passage_pct` | B2 design target; provisional until its owner module |
+| E2 | tuning | `loop.choice_moments_per_10min` | B2 design target; provisional until its owner module |
+| E2 | tuning | `loop.crisis_moments_per_10min_max` | B2 design target; provisional until its owner module |
+| E2 | tuning | `loop.max_quiet_minutes` | B2 design target; provisional until its owner module |
 | E2 | tuning | `voyage.crossing_max_minutes` | B1 design target; provisional until its owner module |
 | E2 | tuning | `voyage.hop_max_minutes` | B1 design target; provisional until its owner module |
 | E2 | tuning | `voyage.hop_min_minutes` | B1 design target; provisional until its owner module |
@@ -69,6 +83,8 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | N10 | tuning | `cargo.overload_speed_penalty_pct_per_pct` | design placeholder |
 | N11 | tuning | `weather.gale_wave_height_m` | design placeholder |
 | N13 | tuning | `plan.forecast_spread_sea` | B1 design target; provisional until its owner module |
+| N13 | tuning | `time.ashore_game_minutes_per_real_minute` | B2 design target; provisional until its owner module |
+| N13 | tuning | `time.real_minutes_per_game_day` | B2 design target; provisional until its owner module |
 | N13 | tuning | `warn.advisory_days` | B1 design target; provisional until its owner module |
 | N13 | tuning | `warn.critical_days` | B1 design target; provisional until its owner module |
 | N13 | tuning | `warn.warning_days` | B1 design target; provisional until its owner module |

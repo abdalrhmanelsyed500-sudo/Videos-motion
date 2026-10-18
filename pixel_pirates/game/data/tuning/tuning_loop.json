@@ -1,0 +1,182 @@
+{
+ "schema": 1,
+ "kind": "tuning",
+ "records": [
+  {
+   "key": "time.real_minutes_per_game_day",
+   "value": 2.4,
+   "unit": "min/day",
+   "min": 1.2,
+   "max": 4.8,
+   "provisional": true,
+   "owner": "N13",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Default time scale: one game day takes this many real minutes at x1. Chosen so a 14-day crossing is 33.6 min (inside the Crossing band) and a 70-day scurvy clock is 168 min."
+  },
+  {
+   "key": "time.ashore_game_minutes_per_real_minute",
+   "value": 24,
+   "unit": "game min/real min",
+   "min": 6,
+   "max": 60,
+   "provisional": true,
+   "owner": "N13",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Ashore the clock runs 24 game minutes per real minute (1 game day = 60 real minutes), so a 45-minute Tier 1 visit costs 18 game hours, not 19 days. At sea 1 game day = 2.4 real minutes."
+  },
+  {
+   "key": "time.accel_fast_factor",
+   "value": 4,
+   "unit": "x",
+   "min": 2,
+   "max": 8,
+   "provisional": true,
+   "owner": "B2",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Fast-forward factor at sea; drops to x1 at every warning rung, event and Morning Report (decision B1-2)."
+  },
+  {
+   "key": "loop.report_max_seconds",
+   "value": 20,
+   "unit": "s",
+   "min": 10,
+   "max": 30,
+   "provisional": true,
+   "owner": "B2",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Target reading time of the daily Morning Report (a pause screen, so it never costs sailing time)."
+  },
+  {
+   "key": "loop.max_quiet_minutes",
+   "value": 4,
+   "unit": "min",
+   "min": 2,
+   "max": 6,
+   "provisional": true,
+   "owner": "E2",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Longest stretch at x1 with no moment (ambient, choice or crisis) allowed on the open sea (pillar P1)."
+  },
+  {
+   "key": "loop.choice_moments_per_10min",
+   "value": 2,
+   "unit": "count",
+   "min": 1,
+   "max": 4,
+   "provisional": true,
+   "owner": "E2",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Minimum choice moments (a real decision with consequences) per 10 real minutes at sea."
+  },
+  {
+   "key": "loop.crisis_moments_per_10min_max",
+   "value": 1,
+   "unit": "count",
+   "min": 0,
+   "max": 2,
+   "provisional": true,
+   "owner": "E2",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Maximum crisis moments (a ladder rung, a storm, a fight) per 10 real minutes at sea."
+  },
+  {
+   "key": "loop.mix_hop_pct",
+   "value": 25,
+   "unit": "percent",
+   "min": 10,
+   "max": 40,
+   "provisional": true,
+   "owner": "B8",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Share of voyages that are Hops over the whole campaign (to a Tier 3 island)."
+  },
+  {
+   "key": "loop.mix_passage_pct",
+   "value": 40,
+   "unit": "percent",
+   "min": 25,
+   "max": 55,
+   "provisional": true,
+   "owner": "B8",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Share of voyages that are Passages (to a Tier 2 island)."
+  },
+  {
+   "key": "loop.mix_crossing_pct",
+   "value": 25,
+   "unit": "percent",
+   "min": 10,
+   "max": 40,
+   "provisional": true,
+   "owner": "B8",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Share of voyages that are Crossings (to a Tier 1 island)."
+  },
+  {
+   "key": "loop.mix_dead_pct",
+   "value": 10,
+   "unit": "percent",
+   "min": 5,
+   "max": 15,
+   "provisional": true,
+   "owner": "B8",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Share of voyages that are Dead Ocean crossings (to a Tier 1 island)."
+  },
+  {
+   "key": "loop.island_engagement",
+   "value": 0.6,
+   "unit": "ratio",
+   "min": 0.3,
+   "max": 1.0,
+   "provisional": true,
+   "owner": "B7",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Fraction of an island's explore budget a typical visit actually uses."
+  },
+  {
+   "key": "loop.plan_minutes",
+   "value": 2.0,
+   "unit": "min",
+   "min": 1,
+   "max": 5,
+   "provisional": true,
+   "owner": "B7",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Real minutes in the Reckoning (planning pause) before a voyage."
+  },
+  {
+   "key": "loop.provision_minutes",
+   "value": 2.0,
+   "unit": "min",
+   "min": 1,
+   "max": 5,
+   "provisional": true,
+   "owner": "B7",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Real minutes of loading, trading and ship tasks ashore per cycle."
+  },
+  {
+   "key": "loop.ship_fraction_of_voyage",
+   "value": 0.2,
+   "unit": "ratio",
+   "min": 0.05,
+   "max": 0.4,
+   "provisional": true,
+   "owner": "B7",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Share of a voyage's time spent on ship and crew tasks (galley, repairs, orders, talk)."
+  },
+  {
+   "key": "loop.combat_fraction_of_voyage",
+   "value": 0.08,
+   "unit": "ratio",
+   "min": 0,
+   "max": 0.2,
+   "provisional": true,
+   "owner": "B7",
+   "source": "B2 design target; provisional until its owner module",
+   "note": "Share of a voyage's time spent in combat (ships, creatures)."
+  }
+ ]
+}

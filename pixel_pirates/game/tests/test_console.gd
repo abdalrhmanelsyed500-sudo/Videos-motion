@@ -99,6 +99,7 @@ func _inventory_time_seed(t: Object, c: RefCounted, reg: Node) -> void:
 	var kg := float(reg.record("item", "item_hardtack")["weight_kg"]) * 10.0
 	_ok(t, c, "inv", "total cargo weight: %.1f kg" % kg)
 	_ok(t, c, "time set 3 14.5", "Day 3, 14:30")
+	_ok(t, c, "time watch", "Afternoon watch, last bell 5")
 	_ok(t, c, "time add 10", "Day 4, 00:30")
 	_ok(t, c, "time add -100000", "Day 1, 00:00")
 	_bad(t, c, "time add abc", "usage")
