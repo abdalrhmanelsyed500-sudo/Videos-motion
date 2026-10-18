@@ -8,6 +8,8 @@ extends "res://h2d/sea_view.gd"
 const ShipSprite := preload("res://h2d/ship_sprite.gd")
 const WaveModel := preload("res://h2d/wave_model.gd")
 const LightModel := preload("res://h2d/light_model.gd")
+const ShipMotion := preload("res://h2d/ship_motion.gd")
+const EnvModel := preload("res://h2d/env_model.gd")
 const DataLoader := preload("res://core/data_loader.gd")
 const SHADER_DIR := "res://h2d/shaders/"
 const ART_DIR := "res://h2d/art/"
@@ -22,8 +24,23 @@ const PROFILES := {
 	"standard": {"size": Vector2i(1280, 720), "ocean_div": 128, "detail": 1.0, "shadow_steps": 10.0, "posterize": 16.0},
 	"ultra": {"size": Vector2i(1920, 1080), "ocean_div": 192, "detail": 1.0, "shadow_steps": 12.0, "posterize": 24.0},
 }
+## Effects budget (key E): how many real raindrops, ring slots and spray droplets are simulated. The look is the same
+## at every level, only the density and the cost change. Dev-Lite defaults to "medium"; measure before raising it.
+const EFFECTS := {
+	"low": {"grid": Vector2i(40, 32), "cell_m": 4.6, "k": 1, "spin": 120, "burst": 24},
+	"medium": {"grid": Vector2i(56, 44), "cell_m": 3.4, "k": 2, "spin": 250, "burst": 32},
+	"high": {"grid": Vector2i(64, 50), "cell_m": 3.0, "k": 3, "spin": 600, "burst": 48},
+}
+const RAIN_FALL_MS := 22.0
+const RAIN_DRIFT_FACTOR := 0.6
+const RAIN_DRIFT_MAX_MS := 12.0
+## The rain grid sits a little south of the focus: drops that land just below the screen edge are seen high up.
+const RAIN_CENTER_SOUTH_M := 14.0
+const SPRAY_BOX := Vector2(150.0, 110.0)
 
 var quality := "dev_lite"
+var effects := "medium"
+var motion_mode := 2  ## 0 off, 1 half, 2 full (key M)
 var gamma := 2.2
 var exposure := 1.25
 var calibration_note := "not calibrated"
@@ -43,8 +60,19 @@ var _post_mat: ShaderMaterial
 var _look_profiles: Dictionary = {}
 var _island_meta: Dictionary = {}
 var _island_img: Image
-var _wave_params: Array = []
+var _wave_b: Dictionary = {}
 var _time := 0.0
+var _rain: MultiMeshInstance3D
+var _rain_mat: ShaderMaterial
+var _spray: MultiMeshInstance3D
+var _spray_mat: ShaderMaterial
+var _motion: ShipMotion = ShipMotion.new()
+var _bursts: Array = [[0.0, 0.0, -100.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, -100.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+		[0.0, 0.0, -100.0, 0.0, 0.0, 0.0, 0.0, 0.0]]
+var _burst_next := 0
+var _slam_count := 0
+var _last_out: Dictionary = {"roll_deg": 0.0, "pitch_deg": 0.0, "heave_m": 0.0}
+var _focus := Vector2.ZERO
 
 
 func setup(host: Node) -> void:
@@ -73,6 +101,7 @@ func setup(host: Node) -> void:
 	_build_ocean()
 	_build_island()
 	_build_ship()
+	_build_weather_fx()
 	_post_mat = ShaderMaterial.new()
 	_post_mat.shader = load(SHADER_DIR + "post.gdshader")
 	_rect = TextureRect.new()
@@ -84,6 +113,7 @@ func setup(host: Node) -> void:
 	_rect.material = _post_mat
 	_layer.add_child(_rect)
 	set_quality(quality)
+	set_effects(effects)
 
 
 # ---- interface -------------------------------------------------------------------------------------------------
@@ -129,6 +159,31 @@ func set_quality(q: String) -> void:
 	_post_mat.set_shader_parameter("bloom_thr", float(bl["threshold"]))
 
 
+func set_effects(level: String) -> void:
+	if not EFFECTS.has(level):
+		return
+	effects = level
+	var e: Dictionary = EFFECTS[level]
+	var g: Vector2i = e["grid"]
+	var n_rain: int = g.x * g.y * int(e["k"])
+	var n_spray: int = int(e["spin"]) + 3 * int(e["burst"])
+	_fill_identity(_rain.multimesh as MultiMesh, n_rain)
+	_fill_identity(_spray.multimesh as MultiMesh, n_spray)
+	_rain_mat.set_shader_parameter("grid", Vector2(float(g.x), float(g.y)))
+	_rain_mat.set_shader_parameter("cell_m", float(e["cell_m"]))
+	_rain_mat.set_shader_parameter("fall_ms", RAIN_FALL_MS)
+	_spray_mat.set_shader_parameter("n_spin", float(e["spin"]))
+	_spray_mat.set_shader_parameter("n_burst", float(e["burst"]))
+	_ocean_mat.set_shader_parameter("rain_cell_m", float(e["cell_m"]))
+	_ocean_mat.set_shader_parameter("ring_k", float(e["k"]))
+
+
+func motion_summary() -> String:
+	var o: Dictionary = _last_out
+	return "roll %+.1f deg  pitch %+.1f deg  heave %+.2f m  slams %d" % [float(o["roll_deg"]), float(o["pitch_deg"]),
+			float(o["heave_m"]), _slam_count]
+
+
 func land_height_at(x: float, z: float) -> float:
 	if _island_img == null:
 		return -99.0
@@ -142,11 +197,16 @@ func land_height_at(x: float, z: float) -> float:
 	return _island_img.get_pixel(px, py).r * 48.0 - 8.0
 
 
-func update_view(v: Dictionary, ship: Dictionary, _dt: float) -> void:
+func update_view(v: Dictionary, ship: Dictionary, dt: float) -> void:
 	_time = float(v["time"])
+	var env: Dictionary = v["env"]
 	var lm := LightModel.compute(v)
+	_wave_b = WaveModel.build(float(env["wave_vis_m"]), float(env["wave_to"]), float(env["sea"]), float(v["ice"]),
+			float(env["crest_calm"]), float(env["crest_gale"]))
 	_set_globals(v, lm)
+	_step_motion(dt, v, ship)
 	_update_ocean(v, ship, lm)
+	_update_weather_fx(v, ship)
 	_update_ship(v, ship)
 	_update_camera(ship)
 	_update_post(v, lm)
@@ -198,7 +258,8 @@ func _global_defaults() -> Array:
 		["h2d_amb_col", vec3, Vector3(0.3, 0.35, 0.4)], ["h2d_fog_col", vec3, Vector3(0.55, 0.64, 0.64)],
 		["h2d_fog_density", flt, 0.002], ["h2d_gamma", flt, 2.2], ["h2d_exposure", flt, 1.25], ["h2d_time", flt, 0.0],
 		["h2d_wind_to", vec2, Vector2(0.0, 1.0)], ["h2d_cloud", flt, 0.2], ["h2d_storm", flt, 0.0],
-		["h2d_rain", flt, 0.0],
+		["h2d_rain", flt, 0.0], ["h2d_adv", vec2, Vector2.ZERO], ["h2d_wind_ms", flt, 0.0], ["h2d_gust", flt, 0.0],
+		["h2d_sea", flt, 0.0],
 	]
 
 
@@ -332,6 +393,40 @@ func _build_ship() -> void:
 	_vp.add_child(_ship)
 
 
+func _fill_identity(mm: MultiMesh, count: int) -> void:
+	mm.instance_count = count
+	var buf := PackedFloat32Array()
+	buf.resize(count * 12)
+	for i in count:
+		buf[i * 12] = 1.0
+		buf[i * 12 + 5] = 1.0
+		buf[i * 12 + 10] = 1.0
+	mm.buffer = buf
+
+
+## Rain and spray: MultiMesh quads whose positions the vertex shader computes from the instance id (no per-frame
+## CPU work except a handful of uniforms). The MultiMeshInstance3D only sets the culling box; it sits at the focus.
+func _build_weather_fx() -> void:
+	_rain_mat = _mat("rain.gdshader")
+	_rain = _fx_instance(_rain_mat, 260.0)
+	_spray_mat = _mat("spray.gdshader")
+	_spray = _fx_instance(_spray_mat, 160.0)
+	_spray.sorting_offset = 2.0
+
+
+func _fx_instance(m: ShaderMaterial, half_extent: float) -> MultiMeshInstance3D:
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = QuadMesh.new()
+	mm.custom_aabb = AABB(Vector3(-half_extent, -20.0, -half_extent), Vector3(half_extent * 2.0, 80.0, half_extent * 2.0))
+	var mi := MultiMeshInstance3D.new()
+	mi.multimesh = mm
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_vp.add_child(mi)
+	return mi
+
+
 # ---- per frame -------------------------------------------------------------------------------------------------
 func _set_globals(v: Dictionary, lm: Dictionary) -> void:
 	var g := RenderingServer
@@ -344,18 +439,34 @@ func _set_globals(v: Dictionary, lm: Dictionary) -> void:
 	g.global_shader_parameter_set("h2d_wind_to", lm["wind_to"])
 	g.global_shader_parameter_set("h2d_cloud", float(v["cloud"]))
 	g.global_shader_parameter_set("h2d_storm", float(v["storm"]))
-	g.global_shader_parameter_set("h2d_rain", float(v["rain"]))
+	var env: Dictionary = v["env"]
+	g.global_shader_parameter_set("h2d_rain", float(env["rain_inst"]))
+	g.global_shader_parameter_set("h2d_adv", env["adv"])
+	g.global_shader_parameter_set("h2d_wind_ms", float(env["wind_ms"]))
+	g.global_shader_parameter_set("h2d_gust", float(env["gust"]))
+	g.global_shader_parameter_set("h2d_sea", float(env["sea"]))
+
+
+func _set_waves(m: ShaderMaterial) -> void:
+	var ws: Array = _wave_b["waves"]
+	for i in 4:
+		var w: Array = ws[i]
+		m.set_shader_parameter("w%d" % i, Vector4(float(w[0]), float(w[1]), float(w[2]), float(w[3])))
+	m.set_shader_parameter("crest_pb", Vector2(float(_wave_b["p"]), float(_wave_b["bias"])))
+
+
+func _wave_amp(v: Dictionary) -> float:
+	var env: Dictionary = v["env"]
+	return 0.5 * float(env["wave_vis_m"]) * (1.0 - 0.85 * clampf(float(v["ice"]), 0.0, 1.0))
 
 
 func _update_ocean(v: Dictionary, ship: Dictionary, lm: Dictionary) -> void:
-	_wave_params = WaveModel.params(float(v["wave_m"]), float(v["wind_from_deg"]), float(v["ice"]))
-	for i in 4:
-		var w: Array = _wave_params[i]
-		_ocean_mat.set_shader_parameter("w%d" % i, Vector4(float(w[0]), float(w[1]), float(w[2]), float(w[3])))
-	var amp := 0.5 * float(v["wave_m"]) * (1.0 - 0.85 * clampf(float(v["ice"]), 0.0, 1.0))
-	_ocean_mat.set_shader_parameter("wave_norm", amp)
-	var foam := 0.12 + float(v["wind_kn"]) / 40.0 + 0.9 * float(v["storm"])
-	_ocean_mat.set_shader_parameter("foam_amount", clampf(foam, 0.0, 1.0))
+	var env: Dictionary = v["env"]
+	var sea := float(env["sea"])
+	_set_waves(_ocean_mat)
+	_ocean_mat.set_shader_parameter("wave_norm", _wave_amp(v))
+	_ocean_mat.set_shader_parameter("foam_amount", clampf(0.04 + 1.0 * smoothstep(0.08, 0.9, sea), 0.0, 1.0))
+	_ocean_mat.set_shader_parameter("normal_gain", 1.0 + 0.6 * sea)
 	_ocean_mat.set_shader_parameter("ice_cover", float(v["ice"]))
 	_ocean_mat.set_shader_parameter("deep_col", lm["deep"])
 	_ocean_mat.set_shader_parameter("shallow_col", lm["shallow"])
@@ -366,11 +477,50 @@ func _update_ocean(v: Dictionary, ship: Dictionary, lm: Dictionary) -> void:
 	_ocean_mat.set_shader_parameter("ship_dir", Vector2(sin(h), -cos(h)))
 	_ocean_mat.set_shader_parameter("ship_speed", float(ship["scene_speed"]))
 	_ocean_mat.set_shader_parameter("ship_curve", float(ship.get("curve", 0.0)))
+	var speed_frac := clampf(float(ship["scene_speed"]) / 25.0, 0.0, 1.0)
+	_ocean_mat.set_shader_parameter("ship_roll", float(_last_out["roll_deg"]) / 10.0)
+	_ocean_mat.set_shader_parameter("wash", clampf(0.15 * speed_frac + 0.55 * sea + 0.5 * _motion.slam, 0.0, 1.0))
+	_ocean_mat.set_shader_parameter("slam", _motion.slam)
 	var cell := OCEAN_SIZE_M / float(PROFILES[quality]["ocean_div"])
 	_ocean.position = Vector3(roundf(float(ship["x"]) / cell) * cell, 0.0, roundf(float(ship["z"]) / cell) * cell)
 
 
+## The hull feels the same waves the ocean draws. Spray events (bow or a rail meeting the water fast) become bursts.
+func _step_motion(dt: float, v: Dictionary, ship: Dictionary) -> void:
+	var env: Dictionary = v["env"]
+	var m := _motion
+	m.gain_override = [0.0, 0.5, -1.0][motion_mode]
+	var no_go := float(v["no_go_deg"])
+	var hd := float(ship["heading_deg"])
+	var off := absf(EnvModel.wrap180(hd - float(v["wind_from_deg"])))
+	m.step(minf(dt, 0.1), _wave_b, {"x": float(ship["x"]), "z": float(ship["z"]), "heading_deg": hd, "t": _time,
+			"wind_to": env["wind_to"], "wind_ms": float(env["wind_ms"]), "off_deg": off, "no_go_deg": no_go,
+			"sea": float(env["sea"])})
+	_last_out = m.out()
+	var hr := deg_to_rad(hd)
+	var f := Vector2(sin(hr), -cos(hr))
+	var sb := Vector2(-f.y, f.x)
+	var pos := Vector2(float(ship["x"]), float(ship["z"]))
+	var vel := f * float(ship["scene_speed"])
+	for e in m.events:
+		var kind: int = e[0]
+		var power: float = e[1]
+		var origin := pos + f * (ShipMotion.SHIP_LEN * 0.42)
+		var dir := f
+		if kind == ShipMotion.STARBOARD:
+			origin = pos + f * (ShipMotion.SHIP_LEN * 0.10) + sb * (ShipMotion.SHIP_BEAM * 0.5)
+			dir = (sb + f * 0.3).normalized()
+		elif kind == ShipMotion.PORT:
+			origin = pos + f * (ShipMotion.SHIP_LEN * 0.10) - sb * (ShipMotion.SHIP_BEAM * 0.5)
+			dir = (-sb + f * 0.3).normalized()
+		_bursts[_burst_next] = [origin.x, origin.y, _time, power, dir.x, dir.y, vel.x, vel.y]
+		_burst_next = (_burst_next + 1) % 3
+		_slam_count += 1
+
+
+## Visible state of the drawn ship from the sea and the wind: lean, belly, flutter, lift.
 func _update_ship(v: Dictionary, ship: Dictionary) -> void:
+	var env: Dictionary = v["env"]
 	var hd := float(ship["heading_deg"])
 	var frame := ShipSprite.heading_frame(hd)
 	var row := ShipSprite.trim_row(hd, float(v["wind_from_deg"]))
@@ -378,10 +528,54 @@ func _update_ship(v: Dictionary, ship: Dictionary) -> void:
 	_ship_mat.set_shader_parameter("sail_cell", Vector2(float(frame), float(row)))
 	var x := float(ship["x"])
 	var z := float(ship["z"])
-	var bob := WaveModel.height(_wave_params, x, z, _time) * 0.8
-	_ship_mat.set_shader_parameter("bob_m", roundf(bob * PX_PER_M) / PX_PER_M)  # whole art pixels only
+	_ship_mat.set_shader_parameter("bob_m", roundf(float(_last_out["heave_m"]) * PX_PER_M) / PX_PER_M)  # whole art pixels
 	_ship_mat.set_shader_parameter("sprite_light", 0.7)
+	var hr := deg_to_rad(hd)
+	var f := Vector2(sin(hr), -cos(hr))
+	var sb := Vector2(-f.y, f.x)
+	var lean := sb * tan(deg_to_rad(float(_last_out["roll_deg"]))) - f * tan(deg_to_rad(float(_last_out["pitch_deg"])))
+	_ship_mat.set_shader_parameter("lean", lean)
+	var wind := float(env["wind_inst_kn"])
+	var no_go := float(v["no_go_deg"])
+	var off := absf(EnvModel.wrap180(hd - float(v["wind_from_deg"])))
+	var luff := 1.0 - smoothstep(no_go - 4.0, no_go + 12.0, off)
+	var billow := (1.0 - luff) * (1.0 + 2.0 * smoothstep(4.0, 16.0, wind)) * (1.0 - 0.3 * smoothstep(26.0, 40.0, wind))
+	var slack := 1.0 - smoothstep(3.0, 8.0, wind)
+	_ship_mat.set_shader_parameter("billow_px", 0.8 * billow)
+	_ship_mat.set_shader_parameter("flutter", clampf(luff + 0.5 * slack + 0.35 * float(env["gust"]), 0.0, 1.0))
+	var wt: Vector2 = env["wind_to"]
+	_ship_mat.set_shader_parameter("lee", Vector2(wt.x, wt.y * 0.74))
 	_ship.position = Vector3(x, 0.0, z)
+
+
+## The rain and spray follow the camera focus; every number they use comes from the shared environment (env_model.gd).
+func _update_weather_fx(v: Dictionary, ship: Dictionary) -> void:
+	var env: Dictionary = v["env"]
+	var sea := float(env["sea"])
+	var wt: Vector2 = env["wind_to"]
+	var wms := float(env["wind_ms"])
+	_focus = Vector2(float(ship["x"]), float(ship["z"]) - TARGET_LEAD_M)
+	var e: Dictionary = EFFECTS[effects]
+	var g: Vector2i = e["grid"]
+	var cell: float = e["cell_m"]
+	var drift := wt * minf(wms * RAIN_DRIFT_FACTOR, RAIN_DRIFT_MAX_MS)
+	var center := _focus + Vector2(0.0, RAIN_CENTER_SOUTH_M) + drift * 0.6
+	var base := Vector2(floorf(center.x / cell) - float(g.x) * 0.5, floorf(center.y / cell) - float(g.y) * 0.5)
+	_rain_mat.set_shader_parameter("base_cell", Vector2(roundf(base.x), roundf(base.y)))
+	_rain_mat.set_shader_parameter("drift", drift)
+	_rain.position = Vector3(center.x, 0.0, center.y)
+	_set_waves(_rain_mat)
+	_set_waves(_spray_mat)
+	_spray_mat.set_shader_parameter("focus", _focus + Vector2(0.0, 10.0))
+	_spray.position = Vector3(_focus.x, 0.0, _focus.y + 10.0)
+	_spray_mat.set_shader_parameter("wind_vel", wt * wms)
+	_spray_mat.set_shader_parameter("spray_level", smoothstep(0.30, 0.90, sea))
+	_spray_mat.set_shader_parameter("crest_min", lerpf(0.80, 0.55, sea))
+	_spray_mat.set_shader_parameter("wave_norm", _wave_amp(v))
+	for i in 3:
+		var b: Array = _bursts[i]
+		_spray_mat.set_shader_parameter("burst_a%d" % i, Vector4(float(b[0]), float(b[1]), float(b[2]), float(b[3])))
+		_spray_mat.set_shader_parameter("burst_b%d" % i, Vector4(float(b[4]), float(b[5]), float(b[6]), float(b[7])))
 
 
 func _update_camera(ship: Dictionary) -> void:
@@ -390,16 +584,15 @@ func _update_camera(ship: Dictionary) -> void:
 	var target := Vector3(float(ship["x"]), 0.0, float(ship["z"]) - TARGET_LEAD_M)
 	_cam.position = target + Vector3(0.0, dist * sin(p), dist * cos(p))
 	_cam.rotation_degrees = Vector3(-pitch_deg, 0.0, 0.0)
+	_ship_mat.set_shader_parameter("cam_cos", cos(p))
+	_ship_mat.set_shader_parameter("cam_tan", tan(p))
 
 
 func _update_post(v: Dictionary, lm: Dictionary) -> void:
 	var storm := float(v["storm"])
-	_post_mat.set_shader_parameter("rain", float(v["rain"]))
-	_post_mat.set_shader_parameter("rain_slant", (lm["wind_to"] as Vector2).x * 0.35)
 	_post_mat.set_shader_parameter("flash", LightModel.flash(_time, storm))
 	_post_mat.set_shader_parameter("haze", clampf(0.35 * float(v["fog"]) + 0.15 * storm, 0.0, 0.6))
 	_post_mat.set_shader_parameter("haze_col", lm["fog_col"])
 	_post_mat.set_shader_parameter("sat", float(lm["sat"]))
 	_post_mat.set_shader_parameter("con", float(lm["con"]))
 	_post_mat.set_shader_parameter("tint", lm["tint"])
-	_post_mat.set_shader_parameter("time", _time)

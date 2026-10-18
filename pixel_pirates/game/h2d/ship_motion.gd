@@ -87,15 +87,15 @@ func step(dt: float, b: Dictionary, c: Dictionary) -> void:
 	var side := wind_to.dot(s)
 	var drive := clampf((float(c["off_deg"]) - float(c["no_go_deg"]) * 0.9) / 20.0, 0.0, 1.0)
 	var heel := deg_to_rad(param("heel_deg_per_ms2") * wind_ms * wind_ms * side * drive)
-	var r := _spring(roll, roll_v, roll_t + heel, param("roll_period_s"), dt)
-	roll = r.x
-	roll_v = r.y
-	r = _spring(pitch, pitch_v, pitch_t, param("pitch_period_s"), dt)
-	pitch = r.x
-	pitch_v = r.y
-	r = _spring(heave, heave_v, heave_t, param("heave_period_s"), dt)
-	heave = r.x
-	heave_v = r.y
+	var r: Array = _spring(roll, roll_v, roll_t + heel, param("roll_period_s"), param("damping"), dt)
+	roll = r[0]
+	roll_v = r[1]
+	r = _spring(pitch, pitch_v, pitch_t, param("pitch_period_s"), param("damping"), dt)
+	pitch = r[0]
+	pitch_v = r[1]
+	r = _spring(heave, heave_v, heave_t, param("heave_period_s"), param("damping"), dt)
+	heave = r[0]
+	heave_v = r[1]
 	events = []
 	slam *= exp(-dt / 0.7)
 	for i in 3:
@@ -125,12 +125,12 @@ static func _soft(x: float, m: float) -> float:
 	return m * tanh(x / m)
 
 
-## Damped spring towards `target`, advanced in steps of at most 1/90 s. Returns Vector2(position, velocity).
-static func _spring(x: float, v: float, target: float, period: float, zeta: float, dt: float) -> Vector2:
+## Damped spring towards `target`, advanced in steps of at most 1/90 s. Returns [position, velocity].
+static func _spring(x: float, v: float, target: float, period: float, zeta: float, dt: float) -> Array:
 	var w := TAU / period
 	var n := maxi(1, ceili(dt / (1.0 / 90.0)))
 	var h := dt / float(n)
 	for i in n:
 		v += (w * w * (target - x) - 2.0 * zeta * w * v) * h
 		x += v * h
-	return Vector2(x, v)
+	return [x, v]

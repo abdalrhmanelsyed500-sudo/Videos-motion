@@ -76,6 +76,22 @@ h2d_rain={
 "type": "float",
 "value": 0.0
 }
+h2d_adv={
+"type": "vec2",
+"value": Vector2(0, 0)
+}
+h2d_wind_ms={
+"type": "float",
+"value": 0.0
+}
+h2d_gust={
+"type": "float",
+"value": 0.0
+}
+h2d_sea={
+"type": "float",
+"value": 0.0
+}
 
 [rendering]
 

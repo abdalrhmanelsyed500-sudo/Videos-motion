@@ -1,6 +1,9 @@
 extends Node
 ## H2D-0: one playable HD-2D ocean scene. The simulation is the validated E1 one (Ocean, SeaState, world clock, weather
 ## smoothing); only the PICTURE changed, behind the single SeaView interface (3D Compatibility path or 2D fallback).
+## H2D-0.2: weather, sea, rain, spray, sail shape and ship motion all come from ONE shared environment (env_model.gd).
+## New keys: W weather lab (real / calm / breezy / rough / gale / storm) | G gust | M ship motion off / half / full |
+##       E effects budget (low / medium / high)
 ## Keys: A/D (or Left/Right) steer | Z/X turn sensitivity | 1-7 weather (1 squall 2 fair 4 fog 5 swell 6 gale 7 ice)
 ##       P pause | R reset ship | F1 quality (Dev-Lite / Standard / Ultra) | F2 path (3D / 2D) | F3 HUD | F4 flip colour
 ##       transfer | F12 screenshot | [ ] camera pitch | - = exposure | , . visual speed | B benchmark (about 80 s)
@@ -17,6 +20,7 @@ const View2D := preload("res://h2d/sea_view_2d.gd")
 const ShipSprite := preload("res://h2d/ship_sprite.gd")
 const Bench := preload("res://h2d/bench.gd")
 const Helm := preload("res://h2d/helm.gd")
+const EnvModel := preload("res://h2d/env_model.gd")
 const HelmHud := preload("res://h2d/helm_hud.gd")
 const MAX_STEP_S := 0.25
 const SMOOTH_S := 2.0
@@ -26,7 +30,21 @@ const SMOOTH_KEYS: Array[String] = ["wind_kn", "wave_m", "visibility_km", "cloud
 		"ice", "sst_c", "air_c", "light_peak", "light_floor"]
 const COMPASS: Array[String] = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
 const QUALITIES: Array[String] = ["dev_lite", "standard", "ultra"]
+## Weather Lab: fixed sea states to test the whole system in seconds. The wind DIRECTION stays the real one.
+const LAB_ORDER: Array[String] = ["real", "calm", "breezy", "rough", "gale", "storm"]
+const LAB := {
+	"calm": {"wind_kn": 4.0, "wave_m": 0.35, "rain": 0.0, "storm": 0.0, "fog": 0.05},
+	"breezy": {"wind_kn": 14.0, "wave_m": 1.4, "rain": 0.0, "storm": 0.0, "fog": 0.05},
+	"rough": {"wind_kn": 24.0, "wave_m": 3.4, "rain": 0.35, "storm": 0.25, "fog": 0.10},
+	"gale": {"wind_kn": 36.0, "wave_m": 6.0, "rain": 0.8, "storm": 0.7, "fog": 0.15},
+	"storm": {"wind_kn": 48.0, "wave_m": 9.5, "rain": 1.0, "storm": 1.0, "fog": 0.2},
+}
+const MOTION_NAMES: Array[String] = ["off", "half", "full"]
+const EFFECT_LEVELS: Array[String] = ["low", "medium", "high"]
 
+var _env: EnvModel = EnvModel.new()
+var _env_snap := true
+var _lab := "real"
 var _state: RefCounted
 var _sea: RefCounted
 var _oc: RefCounted
@@ -94,6 +112,7 @@ func _ready() -> void:
 	layer.add_child(_hud)
 	_build_helm_widgets(layer)
 	_helm.configure(_oc.tuning())
+	_env.configure(_oc.tuning())
 	_jump(2)
 	_reset_ship()
 	_set_path("3d")
@@ -157,7 +176,9 @@ func _process(delta: float) -> void:
 	if _sea.last_sample.is_empty():
 		_sea.refresh(t0)
 	# the helm: A/D -> rudder -> turn rate -> heading; the sails' speed at this heading -> actual speed (with momentum)
-	var target_kn: float = _sea.speed_kn()
+	_apply_lab()
+	_step_env(dt)
+	var target_kn: float = _sea.speed_kn() * (1.0 + _env.gust_surge())
 	if _helm_snap:
 		_helm.speed_kn = target_kn
 		_helm_snap = false
@@ -167,6 +188,7 @@ func _process(delta: float) -> void:
 	_heading_disp = _helm.heading_deg
 	_turn = _helm.yaw_rate * 0.5
 	_smooth(dt)
+	_apply_env_to_view()
 	_d["speed_kn"] = _helm.speed_kn
 	var speed_scene := ShipSprite.scene_speed_ms(_helm.speed_kn) * _speed_mul
 	if gs > 0.0:
@@ -204,6 +226,38 @@ func _steer_axis() -> float:
 	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
 		axis += 1.0
 	return axis
+
+
+## Weather Lab: replaces the sampled weather with a fixed sea state (every frame, because the ocean re-samples
+## every 15 game minutes). The wind direction, the region and the light are untouched.
+func _apply_lab() -> void:
+	if _lab == "real" or _sea.last_sample.is_empty():
+		return
+	var p: Dictionary = LAB[_lab]
+	var smp: Dictionary = _sea.last_sample
+	for key in p.keys():
+		smp[key] = float(p[key])
+
+
+## The environment model eases towards the sampled weather: gusts, build-up and decay, slow wave direction.
+func _step_env(dt: float) -> void:
+	var smp: Dictionary = _sea.last_sample
+	if _env_snap:
+		_env.snap(smp)
+		_env_snap = false
+	_env.step(dt, smp, _real)
+
+
+## The numbers the picture, the HUD and the 2D fallback read: from the environment, not from the raw sample.
+func _apply_env_to_view() -> void:
+	_d["wind_kn"] = _env.wind_kn
+	_d["wind_from"] = _env.wind_from
+	_d["wave_m"] = _env.wave_m
+	_d["rain"] = _env.rain_inst
+	_d["storm"] = _env.storm
+	_d["fog"] = _env.fog
+	_d["visibility_km"] = _env.visibility_km
+	_d["cloud"] = maxf(float(_d["cloud"]), maxf(0.6 * _env.rain, 0.8 * _env.storm))
 
 
 func _smooth(dt: float) -> void:
@@ -262,6 +316,8 @@ func _view() -> Dictionary:
 	v["speed_kn"] = float(_d["speed_kn"])
 	v["turn"] = _turn
 	v["lat"] = float(_sea.last_sample["lat"])
+	v["env"] = _env.to_dict()
+	v["no_go_deg"] = _oc.tuning_value("ship.no_go_deg")
 	return v
 
 
@@ -281,6 +337,19 @@ func _unhandled_input(event: InputEvent) -> void:
 			_state.clock.pause(reason)
 	elif k.keycode == KEY_R:
 		_reset_ship()
+	elif k.keycode == KEY_W:
+		_lab = LAB_ORDER[(LAB_ORDER.find(_lab) + 1) % LAB_ORDER.size()]
+		_say("weather lab: %s (the sea builds up or dies away over about half a minute)" % _lab)
+	elif k.keycode == KEY_G:
+		_env.trigger_gust()
+		_say("gust")
+	elif k.keycode == KEY_M:
+		v3.motion_mode = (v3.motion_mode + 1) % 3
+		_say("ship motion: " + MOTION_NAMES[v3.motion_mode])
+	elif k.keycode == KEY_E:
+		var lv: String = EFFECT_LEVELS[(EFFECT_LEVELS.find(v3.effects) + 1) % EFFECT_LEVELS.size()]
+		v3.set_effects(lv)
+		_say("effects budget: " + lv)
 	elif k.keycode == KEY_F1:
 		var q: String = QUALITIES[(QUALITIES.find(v3.quality) + 1) % QUALITIES.size()]
 		v3.set_quality(q)
@@ -336,6 +405,7 @@ func bench_apply(phase: Dictionary) -> void:
 		(_v3 as View3D).set_quality(str(phase["quality"]))
 	_jump(int(phase["cp"]))
 	_reset_ship()
+	_env_snap = true
 
 
 func bench_capture() -> Image:
@@ -469,11 +539,14 @@ func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 		return
 	var wind_from := float(_d["wind_from"])
 	var lines: Array[String] = []
-	lines.append("CROWN OF THE SEAS - H2D-0.1   [%s]   %.0f fps" % [_active.describe(), _fps])
+	lines.append("CROWN OF THE SEAS - H2D-0.2   [%s]   %.0f fps" % [_active.describe(), _fps])
 	lines.append(_renderer_line)
-	lines.append("%s   %02d:%02d   wind %.0f kn from %s   waves %.1f m   visibility %.1f km" % [
-			_region_name(), int(_hour), int((_hour - floorf(_hour)) * 60.0), float(_d["wind_kn"]),
+	lines.append("%s   %02d:%02d   wind %.0f kn (gusting %.0f) from %s   waves %.1f m   visibility %.1f km" % [
+			_region_name(), int(_hour), int((_hour - floorf(_hour)) * 60.0), float(_d["wind_kn"]), _env.wind_inst_kn,
 			_compass(wind_from), float(_d["wave_m"]), float(_d["visibility_km"])])
+	lines.append("sea state: %s (%.2f)   gust %.2f   weather: %s   effects: %s" % [_env.sea_name(), _env.sea, _env.gust,
+			"real" if _lab == "real" else "LAB " + _lab, (_v3 as View3D).effects])
+	lines.append("ship motion [%s]: %s" % [MOTION_NAMES[(_v3 as View3D).motion_mode], (_v3 as View3D).motion_summary()])
 	lines.append("turn rate %.0f deg/s (sensitivity x%.1f, Z/X)   scene speed %.1f m/s (x%.2f)   sprite frame %d/16" % [
 			absf(_helm.yaw_rate), _helm.sensitivity, speed_scene, _speed_mul, ShipSprite.heading_frame(_heading_disp)])
 	lines.append("rain %.2f  storm %.2f  fog %.2f  ice %.2f  swell warning %.2f" % [
@@ -485,7 +558,7 @@ func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 		lines.append("BENCHMARK " + (_bench as Bench).current_label())
 	if _real < _banner_until:
 		lines.append(_banner)
-	lines.append("A/D steer   Z/X turn sensitivity   1-7 weather   P pause   R reset   F1 quality   F2 3D/2D   F3 HUD")
+	lines.append("A/D steer  Z/X turn  1-7 place  W weather lab  G gust  M motion  E effects  P pause  R reset  F1-F4")
 	_hud.text = "\n".join(PackedStringArray(lines))
 
 

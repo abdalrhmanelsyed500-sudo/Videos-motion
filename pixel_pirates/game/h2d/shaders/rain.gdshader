@@ -13,7 +13,6 @@ uniform vec2 grid = vec2(56.0, 44.0);
 uniform vec2 base_cell = vec2(0.0);   // integer cell of the grid's first column/row (follows the camera focus)
 uniform float cell_m = 3.4;
 uniform float fall_ms = 22.0;         // fall speed, m/s
-uniform float fall_top = 30.0;        // starting height above the water, m
 uniform vec2 drift = vec2(0.0);       // sideways speed of the drops (the wind), m/s
 uniform float streak_m = 1.6;         // length of the streak, m
 uniform float half_w = 0.13;          // half width of the streak, m
