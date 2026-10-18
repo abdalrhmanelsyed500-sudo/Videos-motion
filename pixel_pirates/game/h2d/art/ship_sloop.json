@@ -1,0 +1,39 @@
+{
+ "id": "shp_sloop_h2d",
+ "frame_px": [
+  112,
+  96
+ ],
+ "pivot_px": [
+  56,
+  66
+ ],
+ "px_per_m": 3.6,
+ "pitch_deg": 48.0,
+ "headings": 16,
+ "heading_step_deg": 22.5,
+ "trims_deg": [
+  -80,
+  -45,
+  0,
+  45,
+  80
+ ],
+ "hull_sheet": "ship_sloop_hull.png",
+ "sail_sheet": "ship_sloop_sails.png",
+ "key_light_world": [
+  -0.4065578140908709,
+  0.7724598467726547,
+  -0.487869376909045
+ ],
+ "colour_count": 22,
+ "ramps_used": [
+  "cloth_cream",
+  "cloth_red",
+  "dirt",
+  "hull_oak",
+  "iron",
+  "wood"
+ ],
+ "_doc": "Frame k = heading k*22.5 deg clockwise from north. Sheets are 16 columns; the sail sheet has 5 rows (trims_deg). Composite: sail pixel if opaque, else hull pixel. Baked light comes from the north-west."
+}
