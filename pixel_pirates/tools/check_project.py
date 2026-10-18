@@ -17,7 +17,7 @@ GAME = ROOT / "game"
 problems: list[str] = []
 warnings: list[str] = []
 
-DATA_KINDS = {"isl", "reg", "crew", "npc", "item", "rcp", "ship", "evt", "loc", "fac", "qst", "dlg", "clue", "mode", "kit", "tpl"}
+DATA_KINDS = {"bnd", "spc", "isl", "reg", "crew", "npc", "item", "rcp", "ship", "evt", "loc", "fac", "qst", "dlg", "clue", "mode", "kit", "tpl"}
 ASSET_PREFIXES = {"spr", "til", "prp", "shp", "ico", "fx", "ui", "bg"}
 RE_DATA = re.compile(r"^[a-z]+(_[a-z0-9]+)+$")
 RE_ISLAND = re.compile(r"^isl_[0-9]{3}$")

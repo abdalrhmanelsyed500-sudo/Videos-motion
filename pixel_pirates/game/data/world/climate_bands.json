@@ -1,0 +1,84 @@
+{
+ "schema": 1,
+ "kind": "climate_band",
+ "records": [
+  {
+   "id": "bnd_doldrums",
+   "name": "The Doldrums",
+   "lat_deg": 0,
+   "wind_kn": 4,
+   "wind_from_deg": 90,
+   "storminess": 0.15,
+   "current_u_kn": -0.3,
+   "notes": "Equatorial calms: little wind, sudden squalls.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module"
+  },
+  {
+   "id": "bnd_trades",
+   "name": "The Trade Winds",
+   "lat_deg": 15,
+   "wind_kn": 15,
+   "wind_from_deg": 60,
+   "storminess": 0.35,
+   "current_u_kn": -0.6,
+   "notes": "Steady easterlies; the great road westward.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module"
+  },
+  {
+   "id": "bnd_horse",
+   "name": "The Horse Latitudes",
+   "lat_deg": 30,
+   "wind_kn": 6,
+   "wind_from_deg": 90,
+   "storminess": 0.1,
+   "current_u_kn": 0.0,
+   "notes": "Dry high pressure: weak variable wind, clear skies.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module"
+  },
+  {
+   "id": "bnd_westerlies",
+   "name": "The Westerlies",
+   "lat_deg": 45,
+   "wind_kn": 24,
+   "wind_from_deg": 250,
+   "storminess": 0.6,
+   "current_u_kn": 0.9,
+   "notes": "Strong, steady, eastward: a fast road one way and a hard road back.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module"
+  },
+  {
+   "id": "bnd_subpolar",
+   "name": "The Subpolar Lows",
+   "lat_deg": 60,
+   "wind_kn": 19,
+   "wind_from_deg": 240,
+   "storminess": 0.7,
+   "current_u_kn": 1.2,
+   "notes": "Gales and low cloud, cold.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module"
+  },
+  {
+   "id": "bnd_polar",
+   "name": "The Polar Easterlies",
+   "lat_deg": 72,
+   "wind_kn": 15,
+   "wind_from_deg": 100,
+   "storminess": 0.45,
+   "current_u_kn": -0.3,
+   "notes": "Cold dry wind off the ice.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module"
+  }
+ ]
+}

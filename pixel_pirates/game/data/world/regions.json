@@ -1,0 +1,825 @@
+{
+ "schema": 1,
+ "kind": "region",
+ "records": [
+  {
+   "id": "reg_kettle_seas",
+   "name": "The Kettle Seas",
+   "climate": "tropical",
+   "mood": "warm_bright",
+   "strange": false,
+   "seed": {
+    "x_km": 7000,
+    "y_km": 2500,
+    "weight": 1.1
+   },
+   "water": {
+    "deep": "#0a5f8f",
+    "shallow": "#3fd6cc",
+    "clarity": 0.85,
+    "wave_scale": 0.8,
+    "foam": 0.5
+   },
+   "sky": {
+    "day": "#86d4ff",
+    "dusk": "#ff9a5c",
+    "night": "#0b1838"
+   },
+   "atmosphere": {
+    "fog_base": 0.05,
+    "fog_color": "#e6f3ee",
+    "cloud_bias": 0.45,
+    "rain_bias": 1.5,
+    "storm_bias": 1.8,
+    "lightning": 0.6,
+    "wind_scale": 1.0
+   },
+   "sea": {
+    "sst_offset_c": 0.5,
+    "swell_m": 0.6,
+    "depth_m": 1800,
+    "productivity": 0.7,
+    "current_u_kn": -0.5,
+    "current_v_kn": 0.0
+   },
+   "ice": {
+    "sea_ice_bias": -1.0,
+    "iceberg_per_10k_km2": 0
+   },
+   "islands": {
+    "t1": 2,
+    "t2": 4,
+    "t3": 4
+   },
+   "nav_rule": "squall_wall",
+   "gear_needs": [
+    "rain_awning",
+    "extra_water"
+   ],
+   "reasons": [
+    "Home waters: the gentlest sea and the first charts",
+    "Reef shelves rich enough to feed the whole crew"
+   ],
+   "discoveries": [
+    "Plankton rivers glowing along the reef shelf at night",
+    "Turtle roads that point toward fresh water"
+   ],
+   "hazards": [
+    "Sudden squalls",
+    "Reef shoals"
+   ],
+   "notes": "Warm, clear, humid. Heavy showers every few days. A squall shows as a dark wall of cloud 20 to 40 real minutes of sailing before it arrives; reading it early is the whole skill of the region.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module",
+   "lat_range": {
+    "lo": -25,
+    "hi": 25
+   }
+  },
+  {
+   "id": "reg_shattered_reaches",
+   "name": "The Shattered Reaches",
+   "climate": "tropical",
+   "mood": "jagged_hidden",
+   "strange": true,
+   "seed": {
+    "x_km": 1800,
+    "y_km": 2650,
+    "weight": 0.95
+   },
+   "water": {
+    "deep": "#07506f",
+    "shallow": "#2fc8a8",
+    "clarity": 0.9,
+    "wave_scale": 0.7,
+    "foam": 0.8
+   },
+   "sky": {
+    "day": "#7acbf5",
+    "dusk": "#ff8a4c",
+    "night": "#0a1430"
+   },
+   "atmosphere": {
+    "fog_base": 0.08,
+    "fog_color": "#dfeee8",
+    "cloud_bias": 0.4,
+    "rain_bias": 1.2,
+    "storm_bias": 1.6,
+    "lightning": 0.5,
+    "wind_scale": 0.9
+   },
+   "sea": {
+    "sst_offset_c": 1.0,
+    "swell_m": 0.3,
+    "depth_m": 400,
+    "productivity": 0.65,
+    "current_u_kn": -0.3,
+    "current_v_kn": 0.1
+   },
+   "ice": {
+    "sea_ice_bias": -1.0,
+    "iceberg_per_10k_km2": 0
+   },
+   "islands": {
+    "t1": 2,
+    "t2": 3,
+    "t3": 3
+   },
+   "nav_rule": "tide_gated_channels",
+   "gear_needs": [
+    "reef_chart",
+    "lantern"
+   ],
+   "reasons": [
+    "The densest island chains in the world: the only place for short hops in a row",
+    "Hidden channels shorten a voyage for a captain who knows the tides",
+    "A volcanic belt of black sand, hot springs and sulphur"
+   ],
+   "discoveries": [
+    "Channels that open only at low tide",
+    "A reef that sings when the wind is from the south"
+   ],
+   "hazards": [
+    "Reefs",
+    "Tide-gated channels",
+    "Volcanic ash"
+   ],
+   "notes": "A broken world of jagged volcanic islands and immense reefs. Shallow, so the sea floor is the map. Channels open and close with the tide, so the shortest way depends on the hour.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module",
+   "lat_range": {
+    "lo": -25,
+    "hi": 38
+   }
+  },
+  {
+   "id": "reg_sunward_banks",
+   "name": "The Sunward Banks",
+   "climate": "subtropical",
+   "mood": "dry_golden",
+   "strange": false,
+   "seed": {
+    "x_km": 7400,
+    "y_km": 2050,
+    "weight": 0.9
+   },
+   "water": {
+    "deep": "#0b5a96",
+    "shallow": "#46c6d8",
+    "clarity": 0.8,
+    "wave_scale": 0.9,
+    "foam": 0.4
+   },
+   "sky": {
+    "day": "#9bd8ff",
+    "dusk": "#ffb060",
+    "night": "#0c1a3c"
+   },
+   "atmosphere": {
+    "fog_base": 0.03,
+    "fog_color": "#f2efe0",
+    "cloud_bias": 0.25,
+    "rain_bias": 0.5,
+    "storm_bias": 1.3,
+    "lightning": 0.2,
+    "wind_scale": 1.6
+   },
+   "sea": {
+    "sst_offset_c": 0.0,
+    "swell_m": 1.0,
+    "depth_m": 2200,
+    "productivity": 0.85,
+    "current_u_kn": -0.4,
+    "current_v_kn": 0.2
+   },
+   "ice": {
+    "sea_ice_bias": -1.0,
+    "iceberg_per_10k_km2": 0
+   },
+   "islands": {
+    "t1": 1,
+    "t2": 3,
+    "t3": 2
+   },
+   "nav_rule": "monsoon_reversal",
+   "gear_needs": [
+    "spare_sails",
+    "extra_water"
+   ],
+   "reasons": [
+    "The richest fishing grounds: blooming-sea seasons feed fleets",
+    "Dry islands with salt pans and deep wells",
+    "A seasonal wind that reverses: a one-way road that flips"
+   ],
+   "discoveries": [
+    "The Blooming: a season when the sea turns the colour of rust by day and glows by night",
+    "A well older than the charts"
+   ],
+   "hazards": [
+    "Strong sun and thirst",
+    "Season-trapped routes"
+   ],
+   "notes": "Warm blue water and dry, bright islands. The wind blows one way for half the year and the other way for the rest, so a voyage out may have no voyage home until the season turns.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module",
+   "bloom": {
+    "center": 0.55,
+    "width": 0.12,
+    "strength": 0.7
+   },
+   "monsoon": 0.9,
+   "lat_range": {
+    "lo": 15,
+    "hi": 40
+   }
+  },
+  {
+   "id": "reg_glass_sea",
+   "name": "The Glass Sea",
+   "climate": "dead_calm",
+   "mood": "still_uncanny",
+   "strange": true,
+   "seed": {
+    "x_km": 4500,
+    "y_km": 3000,
+    "weight": 1.0
+   },
+   "water": {
+    "deep": "#0d4f78",
+    "shallow": "#5fd0d8",
+    "clarity": 0.95,
+    "wave_scale": 0.3,
+    "foam": 0.05
+   },
+   "sky": {
+    "day": "#a8e0ff",
+    "dusk": "#ffc08a",
+    "night": "#0a1634"
+   },
+   "atmosphere": {
+    "fog_base": 0.1,
+    "fog_color": "#eef4f2",
+    "cloud_bias": 0.15,
+    "rain_bias": 1.6,
+    "storm_bias": 0.9,
+    "lightning": 0.1,
+    "wind_scale": 0.15
+   },
+   "sea": {
+    "sst_offset_c": 1.5,
+    "swell_m": 0.05,
+    "depth_m": 4200,
+    "productivity": 0.3,
+    "current_u_kn": -0.1,
+    "current_v_kn": 0.0
+   },
+   "ice": {
+    "sea_ice_bias": -1.0,
+    "iceberg_per_10k_km2": 0
+   },
+   "islands": {
+    "t1": 1,
+    "t2": 2,
+    "t3": 2
+   },
+   "nav_rule": "windless_mirror",
+   "gear_needs": [
+    "sweeps",
+    "extra_water",
+    "rain_awning"
+   ],
+   "reasons": [
+    "A mirror sea where a sail can be seen from 30 km, so you are seen as well",
+    "Rare calm-water animals surface only here",
+    "Whoever crosses it owns the road between east and west"
+   ],
+   "discoveries": [
+    "Rain that falls straight and leaves rings for an hour",
+    "The Mirror Whale, seen only at dead calm"
+   ],
+   "hazards": [
+    "No wind, stores keep running",
+    "Heat and thirst",
+    "Being seen"
+   ],
+   "notes": "The equatorial calms stretched into a sea. Wind is a whisper; the water is so still the sky doubles. The crew must row (sweeps), stores drain, and every ship on it sees every other.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module",
+   "lat_range": {
+    "lo": -20,
+    "hi": 20
+   }
+  },
+  {
+   "id": "reg_dead_ocean",
+   "name": "The Dead Ocean",
+   "climate": "subtropical",
+   "mood": "empty_old",
+   "strange": true,
+   "seed": {
+    "x_km": 4400,
+    "y_km": 4150,
+    "weight": 0.9
+   },
+   "water": {
+    "deep": "#072f55",
+    "shallow": "#2a7fa5",
+    "clarity": 0.98,
+    "wave_scale": 1.1,
+    "foam": 0.15
+   },
+   "sky": {
+    "day": "#8fc4e8",
+    "dusk": "#e89a70",
+    "night": "#080f28"
+   },
+   "atmosphere": {
+    "fog_base": 0.02,
+    "fog_color": "#e8e8e8",
+    "cloud_bias": 0.2,
+    "rain_bias": 1.5,
+    "storm_bias": 0.6,
+    "lightning": 0.1,
+    "wind_scale": 0.9
+   },
+   "sea": {
+    "sst_offset_c": -0.5,
+    "swell_m": 1.4,
+    "depth_m": 5200,
+    "productivity": 0.08,
+    "current_u_kn": 0.2,
+    "current_v_kn": 0.1
+   },
+   "ice": {
+    "sea_ice_bias": -1.0,
+    "iceberg_per_10k_km2": 0
+   },
+   "islands": {
+    "t1": 1,
+    "t2": 1,
+    "t3": 2
+   },
+   "nav_rule": "star_only_drift",
+   "gear_needs": [
+    "star_tables",
+    "extra_water",
+    "deep_line"
+   ],
+   "reasons": [
+    "Wrecks from every age drifted here and stayed",
+    "Untouched landfalls worth half again as much",
+    "The clearest water and the best stars in the world"
+   ],
+   "discoveries": [
+    "A fleet of ships all drifted together",
+    "Water so clear a lead line shows 60 m"
+   ],
+   "hazards": [
+    "Longest crossings",
+    "Scarce fish",
+    "No landmarks: only stars and currents"
+   ],
+   "notes": "The great central gyre: warm, clear, almost lifeless. There is no coast to read, so position comes from the stars and the set of the current. Everything dead ends up here, which is why everything worth finding is here too.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module",
+   "lat_range": {
+    "lo": -40,
+    "hi": -15
+   },
+   "extra_seeds": [
+    {
+     "x_km": 1700,
+     "y_km": 4200
+    },
+    {
+     "x_km": 7600,
+     "y_km": 4200
+    }
+   ]
+  },
+  {
+   "id": "reg_green_verge",
+   "name": "The Green Verge",
+   "climate": "temperate",
+   "mood": "green_busy",
+   "strange": false,
+   "seed": {
+    "x_km": 1900,
+    "y_km": 1250,
+    "weight": 1.1
+   },
+   "water": {
+    "deep": "#0f4b66",
+    "shallow": "#3d9c8c",
+    "clarity": 0.5,
+    "wave_scale": 1.0,
+    "foam": 0.5
+   },
+   "sky": {
+    "day": "#9fc9e0",
+    "dusk": "#e8a077",
+    "night": "#0b1830"
+   },
+   "atmosphere": {
+    "fog_base": 0.22,
+    "fog_color": "#dfe6e6",
+    "cloud_bias": 0.6,
+    "rain_bias": 1.0,
+    "storm_bias": 0.8,
+    "lightning": 0.1,
+    "wind_scale": 1.0
+   },
+   "sea": {
+    "sst_offset_c": 1.0,
+    "swell_m": 1.2,
+    "depth_m": 300,
+    "productivity": 0.8,
+    "current_u_kn": 0.6,
+    "current_v_kn": 0.1
+   },
+   "ice": {
+    "sea_ice_bias": -1.0,
+    "iceberg_per_10k_km2": 0
+   },
+   "islands": {
+    "t1": 3,
+    "t2": 3,
+    "t3": 2
+   },
+   "nav_rule": "pilot_coast_tides",
+   "gear_needs": [
+    "lantern",
+    "spare_sails"
+   ],
+   "reasons": [
+    "Coastal cities and the first real markets",
+    "Kelp forests with the richest cold-water catches",
+    "A long coast to follow when the open sea is too much"
+   ],
+   "discoveries": [
+    "A kelp forest tall enough to hide a ship",
+    "Harbours that exist only at high water"
+   ],
+   "hazards": [
+    "Tidal races",
+    "Coastal fog banks",
+    "Lee shores"
+   ],
+   "notes": "Green islands, rocky headlands, changing cloud, and a coastline of tidal harbours. The first place with real cities. Fog comes and goes with the tide.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module",
+   "lat_range": {
+    "lo": 35,
+    "hi": 62
+   }
+  },
+  {
+   "id": "reg_fogbound_expanse",
+   "name": "The Fogbound Expanse",
+   "climate": "temperate",
+   "mood": "muffled_grey",
+   "strange": true,
+   "seed": {
+    "x_km": 5200,
+    "y_km": 1250,
+    "weight": 0.9
+   },
+   "water": {
+    "deep": "#0b3c52",
+    "shallow": "#3a7f86",
+    "clarity": 0.35,
+    "wave_scale": 0.9,
+    "foam": 0.3
+   },
+   "sky": {
+    "day": "#b7c4c8",
+    "dusk": "#c9a68e",
+    "night": "#0d1624"
+   },
+   "atmosphere": {
+    "fog_base": 0.7,
+    "fog_color": "#cfd5d6",
+    "cloud_bias": 0.85,
+    "rain_bias": 0.6,
+    "storm_bias": 0.5,
+    "lightning": 0.05,
+    "wind_scale": 0.6
+   },
+   "sea": {
+    "sst_offset_c": -3.0,
+    "swell_m": 0.8,
+    "depth_m": 1500,
+    "productivity": 0.7,
+    "current_u_kn": 0.3,
+    "current_v_kn": 0.0
+   },
+   "ice": {
+    "sea_ice_bias": -1.0,
+    "iceberg_per_10k_km2": 0
+   },
+   "islands": {
+    "t1": 1,
+    "t2": 2,
+    "t3": 2
+   },
+   "nav_rule": "fog_bell_pilotage",
+   "gear_needs": [
+    "fog_bell",
+    "lantern"
+   ],
+   "reasons": [
+    "Islands you hear before you see",
+    "A cold current feeds rich fisheries",
+    "Silhouettes at dusk that are not always islands"
+   ],
+   "discoveries": [
+    "A bell buoy that nobody maintains",
+    "A ship that is only fog"
+   ],
+   "hazards": [
+    "Persistent fog",
+    "Collisions",
+    "Shoals"
+   ],
+   "notes": "A sea under a standing fog bank. Visibility is a stone's throw; sound carries. Navigation is by lead line and by bell. Quiet, cold and rich in fish.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module",
+   "lat_range": {
+    "lo": 30,
+    "hi": 56
+   }
+  },
+  {
+   "id": "reg_grey_marches",
+   "name": "The Grey Marches",
+   "climate": "subpolar",
+   "mood": "cold_lonely",
+   "strange": false,
+   "seed": {
+    "x_km": 5600,
+    "y_km": 500,
+    "weight": 1.1
+   },
+   "water": {
+    "deep": "#0a2f4a",
+    "shallow": "#2f6f84",
+    "clarity": 0.6,
+    "wave_scale": 1.2,
+    "foam": 0.6
+   },
+   "sky": {
+    "day": "#aab8c4",
+    "dusk": "#c8a0a0",
+    "night": "#0a1222"
+   },
+   "atmosphere": {
+    "fog_base": 0.25,
+    "fog_color": "#d6dde2",
+    "cloud_bias": 0.8,
+    "rain_bias": 0.7,
+    "storm_bias": 1.0,
+    "lightning": 0.05,
+    "wind_scale": 1.1
+   },
+   "sea": {
+    "sst_offset_c": -1.0,
+    "swell_m": 2.0,
+    "depth_m": 900,
+    "productivity": 0.75,
+    "current_u_kn": 0.8,
+    "current_v_kn": 0.0
+   },
+   "ice": {
+    "sea_ice_bias": 0.15,
+    "iceberg_per_10k_km2": 6
+   },
+   "islands": {
+    "t1": 1,
+    "t2": 2,
+    "t3": 2
+   },
+   "nav_rule": "iceberg_watch",
+   "gear_needs": [
+    "warm_clothing",
+    "heating_fuel",
+    "lantern"
+   ],
+   "reasons": [
+    "Sparse hard settlements that pay well for supplies",
+    "Seal and whale grounds",
+    "The first icebergs and the first drift ice"
+   ],
+   "discoveries": [
+    "A berg with a ship frozen inside",
+    "Seals that follow you for a day"
+   ],
+   "hazards": [
+    "Icebergs",
+    "Freezing spray",
+    "Short winter days"
+   ],
+   "notes": "Cold steel-grey water, low cloud and a harsh wind. A few settlements, far apart. Icebergs drift out of the north; in winter the far north closes with drift ice.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module",
+   "lat_range": {
+    "lo": 50,
+    "hi": 75
+   },
+   "extra_seeds": [
+    {
+     "x_km": 1500,
+     "y_km": 420
+    },
+    {
+     "x_km": 8300,
+     "y_km": 450
+    }
+   ]
+  },
+  {
+   "id": "reg_storm_belt",
+   "name": "The Storm Belt",
+   "climate": "stormy",
+   "mood": "violent_rich",
+   "strange": true,
+   "seed": {
+    "x_km": 5000,
+    "y_km": 4950,
+    "weight": 1.0
+   },
+   "water": {
+    "deep": "#082a4a",
+    "shallow": "#2c5f7c",
+    "clarity": 0.55,
+    "wave_scale": 2.0,
+    "foam": 0.9
+   },
+   "sky": {
+    "day": "#8aa0b8",
+    "dusk": "#d28f78",
+    "night": "#070e20"
+   },
+   "atmosphere": {
+    "fog_base": 0.12,
+    "fog_color": "#cbd2d8",
+    "cloud_bias": 0.9,
+    "rain_bias": 1.3,
+    "storm_bias": 1.6,
+    "lightning": 0.6,
+    "wind_scale": 1.1
+   },
+   "sea": {
+    "sst_offset_c": -2.0,
+    "swell_m": 3.5,
+    "depth_m": 3800,
+    "productivity": 0.9,
+    "current_u_kn": 1.0,
+    "current_v_kn": 0.0
+   },
+   "ice": {
+    "sea_ice_bias": 0.0,
+    "iceberg_per_10k_km2": 3
+   },
+   "islands": {
+    "t1": 1,
+    "t2": 1,
+    "t3": 2
+   },
+   "nav_rule": "westerly_run",
+   "gear_needs": [
+    "spare_sails",
+    "warm_clothing"
+   ],
+   "reasons": [
+    "A fast road east and a brutal road west",
+    "The richest whale and tuna waters",
+    "An abyssal trench with the deep life only a deep line reaches"
+   ],
+   "discoveries": [
+    "The trench: a line that never touches bottom",
+    "A swell that arrives a day ahead of its storm"
+   ],
+   "hazards": [
+    "Gales",
+    "Huge swell",
+    "Rogue waves"
+   ],
+   "notes": "The westerlies at full strength. The wind and current both run east: it is the fastest road in the world one way and the slowest the other. Rich in life, merciless to a poorly prepared ship.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module",
+   "lat_range": {
+    "lo": -58,
+    "hi": -33
+   },
+   "extra_seeds": [
+    {
+     "x_km": 1500,
+     "y_km": 5000
+    },
+    {
+     "x_km": 8300,
+     "y_km": 4900
+    }
+   ]
+  },
+  {
+   "id": "reg_white_hollow",
+   "name": "The White Hollow",
+   "climate": "polar",
+   "mood": "white_silent",
+   "strange": true,
+   "seed": {
+    "x_km": 4200,
+    "y_km": 5700,
+    "weight": 1.0
+   },
+   "water": {
+    "deep": "#061f36",
+    "shallow": "#2a5870",
+    "clarity": 0.7,
+    "wave_scale": 0.8,
+    "foam": 0.5
+   },
+   "sky": {
+    "day": "#bcd0de",
+    "dusk": "#d0a8b8",
+    "night": "#060c1c"
+   },
+   "atmosphere": {
+    "fog_base": 0.3,
+    "fog_color": "#e4ecf2",
+    "cloud_bias": 0.7,
+    "rain_bias": 0.2,
+    "storm_bias": 1.1,
+    "lightning": 0.02,
+    "wind_scale": 1.0
+   },
+   "sea": {
+    "sst_offset_c": -2.0,
+    "swell_m": 1.5,
+    "depth_m": 1200,
+    "productivity": 0.5,
+    "current_u_kn": -0.3,
+    "current_v_kn": 0.0
+   },
+   "ice": {
+    "sea_ice_bias": 0.45,
+    "iceberg_per_10k_km2": 25
+   },
+   "islands": {
+    "t1": 1,
+    "t2": 1,
+    "t3": 1
+   },
+   "nav_rule": "ice_leads",
+   "gear_needs": [
+    "warm_clothing",
+    "heating_fuel",
+    "ice_pole",
+    "lantern"
+   ],
+   "reasons": [
+    "Frozen islands and ice-covered coasts",
+    "Routes through the ice that change with the season",
+    "A lonely beauty and the edge of the charted world"
+   ],
+   "discoveries": [
+    "A lead that opens only in the short summer",
+    "A warm island heated from below"
+   ],
+   "hazards": [
+    "Pack ice",
+    "Whiteout",
+    "Polar night",
+    "Being trapped"
+   ],
+   "notes": "Ice fields, bergs of every size, narrow leads that open and close with the season, and half the year of twilight. Beautiful, silent, and hostile. The world's edge is here.",
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 world design; provisional until its owner module",
+   "lat_range": {
+    "lo": -75,
+    "hi": -52
+   },
+   "extra_seeds": [
+    {
+     "x_km": 1400,
+     "y_km": 5750
+    },
+    {
+     "x_km": 7600,
+     "y_km": 5750
+    }
+   ]
+  }
+ ]
+}

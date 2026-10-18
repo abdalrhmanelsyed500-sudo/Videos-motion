@@ -8,7 +8,17 @@
    "id",
    "name",
    "climate",
-   "mood"
+   "mood",
+   "seed",
+   "water",
+   "sky",
+   "atmosphere",
+   "sea",
+   "ice",
+   "islands",
+   "nav_rule",
+   "reasons",
+   "lat_range"
   ],
   "props": {
    "id": {
@@ -46,7 +56,7 @@
    },
    "notes": {
     "type": "string",
-    "pattern": "^.{1,400}$"
+    "pattern": "^.{1,700}$"
    },
    "provisional": {
     "type": "boolean"
@@ -58,6 +68,351 @@
    "source": {
     "type": "string",
     "pattern": "^.{1,200}$"
+   },
+   "strange": {
+    "type": "boolean"
+   },
+   "seed": {
+    "type": "object",
+    "required": [
+     "x_km",
+     "y_km",
+     "weight"
+    ],
+    "props": {
+     "x_km": {
+      "type": "number",
+      "min": 0,
+      "max": 20000
+     },
+     "y_km": {
+      "type": "number",
+      "min": 0,
+      "max": 20000
+     },
+     "weight": {
+      "type": "number",
+      "min": 0.5,
+      "max": 2.0
+     }
+    }
+   },
+   "water": {
+    "type": "object",
+    "required": [
+     "deep",
+     "shallow",
+     "clarity",
+     "wave_scale",
+     "foam"
+    ],
+    "props": {
+     "deep": {
+      "type": "string",
+      "pattern": "^#[0-9a-f]{6}$"
+     },
+     "shallow": {
+      "type": "string",
+      "pattern": "^#[0-9a-f]{6}$"
+     },
+     "clarity": {
+      "type": "number",
+      "min": 0,
+      "max": 1
+     },
+     "wave_scale": {
+      "type": "number",
+      "min": 0.3,
+      "max": 3.0
+     },
+     "foam": {
+      "type": "number",
+      "min": 0,
+      "max": 1
+     }
+    }
+   },
+   "sky": {
+    "type": "object",
+    "required": [
+     "day",
+     "dusk",
+     "night"
+    ],
+    "props": {
+     "day": {
+      "type": "string",
+      "pattern": "^#[0-9a-f]{6}$"
+     },
+     "dusk": {
+      "type": "string",
+      "pattern": "^#[0-9a-f]{6}$"
+     },
+     "night": {
+      "type": "string",
+      "pattern": "^#[0-9a-f]{6}$"
+     }
+    }
+   },
+   "atmosphere": {
+    "type": "object",
+    "required": [
+     "fog_base",
+     "fog_color",
+     "cloud_bias",
+     "rain_bias",
+     "storm_bias",
+     "lightning",
+     "wind_scale"
+    ],
+    "props": {
+     "fog_base": {
+      "type": "number",
+      "min": 0,
+      "max": 1
+     },
+     "fog_color": {
+      "type": "string",
+      "pattern": "^#[0-9a-f]{6}$"
+     },
+     "cloud_bias": {
+      "type": "number",
+      "min": 0,
+      "max": 1
+     },
+     "rain_bias": {
+      "type": "number",
+      "min": 0,
+      "max": 2
+     },
+     "storm_bias": {
+      "type": "number",
+      "min": 0,
+      "max": 2
+     },
+     "lightning": {
+      "type": "number",
+      "min": 0,
+      "max": 1
+     },
+     "wind_scale": {
+      "type": "number",
+      "min": 0,
+      "max": 1.6
+     }
+    }
+   },
+   "sea": {
+    "type": "object",
+    "required": [
+     "sst_offset_c",
+     "swell_m",
+     "depth_m",
+     "productivity",
+     "current_u_kn",
+     "current_v_kn"
+    ],
+    "props": {
+     "sst_offset_c": {
+      "type": "number",
+      "min": -8,
+      "max": 8
+     },
+     "swell_m": {
+      "type": "number",
+      "min": 0,
+      "max": 6
+     },
+     "depth_m": {
+      "type": "number",
+      "min": 20,
+      "max": 11000
+     },
+     "productivity": {
+      "type": "number",
+      "min": 0,
+      "max": 1
+     },
+     "current_u_kn": {
+      "type": "number",
+      "min": -4,
+      "max": 4
+     },
+     "current_v_kn": {
+      "type": "number",
+      "min": -4,
+      "max": 4
+     }
+    }
+   },
+   "ice": {
+    "type": "object",
+    "required": [
+     "sea_ice_bias",
+     "iceberg_per_10k_km2"
+    ],
+    "props": {
+     "sea_ice_bias": {
+      "type": "number",
+      "min": -1,
+      "max": 1
+     },
+     "iceberg_per_10k_km2": {
+      "type": "number",
+      "min": 0,
+      "max": 60
+     }
+    }
+   },
+   "islands": {
+    "type": "object",
+    "required": [
+     "t1",
+     "t2",
+     "t3"
+    ],
+    "props": {
+     "t1": {
+      "type": "integer",
+      "min": 0,
+      "max": 6
+     },
+     "t2": {
+      "type": "integer",
+      "min": 0,
+      "max": 10
+     },
+     "t3": {
+      "type": "integer",
+      "min": 0,
+      "max": 10
+     }
+    }
+   },
+   "nav_rule": {
+    "type": "string",
+    "enum": [
+     "squall_wall",
+     "tide_gated_channels",
+     "monsoon_reversal",
+     "windless_mirror",
+     "star_only_drift",
+     "fog_bell_pilotage",
+     "pilot_coast_tides",
+     "iceberg_watch",
+     "westerly_run",
+     "ice_leads"
+    ]
+   },
+   "gear_needs": {
+    "type": "array",
+    "items": {
+     "type": "string",
+     "enum": [
+      "warm_clothing",
+      "heating_fuel",
+      "ice_pole",
+      "deep_line",
+      "fog_bell",
+      "sweeps",
+      "rain_awning",
+      "spare_sails",
+      "reef_chart",
+      "extra_water",
+      "lantern",
+      "star_tables"
+     ]
+    },
+    "unique_items": true
+   },
+   "reasons": {
+    "type": "array",
+    "items": {
+     "type": "string",
+     "pattern": "^.{4,120}$"
+    },
+    "min_items": 2,
+    "max_items": 6
+   },
+   "discoveries": {
+    "type": "array",
+    "items": {
+     "type": "string",
+     "pattern": "^.{4,120}$"
+    },
+    "max_items": 8
+   },
+   "bloom": {
+    "type": "object",
+    "required": [
+     "center",
+     "width",
+     "strength"
+    ],
+    "props": {
+     "center": {
+      "type": "number",
+      "min": 0,
+      "max": 1
+     },
+     "width": {
+      "type": "number",
+      "min": 0.02,
+      "max": 0.5
+     },
+     "strength": {
+      "type": "number",
+      "min": 0,
+      "max": 1
+     }
+    }
+   },
+   "monsoon": {
+    "type": "number",
+    "min": 0,
+    "max": 1
+   },
+   "lat_range": {
+    "type": "object",
+    "required": [
+     "lo",
+     "hi"
+    ],
+    "props": {
+     "lo": {
+      "type": "number",
+      "min": -90,
+      "max": 90
+     },
+     "hi": {
+      "type": "number",
+      "min": -90,
+      "max": 90
+     }
+    }
+   },
+   "extra_seeds": {
+    "type": "array",
+    "max_items": 4,
+    "items": {
+     "type": "object",
+     "required": [
+      "x_km",
+      "y_km"
+     ],
+     "props": {
+      "x_km": {
+       "type": "number",
+       "min": 0,
+       "max": 20000
+      },
+      "y_km": {
+       "type": "number",
+       "min": 0,
+       "max": 20000
+      }
+     }
+    }
    }
   }
  }

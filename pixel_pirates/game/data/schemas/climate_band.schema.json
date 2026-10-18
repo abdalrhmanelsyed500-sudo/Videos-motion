@@ -1,0 +1,70 @@
+{
+ "kind": "climate_band",
+ "key_field": "id",
+ "id_prefix": "bnd",
+ "record": {
+  "type": "object",
+  "required": [
+   "id",
+   "name",
+   "lat_deg",
+   "wind_kn",
+   "wind_from_deg",
+   "storminess",
+   "current_u_kn",
+   "provisional",
+   "owner",
+   "source"
+  ],
+  "props": {
+   "id": {
+    "type": "string",
+    "pattern": "^bnd_[a-z0-9]+(_[a-z0-9]+)*$"
+   },
+   "name": {
+    "type": "string",
+    "pattern": "^.{2,40}$"
+   },
+   "lat_deg": {
+    "type": "number",
+    "min": 0,
+    "max": 90
+   },
+   "wind_kn": {
+    "type": "number",
+    "min": 0,
+    "max": 60
+   },
+   "wind_from_deg": {
+    "type": "number",
+    "min": 0,
+    "max": 360
+   },
+   "storminess": {
+    "type": "number",
+    "min": 0,
+    "max": 1
+   },
+   "current_u_kn": {
+    "type": "number",
+    "min": -4,
+    "max": 4
+   },
+   "notes": {
+    "type": "string",
+    "pattern": "^.{1,300}$"
+   },
+   "provisional": {
+    "type": "boolean"
+   },
+   "owner": {
+    "type": "string",
+    "pattern": "^[A-Z][0-9]{1,2}$"
+   },
+   "source": {
+    "type": "string",
+    "pattern": "^.{1,200}$"
+   }
+  }
+ }
+}
