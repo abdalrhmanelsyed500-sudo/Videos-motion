@@ -1,4 +1,4 @@
-# CANON BIBLE - Crown of the Seas (working title) - v1.2 (after A2-A7, B1, B2, T1 time revision, B4 economy, E1 ocean and slice, V1 visual lock)
+# CANON BIBLE - Crown of the Seas (working title) - v1.3 (after A2-A7, B1, B2, T1 time revision, B4 economy, E1 ocean and slice, V1 visual lock, D1-D4 decisions)
 Drive folder: "Pixel Pirates". Repo path: pixel_pirates/.
 
 ## Hard content rules
@@ -55,7 +55,7 @@ Dev-Lite = 640x360 internal (supersedes 683x438), no shadows/bloom/shafts.
 
 ## Decisions added
 A2-1 Godot project in game/. A2-2 stays inside Videos-motion for now, split later with git subtree. A2-3 JSON for all data. A2-4 dev PC needs no Python (generated art is committed). A2-5 preload constants for core utilities. A2-6 own headless test runner. A2-7 plain git, Git LFS gate at first binary > 5 MB or repo > 500 MB. A2-8 strict machine-checked IDs. A2-9 content rules enforced by tools/check_project.py.
-A3-1 art grid 640x360, 24/12 px per metre. A3-2 camera 22 deg FOV, 39/48 deg pitch. A3-3 ships are 3D models. A3-4 master palette 110 colours. A3-5 warm shadows (measured), cool fill only in storm/night/frozen. A3-6 look = survival HUD (state_grades). A3-7 Dev-Lite 640x360. A3-8 Look Lab is the GPU-free look approval tool.
+A3-1 art grid 640x360, 24/12 px per metre. A3-2 camera 22 deg FOV, 39/48 deg pitch. A3-3 SUPERSEDED by D2 (2026-10-18): ships are layered pixel-art sprites, up to 16 headings (was: 3D models). A3-4 master palette 110 colours. A3-5 warm shadows (measured), cool fill only in storm/night/frozen. A3-6 look = survival HUD (state_grades). A3-7 Dev-Lite 640x360. A3-8 Look Lab is the GPU-free look approval tool.
 A4-1 committed generated placeholders, drop-in replacement through the Assets resolver. A4-2 QA built into the generator (palette lock, colour budgets, no clipping).
 A1-10 amended: Dev-Lite internal 640x360.
 
@@ -142,14 +142,18 @@ Not verified: any GDScript of B4 (no Godot in the sandbox); whether the first te
 
 ## Visual direction lock (V1, user-locked 2026-10-18) - proposal in docs/E1B_HD2D_PROPOSAL.md
 The final game is **HD-2D in the manner of Octopath Traveler / Octopath Traveler II** (the two reference images): pixel-art ships, islands, ports, vegetation, buildings; an **angled top-down camera** with real depth (not side-view, not realistic 3D); layered scenery, dynamic lighting and shadows, atmospheric fog, depth of field where appropriate, controlled colour grading; an ocean that changes across tropical, temperate, stormy, frozen and mysterious regions; distinct rain, fog, storm, wave, ice and light looks; one cohesive art direction. The ship must visibly respond to steering; the ocean, islands and effects must convey a vast world. The E1 side-view scene is a **temporary technical prototype** (weather, ocean data, clock, steering) and is NOT the approved look. Priorities: 1 validate the prototype in Godot, 2 working sailing controls, 3 representative HD-2D prototype, 4 low-end performance validation, 5 expand the world. E2 does not start until the prototype's outstanding issues are investigated and the next step is defined. The world ambition is unchanged (Pacific-scale ocean, 10 regions, polar and mysterious regions, 200+ species).
-**Pending decisions (proposal section 6):** D1 render path (recommended: real 3D scene with pixel sprites, 2D fallback possible), D2 ship asset (recommended: layered pixel-art sprite sheets, baked from a 3D reference; would supersede A3-3 "ships are 3D models"), D3 camera north-up fixed (recommended), D4 order.
+**Decisions D1-D4 (user-approved 2026-10-18):**
+- **D1 render path:** ONE rendering interface, two implementations. Prototype the real 3D Compatibility-renderer HD-2D path FIRST; keep a lightweight 2D fallback. The final visual quality is never lowered because the dev PC is weak: a separate Dev-Lite mode exists, and the final-style prototype is benchmarked on the user's PC before any path decision.
+- **D2 ship asset:** layered pixel-art sprites, up to 16 headings, preferred direction, provided the result is coherent and performant. The pipeline stays practical; ship readability during movement is validated BEFORE a large asset set is made. Supersedes A3-3.
+- **D3 camera:** fixed north-up world with an angled top-down oblique camera; the ship changes heading, the world does not rotate. Keep HD-2D depth, lighting, shadows and atmosphere.
+- **D4 order:** run the E1b self-test first; then H2D-0 = ONE representative, playable HD-2D ocean scene with a pixel-art ship, visible steering and movement, convincing ocean depth, at least one island, representative weather, and a performance report from actual runs on the user's PC. Nothing is called passed unless it ran in Godot. E2 stays blocked.
 **E1b changes:** compass-fixed sky and swell (turning visibly turns the world), ship leans into turns, IN IRONS warning, scripted self-test (`tools\run_slice_selftest.bat`, not yet run), spec wording fix (14 kn is the reference wind; the sloop makes 5 kn).
 
 ## Island registry (50+ planned)
 Generated: docs/ISLAND_REGISTRY.md. Currently empty. Format: ID (isl_NNN) | name | tier | biome | position | distances to neighbours | status (planned/designed/built/tested). Filled from E3.
 
 ## Open questions
-V1/E1b: run `tools\\run_slice_selftest.bat` on the dev PC and send build\\slice_selftest.txt (includes GPU adapter and driver); answer D1-D4 in docs/E1B_HD2D_PROPOSAL.md; E2 is blocked until then.
+V1/E1b: run `tools\\run_slice_selftest.bat` on the dev PC and send build\\slice_selftest.txt (includes GPU adapter and driver). D1-D4 are answered; H2D-0 starts after the self-test result; E2 stays blocked.
 E1: run tools\\run_godot_tests.bat (new: test_ocean, test_sea_state, test_console), then tools\\run_slice.bat and answer the 10-point checklist in docs/E1_WORLD_SPEC.md section 11; confirm the E1 decisions, especially the reference speed and the sea-view direction. E2 must place islands against the region quotas and the exact times above.
 B4: first run of core/market.gd and tests/test_market.gd on the user's PC; confirm the B4 decisions (Heavy Money, shares from prizes only, deterministic prices); B5 must price the ships against the windfall size.
 T1: first run of core/voyage_clock.gd, core/world_clock.gd, tests/test_voyage_clock.gd, tests/test_world_clock.gd on the user's PC; confirm the T1 decisions; visual test of the six day/night bands (I19).

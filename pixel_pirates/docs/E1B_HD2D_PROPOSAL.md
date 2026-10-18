@@ -104,7 +104,9 @@ One scene, run from a launcher, with the same self-test harness:
 
 Accepted when: you can steer and see the ship swing through headings; the three weathers are distinct; the benchmark report exists for your PC. **Performance on the HD 3000 is judged by that report only.**
 
-## 6. Decisions needed (with recommendation)
+## 6. Decisions (ANSWERED by the user 2026-10-18; recorded in Canon v1.3)
+
+D1: one interface, 3D Compatibility path prototyped first, 2D fallback and Dev-Lite kept, benchmark on the user's PC before deciding. D2: layered pixel-art sprites, up to 16 headings, readability validated in motion before bulk assets. D3: north-up fixed, angled oblique camera. D4: self-test first, then H2D-0 with a real performance report. The original options follow for the record.
 
 - **D1 Render path:** A true 3D scene with pixel sprites (recommended), B pure 2D, C both. 
 - **D2 Ship asset:** (1) hand-made pixel sprite sheets only; (2) low-poly 3D model with pixel texture (A3-3, today); (3) **recommended: pixel-art sprite sheets at runtime, layered (hull, sails, rigging, flag, damage) and baked from a simple 3D reference model for consistent angles, then hand-cleaned.** Supersedes A3-3. Runtime cost is sprites only; damage and sail states stay possible as layers.
