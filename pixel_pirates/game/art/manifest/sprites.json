@@ -39,7 +39,33 @@
    ],
    "status": "placeholder"
   },
+  "ico_item_cloth": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "misc",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
   "ico_item_coin": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "money",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_doubloon": {
    "category": "icons",
    "colours": 5,
    "frames": 1,
@@ -70,6 +96,19 @@
    "colours": 5,
    "frames": 1,
    "group": "food",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_furs": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "misc",
    "kind": "icon",
    "px_per_m": 0,
    "size": [
@@ -143,6 +182,19 @@
    ],
    "status": "placeholder"
   },
+  "ico_item_pearls": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "money",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
   "ico_item_plank": {
    "category": "icons",
    "colours": 5,
@@ -169,7 +221,59 @@
    ],
    "status": "placeholder"
   },
+  "ico_item_salt": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "food",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
   "ico_item_salt_meat": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "food",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_silver_bar": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "money",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_spice": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "food",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_sugar": {
    "category": "icons",
    "colours": 5,
    "frames": 1,
@@ -187,6 +291,19 @@
    "colours": 5,
    "frames": 1,
    "group": "ship",
+   "kind": "icon",
+   "px_per_m": 0,
+   "size": [
+    24,
+    24
+   ],
+   "status": "placeholder"
+  },
+  "ico_item_tobacco": {
+   "category": "icons",
+   "colours": 5,
+   "frames": 1,
+   "group": "misc",
    "kind": "icon",
    "px_per_m": 0,
    "size": [

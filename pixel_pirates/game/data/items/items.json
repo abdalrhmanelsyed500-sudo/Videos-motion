@@ -7,7 +7,7 @@
    "name": "Hardtack",
    "category": "food",
    "weight_kg": 1.0,
-   "base_value": 4,
+   "base_value": 2,
    "stack_max": 200,
    "icon": "ico_item_hardtack",
    "provisional": true,
@@ -32,7 +32,7 @@
    "name": "Salt Meat",
    "category": "food",
    "weight_kg": 1.0,
-   "base_value": 9,
+   "base_value": 5,
    "stack_max": 100,
    "icon": "ico_item_salt_meat",
    "provisional": true,
@@ -57,7 +57,7 @@
    "name": "Fresh Fish",
    "category": "food",
    "weight_kg": 1.0,
-   "base_value": 3,
+   "base_value": 2,
    "stack_max": 50,
    "icon": "ico_item_fresh_fish",
    "provisional": true,
@@ -83,7 +83,7 @@
    "name": "Water Barrel",
    "category": "drink",
    "weight_kg": 120.0,
-   "base_value": 12,
+   "base_value": 6,
    "stack_max": 10,
    "icon": "ico_item_water_barrel",
    "provisional": true,
@@ -104,7 +104,7 @@
    "name": "Grog",
    "category": "drink",
    "weight_kg": 1.0,
-   "base_value": 5,
+   "base_value": 3,
    "stack_max": 100,
    "icon": "ico_item_grog",
    "provisional": true,
@@ -124,7 +124,7 @@
    "name": "Gunpowder",
    "category": "ammo",
    "weight_kg": 25.0,
-   "base_value": 40,
+   "base_value": 30,
    "stack_max": 20,
    "icon": "ico_item_gunpowder",
    "provisional": true,
@@ -144,7 +144,7 @@
    "name": "Cannonball",
    "category": "ammo",
    "weight_kg": 4.5,
-   "base_value": 6,
+   "base_value": 5,
    "stack_max": 100,
    "icon": "ico_item_cannonball",
    "provisional": true,
@@ -159,7 +159,7 @@
    "name": "Lime",
    "category": "medicine",
    "weight_kg": 1.0,
-   "base_value": 6,
+   "base_value": 4,
    "stack_max": 100,
    "icon": "ico_item_lime",
    "provisional": true,
@@ -285,18 +285,174 @@
   },
   {
    "id": "item_coin",
-   "name": "Coin",
+   "name": "Piece of Eight",
    "category": "trade",
-   "weight_kg": 0.01,
+   "weight_kg": 0.027,
    "base_value": 1,
    "stack_max": 100000,
    "icon": "ico_item_coin",
    "provisional": true,
-   "owner": "N1",
-   "source": "design placeholder",
+   "owner": "B4",
+   "source": "B4 economy: silver piece of eight, 27 g",
    "tags": [
     "currency"
    ]
+  },
+  {
+   "id": "item_doubloon",
+   "name": "Gold Doubloon",
+   "category": "treasure",
+   "weight_kg": 0.027,
+   "base_value": 16,
+   "stack_max": 100000,
+   "icon": "ico_item_doubloon",
+   "provisional": true,
+   "owner": "B4",
+   "source": "B4 economy: trade good or treasure, value per kg set by density class",
+   "tags": [
+    "currency",
+    "gold"
+   ]
+  },
+  {
+   "id": "item_silver_bar",
+   "name": "Silver Bar",
+   "category": "treasure",
+   "weight_kg": 10.0,
+   "base_value": 370,
+   "stack_max": 200,
+   "icon": "ico_item_silver_bar",
+   "provisional": true,
+   "owner": "B4",
+   "source": "B4 economy: trade good or treasure, value per kg set by density class",
+   "tags": [
+    "bullion",
+    "silver"
+   ]
+  },
+  {
+   "id": "item_pearls",
+   "name": "String of Pearls",
+   "category": "treasure",
+   "weight_kg": 0.1,
+   "base_value": 60,
+   "stack_max": 500,
+   "icon": "ico_item_pearls",
+   "provisional": true,
+   "owner": "B4",
+   "source": "B4 economy: trade good or treasure, value per kg set by density class",
+   "tags": [
+    "gem",
+    "dense"
+   ]
+  },
+  {
+   "id": "item_salt",
+   "name": "Salt",
+   "category": "trade",
+   "weight_kg": 1.0,
+   "base_value": 1,
+   "stack_max": 1000,
+   "icon": "ico_item_salt",
+   "provisional": true,
+   "owner": "B4",
+   "source": "B4 economy: trade good or treasure, value per kg set by density class",
+   "tags": [
+    "bulk",
+    "preservative"
+   ]
+  },
+  {
+   "id": "item_sugar",
+   "name": "Sugar",
+   "category": "trade",
+   "weight_kg": 1.0,
+   "base_value": 6,
+   "stack_max": 500,
+   "icon": "ico_item_sugar",
+   "provisional": true,
+   "owner": "B4",
+   "source": "B4 economy: trade good or treasure, value per kg set by density class",
+   "tags": [
+    "bulk",
+    "sweet"
+   ],
+   "perishable": {
+    "shelf_days": 720,
+    "moisture_sensitive": true,
+    "rat_attraction": 0.0
+   }
+  },
+  {
+   "id": "item_cloth",
+   "name": "Cloth",
+   "category": "trade",
+   "weight_kg": 1.0,
+   "base_value": 14,
+   "stack_max": 300,
+   "icon": "ico_item_cloth",
+   "provisional": true,
+   "owner": "B4",
+   "source": "B4 economy: trade good or treasure, value per kg set by density class",
+   "tags": [
+    "textile"
+   ]
+  },
+  {
+   "id": "item_tobacco",
+   "name": "Tobacco",
+   "category": "trade",
+   "weight_kg": 1.0,
+   "base_value": 22,
+   "stack_max": 300,
+   "icon": "ico_item_tobacco",
+   "provisional": true,
+   "owner": "B4",
+   "source": "B4 economy: trade good or treasure, value per kg set by density class",
+   "tags": [
+    "leaf"
+   ],
+   "perishable": {
+    "shelf_days": 360,
+    "moisture_sensitive": true,
+    "rat_attraction": 0.0
+   }
+  },
+  {
+   "id": "item_furs",
+   "name": "Furs",
+   "category": "trade",
+   "weight_kg": 1.0,
+   "base_value": 40,
+   "stack_max": 200,
+   "icon": "ico_item_furs",
+   "provisional": true,
+   "owner": "B4",
+   "source": "B4 economy: trade good or treasure, value per kg set by density class",
+   "tags": [
+    "cold_region"
+   ]
+  },
+  {
+   "id": "item_spice",
+   "name": "Spice",
+   "category": "trade",
+   "weight_kg": 1.0,
+   "base_value": 90,
+   "stack_max": 200,
+   "icon": "ico_item_spice",
+   "provisional": true,
+   "owner": "B4",
+   "source": "B4 economy: trade good or treasure, value per kg set by density class",
+   "tags": [
+    "dense",
+    "dry_only"
+   ],
+   "perishable": {
+    "shelf_days": 720,
+    "moisture_sensitive": true,
+    "rat_attraction": 0.0
+   }
   }
  ]
 }

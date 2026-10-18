@@ -205,6 +205,9 @@ def check_design() -> None:
     import loop_model  # noqa: PLC0415
 
     problems.extend(loop_model.loop_invariants(design_checks.load_tuning(), loop_model.load_ranges()))
+    import economy_model  # noqa: PLC0415
+
+    problems.extend(economy_model.invariants(design_checks.load_tuning(), economy_model.load_items()))
 
 
 OLD_TIME_WORDS = ("accel_fast", "ashore_game", "time_scale_fast", "fast_forward", "ashore_clock")

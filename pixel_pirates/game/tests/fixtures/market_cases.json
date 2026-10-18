@@ -1,0 +1,433 @@
+{
+ "note": "Hand-calculated market and money cases (Module B4), closed forms worked out independently of market.py. Python: tools/data_tools/test_economy.py. GDScript: tests/test_market.gd.",
+ "cases": [
+  {
+   "fn": "decay",
+   "args": [
+    -1,
+    6,
+    6
+   ],
+   "expect": -0.5
+  },
+  {
+   "fn": "decay",
+   "args": [
+    -1,
+    12,
+    6
+   ],
+   "expect": -0.25
+  },
+  {
+   "fn": "decay",
+   "args": [
+    0.8,
+    0,
+    6
+   ],
+   "expect": 0.8
+  },
+  {
+   "fn": "decay",
+   "args": [
+    -0.5,
+    3,
+    6
+   ],
+   "expect": -0.353553
+  },
+  {
+   "fn": "decay",
+   "args": [
+    1,
+    18,
+    6
+   ],
+   "expect": 0.125
+  },
+  {
+   "fn": "price_multiplier",
+   "args": [
+    0
+   ],
+   "expect": 1.0
+  },
+  {
+   "fn": "price_multiplier",
+   "args": [
+    -1
+   ],
+   "expect": 0.367879
+  },
+  {
+   "fn": "price_multiplier",
+   "args": [
+    0.6931471805599453
+   ],
+   "expect": 2.0
+  },
+  {
+   "fn": "sell_revenue",
+   "args": [
+    0,
+    0,
+    1,
+    0.2,
+    1000
+   ],
+   "expect": 0.0
+  },
+  {
+   "fn": "sell_revenue",
+   "args": [
+    1000,
+    0,
+    1,
+    0.2,
+    1000
+   ],
+   "expect": 568.908503
+  },
+  {
+   "fn": "sell_x",
+   "args": [
+    1000,
+    0,
+    1,
+    0.2,
+    1000
+   ],
+   "expect": -1.0
+  },
+  {
+   "fn": "sell_revenue",
+   "args": [
+    100,
+    0,
+    1,
+    0.2,
+    1000
+   ],
+   "expect": 85.646324
+  },
+  {
+   "fn": "sell_revenue",
+   "args": [
+    100,
+    -0.5,
+    1.35,
+    0.2,
+    1000
+   ],
+   "expect": 70.128614
+  },
+  {
+   "fn": "sell_x",
+   "args": [
+    250,
+    -0.5,
+    1.35,
+    0.2,
+    1000
+   ],
+   "expect": -0.75
+  },
+  {
+   "fn": "sell_revenue",
+   "args": [
+    100,
+    0,
+    1,
+    0,
+    1000
+   ],
+   "expect": 95.162582
+  },
+  {
+   "fn": "buy_cost",
+   "args": [
+    0,
+    0,
+    1,
+    0.2,
+    1000
+   ],
+   "expect": 0.0
+  },
+  {
+   "fn": "buy_cost",
+   "args": [
+    1000,
+    0,
+    1,
+    0.2,
+    1000
+   ],
+   "expect": 1890.110011
+  },
+  {
+   "fn": "buy_x",
+   "args": [
+    1000,
+    0,
+    1,
+    0.2,
+    1000
+   ],
+   "expect": 1.0
+  },
+  {
+   "fn": "buy_cost",
+   "args": [
+    100,
+    0,
+    0.75,
+    0.2,
+    700
+   ],
+   "expect": 88.683785
+  },
+  {
+   "fn": "buy_cost",
+   "args": [
+    100,
+    0.3,
+    0.75,
+    0.2,
+    700
+   ],
+   "expect": 119.710588
+  },
+  {
+   "fn": "buy_x",
+   "args": [
+    140,
+    0.3,
+    0.75,
+    0.2,
+    700
+   ],
+   "expect": 0.5
+  },
+  {
+   "fn": "sell_revenue",
+   "args": [
+    1,
+    0,
+    1.5,
+    0.2,
+    1500
+   ],
+   "expect": 1.34955
+  },
+  {
+   "fn": "buy_cost",
+   "args": [
+    1,
+    0,
+    1.5,
+    0.2,
+    1500
+   ],
+   "expect": 1.65055
+  },
+  {
+   "fn": "coin_weight_kg",
+   "args": [
+    1000
+   ],
+   "expect": 27.0
+  },
+  {
+   "fn": "coin_weight_kg",
+   "args": [
+    6000
+   ],
+   "expect": 162.0
+  },
+  {
+   "fn": "coin_weight_kg",
+   "args": [
+    1
+   ],
+   "expect": 0.027
+  },
+  {
+   "fn": "doubloon_weight_kg",
+   "args": [
+    375
+   ],
+   "expect": 10.125
+  },
+  {
+   "fn": "to_gold_doubloons",
+   "args": [
+    1600,
+    6,
+    16
+   ],
+   "expect": 94
+  },
+  {
+   "fn": "to_gold_left",
+   "args": [
+    1600,
+    6,
+    16
+   ],
+   "expect": 0
+  },
+  {
+   "fn": "to_gold_doubloons",
+   "args": [
+    100,
+    6,
+    16
+   ],
+   "expect": 5
+  },
+  {
+   "fn": "to_gold_doubloons",
+   "args": [
+    10,
+    6,
+    16
+   ],
+   "expect": 0
+  },
+  {
+   "fn": "to_gold_left",
+   "args": [
+    10,
+    6,
+    16
+   ],
+   "expect": 10
+  },
+  {
+   "fn": "to_silver",
+   "args": [
+    94,
+    6,
+    16
+   ],
+   "expect": 1413
+  },
+  {
+   "fn": "to_silver",
+   "args": [
+    1,
+    6,
+    16
+   ],
+   "expect": 15
+  },
+  {
+   "fn": "to_silver",
+   "args": [
+    0,
+    6,
+    16
+   ],
+   "expect": 0
+  },
+  {
+   "fn": "to_silver",
+   "args": [
+    100,
+    0,
+    16
+   ],
+   "expect": 1600
+  },
+  {
+   "fn": "share_value",
+   "args": [
+    290,
+    [
+     2,
+     1.5,
+     1.5,
+     1.5,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    0
+   ],
+   "expect": 40.0
+  },
+  {
+   "fn": "share_value",
+   "args": [
+    290,
+    [
+     2,
+     1.5,
+     1.5,
+     1.5,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    1
+   ],
+   "expect": 30.0
+  },
+  {
+   "fn": "share_value",
+   "args": [
+    290,
+    [
+     2,
+     1.5,
+     1.5,
+     1.5,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    5
+   ],
+   "expect": 20.0
+  },
+  {
+   "fn": "share_value",
+   "args": [
+    0,
+    [
+     2,
+     1.5,
+     1.5,
+     1.5,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    5
+   ],
+   "expect": 0.0
+  }
+ ]
+}
