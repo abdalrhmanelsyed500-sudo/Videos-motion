@@ -11,9 +11,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 import ocean as O  # noqa: E402
 import ocean_checks as C  # noqa: E402
+import sea_state as SS  # noqa: E402
+import wildlife as W  # noqa: E402
 
 fails = 0
 FX = C.ROOT / "game" / "tests" / "fixtures" / "ocean_cases.json"
+FXW = C.ROOT / "game" / "tests" / "fixtures" / "wildlife_cases.json"
+FXS = C.ROOT / "game" / "tests" / "fixtures" / "sea_cases.json"
 
 
 def expect(name: str, cond: bool, detail: str = "") -> None:
@@ -64,10 +68,50 @@ def build_cases(oc: O.Ocean) -> dict:
             "noise": noise, "samples": samples, "speeds": speeds, "bergs": bergs, "looks": looks, "light": light, "winds": winds}
 
 
+def build_wildlife_cases(oc: O.Ocean) -> dict:
+    sp = C.load_species()
+    cases = []
+    for k in range(40):
+        x, y = O.hash01(k, 1, 0, 515) * oc.W, O.hash01(k, 2, 0, 515) * oc.H
+        t = O.hash01(k, 3, 0, 515) * 80.0
+        sg = W.sighting(oc, sp, x, y, t)
+        tb = sorted(W.table(oc, sp, x, y, t), key=lambda r: -r[1])[:4]
+        cases.append({"x": x, "y": y, "t": t, "sighting": None if sg is None else {kk: r6(v) for kk, v in sg.items()}, "top": [[i, r6(w)] for i, w in tb]})
+    return {"note": "Golden values from tools/data_tools/wildlife.py (regenerate: python tools/data_tools/test_ocean.py --write-fixtures). Tolerance 1e-4.", "cases": cases}
+
+
+SEA_SCENARIOS = [
+    {"name": "Kettle, west, one real minute in one call", "start": [7000.0, 2650.0, 270.0], "t0": 0.25, "steps": [5760.0]},
+    {"name": "Kettle, west, one real minute in 16 calls", "start": [7000.0, 2650.0, 270.0], "t0": 0.25, "steps": [360.0] * 16},
+    {"name": "Kettle, north-west reach, 3 game days", "start": [7000.0, 2650.0, 315.0], "t0": 0.25, "steps": [3600.0] * 72},
+    {"name": "Paused clock: zero game seconds", "start": [7000.0, 2650.0, 90.0], "t0": 0.25, "steps": [0.0, 0.0]},
+    {"name": "West edge clamp", "start": [50.0, 3000.0, 270.0], "t0": 2.0, "steps": [3600.0] * 48},
+    {"name": "Glass Sea, becalmed, 2 game days", "start": [4500.0, 3000.0, 90.0], "t0": 0.25, "steps": [3600.0] * 48},
+    {"name": "Storm Belt, run east, 4 game days", "start": [3000.0, 4950.0, 90.0], "t0": 5.0, "steps": [3600.0] * 96},
+    {"name": "Ice edge, north into the pack, 2 game days", "start": [5600.0, 300.0, 0.0], "t0": 14.25, "steps": [3600.0] * 48},
+]
+
+
+def run_sea(oc: O.Ocean, sc: dict) -> dict:
+    st = SS.SeaState(oc)
+    st.place(*sc["start"])
+    t = sc["t0"]
+    for gs in sc["steps"]:
+        st.advance(t, gs)
+        t += gs / 86400.0
+    return {"x": r6(st.x_km), "y": r6(st.y_km), "distance": r6(st.distance_km), "t_end": r6(t), "speed_kn": r6(st.speed_kn())}
+
+
+def build_sea_cases(oc: O.Ocean) -> dict:
+    return {"note": "Golden voyages from tools/data_tools/sea_state.py. Tolerance 1e-3 km.", "cases": [dict(sc, expect=run_sea(oc, sc)) for sc in SEA_SCENARIOS]}
+
+
 def main() -> int:
     oc = O.load()
     if "--write-fixtures" in sys.argv:
         FX.write_text(json.dumps(build_cases(oc), separators=(",", ":")) + "\n")
+        FXW.write_text(json.dumps(build_wildlife_cases(oc), separators=(",", ":")) + "\n")
+        FXS.write_text(json.dumps(build_sea_cases(oc), separators=(",", ":")) + "\n")
         print("wrote", FX, FX.stat().st_size, "bytes")
         return 0
 
@@ -166,10 +210,58 @@ def main() -> int:
     expect("wildlife: a region stripped of animals is caught", any("reg_glass_sea: only" in p for p in wl(lambda s: [x.update(regions=[y for y in x["regions"] if y["region"] != "reg_glass_sea"]) for x in s])))
     expect("species count is reported against the 200 target", len(sp) >= 60, f"{len(sp)}")
 
+    # ---- the voyage integrator --------------------------------------------------------------------------------------------------------------------
+    res = {sc["name"]: run_sea(oc, sc) for sc in SEA_SCENARIOS}
+    one, many = res[SEA_SCENARIOS[0]["name"]], res[SEA_SCENARIOS[1]["name"]]
+    expect("one real minute of sailing covers 3..25 km (reference: 14.9 km at a beam reach in 14 kn)", 3.0 <= one["distance"] <= 25.0, f"{one['distance']:.1f}")
+    expect("one call and sixteen calls agree to within 5% (time-step independence)", abs(one["distance"] - many["distance"]) <= 0.05 * one["distance"], f"{one['distance']:.2f} vs {many['distance']:.2f}")
+    still = res["Paused clock: zero game seconds"]
+    expect("a paused clock (0 game seconds) never moves the ship", still["x"] == 7000.0 and still["y"] == 2650.0 and still["distance"] == 0.0)
+    expect("the world edge stops the ship (no wrapping, no leaving)", res["West edge clamp"]["x"] == 0.0)
+    glass = res["Glass Sea, becalmed, 2 game days"]
+    expect("the Glass Sea really is slow: under 120 km in 2 game days (30 real minutes)", glass["distance"] < 120.0, f"{glass['distance']:.0f} km")
+    storm = res["Storm Belt, run east, 4 game days"]
+    expect("a run east in the Storm Belt covers 500..1500 km in 4 game days", 500.0 <= storm["distance"] <= 1500.0, f"{storm['distance']:.0f} km")
+    pack = res["Ice edge, north into the pack, 2 game days"]
+    expect("sailing north into the polar pack ends frozen in: speed 0 and stopped near the north edge (y < 100 km)", pack["speed_kn"] == 0.0 and pack["y"] < 100.0, f"{pack}")
+    fxs = json.loads(FXS.read_text()) if FXS.exists() else None
+    expect("sea golden fixtures exist and match the current model", fxs is not None and fxs == json.loads(json.dumps(build_sea_cases(oc))))
+
+    # ---- wildlife sightings ---------------------------------------------------------------------------------------------------------------------
+    def rate(x: float, y: float, t0: float = 0.0, days: float = 10.0) -> tuple[float, set]:
+        n, kinds, sd = 0, set(), W.slot_days(oc.t)
+        for k in range(int(days / sd)):
+            r = W.sighting(oc, sp, x, y, t0 + k * sd + 0.01)
+            if r:
+                n += 1
+                kinds.add(r["species"])
+        return n / (days * 15.0), kinds     # sightings per real minute (1 game day = 15 real minutes)
+    for nm, (x, y) in {"Kettle": (7000.0, 2650.0), "Glass Sea": (4500.0, 3000.0), "Dead Ocean": (4400.0, 4150.0), "White Hollow": (4200.0, 5700.0)}.items():
+        rt, kinds = rate(x, y)
+        expect(f"sightings in {nm}: 0.15..0.7 per real minute (never empty, never spam) and 8+ different animals", 0.15 <= rt <= 0.7 and len(kinds) >= 8, f"{rt:.2f}/min, {len(kinds)} kinds")
+    expect("a sighting is deterministic", W.sighting(oc, sp, 7000.0, 2650.0, 1.234) == W.sighting(oc, sp, 7000.0, 2650.0, 1.234))
+    tropic = {i for i, _ in W.table(oc, sp, 7000.0, 2650.0, 3.5)}
+    polar = {i for i, _ in W.table(oc, sp, 4200.0, 5700.0, 3.5)}
+    expect("tropical and polar waters share few animals", len(tropic & polar) <= 8 and "spc_emperor_penguin" in polar and "spc_emperor_penguin" not in tropic and "spc_yellowfin_tuna" in tropic and "spc_yellowfin_tuna" not in polar)
+    byid = {q["id"]: q for q in sp}
+    sm = oc.sample(7000.0, 2650.0, 3.25)
+    sm["_region_ids"] = [r["id"] for r in oc.regions]
+    sm_day, sm_night = dict(sm, hour=12.0), dict(sm, hour=0.0)
+    expect("nocturnal animals prefer the night, diurnal the day", W.suitability(oc.t, byid["spc_moray_eel"], sm_night) > W.suitability(oc.t, byid["spc_moray_eel"], sm_day) and W.suitability(oc.t, byid["spc_yellowfin_tuna"], sm_day) > W.suitability(oc.t, byid["spc_yellowfin_tuna"], sm_night))
+    cold = dict(sm, sst_c=2.0)
+    expect("a tropical animal fades out in cold water", W.suitability(oc.t, byid["spc_yellowfin_tuna"], cold) == 0.0)
+    r_in = [W.sighting(oc, sp, 5640.0, 560.0, 12.0 + k * 0.1) for k in range(200)]
+    foggy = [W.sighting(oc, sp, 5889.0, 1047.0, 8.25 + k * 0.1) for k in range(200)]
+    avg = lambda rs: sum(q["distance_km"] for q in rs if q) / max(1, sum(1 for q in rs if q))  # noqa: E731
+    expect("fog shortens how far animals can be seen", avg(foggy) < 0.5 * avg(r_in) or avg(foggy) < 1.0, f"{avg(foggy):.2f} vs {avg(r_in):.2f}")
+    expect("legendary animals are rare among sightings", sum(1 for k in range(2000) for q in [W.sighting(oc, sp, 4400.0 + k, 4150.0, k * 0.1)] if q and byid[q["species"]]["rarity"] == "legendary") < 40)
+
     # ---- the golden file is current ----------------------------------------------------------------------------------------------------
     fx = json.loads(FX.read_text()) if FX.exists() else None
     cur = json.loads(json.dumps(build_cases(oc)))
     expect("golden fixtures exist and match the current model (run --write-fixtures after an intentional change)", fx is not None and fx == cur)
+    fxw = json.loads(FXW.read_text()) if FXW.exists() else None
+    expect("wildlife golden fixtures exist and match the current model", fxw is not None and fxw == json.loads(json.dumps(build_wildlife_cases(oc))))
 
     print("test_ocean:", "FAILED" if fails else "all passed")
     return 1 if fails else 0

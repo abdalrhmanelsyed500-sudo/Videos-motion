@@ -37,6 +37,7 @@ func run(t: Object) -> void:
 	_teleport(t, c)
 	_save_load(t, c)
 	_islands(t, c)
+	_ocean_and_route(t, c)
 	t.check(SaveIO.validate_state(c.state.to_dict(), reg).is_empty(), "state is still valid after all commands")
 	_cleanup()
 	reg.free()
@@ -188,3 +189,24 @@ func _islands(t: Object, c: RefCounted) -> void:
 	_bad(t, c, "island info isl_nope", "unknown island")
 	_bad(t, c, "quality", "not available")
 	_bad(t, c, "log", "not available")
+
+
+func _ocean_and_route(t: Object, c: RefCounted) -> void:
+	_ok(t, c, "route", "Kettle dawn squall")
+	_ok(t, c, "route 5", "Herald Swell")
+	t.check(c.state.t_seconds == roundi(12.5 * 86400.0), "route 5 placed the clock at day 12.5 (debug jump)")
+	_ok(t, c, "route status", "reg_grey_marches")
+	_ok(t, c, "route heading 45", "45")
+	_ok(t, c, "route jump 7", "Ice Edge")
+	_ok(t, c, "route 1", "reg_kettle_seas")
+	var before: float = c.state.clock.t
+	c.state.clock.pause("report")
+	var gs: float = c.state.tick(10.0)
+	t.check(gs == 0.0 and c.state.clock.t == before, "a paused clock does not move the ship's world either")
+	c.state.clock.resume("report")
+	_bad(t, c, "route 99", "no checkpoint")
+	_bad(t, c, "route heading", "usage")
+	_ok(t, c, "ocean 7000 2650 0.25", "reg_kettle_seas")
+	_ok(t, c, "ocean 5600 520", "reg_grey_marches")
+	_bad(t, c, "ocean 99999 1", "outside the world")
+	_bad(t, c, "ocean 5", "usage")

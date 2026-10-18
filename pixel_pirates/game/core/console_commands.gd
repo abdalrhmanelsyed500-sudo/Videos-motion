@@ -2,11 +2,14 @@ extends RefCounted
 ## Debug console command core (A7): tokenizer, dispatcher and commands. No UI here, so it is headless-testable.
 ## A command handler takes `args: PackedStringArray` and returns {ok: bool, text: String}.
 ## Add a command: write `_c_name(args)`, register it in `_register_all`, and add a line to tests/test_console.gd.
+const DataLoader := preload("res://core/data_loader.gd")
 const SaveIO := preload("res://core/save_io.gd")
 const IslandMap := preload("res://core/island_map.gd")
 const Tuning := preload("res://core/tuning.gd")
 const GameState := preload("res://core/game_state.gd")
 const VoyageClock := preload("res://core/voyage_clock.gd")
+const Ocean := preload("res://core/ocean.gd")
+const SeaState := preload("res://core/sea_state.gd")
 const MAP_DIRS: Array[String] = ["res://data/islands/maps/", "res://tests/fixtures/islands/maps/"]
 const SAVE_DIR := "user://saves/"
 const LOG_LEVELS: Array[String] = ["debug", "info", "warn", "error"]
@@ -15,6 +18,7 @@ const MAX_STACK := 1000000
 ## Debug live mode (`time live on`): the console UI feeds real frame time to the world clock.
 var live := false
 var state: RefCounted
+var sea: RefCounted = null  ## SeaState of the voyage; created on first use (E1 slice)
 var data: Node
 var quality: Node = null
 var logger: Node = null
@@ -49,6 +53,9 @@ func _register_all() -> void:
 	_reg("quality", "quality [profile]", "Show or switch the quality profile.", "_c_quality")
 	_reg("log", "log [debug|info|warn|error]", "Show or set the log level.", "_c_log")
 	_reg("perf", "perf", "FPS, frame time, memory, objects, draw calls.", "_c_perf")
+	_reg("route", "route | route <n> | route heading <deg> | route status",
+			"E1 slice route: list checkpoints, jump the ship to one (debug: places ship and clock only).", "_c_route")
+	_reg("ocean", "ocean <x_km> <y_km> [t_days]", "What the sea and sky are doing at a point (default: now).", "_c_ocean")
 
 
 func _reg(cmd_name: String, usage: String, help: String, method: String) -> void:
@@ -561,3 +568,97 @@ func _c_perf(_args: PackedStringArray) -> Dictionary:
 		Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / mb,
 		Performance.get_monitor(Performance.OBJECT_COUNT),
 		Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)])
+
+
+# ---- E1: ocean and the slice route -------------------------------------------------------------
+func ensure_sea() -> RefCounted:
+	if sea == null:
+		sea = SeaState.new(Ocean.load_default())
+	return sea
+
+
+func _now_days() -> float:
+	return float(state.clock.t) / 86400.0
+
+
+func _sample_text(smp: Dictionary) -> String:
+	var line1 := "%s | lat %.1f | %s" % [smp["region"], smp["lat"], state.clock_text()]
+	var line2 := "wind %.0f kn from %.0f deg | waves %.1f m | storm %.2f herald %.2f" % [
+			smp["wind_kn"], smp["wind_from_deg"], smp["wave_m"], smp["storm"], smp["herald"]]
+	line2 += " | rain %.2f fog %.2f | visibility %.1f km" % [smp["rain"], smp["fog"], smp["visibility_km"]]
+	var line3 := "sea %.1f C air %.1f C | ice %.2f | light peak %.2f floor %.2f" % [
+			smp["sst_c"], smp["air_c"], smp["ice"], smp["light_peak"], smp["light_floor"]]
+	line3 += " | productivity %.2f | current %.1f kn" % [smp["productivity"], smp["current_u_kn"]]
+	return line1 + "\n" + line2 + "\n" + line3
+
+
+func _c_ocean(args: PackedStringArray) -> Dictionary:
+	if args.size() < 2 or not args[0].is_valid_float() or not args[1].is_valid_float():
+		return _usage("ocean")
+	var t_days := float(args[2]) if args.size() > 2 and args[2].is_valid_float() else _now_days()
+	var oc: RefCounted = ensure_sea().ocean
+	var x := float(args[0])
+	var y := float(args[1])
+	if x < 0.0 or y < 0.0 or x > oc.world_w or y > oc.world_h:
+		return _fail("outside the world (0..%.0f, 0..%.0f km)" % [oc.world_w, oc.world_h])
+	return _ok(_sample_text(oc.sample(x, y, t_days)))
+
+
+func _checkpoints() -> Array:
+	var doc := DataLoader.load_dict("res://data/world/slice_route.json")
+	return doc.get("checkpoints", [])
+
+
+func _c_route(args: PackedStringArray) -> Dictionary:
+	var cps := _checkpoints()
+	if cps.is_empty():
+		return _fail("res://data/world/slice_route.json has no checkpoints")
+	var result := _usage("route")
+	if args.is_empty():
+		result = _route_list(cps)
+	elif args[0] == "status":
+		result = _route_status()
+	elif args[0] == "heading":
+		result = _route_heading(args)
+	else:
+		var token := args[1] if args[0] == "jump" and args.size() > 1 else args[0]
+		if token.is_valid_int():
+			result = _route_jump(cps, int(token))
+	return result
+
+
+func _route_list(cps: Array) -> Dictionary:
+	var lines: Array[String] = []
+	for c in cps:
+		var head := "%d  %s" % [int(c["id"]), c["name"]]
+		lines.append("%s  (%.0f, %.0f km, day %.2f)" % [head, c["x_km"], c["y_km"], c["t_days"]])
+		lines.append("     " + str(c["why"]))
+	return _ok("\n".join(lines))
+
+
+func _route_status() -> Dictionary:
+	var sv := ensure_sea()
+	var smp: Dictionary = sv.ocean.sample(sv.x_km, sv.y_km, _now_days())
+	return _ok("ship (%.0f, %.0f) km heading %.0f | sailed %.0f km\n%s" % [
+			sv.x_km, sv.y_km, sv.heading_deg, sv.distance_km, _sample_text(smp)])
+
+
+func _route_heading(args: PackedStringArray) -> Dictionary:
+	if args.size() < 2 or not args[1].is_valid_float():
+		return _usage("route")
+	var sv := ensure_sea()
+	sv.heading_deg = fposmod(float(args[1]), 360.0)
+	return _ok("heading %.0f deg" % sv.heading_deg)
+
+
+func _route_jump(cps: Array, number: int) -> Dictionary:
+	var sv := ensure_sea()
+	for c in cps:
+		if int(c["id"]) == number:
+			sv.place(float(c["x_km"]), float(c["y_km"]), float(c["heading_deg"]))
+			state.t_seconds = roundi(float(c["t_days"]) * 86400.0)
+			state.clock.set_location("sea")
+			var smp: Dictionary = sv.ocean.sample(sv.x_km, sv.y_km, float(c["t_days"]))
+			return _ok("DEBUG JUMP to %d %s: ship and clock placed (time still runs at the fixed rate).\n%s" % [
+					number, c["name"], _sample_text(smp)])
+	return _fail("no checkpoint %d (1..%d)" % [number, cps.size()])

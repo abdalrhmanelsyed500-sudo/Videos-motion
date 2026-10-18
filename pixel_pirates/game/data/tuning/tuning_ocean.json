@@ -507,6 +507,50 @@
    "owner": "E1",
    "source": "E1 ship polar; provisional until J (ship physics)",
    "note": "Cap on speed relative to the reference (14 kn) wind speed: a sloop cannot outrun its hull. Above the reef wind speed falls from this value."
+  },
+  {
+   "key": "wildlife.sighting_chance",
+   "value": 0.55,
+   "unit": "ratio",
+   "min": 0.1,
+   "max": 1.0,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife sighting model; provisional until H (ocean life)",
+   "note": "Chance that a sighting slot (perf.sighting_min_gap_s long) produces a sighting. Open water is calm, not busy: about one sighting per 3 real minutes."
+  },
+  {
+   "key": "wildlife.temp_tolerance_c",
+   "value": 3.0,
+   "unit": "C",
+   "min": 0.5,
+   "max": 8.0,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife sighting model; provisional until H (ocean life)",
+   "note": "A species fades to nothing this many degrees C outside its temperature range."
+  },
+  {
+   "key": "wildlife.sight_distance_min",
+   "value": 0.15,
+   "unit": "ratio",
+   "min": 0.05,
+   "max": 0.5,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife sighting model; provisional until H (ocean life)",
+   "note": "Nearest sighting distance as a fraction of the current visibility."
+  },
+  {
+   "key": "wildlife.sight_distance_max",
+   "value": 0.85,
+   "unit": "ratio",
+   "min": 0.3,
+   "max": 1.0,
+   "provisional": true,
+   "owner": "E1",
+   "source": "E1 wildlife sighting model; provisional until H (ocean life)",
+   "note": "Farthest sighting distance as a fraction of the current visibility. Fog hides animals the same way it hides ships."
   }
  ]
 }
