@@ -29,9 +29,9 @@ const PROFILES := {
 ## Effects budget (key E): how many real raindrops, ring slots and spray droplets are simulated. The look is the same
 ## at every level, only the density and the cost change. Dev-Lite defaults to "medium"; measure before raising it.
 const EFFECTS := {
-	"low": {"grid": Vector2i(40, 32), "cell_m": 4.6, "k": 1, "spin": 120, "burst": 24, "dens": 1.0},
-	"medium": {"grid": Vector2i(56, 44), "cell_m": 3.4, "k": 2, "spin": 250, "burst": 32, "dens": 0.75},
-	"high": {"grid": Vector2i(64, 50), "cell_m": 3.0, "k": 3, "spin": 600, "burst": 48, "dens": 0.5},
+	"low": {"grid": Vector2i(40, 32), "cell_m": 4.6, "k": 1, "spin": 120, "burst": 24, "dens": 0.9},
+	"medium": {"grid": Vector2i(56, 44), "cell_m": 3.4, "k": 2, "spin": 250, "burst": 32, "dens": 0.5},
+	"high": {"grid": Vector2i(64, 50), "cell_m": 3.0, "k": 3, "spin": 600, "burst": 48, "dens": 0.32},
 }
 const RAIN_DRIFT_MAX_MS := 12.0
 ## The rain grid sits a little south of the focus: drops that land just below the screen edge are seen high up.
@@ -211,7 +211,7 @@ func land_height_at(x: float, z: float) -> float:
 func update_view(v: Dictionary, ship: Dictionary, dt: float) -> void:
 	_time = float(v["time"])
 	var env: Dictionary = v["env"]
-	var lm := LightModel.compute(v, _look.param("fog_density_cap"))
+	var lm := LightModel.compute(v, _look.param("haze_density_cap"), _look.param("fog_density_cap"))
 	_wave_b = WaveModel.build(float(env["wave_vis_m"]), float(env["wave_to"]), float(env["sea"]), float(v["ice"]),
 			float(env["crest_calm"]), float(env["crest_gale"]))
 	_set_globals(v, lm)
@@ -271,7 +271,7 @@ func _global_defaults() -> Array:
 		["h2d_wind_to", vec2, Vector2(0.0, 1.0)], ["h2d_cloud", flt, 0.2], ["h2d_storm", flt, 0.0],
 		["h2d_rain", flt, 0.0], ["h2d_adv", vec2, Vector2.ZERO], ["h2d_wind_ms", flt, 0.0], ["h2d_gust", flt, 0.0],
 		["h2d_sea", flt, 0.0], ["h2d_overcast", flt, 0.0], ["h2d_fog_start", flt, 190.0],
-		["h2d_focus", vec2, Vector2.ZERO], ["h2d_rain_dens", flt, 0.75],
+		["h2d_focus", vec2, Vector2.ZERO], ["h2d_rain_dens", flt, 0.5],
 	]
 
 

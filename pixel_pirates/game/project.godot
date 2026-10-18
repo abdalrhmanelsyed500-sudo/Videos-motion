@@ -106,7 +106,7 @@ h2d_focus={
 }
 h2d_rain_dens={
 "type": "float",
-"value": 0.75
+"value": 0.5
 }
 
 [rendering]

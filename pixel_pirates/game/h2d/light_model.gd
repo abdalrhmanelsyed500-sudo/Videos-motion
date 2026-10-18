@@ -59,9 +59,10 @@ static func night_tint(c: Color, k: float) -> Color:
 	return night.lerp(c, k)
 
 
-## `fog_cap` is the densest the fog may get per scene metre (look.fog_density_cap): thick enough that the fog
-## reaches the ship and the far sea disappears, thin enough that the ship never vanishes.
-static func compute(v: Dictionary, fog_cap: float = 0.02) -> Dictionary:
+## `haze_cap` and `fog_cap` are the densest the distance fog may get per scene metre in rain/haze and in thick fog
+## (look.haze_density_cap, look.fog_density_cap): thick fog reaches the ship and hides the far sea, but never erases
+## the ship. (The camera is about 257 scene m from the ship; the screen spans about 219 .. 312 m.)
+static func compute(v: Dictionary, haze_cap: float = 0.006, fog_cap: float = 0.009) -> Dictionary:
 	var look: Dictionary = v["look"]
 	var env: Dictionary = v.get("env", {})
 	var rain := float(env.get("rain_inst", 0.0))
@@ -95,7 +96,8 @@ static func compute(v: Dictionary, fog_cap: float = 0.02) -> Dictionary:
 	var fl := flash(float(v.get("time", 0.0)), storm)
 	fog_c = fog_c.lerp(Color(0.86, 0.90, 1.0), 0.55 * fl)
 	var vis_scene_m := maxf(float(v["visibility_km"]), 0.15) * 1000.0 / WORLD_M_PER_SCENE_M
-	var density := clampf(maxf(HAZE_BASE, 3.0 / vis_scene_m) + 0.012 * float(v["fog"]), HAZE_BASE, fog_cap)
+	var raw := maxf(HAZE_BASE, 3.0 / vis_scene_m) + 0.012 * float(v["fog"])
+	var density := clampf(raw, HAZE_BASE, lerpf(haze_cap, fog_cap, fogk))
 	var deep := rgb(look["deep"]).lerp(STORM_GREY * 0.35, storm * 0.45)
 	var shallow := rgb(look["shallow"]).lerp(STORM_GREY * 0.6, storm * 0.4)
 	var wind_to := deg_to_rad(float(v["wind_from_deg"]) + 180.0)

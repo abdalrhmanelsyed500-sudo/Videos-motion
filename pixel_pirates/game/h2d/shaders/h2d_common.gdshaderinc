@@ -121,7 +121,8 @@ float h2d_rain_local(vec2 xz) {
 	float n = h2d_noise(xz * 0.011 - h2d_adv * 0.011);
 	float r = clamp((h2d_rain - 0.55 * (1.0 - n) * (1.0 - 0.9 * h2d_rain)) * 1.25, 0.0, 1.0);
 	float sheet = mix(0.55, 1.25, h2d_noise(xz * 0.028 - h2d_adv * 0.028 + 71.0));
-	return clamp(r * mix(1.0, sheet, smoothstep(0.45, 0.85, h2d_rain)), 0.0, 1.0);
+	r = clamp(r * mix(1.0, sheet, smoothstep(0.45, 0.85, h2d_rain)), 0.0, 1.0);
+	return pow(r, 0.75);   // light rain keeps enough drops to read as rain
 }
 
 // A slot lands somewhere new every cycle: the seed mixes the slot k with the cycle number.

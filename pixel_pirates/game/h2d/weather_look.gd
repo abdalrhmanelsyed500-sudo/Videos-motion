@@ -14,10 +14,10 @@ extends RefCounted
 ## All numbers: data/tuning/tuning_env.json (look.*). NOT YET RUN IN GODOT.
 const PREFIX := "look."
 const DEFAULTS := {
-	"rain_fall_ms": 19.0, "rain_streak_m": 1.5, "rain_drift_factor": 0.55, "rain_gust_bend": 0.8, "rain_density": 1.0,
-	"fog_start_shift_m": 45.0, "fog_density_cap": 0.02,
+	"rain_fall_ms": 19.0, "rain_streak_m": 3.4, "rain_drift_factor": 0.55, "rain_gust_bend": 0.8, "rain_density": 1.0,
+	"fog_start_shift_m": 50.0, "fog_density_cap": 0.009, "haze_density_cap": 0.006,
 }
-const FOG_START_BASE_M := 190.0  ## about the camera distance to the ship
+const FOG_START_BASE_M := 190.0  ## the camera is about 257 scene m from the ship, the screen spans 219 .. 312 m
 
 var _p: Dictionary = DEFAULTS.duplicate()
 
@@ -53,7 +53,7 @@ func rain_character(rain_inst: float) -> Dictionary:
 	var k := clampf(rain_inst, 0.0, 1.0)
 	return {
 		"fall_ms": param("rain_fall_ms") * lerpf(0.85, 1.15, k),
-		"streak_m": param("rain_streak_m") * lerpf(0.45, 1.0, k),
+		"streak_m": param("rain_streak_m") * lerpf(0.5, 1.0, k),
 		"alpha": lerpf(0.55, 0.9, k),
 		"splash": lerpf(0.5, 1.0, k),
 	}

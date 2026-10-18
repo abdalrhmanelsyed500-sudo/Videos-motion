@@ -116,7 +116,7 @@ void fragment() {
 	vec3 col = rain_col * lit;
 	float fogf = 1.0 - exp(-h2d_fog_density * max(v_dist - h2d_fog_start, 0.0) * 1.5);
 	col = mix(col, h2d_fog_col, fogf);
-	float depth_k = 1.0 - 0.4 * smoothstep(170.0, 240.0, v_dist);   // the far drops are dimmer
+	float depth_k = 1.0 - 0.4 * smoothstep(235.0, 310.0, v_dist);   // the far drops are dimmer
 	ALBEDO = h2d_out(col);
 	ALPHA = a * (1.0 - 0.5 * fogf) * alpha_k * depth_k;
 }

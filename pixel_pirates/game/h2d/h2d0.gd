@@ -2,8 +2,8 @@ extends Node
 ## H2D-0: one playable HD-2D ocean scene. The simulation is the validated E1 one (Ocean, SeaState, world clock, weather
 ## smoothing); only the PICTURE changed, behind the single SeaView interface (3D Compatibility path or 2D fallback).
 ## H2D-0.2: weather, sea, rain, spray, sail shape and ship motion all come from ONE shared environment (env_model.gd).
-## New keys: W weather lab (real / calm / breezy / rough / gale / storm) | G gust | M ship motion off / half / full |
-##       E effects budget (low / medium / high)
+## Keys: W weather lab (real / calm / breezy / drizzle / rain / fog / rough / gale / storm) | G gust |
+##       M ship motion off / half / full | E effects budget (low / medium / high)
 ## Keys: A/D (or Left/Right) steer | Z/X turn sensitivity | 1-7 weather (1 squall 2 fair 4 fog 5 swell 6 gale 7 ice)
 ##       P pause | R reset ship | F1 quality (Dev-Lite / Standard / Ultra) | F2 path (3D / 2D) | F3 HUD | F4 flip colour
 ##       transfer | F12 screenshot | [ ] camera pitch | - = exposure | , . visual speed | B benchmark (about 80 s)
@@ -31,10 +31,13 @@ const SMOOTH_KEYS: Array[String] = ["wind_kn", "wave_m", "visibility_km", "cloud
 const COMPASS: Array[String] = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
 const QUALITIES: Array[String] = ["dev_lite", "standard", "ultra"]
 ## Weather Lab: fixed sea states to test the whole system in seconds. The wind DIRECTION stays the real one.
-const LAB_ORDER: Array[String] = ["real", "calm", "breezy", "rough", "gale", "storm"]
+const LAB_ORDER: Array[String] = ["real", "calm", "breezy", "drizzle", "rain", "fog", "rough", "gale", "storm"]
 const LAB := {
 	"calm": {"wind_kn": 4.0, "wave_m": 0.35, "rain": 0.0, "storm": 0.0, "fog": 0.05},
 	"breezy": {"wind_kn": 14.0, "wave_m": 1.4, "rain": 0.0, "storm": 0.0, "fog": 0.05},
+	"drizzle": {"wind_kn": 8.0, "wave_m": 0.8, "rain": 0.2, "storm": 0.0, "fog": 0.08},
+	"rain": {"wind_kn": 14.0, "wave_m": 1.6, "rain": 0.6, "storm": 0.0, "fog": 0.10},
+	"fog": {"wind_kn": 5.0, "wave_m": 0.5, "rain": 0.0, "storm": 0.0, "fog": 0.75},
 	"rough": {"wind_kn": 24.0, "wave_m": 3.4, "rain": 0.35, "storm": 0.25, "fog": 0.10},
 	"gale": {"wind_kn": 36.0, "wave_m": 6.0, "rain": 0.8, "storm": 0.7, "fog": 0.15},
 	"storm": {"wind_kn": 48.0, "wave_m": 9.5, "rain": 1.0, "storm": 1.0, "fog": 0.2},

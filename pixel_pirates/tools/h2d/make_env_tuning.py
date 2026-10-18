@@ -66,12 +66,13 @@ TABLE = [
     ("sail.breath_px", 0.45, "pixels", 0, 1.5, "Slow breathing of the sail in light air (sub-pixel, so it moves only now and then)."),
     ("sail.breath_period_s", 6.0, "seconds", 2, 20, "Main period of that breathing (a second, unrelated period is mixed in so it never repeats)."),
     ("look.rain_fall_ms", 19.0, "m/s", 8, 40, "Fall speed of a raindrop in scene metres per second (light rain 15 percent slower, heavy rain 15 percent faster)."),
-    ("look.rain_streak_m", 1.5, "metres", 0.4, 4, "Length of a streak in heavy rain (light rain is about half of it)."),
+    ("look.rain_streak_m", 3.4, "metres", 0.8, 8, "Length of a streak in heavy rain (light rain is half of it). H2D-0.2 used 1.6 m, which is only about 3 px on screen at the art grid and read as dots."),
     ("look.rain_drift_factor", 0.55, "ratio", 0, 1.2, "How much of the wind speed the falling drops pick up sideways."),
     ("look.rain_gust_bend", 0.8, "ratio", 0, 2, "Extra sideways drift inside a gust patch (the rain bends where the gust is)."),
     ("look.rain_density", 1.0, "ratio", 0.2, 2, "Scale on how many of the simulated drops are visible. 1 = the default look; lower for a cleaner sky."),
-    ("look.fog_start_shift_m", 45.0, "metres", 0, 120, "In thick fog the fog starts this much closer to the camera (so it reaches the ship)."),
-    ("look.fog_density_cap", 0.02, "per scene metre", 0.005, 0.09, "Densest the fog may get. H2D-0.2 allowed 0.09, which erased the ship. At 0.02 thick fog hides about 60 percent of the ship's colour and nearly all of the far sea."),
+    ("look.fog_start_shift_m", 50.0, "metres", 0, 120, "In thick fog the fog starts this much closer to the camera (so it reaches the ship)."),
+    ("look.fog_density_cap", 0.009, "per scene metre", 0.003, 0.09, "Densest the distance fog may get in THICK fog. H2D-0.2 allowed 0.09, which erased the ship. The camera is about 250 scene m from the ship; at 0.009, with the fog starting 50 m closer, thick fog hides about 60 percent of the ship's colour and about 80 percent of the far sea."),
+    ("look.haze_density_cap", 0.006, "per scene metre", 0.002, 0.05, "Densest the distance fog may get in rain and haze (not thick fog): a closer horizon, but the far sea stays visible."),
 ]
 
 

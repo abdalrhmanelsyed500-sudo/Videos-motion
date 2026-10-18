@@ -4,7 +4,7 @@ Every balance number in `game/data/` carries `provisional`, `owner` and `source`
 who is expected to finalise them, and where each came from. `owner` uses PROPOSED module numbers (N1..N14, B3); the N-module list is not
 fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is finalised only when this ledger has no `N*` rows left.
 
-**383 provisional records** | B2: 2, B3: 3, B4: 28, B5: 5, B6: 7, B7: 10, B8: 4, C1: 3, D1: 6, E1: 187, E2: 7, E7: 9, E8: 2, E9: 2, F0: 10, F1: 9, I17: 5, I19: 9, N1: 19, N10: 7, N11: 3, N13: 19, N2: 2, N3: 1, N4: 4, N5: 2, N6: 5, N7: 4, N8: 8, N9: 1
+**406 provisional records** | B2: 2, B3: 3, B4: 28, B5: 5, B6: 7, B7: 10, B8: 4, C1: 3, D1: 6, E1: 210, E2: 7, E7: 9, E8: 2, E9: 2, F0: 10, F1: 9, I17: 5, I19: 9, N1: 19, N10: 7, N11: 3, N13: 19, N2: 2, N3: 1, N4: 4, N5: 2, N6: 5, N7: 4, N8: 8, N9: 1
 
 | owner | kind | key | source |
 |---|---|---|---|
@@ -203,6 +203,14 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | E1 | tuning | `env.wave_visual_gain` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
 | E1 | tuning | `env.wind_dir_tau_s` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
 | E1 | tuning | `env.wind_tau_s` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `look.fog_density_cap` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `look.fog_start_shift_m` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `look.haze_density_cap` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `look.rain_density` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `look.rain_drift_factor` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `look.rain_fall_ms` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `look.rain_gust_bend` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `look.rain_streak_m` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
 | E1 | tuning | `motion.damping` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
 | E1 | tuning | `motion.gain` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
 | E1 | tuning | `motion.heave_max_m` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
@@ -252,6 +260,21 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | E1 | tuning | `perf.max_school_instances` | E1 world design; provisional until its owner module |
 | E1 | tuning | `perf.sighting_min_gap_s` | E1 world design; provisional until its owner module |
 | E1 | tuning | `perf.weather_grid_km` | E1 world design; provisional until its owner module |
+| E1 | tuning | `sail.breath_period_s` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.breath_px` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.fill_period_s` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.fill_zeta` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.flap_fall_s` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.flap_gust_gain` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.flap_hz_base` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.flap_hz_per_kn` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.flap_max_px` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.flap_rise_s` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.full_air_kn` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.gale_flat` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.gust_fill` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.light_air_kn` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
+| E1 | tuning | `sail.max_belly_px` | H2D-0.2 weather, sea state and ship response; first values tuned by simulation, confirm by eye in Godot |
 | E1 | tuning | `ship.hull_speed_factor` | E1 ship polar; provisional until J (ship physics) |
 | E1 | tuning | `ship.ice_hull_pct_per_day_full` | E1 world design; provisional until its owner module |
 | E1 | tuning | `ship.ice_speed_loss` | E1 world design; provisional until its owner module |
