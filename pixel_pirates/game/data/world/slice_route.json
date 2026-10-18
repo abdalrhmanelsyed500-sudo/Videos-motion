@@ -1,6 +1,6 @@
 {
  "name": "The Three Weathers",
- "note": "E1 vertical-slice test route (provisional). Tropical heat -> monsoon coast -> fog -> grey cold -> pack ice, about 3,430 km = 230 real minutes at the reference speed. Checkpoints are DEBUG jumps: they place the ship and set the clock; they never accelerate time.",
+ "note": "E1 vertical-slice test route (provisional). Tropical heat -> monsoon coast -> fog -> grey cold -> pack ice, about 3,340 km between checkpoints in a straight line; sailed in the real wind a competent player needs about 8.4 hours (tools/world/slice_autopilot.py, an estimate), so use keys 1-7 or `route <n>` to visit each weather. Checkpoints are DEBUG jumps: they place the ship and set the clock; they never accelerate time.",
  "waypoints": [
   {
    "id": "wp_kettle_anchorage",

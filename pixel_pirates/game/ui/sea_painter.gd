@@ -27,7 +27,7 @@ static func rgb(a: Array) -> Color:
 ## Colour under the current light: full colour by day, a dark blue-shifted version at night.
 static func lit(c: Color, light: float, floor_v: float) -> Color:
 	var k := clampf((light - floor_v) / maxf(1.0 - floor_v, 0.001), 0.0, 1.0)
-	k = k * k * (3.0 - 2.0 * k)
+	k = pow(k, 0.55)  # dawn and dusk stay readable: half light looks like 0.68, not 0.5
 	var night := Color(c.r * 0.22, c.g * 0.30, c.b * 0.55, c.a)
 	return night.lerp(c, k)
 
@@ -143,9 +143,9 @@ static func _waves(cv: CanvasItem, v: Dictionary, deep: Color, shallow: Color) -
 	var herald: float = v["herald"]
 	var t: float = v["time"]
 	var wscale := float(look["wave_scale"])
-	var amp_max := clampf(wave_m * 2.4 * wscale, 0.6, 20.0)
+	var amp_max := clampf(wave_m * 3.0 * wscale, 0.6, 20.0)
 	var foam_col := lit(Color(0.95, 0.98, 1.0), float(v["light"]), float(v["floor"]))
-	var crest_limit := 0.97 - 0.12 * clampf((float(v["wind_kn"]) - 10.0) / 25.0, 0.0, 1.0)
+	var crest_limit := 0.97 - 0.12 * clampf((float(v["wind_kn"]) - 10.0) / 25.0, 0.0, 1.0) - 0.08 * float(v["storm"])
 	for r in WAVE_ROWS:
 		var f := float(r) / float(WAVE_ROWS - 1)
 		var y := HORIZON + 4.0 + (H - HORIZON - 4.0) * pow(f, 1.8)

@@ -12,7 +12,9 @@ import validate_data as V  # noqa: E402
 ROOT = V.ROOT
 MF = ROOT / "game" / "art" / "manifest" / "sprites.json"
 
-REGION = {"id": "reg_sunset_shoals", "name": "Sunset Shoals", "climate": "tropical", "mood": "golden_hour"}
+# A real region record (E1 made the region schema strict) with a test id and name.
+REGION = dict(json.loads((ROOT / "game" / "data" / "world" / "regions.json").read_text())["records"][0],
+              id="reg_sunset_shoals", name="Sunset Shoals")
 
 
 def isl(n, x, y, tier=2, offers=("fresh_water",), neighbors=(), landmark=False, visible_from=()):

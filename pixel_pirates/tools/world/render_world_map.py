@@ -15,7 +15,7 @@ import ocean as O  # noqa: E402
 
 CELL = 20.0
 PX = 0.16   # px per km on the output (9000 km -> 1440 px)
-OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "art_bible" / "world_map_e1.png"
+OUT = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "art_bible" / "world_map_e1_v2.png"
 ROUTE = ROOT / "game" / "data" / "world" / "slice_route.json"
 
 

@@ -4,7 +4,7 @@ Every balance number in `game/data/` carries `provisional`, `owner` and `source`
 who is expected to finalise them, and where each came from. `owner` uses PROPOSED module numbers (N1..N14, B3); the N-module list is not
 fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is finalised only when this ledger has no `N*` rows left.
 
-**182 provisional records** | B2: 2, B3: 3, B4: 28, B5: 5, B6: 7, B7: 10, B8: 4, C1: 3, D1: 6, E2: 7, E7: 9, E8: 2, E9: 2, F0: 10, F1: 9, I17: 5, I19: 9, N1: 19, N10: 7, N11: 3, N13: 5, N2: 2, N3: 1, N4: 4, N5: 2, N6: 5, N7: 4, N8: 8, N9: 1
+**335 provisional records** | B2: 2, B3: 3, B4: 28, B5: 5, B6: 7, B7: 10, B8: 4, C1: 3, D1: 6, E1: 148, E2: 7, E7: 9, E8: 2, E9: 2, F0: 10, F1: 9, I17: 5, I19: 9, N1: 19, N10: 7, N11: 3, N13: 10, N2: 2, N3: 1, N4: 4, N5: 2, N6: 5, N7: 4, N8: 8, N9: 1
 
 | owner | kind | key | source |
 |---|---|---|---|
@@ -76,6 +76,154 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | D1 | tuning | `crew.size_late` | B4 economy design; provisional until its owner module |
 | D1 | tuning | `crew.size_mid` | B4 economy design; provisional until its owner module |
 | D1 | tuning | `crew.size_start` | B4 economy design; provisional until its owner module |
+| E1 | climate_band | `bnd_doldrums` | E1 world design; provisional until its owner module |
+| E1 | climate_band | `bnd_horse` | E1 world design; provisional until its owner module |
+| E1 | climate_band | `bnd_polar` | E1 world design; provisional until its owner module |
+| E1 | climate_band | `bnd_subpolar` | E1 world design; provisional until its owner module |
+| E1 | climate_band | `bnd_trades` | E1 world design; provisional until its owner module |
+| E1 | climate_band | `bnd_westerlies` | E1 world design; provisional until its owner module |
+| E1 | region | `reg_dead_ocean` | E1 world design; provisional until its owner module |
+| E1 | region | `reg_fogbound_expanse` | E1 world design; provisional until its owner module |
+| E1 | region | `reg_glass_sea` | E1 world design; provisional until its owner module |
+| E1 | region | `reg_green_verge` | E1 world design; provisional until its owner module |
+| E1 | region | `reg_grey_marches` | E1 world design; provisional until its owner module |
+| E1 | region | `reg_kettle_seas` | E1 world design; provisional until its owner module |
+| E1 | region | `reg_shattered_reaches` | E1 world design; provisional until its owner module |
+| E1 | region | `reg_storm_belt` | E1 world design; provisional until its owner module |
+| E1 | region | `reg_sunward_banks` | E1 world design; provisional until its owner module |
+| E1 | region | `reg_white_hollow` | E1 world design; provisional until its owner module |
+| E1 | species | `spc_antarctic_toothfish` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_arctic_tern` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_atlantic_bluefin` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_atlantic_cod` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_atlantic_herring` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_atlantic_puffin` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_atlantic_salmon` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_barracuda` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_basking_shark` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_bellsinger` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_beluga` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_black_legged_kittiwake` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_blue_marlin` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_blue_mussel` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_blue_whale` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_bottlenose_dolphin` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_bowhead_whale` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_brown_booby` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_capelin` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_caribbean_reef_shark` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_chambered_nautilus` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_common_octopus` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_copepod` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_elephant_seal` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_emperor_penguin` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_european_storm_petrel` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_fin_whale` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_flying_fish` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_ghost_lantern` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_giant_squid` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_goliath_grouper` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_grandfather_squid` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_great_skua` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_great_white` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_green_turtle` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_greenland_shark` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_haddock` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_halibut` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_hammerhead` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_harbour_seal` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_hawksbill_turtle` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_hollow_whale` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_humboldt_squid` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_humpback_whale` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_king_crab` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_krill` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_leatherback_turtle` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_leopard_seal` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_looking_glass_ray` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_mackerel` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_magnificent_frigatebird` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_mahi_mahi` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_manta_ray` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_moon_jelly` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_moray_eel` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_mud_crab` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_narwhal` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_noctiluca` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_northern_gannet` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_orca` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_oystercatcher` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_parrotfish` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_porcupinefish` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_portuguese_man_o_war` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_red_billed_tropicbird` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_red_snapper` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_sailfish` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_sardine` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_sargassum_fish` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_sea_cucumber` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_sea_otter` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_skipjack_tuna` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_southern_right_whale` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_sperm_whale` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_spinner_dolphin` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_spiny_lobster` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_stormglass_medusa` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_sunfish` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_swordfish` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_tiger_shark` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_trench_angler` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_wahoo` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_walrus` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_wandering_albatross` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_whale_shark` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_yellow_bellied_sea_snake` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | species | `spc_yellowfin_tuna` | E1 wildlife seed; real species from standard natural history, numbers provisional |
+| E1 | tuning | `ocean.air_minus_sst_c` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.edge_storm_km` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.fog_vis_coeff` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.herald_lead_days` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.horizon_eye_height_m` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.iceberg_cell_km` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.lat_extent_deg` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.light_full_deg` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.light_twilight_deg` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.rain_vis_coeff` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.region_aspect` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.region_blend_km` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.region_lat_penalty` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.region_warp_km` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.region_warp_scale_km` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.seasonal_amp_per_lat` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.sst_equator_c` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.sst_freeze_c` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.sst_lat_sq_c` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.start_season_phase` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.visibility_clear_km` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.wave_coeff` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.wave_max_m` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.weather_drift` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.weather_evolve_days` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.weather_scale_km` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.world_height_km` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.world_width_km` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ocean.year_days` | E1 world design; provisional until its owner module |
+| E1 | tuning | `perf.active_radius_km` | E1 world design; provisional until its owner module |
+| E1 | tuning | `perf.max_instanced_creatures` | E1 world design; provisional until its owner module |
+| E1 | tuning | `perf.max_school_instances` | E1 world design; provisional until its owner module |
+| E1 | tuning | `perf.sighting_min_gap_s` | E1 world design; provisional until its owner module |
+| E1 | tuning | `perf.weather_grid_km` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ship.hull_speed_factor` | E1 ship polar; provisional until J (ship physics) |
+| E1 | tuning | `ship.ice_hull_pct_per_day_full` | E1 world design; provisional until its owner module |
+| E1 | tuning | `ship.ice_speed_loss` | E1 world design; provisional until its owner module |
+| E1 | tuning | `wildlife.sight_distance_max` | E1 wildlife sighting model; provisional until H (ocean life) |
+| E1 | tuning | `wildlife.sight_distance_min` | E1 wildlife sighting model; provisional until H (ocean life) |
+| E1 | tuning | `wildlife.sighting_chance` | E1 wildlife sighting model; provisional until H (ocean life) |
+| E1 | tuning | `wildlife.species_target` | E1 world design; provisional until its owner module |
+| E1 | tuning | `wildlife.temp_tolerance_c` | E1 wildlife sighting model; provisional until H (ocean life) |
+| E1 | tuning | `world.islands_t1` | E1 world design; island budget from the brief (T1 12-15, T2 20-25, T3 15-25) |
+| E1 | tuning | `world.islands_t2` | E1 world design; island budget from the brief (T1 12-15, T2 20-25, T3 15-25) |
+| E1 | tuning | `world.islands_t3` | E1 world design; island budget from the brief (T1 12-15, T2 20-25, T3 15-25) |
 | E2 | tuning | `loop.choice_moments_per_10min` | B2 design target; provisional until its owner module |
 | E2 | tuning | `loop.crisis_moments_per_10min_max` | B2 design target; provisional until its owner module |
 | E2 | tuning | `loop.max_quiet_minutes` | B2 design target; provisional until its owner module |
@@ -159,6 +307,11 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | N11 | tuning | `weather.gale_wave_height_m` | design placeholder |
 | N11 | tuning | `weather.season_length_days` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N13 | tuning | `plan.forecast_spread_sea` | B1 design target; provisional until its owner module |
+| N13 | tuning | `ship.max_safe_wave_m` | E1 world design; provisional until its owner module |
+| N13 | tuning | `ship.no_go_deg` | E1 world design; provisional until its owner module |
+| N13 | tuning | `ship.reef_wind_kn` | E1 world design; provisional until its owner module |
+| N13 | tuning | `ship.ref_wind_kn` | E1 world design; provisional until its owner module |
+| N13 | tuning | `ship.sail_speed_kmh` | E1 world design; provisional until its owner module |
 | N13 | tuning | `time.real_minutes_per_game_day` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N13 | tuning | `warn.advisory_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
 | N13 | tuning | `warn.critical_hours` | T1 time revision (1 game day = 15 real min); provisional until its owner module |
