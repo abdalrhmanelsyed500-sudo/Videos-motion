@@ -13,6 +13,8 @@ const HORIZON := 140.0
 const FOV_DEG := 55.0
 const FONT_SIZE := 12
 const SKY_STRIPS := 24
+const STAR_COUNT := 230
+const CLOUD_SPREAD := 3.3  # clouds are spread over 360 degrees; only those inside the 110 degree view are drawn
 const SEA_STRIPS := 22
 const WAVE_ROWS := 17
 const WAVE_STEP_PX := 16.0
@@ -38,6 +40,15 @@ static func fpoly(cv: CanvasItem, xy: Array, col: Color, origin: Vector2 = Vecto
 	for i in range(0, xy.size(), 2):
 		pts.append(origin + Vector2(float(xy[i]), float(xy[i + 1])) * sc)
 	cv.draw_colored_polygon(pts, col)
+
+
+## Screen x of something at compass azimuth az_deg while the ship heads heading_deg. -100 when outside the view.
+## The sky is fixed to the compass, so turning the ship visibly turns the world.
+static func screen_x(az_deg: float, heading_deg: float) -> float:
+	var rel := wrapf(az_deg - heading_deg, -180.0, 180.0)
+	if absf(rel) > FOV_DEG + 6.0:
+		return -100.0
+	return W * 0.5 + rel / FOV_DEG * W * 0.5
 
 
 static func text(
@@ -76,8 +87,10 @@ static func sky(cv: CanvasItem, v: Dictionary) -> void:
 	var cloud: float = v["cloud"]
 	if light < 0.35:
 		var a := (0.35 - light) / 0.35 * (1.0 - 0.9 * cloud)
-		for i in 70:
-			var sx := Ocean.hash01(i, 1, 0, 77) * W
+		for i in STAR_COUNT:
+			var sx := screen_x(Ocean.hash01(i, 1, 0, 77) * 360.0, float(v["heading_deg"]))
+			if sx < -2.0:
+				continue
 			var sy := Ocean.hash01(i, 2, 0, 77) * (HORIZON - 12.0)
 			var tw := 0.6 + 0.4 * sin(float(v["time"]) * (1.0 + Ocean.hash01(i, 3, 0, 77)) + float(i))
 			cv.draw_rect(Rect2(sx, sy, 1.0, 1.0), Color(1, 1, 0.92, a * tw))
@@ -90,9 +103,15 @@ static func _sun_moon(cv: CanvasItem, v: Dictionary) -> void:
 	var veil := 1.0 - 0.85 * float(v["cloud"]) - 0.4 * float(v["fog"])
 	if veil <= 0.05:
 		return
+	var lat: float = v["lat"]
+	var head: float = v["heading_deg"]
 	if hour > 5.0 and hour < 19.0:
 		var f := (hour - 5.0) / 14.0
-		var pos := Vector2(60.0 + f * 520.0, HORIZON - sin(f * PI) * 118.0 + 4.0)
+		# rises in the east, crosses the south (north of the equator) or the north (south of it), sets in the west
+		var sx := screen_x(90.0 + f * 180.0 if lat >= 0.0 else 90.0 - f * 180.0, head)
+		if sx < -2.0:
+			return
+		var pos := Vector2(sx, HORIZON - sin(f * PI) * 118.0 + 4.0)
 		var warm := clampf(4.0 * f * (1.0 - f), 0.0, 1.0)
 		var col := Color(1.0, 0.82, 0.55).lerp(Color(1.0, 0.97, 0.85), warm)
 		cv.draw_circle(pos, 26.0, Color(col.r, col.g, col.b, 0.10 * veil))
@@ -101,18 +120,23 @@ static func _sun_moon(cv: CanvasItem, v: Dictionary) -> void:
 	else:
 		var f2 := fposmod(hour - 19.0, 24.0) / 10.0
 		if f2 < 1.0:
-			var mp := Vector2(60.0 + f2 * 520.0, HORIZON - sin(f2 * PI) * 100.0 + 4.0)
+			var mx := screen_x(90.0 + f2 * 180.0 if lat >= 0.0 else 90.0 - f2 * 180.0, head)
+			if mx < -2.0:
+				return
+			var mp := Vector2(mx, HORIZON - sin(f2 * PI) * 100.0 + 4.0)
 			cv.draw_circle(mp, 14.0, Color(0.8, 0.85, 1.0, 0.10 * veil))
 			cv.draw_circle(mp, 7.0, Color(0.92, 0.94, 1.0, veil))
 
 
 static func _clouds(cv: CanvasItem, v: Dictionary) -> void:
 	var cloud: float = v["cloud"]
-	var n := int(3.0 + cloud * 11.0)
+	var n := int((3.0 + cloud * 11.0) * CLOUD_SPREAD)
 	var base := lit(Color(0.95, 0.95, 0.97), float(v["light"]), float(v["floor"])).darkened(0.5 * float(v["storm"]))
 	for i in n:
-		var speed := 2.0 + 4.0 * Ocean.hash01(i, 4, 0, 78) + float(v["wind_kn"]) * 0.15
-		var cx := fposmod(Ocean.hash01(i, 5, 0, 78) * (W + 160.0) + float(v["time"]) * speed, W + 160.0) - 80.0
+		var drift := (0.02 + 0.10 * Ocean.hash01(i, 4, 0, 78)) * (1.0 + float(v["wind_kn"]) * 0.05)  # degrees per second
+		var cx := screen_x(Ocean.hash01(i, 5, 0, 78) * 360.0 + float(v["time"]) * drift, float(v["heading_deg"]))
+		if cx < -2.0:
+			continue
 		var cy := 18.0 + Ocean.hash01(i, 6, 0, 78) * (HORIZON - 56.0)
 		var r := 12.0 + 16.0 * Ocean.hash01(i, 7, 0, 78) * (0.5 + cloud)
 		var a := 0.30 + 0.5 * cloud
@@ -152,12 +176,13 @@ static func _waves(cv: CanvasItem, v: Dictionary, deep: Color, shallow: Color) -
 		var amp := amp_max * (0.12 + 0.88 * f)
 		var wl := (14.0 + 150.0 * f) * (1.0 + 1.3 * herald)
 		var ph := t * (0.5 + 0.7 * f) + float(r) * 1.7
+		var slide := float(v["heading_deg"]) * 4.0 * (0.4 + f)  # turning slides the swell pattern across the view
 		var col := deep.lerp(shallow, 0.35 * (1.0 - f)).lightened(0.10 + 0.06 * f)
 		var pts := PackedVector2Array()
 		var x := -WAVE_STEP_PX
 		while x <= W + WAVE_STEP_PX:
-			var s1 := sin(x / wl * TAU + ph)
-			var s2 := sin(x / (wl * 0.43) * TAU - ph * 1.3 + float(r))
+			var s1 := sin((x + slide) / wl * TAU + ph)
+			var s2 := sin((x + slide) / (wl * 0.43) * TAU - ph * 1.3 + float(r))
 			var yy := y + amp * (0.7 * s1 + 0.3 * s2)
 			pts.append(Vector2(x, yy))
 			if s1 * 0.7 + s2 * 0.3 > crest_limit * 0.7 and wave_m > 1.2:
@@ -258,7 +283,7 @@ static func ship(cv: CanvasItem, v: Dictionary) -> void:
 	var rel_wind := wrapf(float(v["wind_from_deg"]) - float(v["heading_deg"]), -180.0, 180.0)
 	var wind_f := clampf(float(v["wind_kn"]) / 30.0, 0.0, 1.0)
 	var heel := signf(rel_wind) * wind_f * 0.16 * sin(deg_to_rad(absf(rel_wind)))
-	var roll := sin(t * 0.9) * 0.025 * (0.4 + float(v["wave_m"]) * 0.6) + heel
+	var roll := sin(t * 0.9) * 0.025 * (0.4 + float(v["wave_m"]) * 0.6) + heel + float(v["turn"]) * 0.006
 	var bob := sin(t * 1.3) * (0.4 + float(v["wave_m"]) * 0.7)
 	cv.draw_set_transform(SHIP_POS + Vector2(0.0, bob), roll, Vector2.ONE)
 	var hull := lit(Color("#5a3c28"), light, fl)

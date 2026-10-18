@@ -1,5 +1,7 @@
 # E1 - The Ocean: shape, regions, weather, wildlife, and a playable slice
 
+> **Visual direction (locked later, see docs/E1B_HD2D_PROPOSAL.md):** the final game is HD-2D with an angled top-down camera. The side-view slice described here is a temporary technical prototype and is not the approved look. Section 8's sea-view description and the stills are prototype material.
+
 Status: **designed, data-tested, GDScript written and parity-checked, NEVER RUN IN GODOT.** Everything marked PROVISIONAL has owner E1 unless stated.
 This module delivers the world specification AND a small playable vertical slice ("The Three Weathers"). The slice is the first test of the ocean: it is not done until you have sailed it on your PC (checklist in section 11).
 
@@ -25,7 +27,7 @@ What "verified" means here: the Python model is tested by properties and golden 
 
 ## 3. Scale and sailing times (decision E1-3) - the numbers the Canon needs
 
-One game day = 15 real minutes (T1). A sloop at the reference condition (beam reach, 14 kn through the water) with `ship.hull_speed_factor` 1.3 covers **9.3 km per game hour = 14.9 km per real minute**.
+One game day = 15 real minutes (T1). A sloop at the reference condition (a reach in 14 kn of wind; that is about 5 kn through the water, `ship.sail_speed_kmh` 9.3) covers **9.3 km per game hour = 14.9 km per real minute**.
 
 | Distance | Real time | Band (km) |
 |---|---|---|

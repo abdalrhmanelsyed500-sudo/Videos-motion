@@ -69,6 +69,17 @@ var _chart_cell := Vector2i(-1, -1)
 var _chart_dirty := false
 var _labels: Array = []
 var _fps := 0.0
+var _turn := 0.0  ## smoothed turn rate in degrees per second (the ship leans into it)
+var _selftest := false
+var _st_phase := -1
+var _st_t := 0.0
+var _st_steer := 0.0
+var _st_fails := 0
+var _st_log: Array[String] = []
+var _st_mark: Dictionary = {}
+var _st_sum_ms := 0.0
+var _st_n := 0
+var _st_worst_ms := 0.0
 
 
 func _ready() -> void:
@@ -95,6 +106,9 @@ func _ready() -> void:
 		_labels.append([str(r["name"]), float(sd["x_km"]), float(sd["y_km"]), false])
 	_init_chart()
 	_jump(1)
+	_selftest = OS.get_cmdline_user_args().has("--selftest")
+	if _selftest:
+		_st_phase = 0
 
 
 func _jump(number: int) -> void:
@@ -143,13 +157,13 @@ func _process(delta: float) -> void:
 	var dt := minf(delta, MAX_STEP_S)
 	if _commands != null:
 		_commands.live = false  # this scene runs the clock; the console's own live clock would double the time
+	var steer := 0.0
 	if not _show_chart:
-		var steer := 0.0
-		if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
-			steer -= 1.0
-		if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
-			steer += 1.0
+		steer = _steer_axis()
 		_sea.heading_deg = fposmod(_sea.heading_deg + steer * TURN_DEG_PER_S * dt, 360.0)
+	_turn = lerpf(_turn, steer * TURN_DEG_PER_S, 1.0 - exp(-dt / 0.25))
+	if _selftest:
+		_selftest_step(delta)
 	var t0 := float(_state.clock.t) / 86400.0
 	var gs: float = _state.tick(dt)
 	if _sea.last_sample.is_empty():
@@ -164,6 +178,18 @@ func _process(delta: float) -> void:
 	_update_wildlife(delta, t_days)
 	_update_chart()
 	queue_redraw()
+
+
+## -1 = turn to port, +1 = turn to starboard. The self-test replaces the keyboard with a scripted value.
+func _steer_axis() -> float:
+	if _selftest:
+		return _st_steer
+	var axis := 0.0
+	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+		axis -= 1.0
+	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+		axis += 1.0
+	return axis
 
 
 func _smooth(dt: float) -> void:
@@ -323,6 +349,8 @@ func _view() -> Dictionary:
 	v["wind_from_deg"] = float(_d["wind_from"])
 	v["heading_deg"] = _heading_disp
 	v["speed_kn"] = float(_d["speed_kn"])
+	v["turn"] = _turn
+	v["lat"] = float(_sea.last_sample["lat"])
 	return v
 
 
@@ -422,6 +450,9 @@ func _warnings() -> Array[String]:
 		out.append("GALE: shorten sail, keep her head to the sea")
 	elif float(_d["herald"]) > 0.35:
 		out.append("A long swell is running from the %s: weather is coming" % _compass(float(_d["wind_from"])))
+	var off := absf(fposmod(_sea.heading_deg - float(_d["wind_from"]) + 540.0, 360.0) - 180.0)
+	if off < _oc.tuning_value("ship.no_go_deg") and float(_d["wind_kn"]) > 3.0:
+		out.append("IN IRONS: head to wind (%.0f deg off it). Bear away with A/D" % off)
 	if float(_d["fog"]) > 0.5:
 		out.append("Fog: you can see %.1f km" % float(_d["visibility_km"]))
 	if float(_d["ice"]) > 0.35:
@@ -480,3 +511,156 @@ func _hud_wind_rose(v: Dictionary) -> void:
 	var bow := PackedVector2Array([c + Vector2(0, -8), c + Vector2(4, 6), c + Vector2(-4, 6)])
 	draw_colored_polygon(bow, Color(1, 1, 1, 0.9))
 	Painter.text(self, Vector2(572, 354), "wind (bow up)", Color(1, 1, 1, 0.55), 9)
+
+
+# ---- self-test (godot --path game res://ui/ocean_slice.tscn -- --selftest) ---------------------------
+## Scripted run for the user's PC: steers, pauses, opens the chart, jumps to checkpoints, measures frame times, and
+## writes user://slice_selftest.txt (also printed with the prefix SELFTEST). It checks the SIMULATION through the real
+## scene (clock, steering, ship, weather, chart); it cannot judge how the picture looks, and the keyboard polling in
+## _steer_axis() is the one thing it replaces with a scripted value (press A and D yourself for that).
+func _st_check(ok: bool, what: String) -> void:
+	_st_log.append(("PASS  " if ok else "FAIL  ") + what)
+	if not ok:
+		_st_fails += 1
+
+
+func _st_stats() -> String:
+	var avg_fps := 1000.0 / maxf(_st_sum_ms / maxf(float(_st_n), 1.0), 0.001)
+	return "avg %.0f fps, worst frame %.0f ms over %d frames" % [avg_fps, _st_worst_ms, _st_n]
+
+
+func _st_next(phase: int) -> void:
+	_st_phase = phase
+	_st_t = 0.0
+	_st_sum_ms = 0.0
+	_st_n = 0
+	_st_worst_ms = 0.0
+
+
+func _st_mark_now() -> void:
+	_st_mark = {"heading": _sea.heading_deg, "x": _sea.x_km, "y": _sea.y_km, "dist": _sea.distance_km,
+			"clock": float(_state.clock.t)}
+
+
+func _selftest_step(delta: float) -> void:
+	_st_t += delta
+	if _st_t > 0.5 and _st_phase > 0:
+		_st_sum_ms += delta * 1000.0
+		_st_n += 1
+		_st_worst_ms = maxf(_st_worst_ms, delta * 1000.0)
+	match _st_phase:
+		0:
+			_st_phase0()
+		1:
+			if _st_t >= 1.0:
+				_st_mark_now()
+				_st_steer = 1.0
+				_st_next(2)
+		2:
+			if _st_t >= 3.0:
+				_st_steer = 0.0
+				_st_phase2()
+		3:
+			if _st_t >= 3.0:
+				_st_steer = 0.0
+				_st_phase3()
+		4:
+			if _st_t >= 1.5:
+				_st_phase4()
+		5:
+			if _st_t >= 8.0:
+				_st_phase5()
+		6:
+			if _st_t >= 4.0:
+				_st_log.append("INFO  checkpoint 2 (clear noon): " + _st_stats())
+				_jump(6)
+				_st_next(7)
+		7:
+			if _st_t >= 4.0:
+				_st_phase7()
+		8:
+			if _st_t >= 1.0:
+				_st_phase8()
+
+
+func _st_phase0() -> void:
+	var info := Engine.get_version_info()
+	_st_log.append("INFO  Godot %s | debug build %s" % [info.get("string", "?"), str(OS.is_debug_build())])
+	_st_log.append("INFO  GPU %s | api %s | driver %s" % [RenderingServer.get_video_adapter_name(),
+			RenderingServer.get_video_adapter_api_version(), str(OS.get_video_adapter_driver_info())])
+	_st_log.append("INFO  renderer setting %s | window %s" % [
+			str(ProjectSettings.get_setting("rendering/renderer/rendering_method")), str(DisplayServer.window_get_size())])
+	_st_check(_species.size() == 87, "87 species loaded (%d)" % _species.size())
+	_st_check(_oc.regions.size() == 10, "10 regions loaded (%d)" % _oc.regions.size())
+	_st_check(_route.size() == 7, "7 route checkpoints loaded (%d)" % _route.size())
+	_jump(1)
+	_st_next(1)
+
+
+func _st_phase2() -> void:
+	var dh := wrapf(_sea.heading_deg - float(_st_mark["heading"]), -180.0, 180.0)
+	_st_check(dh > 36.0 and dh < 46.0, "3 s of starboard steering turned the ship about 42 deg (%.1f)" % dh)
+	var moved := sqrt(pow(_sea.x_km - float(_st_mark["x"]), 2.0) + pow(_sea.y_km - float(_st_mark["y"]), 2.0))
+	_st_check(moved > 0.05, "the ship moved under sail (%.2f km in 3 s)" % moved)
+	var dclock := float(_state.clock.t) - float(_st_mark["clock"])
+	_st_check(dclock > 250.0 and dclock < 330.0, "3 real s = about 288 game s on the one clock (%.0f)" % dclock)
+	_st_check(_sea.distance_km > float(_st_mark["dist"]), "distance sailed increased")
+	_st_log.append("INFO  checkpoint 1 (dawn squall) sailing: " + _st_stats())
+	_st_steer = -1.0
+	_st_next(3)
+
+
+func _st_phase3() -> void:
+	var back := wrapf(_sea.heading_deg - float(_st_mark["heading"]), -180.0, 180.0)
+	_st_check(absf(back) < 6.0, "3 s to port brought the heading back (%.1f deg off the start)" % back)
+	_toggle_pause("menu")
+	_st_mark_now()
+	_st_next(4)
+
+
+func _st_phase4() -> void:
+	_st_check(float(_state.clock.t) == float(_st_mark["clock"]), "paused: the world clock did not move")
+	_st_check(_sea.x_km == float(_st_mark["x"]) and _sea.y_km == float(_st_mark["y"]), "paused: the ship did not move")
+	_toggle_pause("menu")
+	_show_chart = true
+	_state.clock.pause("planning")
+	_st_mark_now()
+	for i in _chart_cols * _chart_rows:
+		if _chart_known[i] == 0:
+			_chart_queue.append(i)
+	_st_next(5)
+
+
+func _st_phase5() -> void:
+	var pct := 100.0 * float(_chart_known_n) / float(_chart_cols * _chart_rows)
+	_st_check(float(_state.clock.t) == float(_st_mark["clock"]), "chart open (planning pause): the clock did not move")
+	_st_check(_st_worst_ms < 250.0, "chart reveal never stalled a frame beyond 250 ms (%.0f ms)" % _st_worst_ms)
+	_st_log.append("INFO  chart reveal: %.0f%% of the world charted in 8 s; %s" % [pct, _st_stats()])
+	_show_chart = false
+	_state.clock.resume("planning")
+	_jump(2)
+	_st_next(6)
+
+
+func _st_phase7() -> void:
+	_st_log.append("INFO  checkpoint 6 (the gale): " + _st_stats())
+	_st_check(float(_d["storm"]) > 0.4, "checkpoint 6 shows a gale (storm %.2f)" % float(_d["storm"]))
+	_st_check(float(_d["wave_m"]) > 3.0, "checkpoint 6 waves above 3 m (%.1f)" % float(_d["wave_m"]))
+	_jump(5)
+	_st_next(8)
+
+
+func _st_phase8() -> void:
+	var herald := float(_d["herald"])
+	var storm := float(_d["storm"])
+	var msg := "checkpoint 5: Herald Swell before the gale (herald %.2f, storm %.2f)" % [herald, storm]
+	_st_check(herald > 0.4 and storm < 0.3, msg)
+	_st_log.append("RESULT %s (%d failed)" % ["PASS" if _st_fails == 0 else "FAIL", _st_fails])
+	var f := FileAccess.open("user://slice_selftest.txt", FileAccess.WRITE)
+	for line in _st_log:
+		print("SELFTEST " + line)
+		if f != null:
+			f.store_line(line)
+	print("SELFTEST report file: " + ProjectSettings.globalize_path("user://slice_selftest.txt"))
+	_selftest = false
+	get_tree().quit(1 if _st_fails > 0 else 0)
