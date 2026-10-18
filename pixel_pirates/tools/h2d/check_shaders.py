@@ -39,6 +39,11 @@ def find_validator() -> str | None:
     cands.append("/home/user/tools_cache/node_modules/glslang-validator-prebuilt-predownloaded/bin/glslangValidator.linux")
     for c in cands:
         if c and Path(c).exists():
+            if not os.access(c, os.X_OK):
+                try:
+                    os.chmod(c, 0o755)  # npm leaves the prebuilt binary non-executable in some sandboxes
+                except OSError:
+                    continue
             return c
     return None
 
