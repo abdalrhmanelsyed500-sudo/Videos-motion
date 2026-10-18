@@ -1,0 +1,193 @@
+{
+ "schema": 1,
+ "kind": "tuning",
+ "records": [
+  {
+   "key": "warn.advisory_days",
+   "value": 7,
+   "unit": "days",
+   "min": 3,
+   "max": 14,
+   "provisional": true,
+   "owner": "N13",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Rung 1 of the warning ladder: a stock will run out in this many days at the CURRENT consumption."
+  },
+  {
+   "key": "warn.warning_days",
+   "value": 3,
+   "unit": "days",
+   "min": 1,
+   "max": 7,
+   "provisional": true,
+   "owner": "N13",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Rung 2: loud warning, the quartermaster speaks up, the HUD icon pulses."
+  },
+  {
+   "key": "warn.critical_days",
+   "value": 1,
+   "unit": "days",
+   "min": 0.25,
+   "max": 3,
+   "provisional": true,
+   "owner": "N13",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Rung 3: last call, the ship's log marks the page, every recovery option is listed."
+  },
+  {
+   "key": "warn.min_steps_before_loss",
+   "value": 3,
+   "unit": "steps",
+   "min": 3,
+   "max": 5,
+   "provisional": true,
+   "owner": "B6",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "No survival loss (death, sinking, mutiny) may happen without at least this many distinct warning steps before it."
+  },
+  {
+   "key": "recovery.min_options",
+   "value": 2,
+   "unit": "options",
+   "min": 2,
+   "max": 4,
+   "provisional": true,
+   "owner": "B6",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "At every critical state the player has at least this many different ways out (one may be a sacrifice)."
+  },
+  {
+   "key": "plan.forecast_spread_sea",
+   "value": 0.25,
+   "unit": "ratio",
+   "min": 0.1,
+   "max": 0.5,
+   "provisional": true,
+   "owner": "N13",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Voyage planner: width of the expected-days band either side of the centre on ordinary sea (0.25 = plus/minus 25 percent)."
+  },
+  {
+   "key": "plan.forecast_spread_dead",
+   "value": 0.4,
+   "unit": "ratio",
+   "min": 0.2,
+   "max": 0.7,
+   "provisional": true,
+   "owner": "E9",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Same band on dead-ocean crossings: more uncertainty, never hidden arithmetic."
+  },
+  {
+   "key": "plan.forecast_spread_min",
+   "value": 0.1,
+   "unit": "ratio",
+   "min": 0.05,
+   "max": 0.2,
+   "provisional": true,
+   "owner": "E8",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Narrowest band the Reckoning can ever show, however good the navigator and chart: the sea always keeps some secrets."
+  },
+  {
+   "key": "voyage.hop_min_minutes",
+   "value": 3,
+   "unit": "min",
+   "min": 2,
+   "max": 5,
+   "provisional": true,
+   "owner": "E2",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Shortest crossing between two islands at default time scale, no events (real minutes)."
+  },
+  {
+   "key": "voyage.hop_max_minutes",
+   "value": 8,
+   "unit": "min",
+   "min": 5,
+   "max": 12,
+   "provisional": true,
+   "owner": "E2",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Upper end of the Hop band (islands in a cluster)."
+  },
+  {
+   "key": "voyage.passage_max_minutes",
+   "value": 20,
+   "unit": "min",
+   "min": 12,
+   "max": 30,
+   "provisional": true,
+   "owner": "E2",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Upper end of the Passage band (neighbouring islands, same sea)."
+  },
+  {
+   "key": "voyage.crossing_max_minutes",
+   "value": 45,
+   "unit": "min",
+   "min": 25,
+   "max": 60,
+   "provisional": true,
+   "owner": "E2",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Upper end of the Crossing band (between regions)."
+  },
+  {
+   "key": "voyage.dead_max_minutes",
+   "value": 90,
+   "unit": "min",
+   "min": 45,
+   "max": 120,
+   "provisional": true,
+   "owner": "E9",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Upper end of a Dead Ocean crossing (needs full preparation, planner required)."
+  },
+  {
+   "key": "share.sea_pct",
+   "value": 40,
+   "unit": "percent",
+   "min": 30,
+   "max": 50,
+   "provisional": true,
+   "owner": "B7",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Target share of play time on the open sea (sailing, ship life, sea events)."
+  },
+  {
+   "key": "share.island_pct",
+   "value": 35,
+   "unit": "percent",
+   "min": 25,
+   "max": 45,
+   "provisional": true,
+   "owner": "B7",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Target share on islands (exploring, gathering, puzzles, people)."
+  },
+  {
+   "key": "share.ship_crew_pct",
+   "value": 17,
+   "unit": "percent",
+   "min": 10,
+   "max": 25,
+   "provisional": true,
+   "owner": "B7",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Target share in ship and crew management (planner, galley, repairs, orders, talk)."
+  },
+  {
+   "key": "share.combat_pct_max",
+   "value": 8,
+   "unit": "percent",
+   "min": 0,
+   "max": 12,
+   "provisional": true,
+   "owner": "B7",
+   "source": "B1 design target; provisional until its owner module",
+   "note": "Combat is a consequence of the sea, never the main course: at most this share of play time."
+  }
+ ]
+}

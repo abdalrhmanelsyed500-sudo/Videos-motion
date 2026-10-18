@@ -60,6 +60,7 @@ def main() -> int:
     steps: list[tuple[str, list[str] | None, Path]] = [
         ("project check (data, parity, island kit, refs, content rules)", [PY, "tools/check_project.py"], ROOT),
         ("data tools tests", [PY, "tools/data_tools/test_data_tools.py"], ROOT),
+        ("design checks tests (pillar invariants, content lint)", [PY, "tools/data_tools/test_design_checks.py"], ROOT),
     ]
     if not a.quick:
         steps.append(("island kit tests", [PY, "tools/island_kit/test_island_kit.py"], ROOT))

@@ -4,13 +4,23 @@ Every balance number in `game/data/` carries `provisional`, `owner` and `source`
 who is expected to finalise them, and where each came from. `owner` uses PROPOSED module numbers (N1..N14, B3); the N-module list is not
 fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is finalised only when this ledger has no `N*` rows left.
 
-**58 provisional records** | B3: 3, E7: 9, F0: 10, I17: 5, N1: 18, N10: 1, N11: 1, N4: 3, N5: 1, N6: 2, N7: 3, N8: 1, N9: 1
+**75 provisional records** | B3: 3, B6: 2, B7: 4, E2: 4, E7: 9, E8: 1, E9: 2, F0: 10, I17: 5, N1: 18, N10: 1, N11: 1, N13: 4, N4: 3, N5: 1, N6: 2, N7: 3, N8: 1, N9: 1
 
 | owner | kind | key | source |
 |---|---|---|---|
 | B3 | difficulty_mode | `mode_hardcore` | design placeholder |
 | B3 | difficulty_mode | `mode_normal` | design placeholder |
 | B3 | difficulty_mode | `mode_story` | design placeholder |
+| B6 | tuning | `recovery.min_options` | B1 design target; provisional until its owner module |
+| B6 | tuning | `warn.min_steps_before_loss` | B1 design target; provisional until its owner module |
+| B7 | tuning | `share.combat_pct_max` | B1 design target; provisional until its owner module |
+| B7 | tuning | `share.island_pct` | B1 design target; provisional until its owner module |
+| B7 | tuning | `share.sea_pct` | B1 design target; provisional until its owner module |
+| B7 | tuning | `share.ship_crew_pct` | B1 design target; provisional until its owner module |
+| E2 | tuning | `voyage.crossing_max_minutes` | B1 design target; provisional until its owner module |
+| E2 | tuning | `voyage.hop_max_minutes` | B1 design target; provisional until its owner module |
+| E2 | tuning | `voyage.hop_min_minutes` | B1 design target; provisional until its owner module |
+| E2 | tuning | `voyage.passage_max_minutes` | B1 design target; provisional until its owner module |
 | E7 | tuning | `island.explore_budget_min_t1` | design placeholder |
 | E7 | tuning | `island.explore_budget_min_t2` | design placeholder |
 | E7 | tuning | `island.explore_budget_min_t3` | design placeholder |
@@ -20,6 +30,9 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | E7 | tuning | `island.size_tiles_t1` | design placeholder |
 | E7 | tuning | `island.size_tiles_t2` | design placeholder |
 | E7 | tuning | `island.size_tiles_t3` | design placeholder |
+| E8 | tuning | `plan.forecast_spread_min` | B1 design target; provisional until its owner module |
+| E9 | tuning | `plan.forecast_spread_dead` | B1 design target; provisional until its owner module |
+| E9 | tuning | `voyage.dead_max_minutes` | B1 design target; provisional until its owner module |
 | F0 | island_template | `tpl_atoll_ring` | A6 design; tuned by baking and viewing |
 | F0 | island_template | `tpl_blob_isle` | A6 design; tuned by baking and viewing |
 | F0 | island_template | `tpl_cone_volcano` | A6 design; tuned by baking and viewing |
@@ -55,6 +68,10 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | N1 | tuning | `food.need_kcal_per_man_day` | design placeholder |
 | N10 | tuning | `cargo.overload_speed_penalty_pct_per_pct` | design placeholder |
 | N11 | tuning | `weather.gale_wave_height_m` | design placeholder |
+| N13 | tuning | `plan.forecast_spread_sea` | B1 design target; provisional until its owner module |
+| N13 | tuning | `warn.advisory_days` | B1 design target; provisional until its owner module |
+| N13 | tuning | `warn.critical_days` | B1 design target; provisional until its owner module |
+| N13 | tuning | `warn.warning_days` | B1 design target; provisional until its owner module |
 | N4 | tuning | `water.foul_after_days_warm` | design placeholder |
 | N4 | tuning | `water.need_l_per_man_day_comfort` | design placeholder |
 | N4 | tuning | `water.need_l_per_man_day_min` | design placeholder |

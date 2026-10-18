@@ -1,4 +1,4 @@
-# CANON BIBLE - Crown of the Seas (working title) - v0.6 (after A2, A3, A4, A5, A6, A7)
+# CANON BIBLE - Crown of the Seas (working title) - v0.7 (after A2, A3, A4, A5, A6, A7, B1)
 Drive folder: "Pixel Pirates". Repo path: pixel_pirates/.
 
 ## Hard content rules
@@ -87,10 +87,21 @@ Island workbench: tools/island_kit/new_island.py (spec -> seed search with Silho
 Decisions: A7-1 console core separate from UI. A7-2 GameState mirrors save schema. A7-3 world rules twice + shared fixture. A7-4 never trust Godot exit code alone. A7-5 static Godot-mistake checks in check_project. A7-6 workbench enforces the quota at creation. A7-7 generated, freshness-checked registry doc. No in-engine map editor until F0 (data volume decides).
 GDScript of A6 + A7 is unrun (no Godot in sandbox).
 
+## Pillars (B1) - full text in docs/B1_PILLARS.md
+One sentence: you are the captain of a ship full of people, crossing an ocean too big to cheat, and every crossing is a sum you must get right before the sea shows you what you got wrong.
+P1 THE SEA IS THE GAME (bands in real minutes at default time scale: Hop 3-8, Passage 8-20, Crossing 20-45, Dead Ocean 45-90; play time sea 40 / islands 35 / ship+crew 17 / combat at most 8 percent). P2 EVERY VOYAGE IS A SUM (the Reckoning). P3 HARD BUT FAIR (Warning Ladder 7 / 3 / 1 days at current consumption; 3 warning steps before any loss; 2 recovery options at every critical state). P4 A SHIP IS PEOPLE. P5 EVERY ISLAND ANSWERS A QUESTION. P6 THE MAP PULLS YOU (no crossing of Passage length or more without a payoff).
+Original idea: the Reckoning. The game never hides arithmetic, only the sea hides information. Forecast band +/-25 percent on ordinary sea, +/-40 percent on dead ocean, narrowest ever +/-10 percent; information (navigator, charts, lore) is cargo that narrows the band; stocks are shown as days left at current consumption and as margin against the HIGH end of the band.
+Pillar Gate: six yes/no questions per feature (docs/templates/PILLAR_GATE.md). Anti-pillars: not a combat game, not a grind or base-builder, no reflex QTEs, no hidden timers, no pirate cliches (arr dialect, shoulder parrot, plank walking, literal X marks).
+Tuning (game/data/tuning/tuning_design.json, 17 provisional keys): warn.* (7/3/1, min steps 3), recovery.min_options 2, plan.forecast_spread_sea/dead/min, voyage.* bands, share.*. Owners N13, B6, E8, E9, E2, B7. Machine-checked by tools/data_tools/design_checks.py (invariants + content-word lint over all data files).
+Survival coverage table (11 systems with question, warning, recovery, island offer tag, proposed owner N1-N11) lives in the doc; N12-N14 not yet assigned.
+Decisions: B1-1 fair-loss model (setbacks climb the ladder; ship/captain loss only after rungs 1-3; last-chance rescue by mode: Story always, Normal once per act, Hardcore none; B6 finalises). B1-2 real time at sea with pause-to-plan, x1/x4 acceleration that drops to x1 on every rung and event (B2 finalises controls). B1-3 Hardcore narrows widths and removes recommendations but keeps the ladder, honest numbers and recovery minimum.
+Not decided here: game days per real minute (N13), exact lose conditions (B6), crew names and voices (D).
+
 ## Island registry (50+ planned)
 Generated: docs/ISLAND_REGISTRY.md. Currently empty. Format: ID (isl_NNN) | name | tier | biome | position | distances to neighbours | status (planned/designed/built/tested). Filled from E3.
 
 ## Open questions
+B1: confirm the three decisions (fair-loss model, pause-to-plan real time, Hardcore keeps the ladder) or change them before B2 builds on them.
 First run of the A6 + A7 GDScript on the user's PC (tools\run_godot_tests.bat, then the console commands in docs/A7_TOOLING.md section 6). Console command naming (short names like tp, give): keep or rename before J-modules build on them.
 First run of the A6 GDScript test (test_island_map) and island_viewer on the user's PC. Whether T1 islands should be bigger or carry more content (budget 45 min vs about 11 min of pure walking). Template count (10 now, about 16 proposed).
 First run of the A5 GDScript tests (test_schema/registry/tuning/save) on the user's PC.

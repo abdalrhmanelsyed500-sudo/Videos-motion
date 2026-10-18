@@ -195,6 +195,15 @@ def check_island_kit() -> None:
     print(f"island kit: {len(ctx['templates'])} templates, {len(ctx['kits'])} kits, {len(sets[1][1])} fixture islands checked")
 
 
+def check_design() -> None:
+    """Pillar invariants (B1) and the content-word lint (HARD CONTENT RULES)."""
+    sys.path.insert(0, str(ROOT / "tools" / "data_tools"))
+    import design_checks  # noqa: PLC0415
+
+    problems.extend(design_checks.invariants(design_checks.load_tuning()))
+    problems.extend(design_checks.scan_data())
+
+
 def check_registry_doc() -> None:
     sys.path.insert(0, str(ROOT / "tools" / "data_tools"))
     import registry_doc  # noqa: PLC0415
@@ -246,6 +255,7 @@ def main() -> int:
     check_manifest()
     check_data_model()
     check_island_kit()
+    check_design()
     check_registry_doc()
     check_godot_static()
     check_gdscript()
