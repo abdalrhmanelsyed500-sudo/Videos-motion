@@ -46,7 +46,7 @@ void vertex() {
 		live *= clamp(min(e.x, e.y), 0.0, 1.0);
 		wpos = vec3(xz.x, h + 0.2 + 0.7 * h2d_hash(vec2(fi, 21.0)), xz.y);
 		alpha = live * 0.75;
-		half_size = vec2(0.17, 0.17);
+		half_size = vec2(0.2, 0.2);
 		stretch = 0.9 + 0.8 * h2d_hash(vec2(fi, 5.5));
 		axis_vs = (VIEW_MATRIX * vec4(wind_vel.x, 0.0, wind_vel.y, 0.0)).xy;
 	} else {

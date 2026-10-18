@@ -176,13 +176,17 @@ void fragment() {
 			if (kf >= ring_k - 0.5) {
 				break;
 			}
-			float on = step(h2d_drop_on(rcell, kf), rain_c);
-			float u = fract(h2d_time / DROP_PERIOD + h2d_drop_phase(rcell, kf));
+			float tt = h2d_time / DROP_PERIOD + h2d_drop_phase(rcell, kf);
+			float cyc = floor(tt);
+			float u = tt - cyc;
+			// the ring belongs to the drop that LANDED: this cycle's drop once u passes the fall, otherwise the last one
+			float seed = h2d_drop_seed(kf, cyc - step(u, DROP_FALL_FRAC));
+			float on = step(h2d_drop_on(rcell, seed), rain_c);
 			float since = fract(u - DROP_FALL_FRAC) * DROP_PERIOD;
-			float splashing = step(DROP_FALL_FRAC, u) * step(since, 0.65);
-			float rr = length(w_pos.xz - h2d_drop_impact(rcell, kf, rain_cell_m));
-			float ring = (1.0 - smoothstep(0.05, 0.17, abs(rr - since * 0.9))) * (1.0 - since / 0.65);
-			float core = step(rr, 0.22) * step(since, 0.12);
+			float splashing = step(since, 0.6);
+			float rr = length(w_pos.xz - h2d_drop_impact(rcell, seed, rain_cell_m));
+			float ring = (1.0 - smoothstep(0.08, 0.2, abs(rr - since * 0.65))) * (1.0 - since / 0.6);
+			float core = step(rr, 0.3) * step(since, 0.12);
 			acc += on * splashing * (ring * 0.55 + core * 0.9);
 		}
 		col += vec3(clamp(acc, 0.0, 1.0) * 0.4);

@@ -103,9 +103,14 @@ float h2d_rain_local(vec2 xz) {
 	return clamp((h2d_rain - 0.55 * (1.0 - n) * (1.0 - 0.9 * h2d_rain)) * 1.25, 0.0, 1.0);
 }
 
-vec2 h2d_drop_impact(vec2 cell, float k, float cell_m) {
+// A slot lands somewhere new every cycle: the seed mixes the slot k with the cycle number.
+float h2d_drop_seed(float k, float cycle) {
+	return k + 3.0 * mod(cycle, 61.0);
+}
+
+vec2 h2d_drop_impact(vec2 cell, float seed, float cell_m) {
 	vec2 c = mod(cell, 1024.0);
-	vec2 j = vec2(h2d_hash(c + k * 7.31), h2d_hash(c.yx * 1.7 + k * 5.17 + 11.0));
+	vec2 j = vec2(h2d_hash(c + seed * 7.31), h2d_hash(c.yx * 1.7 + seed * 5.17 + 11.0));
 	return (cell + mix(vec2(0.2), vec2(0.8), j)) * cell_m;
 }
 
@@ -113,8 +118,8 @@ float h2d_drop_phase(vec2 cell, float k) {
 	return h2d_hash(mod(cell, 1024.0) * 0.37 + k * 3.7 + 3.0);
 }
 
-float h2d_drop_on(vec2 cell, float k) {
-	return h2d_hash(mod(cell, 1024.0) + k * 9.1 + 29.0);
+float h2d_drop_on(vec2 cell, float seed) {
+	return h2d_hash(mod(cell, 1024.0) + seed * 9.1 + 29.0);
 }
 
 vec3 h2d_out(vec3 c) {

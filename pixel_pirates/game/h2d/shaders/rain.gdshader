@@ -15,7 +15,7 @@ uniform float cell_m = 3.4;
 uniform float fall_ms = 22.0;         // fall speed, m/s
 uniform vec2 drift = vec2(0.0);       // sideways speed of the drops (the wind), m/s
 uniform float streak_m = 1.6;         // length of the streak, m
-uniform float half_w = 0.13;          // half width of the streak, m
+uniform float half_w = 0.2;           // half width of the streak, m (0.4 m is about 1.4 px at the art grid, so it never falls between pixels)
 uniform vec3 rain_col = vec3(0.74, 0.84, 0.94);
 
 varying vec2 v_uv;
@@ -32,9 +32,12 @@ void vertex() {
 	int ix = rem - iz * nx;
 	vec2 cell = base_cell + vec2(float(ix), float(iz));
 	float k = float(kk);
-	float on = step(h2d_drop_on(cell, k), h2d_rain_local((cell + 0.5) * cell_m));
-	vec2 imp = h2d_drop_impact(cell, k, cell_m);
-	float u = fract(h2d_time / DROP_PERIOD + h2d_drop_phase(cell, k));
+	float tt = h2d_time / DROP_PERIOD + h2d_drop_phase(cell, k);
+	float cyc = floor(tt);
+	float u = tt - cyc;
+	float seed = h2d_drop_seed(k, cyc);
+	float on = step(h2d_drop_on(cell, seed), h2d_rain_local((cell + 0.5) * cell_m));
+	vec2 imp = h2d_drop_impact(cell, seed, cell_m);
 	float surf = h2d_wave_h(imp);
 	float fall_t = DROP_PERIOD * DROP_FALL_FRAC;
 	float ft = clamp(u / DROP_FALL_FRAC, 0.0, 1.0);
@@ -75,12 +78,11 @@ void vertex() {
 void fragment() {
 	float a = v_alpha;
 	if (v_kind > 0.5) {
-		// splash crown: a small arc of pixels that rises and falls
-		vec2 q = v_uv - vec2(0.5, 0.78);
-		float arc = step(abs(length(q * vec2(1.0, 1.6)) - 0.30), 0.09) * step(q.y, 0.04);
-		a *= arc;
+		// splash crown: a small blob of pixels that rises and fades
+		vec2 q = v_uv - vec2(0.5, 0.80);
+		a *= step(length(q * vec2(1.0, 1.6)), 0.34) * step(q.y, 0.06);
 	} else {
-		a *= step(abs(v_uv.x - 0.5), 0.34);
+		a *= step(abs(v_uv.x - 0.5), 0.46);
 	}
 	if (a < 0.05) {
 		discard;
