@@ -198,7 +198,11 @@ func _build_hero(tex_fn: Callable, mat_fn: Callable) -> void:
 	mm.use_custom_data = true
 	mm.mesh = QuadMesh.new()
 	mm.instance_count = 1
-	mm.custom_aabb = AABB(Vector3(-4.0, -4.0, -4.0), Vector3(8.0, 12.0, 8.0))
+	# H2D-1.2.2: the culling box is in the NODE's local space and Godot never adds the instance transforms to a custom
+	# AABB. The hero therefore moves the NODE (set_hero) and keeps its one instance at the identity; a box left at the
+	# world origin made the pirate vanish about 25 m from it (see tools/h2d/check_hero_cull.py).
+	mm.custom_aabb = AABB(Vector3(-4.0, -2.0, -4.0), Vector3(8.0, 10.0, 8.0))
+	mm.set_instance_transform(0, Transform3D.IDENTITY)
 	mm.set_instance_custom_data(0, Color(0.0, 1.0, 0.0, 0.0))
 	_hero = MultiMeshInstance3D.new()
 	_hero.multimesh = mm
@@ -337,9 +341,8 @@ func set_hero(on: bool, x: float, z: float, row: int, frame: int, zoom: float) -
 	var y := height_smooth(x, z)
 	if on_pier(x, z):
 		y = float(_pier["height_m"])
-	var mm := _hero.multimesh
-	mm.set_instance_transform(0, Transform3D(Basis.IDENTITY, Vector3(x, y, z)))
-	mm.set_instance_custom_data(0, Color(float(row * 4 + frame), 1.0, 0.0, 0.0))
+	_hero.position = Vector3(x, y, z)  # the node carries the position, so the culling box follows the sprite
+	_hero.multimesh.set_instance_custom_data(0, Color(float(row * 4 + frame), 1.0, 0.0, 0.0))
 	_hero_mat.set_shader_parameter("m_per_px", 1.0 / (PX_PER_M * zoom))
 	_blob.position = Vector3(x, y + 0.06, z)
 
