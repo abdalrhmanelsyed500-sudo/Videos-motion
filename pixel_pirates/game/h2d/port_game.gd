@@ -372,6 +372,11 @@ func _ui_diag(sc: SelfCheck) -> void:
 	sc.check(mr.size.x > 300.0 and mr.size.y > 200.0, "UI: the map panel is %d x %d px" % [int(mr.size.x), int(mr.size.y)])
 	var tr := ui.map.get("_tex") as TextureRect
 	sc.check(tr.texture != null and tr.get_global_rect().size.x > 100.0, "UI: the map picture is loaded and %d px wide" % int(tr.get_global_rect().size.x))
+	sc.check((ui.map.get("schema_errors") as Array).is_empty(), "UI: the map data has every key the window reads (%s)" % str(ui.map.get("schema_errors")))
+	var tab_texts: Array = []
+	for b in ui.map.get("_tab_btns") as Array:
+		tab_texts.append((b as Button).text)
+	sc.check(tab_texts.size() == (ui.map.get("views") as Array).size() and not str(tab_texts).contains("null"), "UI: the map tab buttons read %s" % str(tab_texts))
 	sc.check((ui.map.get("_markers") as Dictionary).size() >= 3, "UI: the map shows %d markers on this view" % (ui.map.get("_markers") as Dictionary).size())
 	ui.map.close()
 	_close()

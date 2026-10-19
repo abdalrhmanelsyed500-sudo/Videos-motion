@@ -28,7 +28,7 @@ const NOISE = [/RegEx/, /Cannot infer the type of "re" variable/, /Failed to com
 let skipAt = false;
 const emit = (tag, s) => {
   if (/^\s+at: /.test(s) && skipAt) return;
-  skipAt = NOISE.some((r) => r.test(s));
+  skipAt = !process.env.GODOT_RAW && NOISE.some((r) => r.test(s));
   if (skipAt) return;
   lines.push(s); if (!quiet) console.log(s);
 };

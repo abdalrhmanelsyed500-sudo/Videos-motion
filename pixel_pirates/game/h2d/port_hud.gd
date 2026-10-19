@@ -4,7 +4,7 @@ extends Control
 ## strip (top centre), the interaction prompt (bottom centre), toasts and the big banner. It only SHOWS what port_game.gd hands
 ## it in `set_data()`; it holds no rules.
 ## Printed in the corner of the screen so a tester can tell which build is running.
-const BUILD_TAG := "CP-1 test build r3 (2026-10-19)   |   M map   E talk   F nets   F8 self-check"
+const BUILD_TAG := "CP-1 test build r4 (2026-10-20)   |   M map   E talk   F nets   F8 self-check"
 const K := preload("res://h2d/ui_kit.gd")
 
 var _card: PanelContainer

@@ -22,6 +22,15 @@ const KIND_STYLE := {   # kind -> [letter, fill colour, ring colour]
 	"pier": ["P", Color(0.60, 0.72, 0.95), Color(0.05, 0.1, 0.25)], "warehouse": ["W", Color(0.75, 0.62, 0.45), Color(0.2, 0.12, 0.05)],
 }
 
+## The keys this window READS (`d["key"]`, not `.get`). The baker (tools/h2d/city_map.py), port_game._entries and _map_state must
+## provide every one of them. `missing_keys()` checks a dictionary against a list so that a mismatch is reported by name, instead of
+## the first access aborting a function half way (which is how "set_views: Invalid access to property or key 'name'" happened:
+## the UI read `name` and `hint`, the baked views only had `title`).
+const VIEW_KEYS := ["id", "tab", "title", "hint", "file", "bounds", "ppm", "zoom"]
+const ENTRY_KEYS := ["id", "kind", "name", "detail", "x", "z"]
+const STATE_KEYS := ["entries", "player", "ship"]
+const RING_KEYS := ["x", "z", "r", "open"]
+
 signal track_requested(id: String)
 signal closed()
 signal tab_changed(index: int)
@@ -36,6 +45,7 @@ var ship := Vector2.ZERO
 var ship_heading := 0.0
 var ashore := true
 var rings: Array = []
+var schema_errors: Array = []            # filled by set_views() / open(); empty when every key the window reads exists
 
 var _panel: PanelContainer
 var _vp: Control
@@ -176,14 +186,45 @@ func _ready() -> void:
 
 
 # ---- data -------------------------------------------------------------------------------------------------------------
+## Names every key of `keys` that `d` lacks (empty = fine). Release engine builds do not even complain about a missing key (the
+## read just returns null), so this check is explicit.
+static func missing_keys(d: Dictionary, keys: Array) -> Array:
+	var out: Array = []
+	for k in keys:
+		if not d.has(k):
+			out.append(str(k))
+	return out
+
+
+## Every schema problem in a views list and an entries list, as readable lines (empty = fine).
+static func schema_problems(view_list: Array, entry_list: Array) -> Array:
+	var out: Array = []
+	for i in view_list.size():
+		var vd := view_list[i] as Dictionary
+		for k in missing_keys(vd, VIEW_KEYS):
+			out.append("map view #%d (%s) lacks key '%s'" % [i, str(vd.get("id", "?")), k])
+	for e in entry_list:
+		var ed := e as Dictionary
+		for k in missing_keys(ed, ENTRY_KEYS):
+			out.append("map entry '%s' lacks key '%s'" % [str(ed.get("id", "?")), k])
+	return out
+
+
+func _report(problems: Array) -> void:
+	schema_errors = problems
+	if not problems.is_empty():
+		push_error("MapUi schema: %d problem(s); first: %s" % [problems.size(), str(problems[0])])
+
+
 func set_views(v: Array) -> void:
 	views = v
+	_report(schema_problems(v, []))
 	var tabs := _panel.get_node("Holder/Tabs") as BoxContainer
 	for b in _tab_btns:
 		(b as Node).queue_free()
 	_tab_btns.clear()
 	for i in views.size():
-		var b := K.button("%d  %s" % [i + 1, str((views[i] as Dictionary)["name"])], 16)
+		var b := K.button("%d  %s" % [i + 1, str((views[i] as Dictionary)["tab"])], 16)
 		b.alignment = HORIZONTAL_ALIGNMENT_CENTER
 		b.custom_minimum_size = Vector2(120, 30)
 		b.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -196,6 +237,7 @@ func open(first_tab: int, state: Dictionary) -> void:
 	visible = true
 	tab = -1
 	set_state(state)
+	_report(schema_problems(views, entries))
 	set_tab(clampi(first_tab, 0, maxi(views.size() - 1, 0)))
 	_sel_id = tracked
 	_center_on(player if ashore else ship)

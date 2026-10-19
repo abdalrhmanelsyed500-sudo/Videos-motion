@@ -145,6 +145,7 @@ func _district(t: Object) -> void:
 	t.check(not port.is_empty(), "the baked island has the Fish Row district")
 	if port.is_empty():
 		return
+	_map_schema(t, port)
 	t.check((port["npcs"] as Array).size() >= 24, "at least 24 people in the district (%d)" % (port["npcs"] as Array).size())
 	var groups: Dictionary = {}
 	for n in port["npcs"]:
@@ -228,3 +229,33 @@ func _objectives(t: Object, tuning: Dictionary) -> void:
 	var deep := _fishing(tuning).can_start(300.0, 1750.0, 0, 0.1)
 	t.check(not bool(deep["ok"]) and str(deep["reason"]).contains("hand"), "Blue Drop needs a hand aboard")
 	g.free()
+
+
+## Regression for "set_views: Invalid access to property or key 'name' on a base object of type 'Dictionary'": the window read
+## keys (`name`, `hint`) that the baked views never had (they had `title`). Release engine builds return null for a missing key, so
+## only an explicit key check can see this headless.
+func _map_schema(t: Object, port: Dictionary) -> void:
+	var map_script := load("res://h2d/map_ui.gd") as GDScript
+	var views: Array = (port["map"] as Dictionary)["views"]
+	t.check(views.size() == 3, "the baked map has three views (city, island, sea)")
+	var ids: Array = []
+	for v in views:
+		var vd := v as Dictionary
+		ids.append(str(vd.get("id", "?")))
+		var missing: Array = map_script.call("missing_keys", vd, map_script.get("VIEW_KEYS"))
+		t.check(missing.is_empty(), "map view '%s' has every key the window reads (missing: %s)" % [str(vd.get("id", "?")), str(missing)])
+		t.check(str(vd.get("tab", "")) != "" and str(vd.get("hint", "")) != "", "map view '%s' has a tab label and a hint text" % str(vd.get("id", "?")))
+		var b: Array = vd.get("bounds", [])
+		t.check(b.size() == 4 and float(b[2]) > float(b[0]) and float(b[3]) > float(b[1]) and float(vd.get("ppm", 0.0)) > 0.0, "map view '%s' has sane bounds and scale" % str(vd.get("id", "?")))
+		t.check(FileAccess.file_exists("res://h2d/art/" + str(vd.get("file", "-"))), "map picture %s exists" % str(vd.get("file", "-")))
+	t.check(ids == ["city", "island", "sea"], "the views are city, island, sea in that order (%s)" % str(ids))
+	# every baked place the map lists carries the keys the window reads (the entries are built from them in port_game._entries)
+	for pl in port["places"]:
+		var pd := pl as Dictionary
+		for k in ["id", "kind", "name", "x", "z"]:
+			t.check(pd.has(k), "place '%s' has key %s" % [str(pd.get("id", "?")), k])
+	# the checker itself: the shape that failed in the field (`title` but no `tab` / `hint`) must be reported, by name
+	var old_shape := [{"id": "city", "title": "Anvil Harbor", "file": "map_city.png", "bounds": [0, 0, 1, 1], "ppm": 1.0, "zoom": 1.0}]
+	var problems: Array = map_script.call("schema_problems", old_shape, [])
+	t.check(problems.size() == 2, "the old view shape is reported (tab + hint missing): %s" % str(problems))
+	t.check(map_script.call("schema_problems", views, []).is_empty(), "the real views pass the schema check")

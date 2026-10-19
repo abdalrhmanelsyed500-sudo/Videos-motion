@@ -18,9 +18,9 @@ INK = (62, 40, 20)
 SEA = (140, 178, 178)
 SEA_D = (112, 154, 160)
 
-CITY_VIEW = dict(id="city", title="Anvil Harbor", file="map_city.png", bounds=[-212.0, -282.0, 212.0, 42.0], ppm=2.5, zoom=0.9)
-ISLAND_VIEW = dict(id="island", title="Anvil Cay", file="map_island.png", bounds=[-1300.0, -3500.0, 1500.0, 140.0], ppm=0.25, zoom=1.0)
-SEA_VIEW = dict(id="sea", title="Fishing waters", file="map_sea.png", bounds=[-900.0, -420.0, 800.0, 1950.0], ppm=0.2, zoom=1.0)
+CITY_VIEW = dict(id="city", tab="City", title="Anvil Harbor", hint="The walled city: streets, terraces, shops and people", file="map_city.png", bounds=[-212.0, -282.0, 212.0, 42.0], ppm=2.5, zoom=0.9)
+ISLAND_VIEW = dict(id="island", tab="Island", title="Anvil Cay", hint="The whole island: hills, tracks and the harbour", file="map_island.png", bounds=[-1300.0, -3500.0, 1500.0, 140.0], ppm=0.25, zoom=1.0)
+SEA_VIEW = dict(id="sea", tab="Sea", title="Fishing waters", hint="Open water south of the harbour: the four fishing grounds", file="map_sea.png", bounds=[-900.0, -420.0, 800.0, 1950.0], ppm=0.2, zoom=1.0)
 
 CLS_COL = {1: (232, 218, 172), 2: (206, 200, 140), 3: (190, 196, 130), 4: (150, 172, 110), 5: (186, 174, 150), 6: (150, 138, 118), 7: (214, 190, 140),
            8: (240, 230, 206), 9: (196, 168, 120), 10: (176, 190, 130), 11: (196, 198, 140), 12: (236, 224, 196), 13: (214, 170, 120),

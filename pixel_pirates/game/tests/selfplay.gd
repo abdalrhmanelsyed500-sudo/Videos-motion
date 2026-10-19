@@ -87,6 +87,7 @@ func _play() -> void:
 	await key(KEY_TAB)
 	await key(KEY_TAB)
 	chk(int(mp.get("tab")) == t_first, "Tab cycles through all three views")
+	await _map_walk(mp)
 	await key(KEY_M)
 	chk(not bool(port.call("modal")), "M closes the map")
 	chk(not _paused(), "the clock runs again after the map closes")
@@ -160,3 +161,46 @@ func _play() -> void:
 	chk((wd.get("_trail") as Array).size() > 0, "the net line (corks and foam) trails behind the ship while the nets are out (%d marks)" % (wd.get("_trail") as Array).size())
 	print("SELFPLAY: %d checks, %d failed -> %s" % [checks, fails, "PASS" if fails == 0 else "FAIL"])
 	quit(0)
+
+
+## Walks every map view and every entry the way a player would (tab buttons, tab keys, selecting and tracking each marker) and
+## asserts what is on the controls afterwards. Release engine builds return null for a missing dictionary key without any error
+## (the field error "set_views: Invalid access ... 'name'" was invisible here), so this checks the RESULT: tab buttons exist and
+## carry text, no control shows "<null>", the schema list is empty.
+func _map_walk(mp: Control) -> void:
+	chk((mp.get("schema_errors") as Array).is_empty(), "map schema: no missing keys (%s)" % str(mp.get("schema_errors")))
+	var views: Array = mp.get("views")
+	var btns: Array = mp.get("_tab_btns")
+	chk(btns.size() == views.size(), "map: one tab button per view (%d of %d)" % [btns.size(), views.size()])
+	for i in btns.size():
+		var txt := (btns[i] as Button).text
+		chk(txt.length() >= 3 and not txt.contains("null"), "map: tab button %d reads '%s'" % [i + 1, txt])
+	var entries: Array = mp.get("entries")
+	var seen_markers := 0
+	for i in views.size():
+		await key(KEY_1 + i)
+		await frames(2)
+		var vd := views[i] as Dictionary
+		chk(int(mp.get("tab")) == i, "map: key %d opens the %s view" % [i + 1, str(vd["id"])])
+		var title := (mp.get("_title") as Label).text
+		chk(title.contains(str(vd["title"])), "map (%s): the title reads '%s'" % [str(vd["id"]), title])
+		var info := (mp.get("_info") as Label).text
+		chk(info.contains(str(vd["hint"])) and not info.contains("null"), "map (%s): the hint line reads '%s'" % [str(vd["id"]), info])
+		var mk: Dictionary = mp.get("_markers")
+		chk(mk.size() >= 2, "map (%s): %d markers" % [str(vd["id"]), mk.size()])
+		seen_markers += mk.size()
+		# select every entry in this view, one by one, and track the first
+		var steps := 0
+		for k in entries.size() + 1:
+			await key(KEY_DOWN)
+			steps += 1
+		chk(str(mp.get("_sel_id")) != "" or entries.is_empty(), "map (%s): arrow keys select entries (%s)" % [str(vd["id"]), str(mp.get("_sel_id"))])
+		var bad: Array = []
+		for r in mp.call("dump_rects"):
+			var rd := r as Dictionary
+			if str(rd.get("text", "")).contains("null"):
+				bad.append(str(rd.get("name", "?")))
+		chk(bad.is_empty(), "map (%s): no control shows 'null' (%s)" % [str(vd["id"]), str(bad)])
+	chk(seen_markers >= 8, "map: %d markers over the three views" % seen_markers)
+	await key(KEY_1)
+	await frames(1)
