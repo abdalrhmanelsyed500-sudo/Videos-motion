@@ -1,24 +1,35 @@
 extends Node
-## CP-1 "Fish Row" starting loop, as one controller: it owns the economy (port_state.gd), the nets (fishing.gd), the people
-## (port_npcs.gd) and the interface (port_ui.gd), reads what the scene tells it each frame (a context dictionary) and tells
-## the scene back only two things: whether the nets are down (the ship must stop) and whether a panel is open (the world waits).
-## Keys it owns: E interact (ashore) | F nets down / up (at sea) | M map (Shift+M stays the ship-motion toggle) |
-##   Y / N answer a recruit | Enter / Space / E continue or sell all | 1-5 sell one species | Tab switches the map |
-##   Esc closes | F6 test +25 reales | F7 test +10 kg mackerel | F8 self-check (runs tests/test_port.gd in the game).
-## Objectives and dialogue come from real state: the purse, the hold, the crew, where the ship is.
-## NO SAVE TO DISK in this slice: the state lives until the game is closed (docs/CP1_CAPITAL_PORT.md). NOT YET RUN IN GODOT.
+## CP-1 starting loop as one controller: it owns the economy (port_state.gd), the nets (fishing.gd), the people (port_npcs.gd),
+## the conversations (dialogue.gd + data/port/dialogue.json) and the interface (port_ui.gd, built from standard nodes). It reads
+## what the scene tells it each frame (a context dictionary) and tells the scene back only two things: whether the nets are
+## down (the ship must stop) and whether a panel is open (the world waits).
+## Keys it owns: E talk / use (ashore) | F nets down / up (at sea) | M map (Shift+M stays the ship-motion toggle) |
+##   in a conversation: W S / Up Down / 1-9 choose, Enter E Space confirm, Esc leave | at the fish counter: Enter / E sell all,
+##   1-5 one species | on the map: Tab 1-3 view, +/- zoom, WASD pan, Up/Down pick, Enter track, C clear, Home centre |
+##   F6 test +25 reales | F7 test +10 kg mackerel | F8 self-check (runs tests/test_port.gd in the game).
+## Objectives, dialogue and markers come from real state: the purse, the hold, the crew, where the ship and the player are.
+## NO SAVE TO DISK in this slice: the state lives until the game is closed (docs/CP1_CAPITAL_PORT.md).
 const PortState := preload("res://h2d/port_state.gd")
 const Fishing := preload("res://h2d/fishing.gd")
 const PortNpcs := preload("res://h2d/port_npcs.gd")
 const PortUi := preload("res://h2d/port_ui.gd")
+const Dialogue := preload("res://h2d/dialogue.gd")
+const KeyUtil := preload("res://h2d/key_util.gd")
 const DataLoader := preload("res://core/data_loader.gd")
 const WATERS_BOUNDS: Array = [-900.0, -420.0, 800.0, 1950.0]
 const INTERACT_R := 2.8
 const TALK_R := 2.4
+const ARRIVE_M := 7.0
+const DIRS: Array = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+const GROUP_PORTRAIT := {"fisher": "fisher", "merchant": "merchant", "docker": "docker", "sailor": "sailor", "shopkeeper": "shopkeeper",
+		"townsman": "townsman", "guard": "guard", "noble": "noble", "tavernkeeper": "tavernkeeper", "clerk": "clerk"}
+const GROUP_TITLE := {"fisher": "Fisher", "merchant": "Merchant", "docker": "Dock hand", "sailor": "Sailor", "shopkeeper": "Shopkeeper",
+		"townsman": "Townsman", "guard": "Harbour guard", "noble": "Gentleman of the Hill", "tavernkeeper": "Tavern keeper", "clerk": "Customs clerk"}
 
 var state: PortState = PortState.new()
 var fishing: Fishing = Fishing.new()
 var npcs: PortNpcs = PortNpcs.new()
+var dlg: Dialogue = Dialogue.new()
 var ui: PortUi
 var enabled := false
 var world: Object = null
@@ -27,16 +38,18 @@ var barks: Dictionary = {}
 var _tuning: Dictionary = {}
 var _pause_fn: Callable
 var _mode := "none"                  # none | dialogue | market | map
-var _dlg: Dictionary = {}
-var _met: Dictionary = {}            # crew id -> true once his pages were read
-var _map_tab := 0
+var _spk: Dictionary = {}            # the person we are talking to
+var _node := ""
+var _spk_flags: Dictionary = {}      # speaker id -> {flag: true}
+var _track := ""                     # the tracked target id ("" = none)
+var _map_state_t := 0.0
 var _market_result: Dictionary = {}
 var _near := {"kind": "", "index": -1, "text": ""}
 var _marker_sig := ""
-var _bark_n := 0
 var _hold_warned := false
 var _last_ctx: Dictionary = {}
-var _fishing_hint := true
+var _entries_cache: Array = []
+var _extra: Dictionary = {}          # last dialogue variables that depend on an action (track name and distance)
 
 
 ## Collects the results of tests/test_port.gd and the live checks (F8).
@@ -69,8 +82,15 @@ func setup(layer: CanvasLayer, view_world: Object, tuning: Dictionary, pause_fn:
 	state.configure(tuning, fish_doc, rec_doc)
 	fishing.configure(tuning, gr_doc, 20261019)
 	npcs.setup(port["npcs"] as Array)
+	dlg.load_file("res://data/port/dialogue.json")
 	ui = PortUi.new()
 	layer.add_child(ui)
+	ui.dialogue.chosen.connect(_on_choice)
+	ui.dialogue.closed.connect(_close)
+	ui.dialogue.trade_action.connect(_on_trade_action)
+	ui.map.closed.connect(_close)
+	ui.map.track_requested.connect(_on_track_requested)
+	ui.map.set_views((port["map"] as Dictionary)["views"] as Array)
 	enabled = true
 	_update_markers(true)
 
@@ -89,7 +109,6 @@ func step(dt: float, ctx: Dictionary) -> void:
 	var pz := float(ctx["wz"]) if bool(ctx["ashore"]) else float(ctx["sz"])
 	npcs.step(dt, world, Vector2(px, pz))
 	world.call("set_npcs", npcs.people)
-	# the nets
 	if fishing.active:
 		if not bool(ctx["sailing"]):
 			fishing.stop("moored")
@@ -100,11 +119,15 @@ func step(dt: float, ctx: Dictionary) -> void:
 	_check_warnings()
 	_near = _find_near(ctx)
 	_update_markers(false)
+	_check_arrival(ctx)
 	_update_hud(ctx)
 	if _mode == "map":
-		ui.panel = _map_data(ctx)
+		_map_state_t -= dt
+		if _map_state_t <= 0.0:
+			_map_state_t = 0.25
+			ui.map.set_state(_map_state(ctx))
 	elif _mode == "market" and _market_result.is_empty():
-		ui.panel = _market_panel(float(ctx["now"]))
+		ui.dialogue.show_trade(_spk, _market_panel(float(ctx["now"])))
 
 
 func _on_fishing_event(e: Dictionary) -> void:
@@ -112,10 +135,10 @@ func _on_fishing_event(e: Dictionary) -> void:
 		var nm := str((state.fish[str(e["species"])] as Dictionary)["name"])
 		var stored := float(e["stored"])
 		var lost := float(e["kg"]) - stored
-		var txt := "+%.1f kg %s   (hold %.1f / %.0f kg)" % [stored, nm, state.hold_kg(), state.capacity_kg()]
+		var txt := "Haul: +%.1f kg %s   (hold %.1f / %.0f kg)" % [stored, nm, state.hold_kg(), state.capacity_kg()]
 		if lost > 0.05:
 			txt += "   %.1f kg thrown back: hold full" % lost
-		ui.toast(txt, PortUi.CREAM, 4.5)
+		ui.toast(txt, PortUi.GREEN, 5.5)
 	else:
 		ui.toast(str(e["text"]), PortUi.GOLD, 7.0)
 
@@ -139,18 +162,19 @@ func _find_near(ctx: Dictionary) -> Dictionary:
 	if ri >= 0:
 		var cid := str((npcs.people[ri] as Dictionary)["recruit"])
 		var rec: Dictionary = state.recruits[cid]
-		return {"kind": "recruit", "index": ri, "text": "E   Talk to %s, %s (%d reales)" % [str(rec["name"]), str(rec["role"]), int(rec["cost"])]}
+		return {"kind": "talk", "index": ri, "text": "Talk to %s, %s (%d reales)" % [str(rec["name"]), str(rec["role"]), int(rec["cost"])]}
 	for it in port["interactions"]:
 		var d := it as Dictionary
 		var dx := x - float(d["x"])
 		var dz := z - float(d["z"])
 		if dx * dx + dz * dz <= float(d["r"]) * float(d["r"]):
 			if str(d["kind"]) == "market":
-				return {"kind": "market", "index": -1, "text": "E   Sell fish to the fishmonger (Fish Row market)"}
-			return {"kind": "notice", "index": -1, "text": "E   Read the notice board / open the map"}
+				var mi := npcs.index_of("npc_fishmonger")
+				return {"kind": "talk", "index": mi, "text": "Talk to Barnaby Gull, the fishmonger (sell your catch)"}
+			return {"kind": "notice", "index": -1, "text": "Read the notice board and open the map"}
 	var ni := npcs.nearest(x, z, TALK_R, false)
 	if ni >= 0:
-		return {"kind": "talk", "index": ni, "text": "E   Talk"}
+		return {"kind": "talk", "index": ni, "text": "Talk to %s" % str(_speaker_for(ni)["label"])}
 	return none
 
 
@@ -162,18 +186,28 @@ func _update_hud(ctx: Dictionary) -> void:
 	var f: Dictionary = {}
 	if fishing.active:
 		var g: Dictionary = fishing.grounds[fishing.ground_id]
-		f = {"active": true, "ground": str(g["name"]), "status": fishing.status, "next_s": fishing.seconds_to_haul(),
-				"interval": float(fishing.p["fish.haul_interval_s"]), "hauls": fishing.hauls, "session_kg": fishing.session_kg}
+		var st := "Nets working: fish are coming aboard."
+		if fishing.status == "drifting":
+			st = "The ship is slowing down. The nets work under %.1f knots (now %.1f)." % [float(fishing.p["fish.max_speed_kn"]), float(ctx["speed_kn"])]
+		var lines: Array = []
+		for sp in fishing.session_by.keys():
+			lines.append("%s  %.1f kg" % [str((state.fish[str(sp)] as Dictionary)["name"]), float(fishing.session_by[sp])])
+		var lst := "This ground so far: %.1f kg in %d haul%s" % [fishing.session_kg, fishing.hauls, "" if fishing.hauls == 1 else "s"]
+		if not lines.is_empty():
+			lst += "\n" + "\n".join(PackedStringArray(lines))
+		f = {"ground": str(g["name"]), "status": st, "next_s": fishing.seconds_to_haul(), "interval": float(fishing.p["fish.haul_interval_s"]), "list": lst}
 	var now := float(ctx["now"])
 	var prompt := str(_near["text"])
+	var pkey := "E"
 	if prompt == "" and not bool(ctx["ashore"]) and bool(ctx["sailing"]) and _mode == "none":
+		pkey = "F"
 		if fishing.active:
 			prompt = ""
 		elif fishing.ground_at(float(ctx["sx"]), float(ctx["sz"])) != "":
-			prompt = "F   Lower the nets"
-	ui.hud = {"show": true, "purse": state.reales, "hold_kg": state.hold_kg(), "cap_kg": state.capacity_kg(), "fresh": state.avg_freshness(now),
+			prompt = "Lower the nets"
+	ui.hud.set_data({"purse": state.reales, "hold_kg": state.hold_kg(), "cap_kg": state.capacity_kg(), "fresh": state.avg_freshness(now),
 			"warn_frac": float(state.p["port.hold_warn_frac"]), "spoil_warn": float(state.p["fish.spoil_warn"]), "crew": crew_names,
-			"objective": objective(ctx), "fishing": f, "prompt": prompt}
+			"objective": objective(ctx), "fishing": f, "prompt": prompt if _mode == "none" else "", "prompt_key": pkey, "track": _track_strip(ctx)})
 
 
 # ---- objective ---------------------------------------------------------------------------------------------------------
@@ -235,7 +269,7 @@ func _update_markers(force: bool) -> void:
 func handle_key(k: InputEventKey, ctx: Dictionary) -> bool:
 	if not enabled:
 		return false
-	var key := k.keycode
+	var key := KeyUtil.code(k)
 	if key == KEY_F6 or key == KEY_F7:
 		_test_key(key, ctx)
 		return true
@@ -243,10 +277,10 @@ func handle_key(k: InputEventKey, ctx: Dictionary) -> bool:
 		_self_check()
 		return true
 	if _mode != "none":
-		return _modal_key(k, ctx)
+		return _modal_key(key, ctx)
 	var used := true
 	if key == KEY_M and not k.shift_pressed:
-		_open_map(0 if bool(ctx["ashore"]) else (1 if not bool(ctx["docked"]) else 0), ctx)
+		_open_map(0 if bool(ctx["ashore"]) else (2 if not bool(ctx["docked"]) else 0), ctx)
 	elif key == KEY_E and bool(ctx["ashore"]):
 		_interact(ctx)
 	elif key == KEY_F and bool(ctx["sailing"]) and not bool(ctx["ashore"]):
@@ -305,31 +339,27 @@ func _grounds_in_water() -> bool:
 	return true
 
 
-func _modal_key(k: InputEventKey, ctx: Dictionary) -> bool:
-	var key := k.keycode
+func _modal_key(key: int, ctx: Dictionary) -> bool:
 	if key == KEY_P or key == KEY_F1 or key == KEY_F2 or key == KEY_F3 or key == KEY_F4 or key == KEY_F12:
 		return false
 	match _mode:
 		"dialogue":
-			_dialogue_key(key)
+			ui.dialogue.handle_key(key)
 		"market":
 			_market_key(key, ctx)
 		"map":
-			if key == KEY_ESCAPE or key == KEY_M:
-				_close()
-			elif key == KEY_TAB:
-				_map_tab = 1 - _map_tab
-				ui.panel = _map_data(ctx)
+			ui.map.handle_key(key)
 	return true
 
 
 func _close() -> void:
-	if _mode == "dialogue" and int(_dlg.get("idx", -1)) >= 0:
-		npcs.set_talking(int(_dlg["idx"]), false)
+	if _spk.has("idx") and int(_spk["idx"]) >= 0:
+		npcs.set_talking(int(_spk["idx"]), false)
 	_mode = "none"
-	_dlg = {}
+	_spk = {}
 	_market_result = {}
-	ui.panel = {}
+	ui.dialogue.close()
+	ui.map.close()
 	_pause_fn.call(false)
 
 
@@ -363,154 +393,225 @@ func nets_down() -> bool:
 # ---- interaction -----------------------------------------------------------------------------------------------------------
 func _interact(ctx: Dictionary) -> void:
 	match str(_near["kind"]):
-		"recruit":
-			_open_recruit(int(_near["index"]), ctx)
-		"market":
-			_open_market(ctx)
+		"talk":
+			_open_dialogue(int(_near["index"]), ctx)
 		"notice":
 			_open_map(0, ctx)
-		"talk":
-			_bark(int(_near["index"]), ctx)
 		_:
 			ui.toast("Nothing to use here. Walk up to a person, a stall or the notice board.", PortUi.DIM, 3.5)
 
 
-func _bark(i: int, ctx: Dictionary) -> void:
+## The speaker record of person `i`: {id, idx, tree, name, sub, label, portrait, group, cid, greeting, line, wares}.
+func _speaker_for(i: int) -> Dictionary:
 	var n := npcs.people[i] as Dictionary
 	var g := str(n["group"])
+	var id := str(n["id"])
+	var s := {"id": id, "idx": i, "group": g, "cid": str(n.get("recruit", ""))}
+	if str(n.get("recruit", "")) != "":
+		var rec: Dictionary = state.recruits[str(n["recruit"])]
+		var look := str(rec.get("look", "r_pip"))
+		s["tree"] = "recruit"
+		s["name"] = str(rec["name"])
+		s["sub"] = "%s, %d  -  asks %d reales" % [str(rec["role"]).capitalize(), int(rec["age"]), int(rec["cost"])]
+		s["label"] = str(rec["name"])
+		s["portrait"] = look.substr(2)
+		return s
+	if id == "npc_fishmonger":
+		s["tree"] = "fishmonger"
+		s["name"] = "Barnaby Gull"
+		s["sub"] = "Fishmonger, Fish Row"
+		s["label"] = "Barnaby Gull"
+		s["portrait"] = "fishmonger"
+		return s
+	s["tree"] = g if dlg.has_tree(g) else "townsman"
+	var title := str(GROUP_TITLE.get(g, "Local"))
+	s["name"] = str(n.get("name", title))
+	s["sub"] = str(n.get("title", title)) if n.has("name") else ""
+	s["label"] = ("%s, %s" % [str(n["name"]), str(n.get("title", title))]) if n.has("name") else title
+	s["portrait"] = str(n.get("portrait", GROUP_PORTRAIT.get(g, "townsman")))
 	var pool: Dictionary = barks.get(g, {})
-	var keys: Array = ["any"]
-	if state.hold_kg() > 0.05 and pool.has("has_fish"):
-		keys.append("has_fish")
-	if state.hold_kg() <= 0.05 and state.kg_total <= 0.0 and pool.has("no_fish"):
-		keys.append("no_fish")
-	if state.reales < 18 and pool.has("poor"):
-		keys.append("poor")
-	if state.crew_count() > 0 and pool.has("crew"):
-		keys.append("crew")
-	var lines: Array = []
-	for kk in keys:
-		for l in pool.get(kk, []):
-			lines.append(str(l))
-	if lines.is_empty():
-		lines = ["..."]
-	_bark_n += 1
-	var line := str(lines[_bark_n % lines.size()])
-	npcs.set_talking(i, true, float(ctx["wx"]), float(ctx["wz"]))
-	_dlg = {"idx": i, "stage": "bark", "cid": ""}
-	ui.panel = {"kind": "dialogue", "speaker": _group_title(g), "sub": "", "text": line, "keys": "E / Esc: leave", "status": ""}
-	_open("dialogue")
+	var any: Array = pool.get("any", ["..."])
+	var h := absi(id.hash())
+	s["greeting"] = str(n.get("greeting", any[h % any.size()]))
+	s["line"] = str(n.get("line", any[(h / 7 + 1) % any.size()]))
+	s["wares"] = str(n.get("wares", "Odds and ends of the quay trade."))
+	return s
 
 
-static func _group_title(g: String) -> String:
-	var titles := {"fisher": "A fisher", "merchant": "A merchant", "docker": "A dock hand", "sailor": "A sailor",
-			"shopkeeper": "A shopkeeper", "townsman": "A townsman"}
-	return str(titles.get(g, "Someone"))
-
-
-# ---- recruits ----------------------------------------------------------------------------------------------------------------
-func _open_recruit(i: int, ctx: Dictionary) -> void:
-	var cid := str((npcs.people[i] as Dictionary)["recruit"])
-	npcs.set_talking(i, true, float(ctx["wx"]), float(ctx["wz"]))
-	_dlg = {"idx": i, "cid": cid, "stage": "offer" if _met.has(cid) else "pages", "page": 0}
-	_open("dialogue")
-	_refresh_dialogue()
-
-
-func _refresh_dialogue() -> void:
-	var cid := str(_dlg["cid"])
-	var rec: Dictionary = state.recruits[cid]
-	var fmt := {"cost": int(rec["cost"]), "have": state.reales, "missing": maxi(int(rec["cost"]) - state.reales, 0)}
-	var stage := str(_dlg["stage"])
-	var d := {"kind": "dialogue", "speaker": str(rec["name"]), "sub": "%s, %d   -   asks %d reales" % [str(rec["role"]).capitalize(), int(rec["age"]), int(rec["cost"])],
-			"text": "", "keys": "", "status": "", "page": ""}
-	match stage:
-		"pages":
-			var pages: Array = rec["pages"]
-			var pg := int(_dlg["page"])
-			d["text"] = str(pages[pg]).format(fmt)
-			d["keys"] = "E / Enter: continue     Esc: leave"
-			d["page"] = "%d / %d" % [pg + 1, pages.size()]
-		"offer":
-			var eff: Dictionary = rec["effect"]
-			if state.can_afford(cid):
-				d["text"] = str(rec["offer"]).format(fmt)
-				d["status"] = "Cost %d reales.  Your purse: %d.  %s" % [int(rec["cost"]), state.reales, str(eff["text"])]
-				d["status_color"] = PortUi.GREEN
-				d["keys"] = "Y: hire him     N: not now     Esc: leave"
-			else:
-				d["text"] = str(rec["poor"]).format(fmt)
-				d["status"] = "Cost %d reales.  Your purse: %d.  You are %d short.  %s" % [int(rec["cost"]), state.reales, int(fmt["missing"]), str(eff["text"])]
-				d["status_color"] = PortUi.RED
-				d["keys"] = "E / Esc: leave"
-		"accepted":
-			d["text"] = str(rec["accepted"]).format(fmt)
-			d["status"] = "%s joins your crew.  Purse: %d reales." % [str(rec["name"]), state.reales]
-			d["status_color"] = PortUi.GREEN
-			d["keys"] = "E / Enter: close"
-		"declined":
-			d["text"] = str(rec["declined"]).format(fmt)
-			d["keys"] = "E / Enter: close"
-	ui.panel = d
-
-
-func _dialogue_key(key: int) -> void:
-	var stage := str(_dlg.get("stage", ""))
-	if key == KEY_ESCAPE:
-		_close()
+func _open_dialogue(i: int, ctx: Dictionary) -> void:
+	if i < 0:
 		return
-	var go := key == KEY_E or key == KEY_ENTER or key == KEY_KP_ENTER or key == KEY_SPACE
-	match stage:
-		"bark":
-			if go:
-				_close()
-		"pages":
-			if go:
-				var rec: Dictionary = state.recruits[str(_dlg["cid"])]
-				var n := (rec["pages"] as Array).size()
-				_dlg["page"] = int(_dlg["page"]) + 1
-				if int(_dlg["page"]) >= n:
-					_dlg["stage"] = "offer"
-					_met[str(_dlg["cid"])] = true
-				_refresh_dialogue()
-		"offer":
-			var cid := str(_dlg["cid"])
-			if state.can_afford(cid):
-				if key == KEY_Y:
-					_hire(cid)
-				elif key == KEY_N:
-					_dlg["stage"] = "declined"
-					_refresh_dialogue()
-			elif go:
-				_close()
-		"accepted", "declined":
-			if go:
-				_close()
+	_spk = _speaker_for(i)
+	npcs.set_talking(i, true, float(ctx["wx"]), float(ctx["wz"]))
+	_extra = {}
+	_open("dialogue")
+	_node = dlg.entry_node(str(_spk["tree"]), _flags())
+	_show_node()
 
 
+func _flags() -> Dictionary:
+	var f := {"has_fish": state.hold_kg() > 0.05, "never_fished": state.kg_total <= 0.0, "poor": state.reales < 18, "crew": state.crew_count() >= 1,
+			"rich": state.reales >= 100, "full_crew": state.unhired().is_empty()}
+	var cid := str(_spk.get("cid", ""))
+	if cid != "":
+		f["afford"] = state.can_afford(cid)
+		f["hired"] = state.is_hired(cid)
+	var sf: Dictionary = _spk_flags.get(str(_spk.get("id", "")), {})
+	for k in sf.keys():
+		f[k] = true
+	return f
+
+
+func _vars() -> Dictionary:
+	var now := float(_last_ctx.get("now", 0.0))
+	var v := {"reales": state.reales, "hold_kg": "%.0f" % state.hold_kg(), "hold_value": state.estimate_all(now), "crew": state.crew_count()}
+	var prices: Array = []
+	for sp in state.fish.keys():
+		var fd: Dictionary = state.fish[sp]
+		prices.append("%s %.2f" % [str(fd["name"]).to_lower(), state.quote(str(sp), now)])
+	v["price_list"] = ", ".join(PackedStringArray(prices)) + "."
+	var px := float(_last_ctx.get("sx", 0.0))
+	var pz := float(_last_ctx.get("sz", 0.0))
+	var ng := fishing.nearest_ground(px, pz)
+	v["nearest_ground"] = str((fishing.grounds[str(ng["id"])] as Dictionary)["name"]) if str(ng["id"]) != "" else "south-west of the cove"
+	for sp in ["greeting", "line", "wares"]:
+		if _spk.has(sp):
+			v[sp] = str(_spk[sp])
+	var cid := str(_spk.get("cid", ""))
+	if cid != "":
+		var rec: Dictionary = state.recruits[cid]
+		var pages: Array = rec["pages"]
+		var fmt := {"cost": int(rec["cost"]), "have": state.reales, "missing": maxi(int(rec["cost"]) - state.reales, 0)}
+		v["rname"] = str(rec["name"]).replace("\"", "")
+		v["cost"] = fmt["cost"]
+		v["missing"] = fmt["missing"]
+		v["role"] = str(rec["role"])
+		for k in 3:
+			v["page%d" % (k + 1)] = str(pages[mini(k, pages.size() - 1)]).format(fmt)
+		for key in ["offer", "poor", "accepted", "declined"]:
+			v[key] = str(rec[key]).format(fmt)
+		v["backstory"] = str(rec["backstory"])
+		v["effect"] = str((rec["effect"] as Dictionary)["text"])
+	v["rumour"] = _rumour()
+	for k in _extra.keys():
+		v[k] = _extra[k]
+	return v
+
+
+func _rumour() -> String:
+	var unh := state.unhired()
+	if unh.is_empty():
+		return "Quiet on the quay tonight: every hand worth hiring is already aboard your sloop, Captain. They say that is a first."
+	var cid := str(state.cheapest_unhired())
+	var rec: Dictionary = state.recruits[cid]
+	return "They say %s, a %s, is looking for a berth: %s. He asks %d reales. And a shoal of mackerel was seen off Gannet Bank at first light." % [
+			str(rec["name"]).replace("\"", ""), str(rec["role"]), str(rec["place"]), int(rec["cost"])]
+
+
+func _show_node() -> void:
+	var tree := str(_spk["tree"])
+	var v := dlg.view(tree, _node, _flags(), _vars())
+	var sf: Dictionary = _spk_flags.get(str(_spk["id"]), {})
+	for fl in v["set"]:
+		sf[str(fl)] = true
+	_spk_flags[str(_spk["id"])] = sf
+	if str(v["goto"]) != "":
+		v["options"] = [{"label": "", "enabled": true, "hint": "", "action": "", "arg": "", "next": str(v["goto"]), "fail": "", "auto": true}]
+	var cid := str(_spk.get("cid", ""))
+	if cid != "" and _node == "hub":
+		var rec: Dictionary = state.recruits[cid]
+		if state.can_afford(cid):
+			v["status"] = {"text": "Cost %d reales.  Your purse: %d.  %s" % [int(rec["cost"]), state.reales, str((rec["effect"] as Dictionary)["text"])], "color": Color(0.18, 0.42, 0.10)}
+		else:
+			v["status"] = {"text": "Cost %d reales.  Your purse: %d.  You are %d short." % [int(rec["cost"]), state.reales, int(rec["cost"]) - state.reales], "color": Color(0.70, 0.18, 0.10)}
+	ui.dialogue.show_view(_spk, v)
+
+
+func _on_choice(i: int) -> void:
+	var v := ui.dialogue._view as Dictionary
+	var o := (v["options"] as Array)[i] as Dictionary
+	var act := str(o["action"])
+	var next := str(o["next"])
+	match act:
+		"leave":
+			_close()
+			return
+		"trade":
+			_open_market(_last_ctx)
+			return
+		"map":
+			_close()
+			_open_map(0, _last_ctx)
+			return
+		"hire":
+			var cid := str(_spk.get("cid", ""))
+			if cid != "" and state.can_afford(cid):
+				_hire(cid)
+				next = "hired"
+			else:
+				return
+		"track":
+			var id := _resolve_target(str(o["arg"]))
+			if id != "":
+				_set_track(id, false)
+				var e := _entry(id)
+				_extra["track_name"] = str(e.get("name", id))
+				_extra["track_dist"] = _dist_text(_origin_point(_last_ctx), Vector2(float(e.get("x", 0.0)), float(e.get("z", 0.0))))
+			else:
+				_extra["track_name"] = "That place"
+				_extra["track_dist"] = "I do not know the way"
+		"pay":
+			var cost := int(o["arg"])
+			if state.reales >= cost:
+				state.reales -= cost
+				ui.toast("-%d reales  (purse %d)" % [cost, state.reales], PortUi.AMBER, 4.0)
+			else:
+				next = str(o["fail"])
+	if next == "":
+		return
+	_node = next
+	_show_node()
+
+
+func _on_trade_action(action: String, arg: String) -> void:
+	if _mode != "market":
+		return
+	var now := float(_last_ctx.get("now", 0.0))
+	match action:
+		"leave":
+			_close()
+		"back":
+			_market_result = {}
+			ui.dialogue.show_trade(_spk, _market_panel(now))
+		"sell_all":
+			_sell(KEY_ENTER, _last_ctx)
+		"sell_one":
+			_sell(KEY_1 + int(arg.trim_suffix(".")) - 1, _last_ctx)
+
+
+# ---- recruits --------------------------------------------------------------------------------------------------------------
 func _hire(cid: String) -> void:
 	var rec: Dictionary = state.recruits[cid]
 	var before := state.reales
 	if state.hire(cid) != "ok":
 		return
 	npcs.hide_recruit(cid)
-	_dlg["stage"] = "accepted"
-	_refresh_dialogue()
-	ui.note_big("%s HIRED" % str(rec["name"]).to_upper(), "-%d reales (%d -> %d).  %s" % [int(rec["cost"]), before, state.reales, str((rec["effect"] as Dictionary)["text"])], 6.5)
-	ui.toast("%s, the %s, is aboard. Crew: %d of %d." % [str(rec["name"]), str(rec["role"]), state.crew_count(), state.recruit_order.size()], PortUi.GREEN, 6.0)
+	ui.note_big("%s HIRED" % str(rec["name"]).replace("\"", "").to_upper(), "-%d reales (%d -> %d).  %s" % [int(rec["cost"]), before, state.reales, str((rec["effect"] as Dictionary)["text"])], 6.5)
+	ui.toast("%s, the %s, is aboard. Crew: %d of %d." % [str(rec["name"]).replace("\"", ""), str(rec["role"]), state.crew_count(), state.recruit_order.size()], PortUi.GREEN, 6.0)
+	if _track == "recruit_" + cid:
+		_track = ""
 	_update_markers(true)
 
 
 # ---- the market --------------------------------------------------------------------------------------------------------------
 func _open_market(ctx: Dictionary) -> void:
-	var mi := npcs.index_of("npc_fishmonger")
-	npcs.set_talking(mi, true, float(ctx["wx"]), float(ctx["wz"]))
-	_dlg = {"idx": mi, "cid": "", "stage": "market"}
 	_market_result = {}
-	_open("market")
-	ui.panel = _market_panel(float(ctx["now"]))
-	if state.hold_kg() < 0.05:
-		ui.toast("Barnaby: %s" % str((barks["fishmonger"] as Dictionary)["no_fish"]), PortUi.CREAM, 6.0)
+	_mode = "market"
+	if not _spk.has("id") or str(_spk["id"]) != "npc_fishmonger":
+		var mi := npcs.index_of("npc_fishmonger")
+		_spk = _speaker_for(mi)
+		npcs.set_talking(mi, true, float(ctx["wx"]), float(ctx["wz"]))
+	ui.dialogue.show_trade(_spk, _market_panel(float(ctx["now"])))
 
 
 func _market_panel(now: float) -> Dictionary:
@@ -525,18 +626,18 @@ func _market_panel(now: float) -> Dictionary:
 			if str(l[0]) == sp:
 				fr += float(l[1]) * state.freshness_of(float(l[2]), now)
 		rows.append({"key": str(k + 1), "name": str((state.fish[sp] as Dictionary)["name"]), "kg": kg, "fresh": fr / maxf(kg, 0.001),
-				"price": state.quote(sp, now), "est": state.estimate_species(sp, now)})
-	var prices: Array = []
+				"price": state.quote(sp, now), "est": state.estimate_species(sp, now), "level": state.price_level(sp, now)})
+	var board: Array = []
 	for sp in state.fish.keys():
-		prices.append({"name": str((state.fish[sp] as Dictionary)["name"]), "price": state.quote(str(sp), now), "level": state.price_level(str(sp), now)})
+		board.append({"name": str((state.fish[sp] as Dictionary)["name"]), "price": state.quote(str(sp), now), "level": state.price_level(str(sp), now)})
 	var keys := "Enter / E: sell everything"
 	if rows.size() > 1:
 		keys += "     1-%d: sell one species" % rows.size()
 	keys += "     Esc: leave"
 	if rows.is_empty():
 		keys = "Esc: leave"
-	return {"kind": "market", "monger": str((barks["fishmonger"] as Dictionary)["name"]), "rows": rows, "prices": prices, "total": state.estimate_all(now),
-			"purse": state.reales, "keys": keys, "result": {}}
+	return {"rows": rows, "board": board, "total": state.estimate_all(now), "purse": state.reales, "keys": keys, "result": {},
+			"line": str((barks["fishmonger"] as Dictionary)["greet"])}
 
 
 func _market_key(key: int, ctx: Dictionary) -> void:
@@ -544,17 +645,21 @@ func _market_key(key: int, ctx: Dictionary) -> void:
 	if key == KEY_ESCAPE:
 		_close()
 		return
-	var go := key == KEY_E or key == KEY_ENTER or key == KEY_KP_ENTER or key == KEY_SPACE
+	var go := KeyUtil.is_confirm(key)
 	if not _market_result.is_empty():
 		if go:
 			_market_result = {}
-			ui.panel = _market_panel(now)
+			ui.dialogue.show_trade(_spk, _market_panel(now))
 		return
+	_sell(key, ctx)
+
+
+func _sell(key: int, ctx: Dictionary) -> void:
+	var now := float(ctx["now"])
 	var sp_list := state.species_in_hold()
 	if sp_list.is_empty():
-		if go:
-			_close()
 		return
+	var go := KeyUtil.is_confirm(key)
 	var before := state.reales
 	var rows: Array = []
 	var total := 0
@@ -567,8 +672,8 @@ func _market_key(key: int, ctx: Dictionary) -> void:
 					"level_after": state.price_level(str(d["species"]), now)})
 		total = int(r["reales"])
 		kg = float(r["kg"])
-	elif key >= KEY_1 and key <= KEY_9 and (key - KEY_1) < sp_list.size():
-		var sp := str(sp_list[key - KEY_1])
+	elif KeyUtil.digit(key) >= 0 and KeyUtil.digit(key) < sp_list.size():
+		var sp := str(sp_list[KeyUtil.digit(key)])
 		var level := state.price_level(sp, now)
 		var r2 := state.sell_species(sp, now)
 		rows.append({"name": str((state.fish[sp] as Dictionary)["name"]), "kg": r2["kg"], "fresh": r2["fresh"], "level": level, "reales": r2["reales"],
@@ -583,70 +688,163 @@ func _market_key(key: int, ctx: Dictionary) -> void:
 			flooded = true
 	var line := str((barks["fishmonger"] as Dictionary)["flooded" if flooded else "sold"])
 	_market_result = {"rows": rows, "reales": total, "purse_before": before, "purse_after": state.reales, "line": "Barnaby: " + line}
-	ui.panel = {"kind": "market", "monger": str((barks["fishmonger"] as Dictionary)["name"]), "rows": [], "prices": [], "total": 0, "purse": state.reales,
-			"keys": "Enter / E: back to the counter     Esc: leave", "result": _market_result}
+	var d2 := _market_panel(now)
+	d2["result"] = _market_result
+	d2["keys"] = "Enter / E: back to the counter     Esc: leave"
+	ui.dialogue.show_trade(_spk, d2)
 	ui.note_big("+%d reales" % total, "%.1f kg of fish sold.  Purse %d -> %d reales." % [kg, before, state.reales], 5.5)
 	ui.toast("Sold %.1f kg for %d reales. Purse: %d." % [kg, total, state.reales], PortUi.GOLD, 6.0)
 	_update_markers(false)
 
 
-# ---- the map ---------------------------------------------------------------------------------------------------------------------
+# ---- the map and tracking ----------------------------------------------------------------------------------------------------
 func _open_map(tab: int, ctx: Dictionary) -> void:
-	_map_tab = tab
-	if not ui.has_map_image("district"):
-		var pb: Array = (port["map"] as Dictionary)["bounds"]
-		ui.set_map_image("district", PortUi.build_map_image(world, pb, 1.0))
-	if not ui.has_map_image("waters"):
-		ui.set_map_image("waters", PortUi.build_map_image(world, WATERS_BOUNDS, 16.0))
 	_open("map")
-	ui.panel = _map_data(ctx)
+	_map_state_t = 0.25
+	ui.map.open(tab, _map_state(ctx))
 
 
-func _map_data(ctx: Dictionary) -> Dictionary:
-	var m: Dictionary = port["map"]
-	var buildings: Array = []
-	var labels: Array = [{"x": -82.0, "z": -19.0, "text": "FISH MARKET"}, {"x": -47.0, "z": -17.0, "text": "the Cut"}, {"x": 4.0, "z": 5.5, "text": "plaza"},
-			{"x": -114.0, "z": 1.0, "text": "Quay Street"}, {"x": -118.0, "z": 12.0, "text": "west wharf"}]
-	var named := {"warehouse": "warehouse", "tavern": "tavern", "harbourmaster": "harbourmaster", "hut_shipwright": "boatyard"}
-	for s in (world.get("meta") as Dictionary)["structures"]:
-		var d := s as Dictionary
-		var nm := str(d["name"])
-		var is_house := nm.begins_with("cottage") or nm.begins_with("fisher_hut") or named.has(nm) or nm.begins_with("warehouse")
-		if not is_house or not d.has("w_m"):
-			continue
-		var hw := float(d["w_m"]) * 0.5
-		var z1 := float(d["z_m"])
-		var z0 := z1 - float(d.get("d_m", 6.0))
-		buildings.append([float(d["x_m"]) - hw, z0, float(d["x_m"]) + hw, z1])
-		if named.has(nm):
-			labels.append({"x": float(d["x_m"]) - hw + 1.0, "z": (z0 + z1) * 0.5, "text": str(named[nm])})
-	var recs: Array = []
+func _origin_point(ctx: Dictionary) -> Vector2:
+	if bool(ctx.get("ashore", true)):
+		return Vector2(float(ctx["wx"]), float(ctx["wz"]))
+	return Vector2(float(ctx["sx"]), float(ctx["sz"]))
+
+
+static func dir_name(from: Vector2, to: Vector2) -> String:
+	var ang := fposmod(rad_to_deg(atan2(to.x - from.x, -(to.y - from.y))), 360.0)
+	return DIRS[int(roundf(ang / 45.0)) % 8]
+
+
+static func _dist_text(from: Vector2, to: Vector2) -> String:
+	var d := from.distance_to(to)
+	if d < 1.0:
+		return "right here"
+	if d >= 1500.0:
+		return "%.1f km %s" % [d / 1000.0, dir_name(from, to)]
+	return "%d m %s" % [int(roundf(d)), dir_name(from, to)]
+
+
+## Every place the map and the tracker know: [{id, kind, name, detail, x, z, rank, views, color?, row?}]
+func _entries(ctx: Dictionary) -> Array:
+	var org := _origin_point(ctx)
+	var out: Array = []
+	out.append({"id": "player", "kind": "player", "name": "You", "detail": "", "x": float(ctx["wx"]), "z": float(ctx["wz"]), "rank": 3, "views": ["city", "island"], "row": 0})
+	var berth: Dictionary = (world.get("meta") as Dictionary)["harbor_layout"]["berth"]
+	var sx := float(ctx["sx"])
+	var sz := float(ctx["sz"])
+	out.append({"id": "ship", "kind": "ship", "name": "Your sloop", "detail": "at the pier" if bool(ctx["docked"]) else _dist_text(org, Vector2(sx, sz)),
+			"x": sx if not bool(ctx["docked"]) else float(berth["x"]), "z": sz if not bool(ctx["docked"]) else float(berth["z"]), "rank": 3, "views": ["city", "island", "sea"]})
+	for pl in port.get("places", []):
+		var d := (pl as Dictionary).duplicate()
+		d["detail"] = "%s  -  %s" % [str(d.get("what", "")), _dist_text(org, Vector2(float(d["x"]), float(d["z"])))]
+		if not d.has("views"):
+			d["views"] = ["city", "island"]
+		out.append(d)
 	for c in state.recruit_order:
 		var cid := str(c)
 		var r: Dictionary = state.recruits[cid]
 		var spot: Dictionary = (port["recruit_spots"] as Dictionary)[cid]
-		var st := "hired" if state.is_hired(cid) else ("afford" if state.can_afford(cid) else "poor")
-		recs.append({"x": spot["x"], "z": spot["z"], "name": str(r["name"]).replace("\"", ""), "role": str(r["role"]), "cost": int(r["cost"]), "state": st,
-				"short": maxi(int(r["cost"]) - state.reales, 0), "place": str(r["place"])})
-	var pts: Array = []
-	for it in port["interactions"]:
-		var d2 := it as Dictionary
-		pts.append({"x": d2["x"], "z": d2["z"], "kind": str(d2["kind"]), "name": str(d2["name"])})
-	var grounds: Array = []
-	var sx := float(ctx["sx"])
-	var sz := float(ctx["sz"])
-	for id in fishing.ground_order:
-		var g: Dictionary = fishing.grounds[id]
-		var dist := maxf(Vector2(float(g["x"]) - sx, float(g["z"]) - sz).length() - float(g["r"]), 0.0)
-		var names: Array = []
-		for sw in g["species"]:
-			names.append(str((state.fish[str((sw as Array)[0])] as Dictionary)["name"]))
+		var hired := state.is_hired(cid)
+		var afford := state.can_afford(cid)
+		var detail := ""
+		var col := Color(0.98, 0.80, 0.25)
+		if hired:
+			detail = "%s  -  aboard your ship" % str(r["role"])
+			col = Color(0.5, 0.5, 0.5)
+		else:
+			detail = "%s  -  %d reales%s  -  %s" % [str(r["role"]), int(r["cost"]), "" if afford else " (short %d)" % (int(r["cost"]) - state.reales), _dist_text(org, Vector2(float(spot["x"]), float(spot["z"])))]
+			col = Color(0.55, 0.92, 0.38) if afford else Color(0.98, 0.72, 0.25)
+		out.append({"id": "recruit_" + cid, "kind": "recruit", "name": str(r["name"]).replace("\"", ""), "detail": detail, "x": float(spot["x"]), "z": float(spot["z"]),
+				"rank": 2, "views": ["city", "island"], "color": col})
+	for gid in fishing.ground_order:
+		var g: Dictionary = fishing.grounds[gid]
 		var open := int(g["min_crew"]) <= state.crew_count()
-		var line := "%s%s" % ["%d m away" % int(roundf(dist)) if dist > 0.0 else "you are here", "" if open else "  (needs %d hand)" % int(g["min_crew"])]
-		grounds.append({"x": g["x"], "z": g["z"], "r": g["r"], "name": str(g["name"]), "open": open, "line": line})
-	var harbor: Dictionary = (world.get("meta") as Dictionary)["harbor_layout"]
-	var berth: Dictionary = harbor["berth"]
-	return {"kind": "map", "tab": _map_tab, "bounds": (m["bounds"] as Array) if _map_tab == 0 else WATERS_BOUNDS, "wharf": m["wharf"], "bridges": m["bridges"],
-			"buildings": buildings, "recruits": recs, "points": pts, "grounds": grounds, "labels": labels, "berth": [berth["x"], berth["z"]],
-			"ship": Vector2(sx, sz), "ship_heading": float(ctx.get("sheading", 0.0)), "player": Vector2(float(ctx["wx"]), float(ctx["wz"])),
-			"player_heading": 0.0, "ashore": bool(ctx["ashore"]), "docked": bool(ctx["docked"])}
+		var dist := maxf(org.distance_to(Vector2(float(g["x"]), float(g["z"]))) - float(g["r"]), 0.0)
+		var line := "you are inside" if dist <= 0.0 else _dist_text(org, Vector2(float(g["x"]), float(g["z"])))
+		out.append({"id": "ground_" + str(gid).substr(4), "kind": "ground", "name": str(g["name"]), "detail": "fishing ground  -  %s%s" % [line, "" if open else "  (needs %d hand)" % int(g["min_crew"])],
+				"x": float(g["x"]), "z": float(g["z"]), "rank": 2, "views": ["sea", "island"], "color": Color(0.5, 0.85, 1.0) if open else Color(0.7, 0.6, 0.5), "letter": "~"})
+	_entries_cache = out
+	return out
+
+
+func _entry(id: String) -> Dictionary:
+	if id == "":
+		return {}
+	var list := _entries_cache if not _entries_cache.is_empty() else _entries(_last_ctx)
+	for e in list:
+		if str((e as Dictionary)["id"]) == id:
+			return e as Dictionary
+	return {}
+
+
+func _map_state(ctx: Dictionary) -> Dictionary:
+	var rings: Array = []
+	for gid in fishing.ground_order:
+		var g: Dictionary = fishing.grounds[gid]
+		rings.append({"x": g["x"], "z": g["z"], "r": g["r"], "open": int(g["min_crew"]) <= state.crew_count(), "views": ["sea", "island"]})
+	return {"entries": _entries(ctx), "tracked": _track, "player": Vector2(float(ctx["wx"]), float(ctx["wz"])), "player_heading": 0.0,
+			"ship": Vector2(float(ctx["sx"]), float(ctx["sz"])), "ship_heading": deg_to_rad(float(ctx.get("sheading", 0.0))), "ashore": bool(ctx["ashore"]), "rings": rings}
+
+
+func _resolve_target(arg: String) -> String:
+	if arg == "recruit_cheapest":
+		var c := state.cheapest_unhired()
+		return "recruit_" + str(c) if str(c) != "" else ""
+	if arg == "ground_nearest":
+		var org := _origin_point(_last_ctx)
+		var n := fishing.nearest_ground(org.x, org.y, state.crew_count())
+		return "ground_" + str(n["id"]).substr(4) if str(n["id"]) != "" else ""
+	var e := _entry(arg)
+	return arg if not e.is_empty() else ""
+
+
+func _set_track(id: String, announce: bool = true) -> void:
+	_track = id
+	if id == "":
+		if announce:
+			ui.toast("Tracking cleared.", PortUi.DIM, 2.5)
+		return
+	var e := _entry(id)
+	if announce and not e.is_empty():
+		ui.toast("Tracking: %s (%s). Follow the gold arrow at the top of the screen." % [str(e["name"]), _dist_text(_origin_point(_last_ctx), Vector2(float(e["x"]), float(e["z"])))], PortUi.GOLD, 5.0)
+
+
+func _on_track_requested(id: String) -> void:
+	if id == "" or id == _track:
+		_set_track("")
+	else:
+		_set_track(id)
+	if _mode == "map":
+		ui.map.set_state(_map_state(_last_ctx))
+
+
+func _track_strip(ctx: Dictionary) -> Dictionary:
+	if _track == "":
+		return {}
+	var e := _entry(_track)
+	if e.is_empty():
+		return {}
+	var org := _origin_point(ctx)
+	var to := Vector2(float(e["x"]), float(e["z"]))
+	return {"name": "Tracking: %s" % str(e["name"]), "text": _dist_text(org, to), "angle": atan2(to.x - org.x, -(to.y - org.y))}
+
+
+func _check_arrival(ctx: Dictionary) -> void:
+	if _track == "" or _mode != "none":
+		return
+	var e := _entry(_track)
+	if e.is_empty():
+		return
+	var org := _origin_point(ctx)
+	var to := Vector2(float(e["x"]), float(e["z"]))
+	var arrived := false
+	if str(e["kind"]) == "ground":
+		var gid := "gnd_" + _track.substr(7)
+		arrived = fishing.ground_at(float(ctx["sx"]), float(ctx["sz"])) == gid
+	else:
+		arrived = org.distance_to(to) <= ARRIVE_M and (bool(ctx["ashore"]) or bool(ctx["docked"]))
+	if arrived:
+		ui.toast("You have arrived: %s." % str(e["name"]), PortUi.GREEN, 4.0)
+		_track = ""
+
+

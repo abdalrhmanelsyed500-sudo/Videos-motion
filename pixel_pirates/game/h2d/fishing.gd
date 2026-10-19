@@ -22,6 +22,7 @@ var ground_id := ""
 var timer := 0.0
 var hauls := 0
 var session_kg := 0.0
+var session_by: Dictionary = {}       # species id -> kg stored this session (the HUD list)
 var status := "idle"                 # idle | working | drifting | stopped
 var stop_reason := ""
 
@@ -43,6 +44,7 @@ func reset() -> void:
 	timer = 0.0
 	hauls = 0
 	session_kg = 0.0
+	session_by = {}
 	status = "idle"
 	stop_reason = ""
 
@@ -135,6 +137,7 @@ func start(px: float, pz: float, crew_count: int, sea_index: float) -> Dictionar
 		timer = 0.0
 		hauls = 0
 		session_kg = 0.0
+		session_by = {}
 		status = "drifting"
 		stop_reason = ""
 	return r
@@ -181,6 +184,7 @@ func step(dt: float, ship: Dictionary, hour: float, sea_index: float, port: RefC
 		var stored := float(port.call("add_catch", str(h["species"]), float(h["kg"]), now))
 		hauls += 1
 		session_kg += stored
+		session_by[str(h["species"])] = float(session_by.get(str(h["species"]), 0.0)) + stored
 		var full := bool(port.call("is_full"))
 		events.append({"type": "haul", "species": str(h["species"]), "kg": float(h["kg"]), "stored": stored, "full": full})
 		if full:
