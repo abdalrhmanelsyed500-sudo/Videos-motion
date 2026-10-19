@@ -48,8 +48,9 @@ var _active := false
 
 
 ## `tex_fn(file) -> Texture2D` and `mat_fn(shader_file) -> ShaderMaterial` are the view's loaders (the normal
-## ResourceLoader path).
-func build(vp: Node3D, ocean_mat: ShaderMaterial, tex_fn: Callable, mat_fn: Callable) -> void:
+## ResourceLoader path). `parent` is the root of the 3D world: the view's SubViewport (a Node, not a Node3D); the
+## island's own Node3D "AnvilCay" is added under it.
+func build(parent: Node, ocean_mat: ShaderMaterial, tex_fn: Callable, mat_fn: Callable) -> void:
 	meta = DataLoader.load_dict(ART_DIR + "anvil_cay.json")
 	var g: Dictionary = meta["grid"]
 	n = int(g["cells"])
@@ -60,7 +61,7 @@ func build(vp: Node3D, ocean_mat: ShaderMaterial, tex_fn: Callable, mat_fn: Call
 	top_m = float((meta["height_enc"] as Dictionary)["top"])
 	_root = Node3D.new()
 	_root.name = "AnvilCay"
-	vp.add_child(_root)
+	parent.add_child(_root)
 	var files: Dictionary = meta["files"]
 	var h_tex := tex_fn.call(str(files["height"])) as Texture2D
 	var b_tex := tex_fn.call(str(files["biome"])) as Texture2D
