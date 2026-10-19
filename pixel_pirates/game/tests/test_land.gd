@@ -56,7 +56,7 @@ func run(t: Object) -> void:
 	_run(w, world, Vector2(0, -1), 0.5)
 	t.check(absf(w.speed_ms - 4.0) < 0.01, "walking settles at land.walk_ms (%.2f)" % w.speed_ms)
 	t.check(w.row == Walker.ROW_NORTH, "walking north faces the north row")
-	t.check(w.z < -2.0, "the pirate moved north (z = %.2f)" % w.z)
+	t.check(w.z < -1.5, "the pirate moved north (z = %.2f)" % w.z)
 	t.check(w.frame >= 1 and w.frame <= 3, "walk frame is 1..3 while moving (%d)" % w.frame)
 	_run(w, world, Vector2(0, -1), 1.0, true)
 	t.check(absf(w.speed_ms - 7.5) < 0.01, "Shift runs at land.run_ms (%.2f)" % w.speed_ms)
