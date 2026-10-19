@@ -644,7 +644,9 @@ func _hire(cid: String) -> void:
 	if state.hire(cid) != "ok":
 		return
 	npcs.hide_recruit(cid)
-	ui.note_big("%s HIRED" % str(rec["name"]).replace("\"", "").to_upper(), "-%d reales (%d -> %d).  %s" % [int(rec["cost"]), state.reales + int(rec["cost"]), state.reales, str((rec["effect"] as Dictionary)["text"])], 6.5)
+	var cost := int(rec["cost"])
+	var effect_text := str((rec["effect"] as Dictionary)["text"])
+	ui.note_big("%s HIRED" % str(rec["name"]).replace("\"", "").to_upper(), "-%d reales (%d -> %d).  %s" % [cost, state.reales + cost, state.reales, effect_text], 6.5)
 	ui.toast("%s, the %s, is aboard. Crew: %d of %d." % [str(rec["name"]).replace("\"", ""), str(rec["role"]), state.crew_count(), state.recruit_order.size()], PortUi.GREEN, 6.0)
 	if _track == "recruit_" + cid:
 		_track = ""

@@ -3,6 +3,8 @@ extends Control
 ## CP-1 HUD built from standard nodes: purse + hold + crew + objective card (top right), the fishing panel under it, the tracking
 ## strip (top centre), the interaction prompt (bottom centre), toasts and the big banner. It only SHOWS what port_game.gd hands
 ## it in `set_data()`; it holds no rules.
+## Printed in the corner of the screen so a tester can tell which build is running.
+const BUILD_TAG := "CP-1 test build r3 (2026-10-19)   |   M map   E talk   F nets   F8 self-check"
 const K := preload("res://h2d/ui_kit.gd")
 
 var _card: PanelContainer
@@ -33,6 +35,7 @@ var _banner_t := 0.0
 var _banner_big: Label
 var _banner_sub: Label
 var _t := 0.0
+var _tag: Label
 var shown_toasts := 0           # how many toasts were ever added (the self-play test reads it)
 
 
@@ -45,6 +48,9 @@ func _ready() -> void:
 	_build_prompt()
 	_build_toasts()
 	_build_banner()
+	_tag = K.label(BUILD_TAG, 13, Color(1.0, 0.95, 0.82, 0.8), 3)
+	_tag.name = "BuildTag"
+	add_child(_tag)
 
 
 func _build_card() -> void:
@@ -263,6 +269,8 @@ func set_data(d: Dictionary) -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	if _tag != null:
+		_tag.position = Vector2(10.0, size.y - 26.0)
 	# the purse counts up or down instead of jumping
 	var diff := float(_purse_target) - _purse_shown
 	if absf(diff) < 0.5:

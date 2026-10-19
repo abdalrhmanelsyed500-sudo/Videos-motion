@@ -29,6 +29,7 @@ const EnvModel := preload("res://h2d/env_model.gd")
 const HelmHud := preload("res://h2d/helm_hud.gd")
 const Harbor := preload("res://h2d/harbor.gd")
 const LandWalker := preload("res://h2d/land_walker.gd")
+const KeyUtil := preload("res://h2d/key_util.gd")
 const PortGame := preload("res://h2d/port_game.gd")
 const MAX_STEP_S := 0.25
 const SMOOTH_S := 2.0
@@ -338,13 +339,13 @@ func _walk_axis() -> Vector2:
 	var a := Vector2.ZERO
 	if _port != null and (_port as PortGame).modal():
 		return a
-	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+	if KeyUtil.held(KEY_A) or KeyUtil.held(KEY_LEFT):
 		a.x -= 1.0
-	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+	if KeyUtil.held(KEY_D) or KeyUtil.held(KEY_RIGHT):
 		a.x += 1.0
-	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
+	if KeyUtil.held(KEY_W) or KeyUtil.held(KEY_UP):
 		a.y -= 1.0
-	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
+	if KeyUtil.held(KEY_S) or KeyUtil.held(KEY_DOWN):
 		a.y += 1.0
 	return a
 
@@ -352,7 +353,7 @@ func _walk_axis() -> Vector2:
 func _land_step(dt: float, gs: float) -> void:
 	if not _walker.is_ashore():
 		return
-	_walker.step(dt if gs > 0.0 else 0.0, _walk_axis(), Input.is_key_pressed(KEY_SHIFT), (_v3 as View3D).land_world())
+	_walker.step(dt if gs > 0.0 else 0.0, _walk_axis(), KeyUtil.held(KEY_SHIFT), (_v3 as View3D).land_world())
 	if _walker.last_reached != "":
 		_say("Reached %s (stop %d of %d)." % [_walker.last_reached, _walker.visited_count(), _walker.pois.size()])
 		_walker.last_reached = ""
@@ -421,9 +422,9 @@ func _steer_axis() -> float:
 	var axis := 0.0
 	if _port != null and (_port as PortGame).modal():
 		return axis
-	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+	if KeyUtil.held(KEY_A) or KeyUtil.held(KEY_LEFT):
 		axis -= 1.0
-	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+	if KeyUtil.held(KEY_D) or KeyUtil.held(KEY_RIGHT):
 		axis += 1.0
 	return axis
 
@@ -526,81 +527,82 @@ func _unhandled_input(event: InputEvent) -> void:
 	var k := event as InputEventKey
 	if k == null or not k.pressed or k.echo:
 		return
+	var kc: int = KeyUtil.code(k)     # layout-proof key (an Arabic layout would otherwise break every letter key)
 	var v3 := _v3 as View3D
 	var ashore := _walker.is_ashore()
 	if _port != null and (_port as PortGame).handle_key(k, _port_ctx()):
 		return  # CP-1 keys: E interact, F nets (at sea), M map, Y/N, Enter, Tab and Esc inside a panel, F6/F7 test helpers
-	if k.keycode == KEY_F:
+	if kc == KEY_F:
 		_land_toggle()
-	elif k.keycode == KEY_T:
+	elif kc == KEY_T:
 		_land_teleport()
-	elif k.keycode == KEY_TAB:
+	elif kc == KEY_TAB:
 		_cycle_lab()
-	elif ashore and (k.keycode == KEY_R or k.keycode == KEY_SPACE or (k.keycode >= KEY_1 and k.keycode <= KEY_7)):
+	elif ashore and (kc == KEY_R or kc == KEY_SPACE or (kc >= KEY_1 and kc <= KEY_7)):
 		_say("You are ashore: board the ship first (F at the pier). %s" % _walker.hint_text())
-	elif k.keycode >= KEY_1 and k.keycode <= KEY_7:
-		_jump(int(k.keycode) - int(KEY_1) + 1)
-	elif k.keycode == KEY_P:
+	elif kc >= KEY_1 and kc <= KEY_7:
+		_jump(int(kc) - int(KEY_1) + 1)
+	elif kc == KEY_P:
 		var reason := "menu"
 		if _state.clock.pause_reasons().has(reason):
 			_state.clock.resume(reason)
 		else:
 			_state.clock.pause(reason)
-	elif k.keycode == KEY_R:
+	elif kc == KEY_R:
 		_reset_ship()
-	elif k.keycode == KEY_W:
+	elif kc == KEY_W:
 		if not ashore:
 			_cycle_lab()
-	elif k.keycode == KEY_SPACE:
+	elif kc == KEY_SPACE:
 		_dock_request()
-	elif k.keycode == KEY_N:
+	elif kc == KEY_N:
 		_cycle_time_of_day()
-	elif k.keycode == KEY_G:
+	elif kc == KEY_G:
 		_env.trigger_gust()
 		_say("gust")
-	elif k.keycode == KEY_M:
+	elif kc == KEY_M:
 		v3.motion_mode = (v3.motion_mode + 1) % 3
 		_say("ship motion: " + MOTION_NAMES[v3.motion_mode])
-	elif k.keycode == KEY_E:
+	elif kc == KEY_E:
 		var lv: String = EFFECT_LEVELS[(EFFECT_LEVELS.find(v3.effects) + 1) % EFFECT_LEVELS.size()]
 		v3.set_effects(lv)
 		_say("effects budget: " + lv)
-	elif k.keycode == KEY_F1:
+	elif kc == KEY_F1:
 		var q: String = QUALITIES[(QUALITIES.find(v3.quality) + 1) % QUALITIES.size()]
 		v3.set_quality(q)
 		_say("quality: " + q)
-	elif k.keycode == KEY_F2:
+	elif kc == KEY_F2:
 		_set_path("2d" if _active == _v3 else "3d")
 		_say("path: " + _active.path_name())
-	elif k.keycode == KEY_F3:
+	elif kc == KEY_F3:
 		_hud_on = not _hud_on
-	elif k.keycode == KEY_F4:
+	elif kc == KEY_F4:
 		v3.set_gamma(1.0 if v3.gamma > 1.5 else 2.2)
 		_say("colour transfer flipped: h2d_gamma %.1f (press F4 again if it looks washed out or too dark)" % v3.gamma)
-	elif k.keycode == KEY_F12:
+	elif kc == KEY_F12:
 		_shot_n += 1
 		var img := get_viewport().get_texture().get_image()
 		img.save_png("user://h2d0_shot_%03d.png" % _shot_n)
 		_say("saved " + ProjectSettings.globalize_path("user://h2d0_shot_%03d.png" % _shot_n))
-	elif k.keycode == KEY_BRACKETLEFT:
+	elif kc == KEY_BRACKETLEFT:
 		v3.adjust_pitch(-3.0)
-	elif k.keycode == KEY_BRACKETRIGHT:
+	elif kc == KEY_BRACKETRIGHT:
 		v3.adjust_pitch(3.0)
-	elif k.keycode == KEY_MINUS:
+	elif kc == KEY_MINUS:
 		v3.adjust_exposure(1.0 / 1.1)
-	elif k.keycode == KEY_EQUAL:
+	elif kc == KEY_EQUAL:
 		v3.adjust_exposure(1.1)
-	elif k.keycode == KEY_Z:
+	elif kc == KEY_Z:
 		_helm.set_sensitivity(_helm.sensitivity - 0.2)
 		_say("turn sensitivity x%.1f" % _helm.sensitivity)
-	elif k.keycode == KEY_X:
+	elif kc == KEY_X:
 		_helm.set_sensitivity(_helm.sensitivity + 0.2)
 		_say("turn sensitivity x%.1f" % _helm.sensitivity)
-	elif k.keycode == KEY_COMMA:
+	elif kc == KEY_COMMA:
 		_speed_mul = maxf(_speed_mul * 0.5, 0.125)
-	elif k.keycode == KEY_PERIOD:
+	elif kc == KEY_PERIOD:
 		_speed_mul = minf(_speed_mul * 2.0, 8.0)
-	elif k.keycode == KEY_B and (_bench == null or not (_bench as Bench).active):
+	elif kc == KEY_B and (_bench == null or not (_bench as Bench).active):
 		_start_bench()
 
 

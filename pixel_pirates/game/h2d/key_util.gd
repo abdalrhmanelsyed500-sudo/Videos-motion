@@ -26,3 +26,8 @@ static func digit(key: int) -> int:
 	if key >= KEY_KP_1 and key <= KEY_KP_9:
 		return key - int(KEY_KP_1)
 	return -1
+
+
+## Is the key held? Checks the layout key and the physical (QWERTY position) key, so A/D/W/S work on any layout.
+static func held(key: int) -> bool:
+	return Input.is_key_pressed(key as Key) or Input.is_physical_key_pressed(key as Key)
