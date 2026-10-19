@@ -28,7 +28,7 @@ const Harbor := preload("res://h2d/harbor.gd")
 const MAX_STEP_S := 0.25
 const SMOOTH_S := 2.0
 const START_POS := Vector2(-100.0, 140.0)  ## keep in step with START in tools/h2d/check_harbor.py
-const START_HEADING := 58.0  ## points at the harbour mouth: the dock zone is about 145 m ahead
+const START_HEADING := 58.0  ## points at the harbour mouth: the dock zone is about 120 m ahead
 const SMOOTH_KEYS: Array[String] = ["wind_kn", "wave_m", "visibility_km", "cloud", "storm", "herald", "rain", "fog",
 		"ice", "sst_c", "air_c", "light_peak", "light_floor"]
 const COMPASS: Array[String] = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
