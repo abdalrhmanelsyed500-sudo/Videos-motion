@@ -627,7 +627,7 @@ func _update_camera(ship: Dictionary, dt: float) -> void:
 	_ship_mat.set_shader_parameter("cam_tan", tan(p))
 	_cay.update(_focus, _zoom)
 	_cay.set_hero(ashore, float(_land.get("x", 0.0)), float(_land.get("z", 0.0)), int(_land.get("row", 0)),
-			int(_land.get("frame", 0)), _zoom)
+			int(_land.get("frame", 0)), zmax)     # CP-1: the on-foot sprites keep ONE world scale (see cay_world.set_sprite_zoom)
 	var os := clampf(1.6 / _zoom, 0.4, 1.0)
 	_ocean.scale = Vector3(os, 1.0, os)
 

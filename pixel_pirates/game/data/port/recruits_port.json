@@ -1,0 +1,82 @@
+{
+ "note": "CP-1 recruits of Anvil Harbor. Fields mirror the crew_member schema (id, name, age, gender male, role, stats, loyalty_start) so module D can promote them to real crew records; cost and effect are CP-1 economy values (provisional, owner B4/D2). Text placeholders: {cost} {have} {missing}. Hard content rules: male only, no religion, no sexual content.",
+ "order": ["crew_pip_larkin", "crew_tuck_marrow", "crew_silas_reed", "crew_garrick_stave"],
+ "recruits": {
+  "crew_pip_larkin": {
+   "name": "Pip Larkin", "age": 19, "gender": "male", "role": "lookout", "cost": 18, "look": "r_pip",
+   "place": "the signal mast on the plaza", "place_short": "plaza signal mast",
+   "stats": {"strength": 3, "endurance": 5, "seamanship": 5, "fighting": 2, "craft": 3}, "loyalty_start": 55,
+   "effect": {"type": "catch_bonus", "value": 0.10, "text": "Calls the shoals from the masthead: +10% fish in every haul."},
+   "speech_style": "Quick, eager, runs sentences together, calls everyone Cap'n, counts things aloud.",
+   "backstory": "A rope-maker's son who learned to read the sea from the harbour signal mast. His spyglass was his father's.",
+   "notice": "WANTED, a ship: lad with a good eye and a spyglass, at the signal mast. Pip Larkin, asks 18 reales.",
+   "pages": [
+    "Cap'n! You're the one with the sloop at the end of the pier, aren't you? I've been watching her come in all week.",
+    "I can see a gannet dive from this mast at two miles. Put me up your mainmast and I'll call every shoal before the nets are wet.",
+    "I'm asking eighteen reales, paid once, and I'm yours. I want a ship under me, not a fortune."
+   ],
+   "offer": "Eighteen reales, and I sign today. Will you take me on, Captain?",
+   "poor": "Eighteen reales, Cap'n, and you've {have}. Sell me a net of fish first: the market is west along Quay Street, past the bridge. I'm not going anywhere.",
+   "accepted": "Aye aye, Captain! I'll be aboard before you've cast off. Mind my spyglass: it was my father's.",
+   "declined": "Right. I'll be up the mast, then. Just here. Waiting.",
+   "aboard": "Pip is aboard, up at the masthead."
+  },
+  "crew_tuck_marrow": {
+   "name": "Tomas \"Tuck\" Marrow", "age": 27, "gender": "male", "role": "sailor", "cost": 30, "look": "r_tuck",
+   "place": "the net frames on the west wharf", "place_short": "west wharf nets",
+   "stats": {"strength": 6, "endurance": 7, "seamanship": 6, "fighting": 4, "craft": 5}, "loyalty_start": 45,
+   "effect": {"type": "catch_bonus", "value": 0.25, "text": "Mends and works the nets: +25% fish in every haul."},
+   "speech_style": "Dry, short sentences, calls the player skipper, never wastes a word he can mend a net with.",
+   "backstory": "Mends nets on the west wharf for a fish-merchant who pays him in promises.",
+   "notice": "NET-HAND for hire, west wharf. Tuck Marrow asks 30 reales on the nail.",
+   "pages": [
+    "Mind the needle, skipper. This net has more holes than a tax collector's promise.",
+    "Ten years on this wharf, hauling for a man who pays in promises. Give me a good net aboard and your catch grows by a quarter.",
+    "Thirty reales and I'll sign. I don't work for promises. I work for pay on the nail."
+   ],
+   "offer": "Thirty reales for a net-hand who never drops the haul. Hire him?",
+   "poor": "Thirty, skipper. You have {have}. Come back with {missing} more and I'll have the net ready.",
+   "accepted": "Done. I'll bring my own needle. Don't touch the knots.",
+   "declined": "Suit yourself, skipper. The net won't mend itself, so I'll be here.",
+   "aboard": "Tuck is aboard, working the nets."
+  },
+  "crew_silas_reed": {
+   "name": "Silas Reed", "age": 41, "gender": "male", "role": "cook", "cost": 40, "look": "r_silas",
+   "place": "the kitchen door of the tavern", "place_short": "tavern kitchen door",
+   "stats": {"strength": 5, "endurance": 6, "seamanship": 3, "fighting": 3, "craft": 8}, "loyalty_start": 50,
+   "effect": {"type": "spoil_mult", "value": 0.70, "text": "Salts and packs the catch in cold brine: fish spoils 30% slower."},
+   "speech_style": "Proud, a little pompous, speaks of food as other men speak of battles.",
+   "backstory": "Cooked for three tavern keepers, every one of whom let him go for improving the recipes.",
+   "notice": "COOK seeks a galley, tavern kitchen door. Silas Reed asks 40 reales and a clean pot.",
+   "pages": [
+    "Do not look at the stew, Captain. Look at me. I am the man who has been improving it.",
+    "A crew that eats badly fights badly. And fish, left in a hold in the sun, is a crime. With salt and cold brine I keep a catch sweet a third longer.",
+    "Forty reales, a clean pot and no remarks about my seasoning. That is all I ask."
+   ],
+   "offer": "Forty reales for a cook who keeps your catch sweet. Take him aboard?",
+   "poor": "Forty reales, Captain. You have {have}: that is {missing} short. Fish, sell, and return. A great kitchen is not built in a day, but a great purse might be.",
+   "accepted": "Splendid! I shall bring my own salt. And my own pot. And my opinions.",
+   "declined": "A pity. The soup will mourn. I will be here when you are hungry.",
+   "aboard": "Silas is aboard, already arranging the galley."
+  },
+  "crew_garrick_stave": {
+   "name": "Garrick Stave", "age": 52, "gender": "male", "role": "carpenter", "cost": 55, "look": "r_garrick",
+   "place": "the boatyard behind the warehouses", "place_short": "boatyard by the warehouses",
+   "stats": {"strength": 8, "endurance": 6, "seamanship": 5, "fighting": 3, "craft": 9}, "loyalty_start": 40,
+   "effect": {"type": "hold_kg", "value": 20.0, "text": "Builds drying racks and a second fish-hold: the hold carries 20 kg more."},
+   "speech_style": "Gruff and slow, measures everything twice, says little and means all of it.",
+   "backstory": "Built hulls in the Anvil yard for thirty years until the yard closed. Still keeps his adze sharp.",
+   "notice": "CARPENTER, boatyard behind the warehouses. Garrick Stave asks 55 reales. Bring tools.",
+   "pages": [
+    "Don't lean on that. I measured it.",
+    "Thirty years building hulls in the yard until it closed. Your sloop is sound, but she carries fish like a basket carries water.",
+    "Give me a week of planks and I'll add a second hold, twenty kilos more. Fifty-five reales. Measure twice, pay once."
+   ],
+   "offer": "Fifty-five reales for a carpenter who adds twenty kilos to the hold. Sign him?",
+   "poor": "Fifty-five. You've {have}. I don't build on credit: wood costs.",
+   "accepted": "Good. I'll bring the adze. Don't let anyone near the planks.",
+   "declined": "Hm. The planks will keep. So will I.",
+   "aboard": "Garrick is aboard, measuring the hold."
+  }
+ }
+}

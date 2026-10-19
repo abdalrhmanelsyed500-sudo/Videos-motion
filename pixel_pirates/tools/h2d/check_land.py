@@ -35,17 +35,13 @@ def tuning() -> dict[str, float]:
     return {r["key"]: float(r["value"]) for r in recs}
 
 
-def main() -> int:
-    tu = tuning()
-    sc = SL.Scatter()
+def walk_grid(sc, tu, xs, zs, inside_fn):
+    """The walkable mask on a regular grid (mirror of cay_world.gd walkable): returns (X, Z, inside, ok)."""
     meta = sc.meta
-    land = meta["land"]
-    ex, ez, er = land["explore"]["x"], land["explore"]["z"], land["explore"]["r"] + tu["land.edge_margin_m"]
-    body = tu["land.body_r_m"]
-    xs = np.arange(math.floor(ex - er), math.ceil(ex + er) + 1, STEP)
-    zs = np.arange(math.floor(ez - er), math.ceil(ez + er) + 1, STEP)
     X, Z = np.meshgrid(xs, zs)
-    inside = (X - ex) ** 2 + (Z - ez) ** 2 <= er * er
+    inside = inside_fn(X, Z)
+    body = tu["land.body_r_m"]
+    ntr = 0
     cell, ox, oz, n = sc.cell, sc.ox, sc.oz, sc.n
     hmap = np.array(sc.lut, np.float32)[sc.hgt[..., 0]]
 
@@ -66,9 +62,8 @@ def main() -> int:
         ok &= ~((X > x0 - body) & (X < x1 + body) & (Z > z0 - body) & (Z < z1 + body))
     # tree trunks of every chunk that touches the circle
     per = float(sc.sc["chunk_m"])
-    ntr = 0
-    for cz in range(math.floor((ez - er) / per), math.floor((ez + er) / per) + 1):
-        for cx in range(math.floor((ex - er) / per), math.floor((ex + er) / per) + 1):
+    for cz in range(math.floor(zs.min() / per), math.floor(zs.max() / per) + 1):
+        for cx in range(math.floor(xs.min() / per), math.floor(xs.max() / per) + 1):
             for tx, tz, tr in sc.chunk(cx, cz)["trunks"]:
                 rr = tr + body
                 i0, i1 = int((tx - rr - xs[0]) / STEP), int((tx + rr - xs[0]) / STEP) + 2
@@ -83,6 +78,25 @@ def main() -> int:
     on_pier = (((X >= pier["x0"]) & (X <= pier["x1"]) & (Z >= pier["z0"]) & (Z <= pier["z1"]))
                | ((X >= hd["x0"]) & (X <= pier["x1"]) & (Z >= hd["z0"]) & (Z <= pier["z1"])))
     ok |= on_pier & inside
+    for d in meta.get("port", {}).get("decks", []):      # CP-1: decks and bridges are walkable like the pier, but props block them
+        dk = (X >= d["x0"]) & (X <= d["x1"]) & (Z >= d["z0"]) & (Z <= d["z1"]) & inside
+        for x0, z0, x1, z1 in meta["blockers"]:
+            dk &= ~((X > x0 - body) & (X < x1 + body) & (Z > z0 - body) & (Z < z1 + body))
+        ok |= dk
+    return X, Z, inside, ok, ntr
+
+
+def main() -> int:
+    tu = tuning()
+    sc = SL.Scatter()
+    meta = sc.meta
+    land = meta["land"]
+    ex, ez, er = land["explore"]["x"], land["explore"]["z"], land["explore"]["r"] + tu["land.edge_margin_m"]
+    xs = np.arange(math.floor(ex - er), math.ceil(ex + er) + 1, STEP)
+    zs = np.arange(math.floor(ez - er), math.ceil(ez + er) + 1, STEP)
+    X, Z, inside, ok, ntr = walk_grid(sc, tu, xs, zs, lambda X, Z: (X - ex) ** 2 + (Z - ez) ** 2 <= er * er)
+    body = tu["land.body_r_m"]
+    cell, ox, oz, n = sc.cell, sc.ox, sc.oz, sc.n
     print(f"land: grid {len(xs)} x {len(zs)} at {STEP} m, {ntr} trunks, walkable {ok.sum() * STEP * STEP / 1e4:.1f} ha "
           f"of {inside.sum() * STEP * STEP / 1e4:.1f} ha in the explore circle")
 

@@ -1,0 +1,12 @@
+{
+ "port": "Anvil Harbor",
+ "currency": "reales",
+ "note": "CP-1 prices of the Fish Row market. base_reales_per_kg is the price of 1 kg of FRESH fish before the market spread and before the market remembers your sales (core/market.gd). Owner B4; provisional. Every number is explained in docs/CP1_CAPITAL_PORT.md.",
+ "species": {
+  "spc_sardine": {"name": "Sardine", "base_reales_per_kg": 1.0, "factor": 1.0, "note": "Cheap and plentiful: the first-trip fish. B4 prices fresh fish at 2/kg on average; a sardine is the bottom of that range."},
+  "spc_mackerel": {"name": "Atlantic Mackerel", "base_reales_per_kg": 1.6, "factor": 1.0, "note": "The harbour's daily fish."},
+  "spc_parrotfish": {"name": "Parrotfish", "base_reales_per_kg": 2.6, "factor": 1.0, "note": "A reef fish: only the Kelp Reef gives it."},
+  "spc_red_snapper": {"name": "Red Snapper", "base_reales_per_kg": 3.2, "factor": 1.0, "note": "Prized at table; reef and deep water."},
+  "spc_yellowfin_tuna": {"name": "Yellowfin Tuna", "base_reales_per_kg": 4.5, "factor": 1.0, "note": "The best fish of the prologue; only the far Blue Drop holds it."}
+ }
+}

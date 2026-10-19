@@ -45,6 +45,16 @@ var _blob: MeshInstance3D
 var _chunks: Dictionary = {}
 var _chunk_m := 200.0
 var _active := false
+# CP-1 Fish Row (the "port" section of anvil_cay.json): decks and bridges, props, boats, NPC sprites, markers
+var port: Dictionary = {}
+var _decks: Array = []
+var _deck_mat: ShaderMaterial
+var _zoom_mats: Array = []          # sprite materials drawn at the on-foot scale (14.4 px per metre)
+var _sprite_zoom := -1.0
+var _port_nodes: Array = []
+var _npc_node: MultiMeshInstance3D
+var _npc_blobs: MultiMeshInstance3D
+var _marker_node: MultiMeshInstance3D
 
 
 ## `tex_fn(file) -> Texture2D` and `mat_fn(shader_file) -> ShaderMaterial` are the view's loaders (the normal
@@ -97,6 +107,8 @@ func build(parent: Node, ocean_mat: ShaderMaterial, tex_fn: Callable, mat_fn: Ca
 	_structs = _build_sprites(meta["structures"] as Array, meta["struct_atlas"] as Dictionary, true, tex_fn, mat_fn)
 	_props = _build_sprites(meta["props"] as Array, va, false, tex_fn, mat_fn)
 	_build_hero(tex_fn, mat_fn)
+	if meta.has("port"):
+		_build_port(tex_fn, mat_fn)
 
 
 func _bytes_of(tex: Texture2D) -> PackedByteArray:
@@ -160,8 +172,11 @@ func _sprite_material(atlas: Dictionary, glow: bool, tex_fn: Callable, mat_fn: C
 	m.set_shader_parameter("cell_px", Vector2(float(cp[0]), float(cp[1])))
 	m.set_shader_parameter("pivot_px", Vector2(float(piv[0]), float(piv[1])))
 	m.set_shader_parameter("atlas_grid", Vector2(float(atlas["cols"]), float(atlas["rows"])))
-	m.set_shader_parameter("m_per_px", 1.0 / PX_PER_M)
+	var ppm := float(atlas.get("px_per_m", PX_PER_M))
+	m.set_shader_parameter("m_per_px", 1.0 / ppm)
 	m.set_shader_parameter("glow_on", 1.0 if glow else 0.0)
+	if ppm > 10.0:
+		_zoom_mats.append(m)
 	_glow_mats.append(m)
 	return m
 
@@ -177,7 +192,7 @@ func _build_sprites(list: Array, atlas: Dictionary, glow: bool, tex_fn: Callable
 	for i in list.size():
 		var t: Dictionary = list[i]
 		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(float(t["x_m"]), float(t["y_m"]), float(t["z_m"]))))
-		var bob := 0.12 if str(t.get("name", "")).begins_with("buoy") else 0.0
+		var bob := float(t.get("bob", 0.12 if str(t.get("name", "")).begins_with("buoy") else 0.0))
 		mm.set_instance_custom_data(i, Color(float(t["type"]), float(t["scale"]), bob, 0.0))
 	mm.custom_aabb = AABB(Vector3(ox, -20.0, oz), Vector3(size_m, 200.0, size_m))
 	var inst := MultiMeshInstance3D.new()
@@ -253,6 +268,8 @@ func update(focus: Vector2, zoom: float) -> void:
 	_terrain.position = Vector3(floorf(focus.x / cell) * cell + cell * 0.5, 0.0,
 			floorf(focus.y / cell) * cell + cell * 0.5)
 	_terrain_mat.set_shader_parameter("texel_m", 1.0 / (PX_PER_M * zoom))
+	if _deck_mat != null:
+		_deck_mat.set_shader_parameter("texel_m", 1.0 / (PX_PER_M * zoom))
 	_stream(focus, chunk_budget)
 
 
@@ -338,12 +355,11 @@ func set_hero(on: bool, x: float, z: float, row: int, frame: int, zoom: float) -
 	_blob.visible = on
 	if not on:
 		return
-	var y := height_smooth(x, z)
-	if on_pier(x, z):
-		y = float(_pier["height_m"])
+	var y := ground_y(x, z)
 	_hero.position = Vector3(x, y, z)  # the node carries the position, so the culling box follows the sprite
 	_hero.multimesh.set_instance_custom_data(0, Color(float(row * 4 + frame), 1.0, 0.0, 0.0))
 	_hero_mat.set_shader_parameter("m_per_px", 1.0 / (PX_PER_M * zoom))
+	set_sprite_zoom(zoom)
 	_blob.position = Vector3(x, y + 0.06, z)
 
 
@@ -367,6 +383,11 @@ func on_pier(x: float, z: float) -> bool:
 func height_at(x: float, z: float) -> float:
 	if on_pier(x, z):
 		return float(_pier["height_m"])
+	var dh := deck_height(x, z)
+	if not is_nan(dh):
+		return dh
+	if _in_moored_hull(x, z):
+		return 1.0          # a moored boat is as solid as land to the ship's hull probes
 	var i := _idx(x, z)
 	if i < 0 or _hd.is_empty():
 		return -99.0
@@ -439,6 +460,8 @@ func in_blocker(x: float, z: float, r: float) -> bool:
 func walkable(x: float, z: float, r: float = 0.45) -> bool:
 	if on_pier(x, z):
 		return true
+	if not is_nan(deck_height(x, z)):
+		return not in_blocker(x, z, r)          # CP-1: wharf and bridges are floors; props on them still block
 	var i := _idx(x, z)
 	if i < 0 or _hd.is_empty():
 		return false
@@ -449,3 +472,146 @@ func walkable(x: float, z: float, r: float = 0.45) -> bool:
 	if slope_at(x, z) > walk_max_slope:
 		return false
 	return not in_blocker(x, z, r)
+
+
+# ---- CP-1 Fish Row: decks, bridges, people, markers -----------------------------------------------------------------
+## The deck height at (x, z) when a wharf or bridge deck is there, else NAN.
+func deck_height(x: float, z: float) -> float:
+	for d in _decks:
+		var dd := d as Dictionary
+		if x >= float(dd["x0"]) and x <= float(dd["x1"]) and z >= float(dd["z0"]) and z <= float(dd["z1"]):
+			return float(dd["h"])
+	return NAN
+
+
+func _in_moored_hull(x: float, z: float) -> bool:
+	for h in port.get("hulls", []):
+		var hh := h as Array
+		if x >= float(hh[0]) and x <= float(hh[2]) and z >= float(hh[1]) and z <= float(hh[3]):
+			return true
+	return false
+
+
+## Where a person's feet are: the pier, a deck, or the smoothed ground.
+func ground_y(x: float, z: float) -> float:
+	if on_pier(x, z):
+		return float(_pier["height_m"])
+	var dh := deck_height(x, z)
+	if not is_nan(dh):
+		return dh
+	return height_smooth(x, z)
+
+
+## Sprites drawn at the on-foot scale (people, stalls, boats, markers) share the pirate's world scale, so a stall is the same
+## size whether the camera is still easing in or not: 1 / (3.6 x land.zoom) metres per sprite pixel.
+func set_sprite_zoom(zoom: float) -> void:
+	if absf(zoom - _sprite_zoom) < 0.0005:
+		return
+	_sprite_zoom = zoom
+	for m in _zoom_mats:
+		(m as ShaderMaterial).set_shader_parameter("m_per_px", 1.0 / (PX_PER_M * zoom))
+
+
+func _build_port(tex_fn: Callable, mat_fn: Callable) -> void:
+	port = meta["port"]
+	_decks = port["decks"]
+	_build_decks(mat_fn)
+	var at: Dictionary = port["atlases"]
+	_port_nodes.append(_build_sprites(port["props"] as Array, at["stall"] as Dictionary, true, tex_fn, mat_fn))
+	_port_nodes.append(_build_sprites(port["big"] as Array, at["big"] as Dictionary, true, tex_fn, mat_fn))
+	_port_nodes.append(_build_sprites(port["ships"] as Array, at["ships"] as Dictionary, false, tex_fn, mat_fn))
+	var npcs: Array = port["npcs"]
+	# one MultiMesh for every person (ONE draw call), one for their contact shadows, one for the floating markers
+	var nat: Dictionary = at["npc"]
+	var nmat := _sprite_material(nat, false, tex_fn, mat_fn)
+	nmat.set_shader_parameter("depth_bias", 0.8)
+	nmat.set_shader_parameter("sprite_light", 0.7)
+	_npc_node = _make_dynamic_mm(npcs.size(), nmat, QuadMesh.new())
+	var bm := PlaneMesh.new()
+	bm.size = Vector2(1.5, 0.8)
+	_npc_blobs = _make_dynamic_mm(npcs.size(), mat_fn.call("blob.gdshader") as ShaderMaterial, bm)
+	var kmat := _sprite_material(at["misc"] as Dictionary, true, tex_fn, mat_fn)
+	kmat.set_shader_parameter("depth_bias", 5.0)
+	kmat.set_shader_parameter("sprite_light", 1.6)
+	_marker_node = _make_dynamic_mm(16, kmat, QuadMesh.new())
+	set_npcs([])
+	set_markers([])
+
+
+## A MultiMeshInstance3D whose instances move every frame: the culling box (in node space, and the node stays at the
+## origin) covers the whole district and the harbour around it (see the hero bug of H2D-1.2.1).
+func _make_dynamic_mm(count: int, mat: Material, mesh: Mesh) -> MultiMeshInstance3D:
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_custom_data = true
+	mm.mesh = mesh
+	mm.instance_count = maxi(count, 1)
+	mm.custom_aabb = AABB(Vector3(-200.0, -10.0, -120.0), Vector3(320.0, 40.0, 240.0))
+	var node := MultiMeshInstance3D.new()
+	node.multimesh = mm
+	node.material_override = mat
+	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_root.add_child(node)
+	for i in mm.instance_count:
+		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(0.0, -50.0, 0.0)))
+		mm.set_instance_custom_data(i, Color(0.0, 0.0, 0.0, 0.0))
+	return node
+
+
+## The wharf and the two bridges: boxes merged into ONE mesh (one draw call), planks painted by pier.gdshader.
+func _build_decks(mat_fn: Callable) -> void:
+	_deck_mat = mat_fn.call("pier.gdshader") as ShaderMaterial
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for d in _decks:
+		var dd := d as Dictionary
+		var top := float(dd["h"])
+		var bm := BoxMesh.new()
+		bm.size = Vector3(float(dd["x1"]) - float(dd["x0"]), top + 0.8, float(dd["z1"]) - float(dd["z0"]))
+		var c := Vector3((float(dd["x0"]) + float(dd["x1"])) * 0.5, top - (top + 0.8) * 0.5, (float(dd["z0"]) + float(dd["z1"])) * 0.5)
+		st.append_from(bm, 0, Transform3D(Basis.IDENTITY, c))
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = _deck_mat
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_root.add_child(mi)
+	_glow_mats.append(_deck_mat)
+
+
+## `people` = PortNpcs.people (dictionaries with x, z, look, row, frame, hidden). Hidden people are scaled to nothing.
+func set_npcs(people: Array) -> void:
+	if _npc_node == null:
+		return
+	var mm := _npc_node.multimesh
+	var bb := _npc_blobs.multimesh
+	for i in mm.instance_count:
+		if i >= people.size() or bool((people[i] as Dictionary)["hidden"]):
+			mm.set_instance_custom_data(i, Color(0.0, 0.0, 0.0, 0.0))
+			bb.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(0.0, -50.0, 0.0)))
+			continue
+		var n := people[i] as Dictionary
+		var x := float(n["x"])
+		var z := float(n["z"])
+		var y := ground_y(x, z)
+		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(x, y, z)))
+		mm.set_instance_custom_data(i, Color(float(int(n["look"]) * 16 + int(n["row"]) * 4 + int(n["frame"])), 1.0, 0.0, 0.0))
+		bb.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(x, y + 0.06, z)))
+		bb.set_instance_custom_data(i, Color(0.0, 0.0, 0.0, 0.0))
+
+
+## `list` = [{x, y, z, type}] (type = index in the misc atlas: 0 recruit, 1 recruit you can afford, 2 fish market, 3 notice board).
+func set_markers(list: Array) -> void:
+	if _marker_node == null:
+		return
+	var mm := _marker_node.multimesh
+	for i in mm.instance_count:
+		if i >= list.size():
+			mm.set_instance_custom_data(i, Color(0.0, 0.0, 0.0, 0.0))
+			continue
+		var m := list[i] as Dictionary
+		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(float(m["x"]), float(m["y"]), float(m["z"]))))
+		mm.set_instance_custom_data(i, Color(float(int(m["type"])), 1.0, float(m.get("bob", 0.16)), 0.0))
+
+
+func npc_count() -> int:
+	return (port.get("npcs", []) as Array).size()

@@ -1,0 +1,17 @@
+{
+ "note": "CP-1 fishing grounds south of Anvil Cay. A ground is a disc of open sea (centre x, z in metres, radius r). The nets work only inside it. Positions are checked against the baked coast by tools/h2d/check_port.py (each is at least 100 m from any land). richness multiplies the kg of every haul; species = [species id, weight] in draw order. Owner B4/E2; provisional.",
+ "grounds": {
+  "gnd_pilchard_shallows": {"name": "Pilchard Shallows", "x": -300.0, "z": 560.0, "r": 90.0, "richness": 1.0, "min_crew": 0,
+   "species": [["spc_sardine", 0.65], ["spc_mackerel", 0.35]],
+   "blurb": "Pale green water over a sandbank, 0.6 km south-west of the harbour. Sardine shoals all year. The place to learn the nets."},
+  "gnd_gannet_bank": {"name": "Gannet Bank", "x": 480.0, "z": 650.0, "r": 95.0, "richness": 1.1, "min_crew": 0,
+   "species": [["spc_mackerel", 0.5], ["spc_sardine", 0.2], ["spc_red_snapper", 0.3]],
+   "blurb": "A ridge 0.8 km south-east where gannets dive on the mackerel. Follow the birds."},
+  "gnd_kelp_reef": {"name": "Kelp Reef", "x": -700.0, "z": 1000.0, "r": 100.0, "richness": 1.2, "min_crew": 0,
+   "species": [["spc_parrotfish", 0.45], ["spc_red_snapper", 0.35], ["spc_mackerel", 0.2]],
+   "blurb": "A drowned forest of kelp 1.2 km out to the south-west. Richer fish, a longer sail."},
+  "gnd_blue_drop": {"name": "Blue Drop", "x": 300.0, "z": 1750.0, "r": 110.0, "richness": 1.3, "min_crew": 1,
+   "species": [["spc_mackerel", 0.5], ["spc_yellowfin_tuna", 0.25], ["spc_red_snapper", 0.25]],
+   "blurb": "Where the shelf falls into deep blue water, 1.8 km south. Tuna run here. Too far and too deep to work alone: you need at least one hand aboard."}
+ }
+}

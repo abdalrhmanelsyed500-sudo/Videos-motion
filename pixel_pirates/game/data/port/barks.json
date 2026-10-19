@@ -1,0 +1,34 @@
+{
+ "note": "CP-1 street talk of Fish Row: a line is picked by group and by what the player has done (key: any, no_fish, has_fish, poor, crew). All speakers are men; no religious wording.",
+ "fisher": {
+  "any": ["Mackerel were thick at Gannet Bank this morning. Follow the birds.", "Nets, nets, nets. The sea gives and the sea takes, and my back remembers both.", "Dawn and dusk, friend. Fish bite when the light is thin."],
+  "no_fish": ["That sloop of yours wants nets. The Pilchard Shallows are an easy sail south-west."],
+  "has_fish": ["Don't let that catch sit in the sun. Fish loses its price by the hour."]
+ },
+ "merchant": {
+  "any": ["Prices are a conversation, friend. Sell too much in one day and the market stops listening.", "Reales today, doubloons tomorrow. That is how a merchant sleeps.", "Mind the hold: weight is money, and money is weight."],
+  "has_fish": ["Fish? The fishmonger under the red canopy buys by the kilo. Fair prices, until you flood him."]
+ },
+ "docker": {
+  "any": ["Cargo waits for no man, and neither do I.", "Mind your feet! Hand-cart coming through.", "Barrels up, crates down. That's the whole of life on the wharf."],
+  "crew": ["Hired a hand already? Good. A ship with one pair of arms is a ship that waits for help."]
+ },
+ "sailor": {
+  "any": ["Strange to stand on a floor that doesn't move.", "The tavern's soup is hot and the song is bad. A fair trade.", "A sloop and no crew? Brave. Or foolish. Same thing at sea."],
+  "poor": ["Short of coin? Everyone starts that way. Fish, sell, hire. That's the harbour's whole advice."]
+ },
+ "shopkeeper": {
+  "any": ["Fresh today. Everything is fresh today.", "Look all you like. Looking is free.", "Rope, tar and needles are cheaper at the quay. I tell you this out of kindness."]
+ },
+ "townsman": {
+  "any": ["Anvil Harbor has stood on this shore for two hundred years. The tide takes some, the walls keep the rest.", "Mind the canal, friend. The bridge is wider than it looks, the water deeper than it looks.", "Fish Row is loud at dawn, quiet by noon, and loud again when the boats come in."],
+  "no_fish": ["There are people looking for a berth. Check the notice board by the pier."]
+ },
+ "fishmonger": {
+  "name": "Barnaby Gull",
+  "greet": "Barnaby Gull, fishmonger of Fish Row. I buy by the kilo and I weigh honest.",
+  "no_fish": "Nothing in your hold, Captain. Sail out, cast your nets, and come back with something that still smells of the sea.",
+  "sold": "Pleasure. Come back when the market has forgotten you.",
+  "flooded": "I've bought plenty of that today. The price will recover in a few days. Try another species, Captain."
+ }
+}

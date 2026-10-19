@@ -28,6 +28,8 @@ import bake_harbor as BH  # noqa: E402
 import bake_island as BI  # noqa: E402
 import cay_sprites as CS  # noqa: E402
 import cay_terrain as CT  # noqa: E402
+import port_layout as PL  # noqa: E402
+import port_sprites as PS  # noqa: E402
 
 ART = BH.ART
 ROOT = BH.ROOT
@@ -90,6 +92,7 @@ def cell_of(x, z):
 
 def build_world():
     T = CT.build()
+    PL_MASKS = PL.carve(T)                       # CP-1: level Fish Row and dig the canal before anything reads the height
     rs = np.random.RandomState(31337)
     h = T.h.copy()
     # ---- find the POIs on the beaches (before the classes: they decide where paths end) -------------------------------
@@ -109,6 +112,7 @@ def build_world():
     k = int(np.argmax(h[iz, ix]))
     pois["lookout"] = dict(name="Lookout Hill", x=float(CT.XS[ix[k]]), z=float(CT.ZS[iz[k]]))
     pois["plaza"] = dict(name="Anvil Harbor plaza", x=16.0, z=-2.0)
+    pois["fish_market"] = dict(name="Fish market", x=PL.MARKET_POINT[0], z=PL.MARKET_POINT[1])
     # the lighthouse: the seaward end of the east arm
     cand = (T.d_in > 9.0) & (h > 0.7) & (slope0 < 0.2) & (CT.X > 40.0) & (CT.X < 95.0) & (CT.Z > -5.0) & (CT.Z < 45.0)
     iz, ix = np.nonzero(cand)
@@ -145,7 +149,7 @@ def build_world():
     pathmask |= CT.box(*CT.STREET)
 
     # ---- pads under structures and a gently smoothed terrain along the paths -----------------------------------------
-    structs = list(BH.STRUCTS) + VILLAGE_STRUCTS
+    structs = [s_ for s_ in BH.STRUCTS if s_[0] not in PL.REMOVE_STRUCTS] + VILLAGE_STRUCTS + list(PL.STRUCTS)
     structs.append(("lighthouse", 14, light[0], light[1], 6.0, 6.0, 20.0))
     structs.append(("signpost_pearl", 17, pois["pearl"]["x"] + 3.0, pois["pearl"]["z"] + 3.0, 1.4, 1.0, 5.0))
     structs.append(("signpost_wreck", 17, pois["wreck"]["x"] + 3.0, pois["wreck"]["z"] + 3.0, 1.4, 1.0, 5.0))
@@ -226,6 +230,12 @@ def build_world():
     ex = (np.abs(CT.X - 16.0) < 19.0 + 0.8 * noise_a) & (CT.Z > CT.PLAZA[1] + 0.8 * noise_a) & (CT.Z < CT.PLAZA[3] + 0.8 * noise_a)
     cls = np.where(ex & land, CT.COBBLE, cls)
     del plz
+    # CP-1: Fish Row is cobbled (floors incl. the apron), the canal banks are quay walls, the lots behind the yard are earth
+    pfloor = np.zeros((N, N), bool)
+    for fx0, fz0, fx1, fz1 in PL.FLOORS:
+        pfloor |= CT.box(fx0, fz0, fx1, fz1)
+    cls = np.where((pfloor | PL_MASKS["apron"] | ndimage.binary_dilation(PL_MASKS["canal"], iterations=2)) & land, CT.COBBLE, cls)
+    cls = np.where(CT.box(-122.0, -46.0, -34.0, -29.0) & land & (cls != CT.COBBLE), CT.EARTH, cls)
     cls = np.where(pathmask & land & (cls != CT.COBBLE), CT.PATH, cls)
     cls = np.where(T.rockmask & (h > 0.03), CT.ROCK, cls)
     # structure footprints: earth under every house, and no vegetation near anything (blue channel 255)
@@ -245,8 +255,10 @@ def build_world():
         solid = not name.startswith(("signpost", "rowboat")) or True
         if solid and not name.startswith("signpost"):
             blockers.append([round(x - w / 2 - 0.3, 2), round(z - d, 2), round(x + w / 2 + 0.3, 2), round(z + 0.4, 2)])
+    blockers.extend(PL.solid_rects())
     clear |= ndimage.binary_dilation(pathmask, iterations=2)
     clear |= CT.box(-34.0, -128.0, 62.0, 8.0)
+    clear |= CT.box(-125.0, -46.0, -1.0, 40.0)
     lk = CT.circle_d(pois["lookout"]["x"], pois["lookout"]["z"]) < 12.0
     cls = np.where(lk & land, CT.HEATH, cls)
     clear |= lk
@@ -311,6 +323,7 @@ def main() -> int:
     Image.fromarray(w["biome"], "RGBA").save(ART / "anvil_cay_biome.png", optimize=True)
     palette_image().save(ART / "anvil_cay_palette.png")
     BH.build_veg_atlas().save(ART / "anvil_veg_atlas.png", optimize=True)
+    PS.build_all(ART)
     CS.build_struct_atlas().save(ART / "anvil_struct_atlas.png", optimize=True)
     CS.build_hero_atlas().save(ART / "anvil_hero_atlas.png", optimize=True)
     # structures, with ground heights
@@ -349,7 +362,7 @@ def main() -> int:
     pois = w["pois"]
     meta = {
         "id": "h2d1_2_anvil_cay", "name": "Anvil Cay (H2D-1.2 prototype, medium island, not a registry island)", "harbor": BH.HARBOR_NAME,
-        "version": 2, "scale_note": "1 scene unit = 1 m = 1 geographic metre",
+        "version": 3, "scale_note": "1 scene unit = 1 m = 1 geographic metre",
         "grid": {"origin_x": X0, "origin_z": Z0, "cells": N, "cell_m": CELL, "size_m": N * CELL},
         "height_enc": {"sea_min": -8.0, "knee": 0.1, "top": CT.H_TOP},
         "files": {"height": "anvil_cay_height.png", "biome": "anvil_cay_biome.png", "palette": "anvil_cay_palette.png"},
@@ -375,13 +388,15 @@ def main() -> int:
             "ship_half_len_m": 11.0, "ship_half_beam_m": 3.1,
         },
         "land": {"explore": CT.EXPLORE, "disembark": {"x": 16.0, "z": 21.0}, "board": {"x": 16.0, "z": 21.0},
-                 "pois": [{"id": k, **pois[k]} for k in ("plaza", "pearl", "lookout", "wreck")]},
+                 "pois": [{"id": k, **pois[k]} for k in ("plaza", "fish_market", "pearl", "lookout", "wreck")]},
         "paths": w["paths"],
         "lamps": lamps, "structures": structs, "props": props, "blockers": w["blockers"],
+        "port": PL.port_json(h, lambda x, z: sample_h(w, x, z)),
     }
     (ART / "anvil_cay.json").write_text(json.dumps(meta, separators=(",", ":")) + "\n")
     names = ["anvil_cay_height.png", "anvil_cay_biome.png", "anvil_cay_palette.png", "anvil_veg_atlas.png", "anvil_struct_atlas.png",
-             "anvil_hero_atlas.png"]
+             "anvil_hero_atlas.png", "port_stall_atlas.png", "port_misc_atlas.png", "port_big_atlas.png", "port_ships_atlas.png",
+             "port_npc_atlas.png"]
     write_import_files(names)
     for old in ("anvil_cay_albedo.png", "anvil_cay_data.png", "anvil_cay_normal.png"):
         for ext in ("", ".import"):
