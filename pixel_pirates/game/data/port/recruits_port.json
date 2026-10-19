@@ -1,5 +1,5 @@
 {
- "note": "CP-1 recruits of Anvil Harbor. Fields mirror the crew_member schema (id, name, age, gender male, role, stats, loyalty_start) so module D can promote them to real crew records; cost and effect are CP-1 economy values (provisional, owner B4/D2). Text placeholders: {cost} {have} {missing}. Hard content rules: male only, no religion, no sexual content.",
+ "note": "CP-1 recruits of Anvil Harbor. Fields mirror the crew_member schema (id, name, age, gender male, role, stats, loyalty_start) so module D can promote them to real crew records; cost and effect are CP-1 economy values (provisional, owner B4/D2). Text placeholders: {cost} {have} {missing}. The Canon content rules apply to every line.",
  "order": ["crew_pip_larkin", "crew_tuck_marrow", "crew_silas_reed", "crew_garrick_stave"],
  "recruits": {
   "crew_pip_larkin": {
@@ -11,7 +11,7 @@
    "backstory": "A rope-maker's son who learned to read the sea from the harbour signal mast. His spyglass was his father's.",
    "notice": "WANTED, a ship: lad with a good eye and a spyglass, at the signal mast. Pip Larkin, asks 18 reales.",
    "pages": [
-    "Cap'n! You're the one with the sloop at the end of the pier, aren't you? I've been watching her come in all week.",
+    "Cap'n! You're the one with the sloop at the end of the pier, aren't you? I've been watching your sloop come in all week.",
     "I can see a gannet dive from this mast at two miles. Put me up your mainmast and I'll call every shoal before the nets are wet.",
     "I'm asking eighteen reales, paid once, and I'm yours. I want a ship under me, not a fortune."
    ],
@@ -42,12 +42,12 @@
   },
   "crew_silas_reed": {
    "name": "Silas Reed", "age": 41, "gender": "male", "role": "cook", "cost": 40, "look": "r_silas",
-   "place": "the kitchen door of the tavern", "place_short": "tavern kitchen door",
+   "place": "the well in the Fish Row market yard", "place_short": "market yard well",
    "stats": {"strength": 5, "endurance": 6, "seamanship": 3, "fighting": 3, "craft": 8}, "loyalty_start": 50,
    "effect": {"type": "spoil_mult", "value": 0.70, "text": "Salts and packs the catch in cold brine: fish spoils 30% slower."},
    "speech_style": "Proud, a little pompous, speaks of food as other men speak of battles.",
    "backstory": "Cooked for three tavern keepers, every one of whom let him go for improving the recipes.",
-   "notice": "COOK seeks a galley, tavern kitchen door. Silas Reed asks 40 reales and a clean pot.",
+   "notice": "COOK seeks a galley, by the well in the market yard. Silas Reed asks 40 reales and a clean pot.",
    "pages": [
     "Do not look at the stew, Captain. Look at me. I am the man who has been improving it.",
     "A crew that eats badly fights badly. And fish, left in a hold in the sun, is a crime. With salt and cold brine I keep a catch sweet a third longer.",
@@ -69,7 +69,7 @@
    "notice": "CARPENTER, boatyard behind the warehouses. Garrick Stave asks 55 reales. Bring tools.",
    "pages": [
     "Don't lean on that. I measured it.",
-    "Thirty years building hulls in the yard until it closed. Your sloop is sound, but she carries fish like a basket carries water.",
+    "Thirty years building hulls in the yard until it closed. Your sloop is sound, but the hold carries fish like a basket carries water.",
     "Give me a week of planks and I'll add a second hold, twenty kilos more. Fifty-five reales. Measure twice, pay once."
    ],
    "offer": "Fifty-five reales for a carpenter who adds twenty kilos to the hold. Sign him?",

@@ -1,3 +1,4 @@
+# gdlint: disable=max-public-methods
 extends RefCounted
 ## CP-1 starting economy: the purse, the fish hold with freshness, the Fish Row market and the hiring of the four recruits.
 ## Pure logic (no scene): tests/test_port.gd replays tests/fixtures/economy_cases.json made by tools/h2d/economy_logic.py,

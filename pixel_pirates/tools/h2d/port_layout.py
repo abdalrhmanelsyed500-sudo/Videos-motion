@@ -51,7 +51,7 @@ PROPS = [
     # --- the warehouse yard (Garrick's boatyard)
     (S, "sacks", -33.0, -10.0, 3.0, 1.4), (S, "handcart", -23.0, -9.0, 3.6, 1.4),
     # --- by the pier landing: the notice board that opens the map
-    (S, "notice_board", 8.0, -2.4, 3.6, 0.8), (S, "lantern_post", 12.0, -4.6, 0.5, 0.5),
+    (S, "notice_board", 13.0, -2.4, 3.6, 0.8), (S, "lantern_post", 9.5, -4.6, 0.5, 0.5),
 ]
 BIG = [  # atlas "big" (192 x 112 px = 13.3 x 7.8 m): type, x, z, footprint w, d, solid
     ("market_canopy", -77.0, -10.0, 0.0, 0.0), ("net_frame", -101.0, 6.8, 11.0, 1.0), ("cargo_pile", -27.0, 15.5, 13.0, 4.0),
@@ -82,10 +82,10 @@ NPCS = [
     ("npc_trader_1", "merchant", -83.6, -15.0, "stand", 0, 0), ("npc_trader_2", "shopkeeper", -70.4, -15.0, "stand", 0, 0),
     ("npc_trader_3", "shopkeeper", -91.0, -22.6, "stand", 0, 0), ("npc_trader_4", "merchant", -97.5, -12.0, "stand", 0, 0),
     ("npc_merchant_1", "merchant", -80.0, -6.5, "wander", 11.0, 0), ("npc_merchant_2", "merchant", -62.0, -24.0, "wander", 6.0, 0),
-    ("npc_docker_1", "docker", -34.0, 4.5, "patrol", 10.0, 3), ("npc_docker_2", "docker", -24.0, 12.0, "wander", 5.0, 0),
+    ("npc_docker_1", "docker", -33.0, 4.5, "patrol", 5.0, 3), ("npc_docker_2", "docker", -17.0, 10.5, "wander", 3.0, 0),
     ("npc_docker_3", "docker", -104.0, 4.6, "patrol", 6.0, 3), ("npc_docker_4", "docker", -56.0, 11.5, "stand", 0, 2),
-    ("npc_sailor_1", "sailor", 29.0, 0.2, "stand", 0, 2), ("npc_sailor_2", "sailor", 24.0, -1.0, "wander", 6.0, 0),
-    ("npc_sailor_3", "sailor", 6.0, 1.0, "wander", 3.0, 3),
+    ("npc_sailor_1", "sailor", 29.0, 0.2, "stand", 0, 2), ("npc_sailor_2", "sailor", 20.5, -5.5, "wander", 4.5, 0),
+    ("npc_sailor_3", "sailor", 3.0, -6.0, "wander", 2.5, 3),
     ("npc_town_1", "townsman", -110.0, 0.0, "wander", 7.0, 3), ("npc_town_2", "townsman", -60.0, 0.4, "wander", 12.0, 3),
     ("npc_town_3", "townsman", -30.0, -1.0, "wander", 8.0, 2), ("npc_town_4", "townsman", -14.0, 0.0, "wander", 6.0, 0),
     ("npc_town_5", "townsman", -86.0, -26.5, "wander", 4.0, 0),
@@ -93,12 +93,12 @@ NPCS = [
 # the recruits: crew id -> look, position, facing. Their cost, role and words are in game/data/port/recruits_port.json.
 RECRUIT_SPOTS = {
     "crew_pip_larkin": ("r_pip", 27.5, -2.4, 2),
-    "crew_silas_reed": ("r_silas", 30.5, -3.4, 0),
+    "crew_silas_reed": ("r_silas", -57.5, -13.8, 0),
     "crew_garrick_stave": ("r_garrick", -26.5, -22.0, 0),
     "crew_tuck_marrow": ("r_tuck", -100.5, 8.6, 3),
 }
 MARKET_POINT = (-77.0, -10.6)       # stand here to talk to the fishmonger (E): in front of the counter
-NOTICE_POINT = (8.0, -0.6)
+NOTICE_POINT = (13.0, 0.2)       # in front of the board, 5 m from the pier landing
 
 # ---- terrain -------------------------------------------------------------------------------------------------------------
 def shore_z(h: np.ndarray, x: float) -> float:
@@ -165,11 +165,13 @@ def solid_rects() -> list[list[float]]:
 
 
 def boat_positions(h: np.ndarray) -> list[dict]:
-    """Moored boats: on the water side of the wharf (z from the shore under their x), the skiffs inside the canal."""
+    """Moored boats: on the water side of the wharf deck (clear of every deck segment under the hull), the skiffs inside the canal."""
+    dk = [d for d in decks(h) if d["kind"] == "wharf"]
     out = []
     for atlas, t, x, z, w, d in BOATS:
         if z == "S":
-            zz = shore_z(h, x) + WHARF_DEPTH_OUT + 0.6 + (d * 0.5 if atlas == "ships" else d * 0.5 + 0.4)
+            z1 = max(k["z1"] for k in dk if k["x1"] > x - w / 2 and k["x0"] < x + w / 2)
+            zz = z1 + 0.6 + (d * 0.5 if atlas == "ships" else d)   # ships: pivot at the hull centre; big boats: pivot at the stern edge, the hull runs z-d..z
         else:
             zz = float(z)
         out.append({"atlas": atlas, "type": t, "x": x, "z": round(zz, 2), "w": w, "d": d})
@@ -243,7 +245,7 @@ def port_json(h: np.ndarray, sample_h) -> dict:
     markers = [
         {"id": "fish_market", "atlas": "misc", "type": PS.MISC_TYPES.index("marker_fish"), "x_m": MARKET_POINT[0], "z_m": MARKET_POINT[1] - 0.2,
          "y_m": round(QUAY_H + 7.6, 2), "scale": 1.0, "bob": 0.18},
-        {"id": "notice_board", "atlas": "misc", "type": PS.MISC_TYPES.index("marker_notice"), "x_m": 8.0, "z_m": -2.4,
+        {"id": "notice_board", "atlas": "misc", "type": PS.MISC_TYPES.index("marker_notice"), "x_m": NOTICE_POINT[0], "z_m": -2.6,
          "y_m": round(QUAY_H + 3.3, 2), "scale": 1.0, "bob": 0.14},
     ]
     return {

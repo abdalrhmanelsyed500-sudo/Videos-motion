@@ -29,6 +29,7 @@ const EnvModel := preload("res://h2d/env_model.gd")
 const HelmHud := preload("res://h2d/helm_hud.gd")
 const Harbor := preload("res://h2d/harbor.gd")
 const LandWalker := preload("res://h2d/land_walker.gd")
+const PortGame := preload("res://h2d/port_game.gd")
 const MAX_STEP_S := 0.25
 const SMOOTH_S := 2.0
 const START_POS := Vector2(-100.0, 140.0)  ## keep in step with START in tools/h2d/check_harbor.py
@@ -74,6 +75,7 @@ var _helm_hud: HelmHud
 var _harbor: Harbor = Harbor.new()
 var _moor := 0.0
 var _walker: LandWalker = LandWalker.new()
+var _port: Node = null  ## CP-1: the Fish Row loop (economy, nets, people, map, dialogue)
 var _edge_said := -100.0
 var _tp_next := 0
 var _tod := 0
@@ -138,6 +140,9 @@ func _ready() -> void:
 	_walker.configure((_v3 as View3D).land_world().meta["land"], _oc.tuning())
 	(_v3 as View3D).land_world().walk_min_h = _walker.param("min_h")
 	(_v3 as View3D).land_world().walk_max_slope = _walker.param("max_slope")
+	_port = PortGame.new()
+	add_child(_port)
+	(_port as PortGame).setup(layer, (_v3 as View3D).land_world(), _oc.tuning(), _port_pause)
 	_jump(2)
 	_reset_ship()
 	_set_path("3d")
@@ -210,6 +215,10 @@ func _process(delta: float) -> void:
 	_step_env(dt)
 	_land_step(dt, gs)
 	var target_kn: float = _sea.speed_kn() * (1.0 + _env.gust_surge())
+	if _port != null:
+		(_port as PortGame).step(dt, _port_ctx())
+		if (_port as PortGame).nets_down():
+			target_kn = 0.0  # the nets drag: the sloop stops while they are down (CP-1)
 	var speed_scene := 0.0
 	if _harbor.state == Harbor.SAILING:
 		speed_scene = _sail_step(dt, gs, t0, target_kn)
@@ -304,6 +313,21 @@ func _dock_request() -> void:
 			_say("Too far from the berth: sail into the harbour mouth (between the buoys) first.")
 
 
+# ---- CP-1: the Fish Row loop -----------------------------------------------------------------------------------
+func _port_pause(on: bool) -> void:
+	if on:
+		_state.clock.pause("port")
+	else:
+		_state.clock.resume("port")
+
+
+## What the port controller needs to know about the world this frame.
+func _port_ctx() -> Dictionary:
+	return {"ashore": _walker.is_ashore(), "wx": _walker.x, "wz": _walker.z, "sx": _pos.x, "sz": _pos.y, "sheading": _heading_disp,
+			"speed_kn": _helm.speed_kn, "hour": _hour, "now": float(_state.clock.t) / 86400.0, "sea": _env.sea,
+			"docked": _harbor.state == Harbor.DOCKED, "sailing": _harbor.state == Harbor.SAILING}
+
+
 # ---- H2D-1.2: on foot -------------------------------------------------------------------------------------------
 func _land_view_state() -> Dictionary:
 	return {"ashore": _walker.is_ashore(), "x": _walker.x, "z": _walker.z, "row": _walker.row, "frame": _walker.frame,
@@ -312,6 +336,8 @@ func _land_view_state() -> Dictionary:
 
 func _walk_axis() -> Vector2:
 	var a := Vector2.ZERO
+	if _port != null and (_port as PortGame).modal():
+		return a
 	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
 		a.x -= 1.0
 	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
@@ -393,6 +419,8 @@ func _steer_axis() -> float:
 	if _bench != null and (_bench as Bench).active:
 		return 0.55 * sin(_real * 0.9)
 	var axis := 0.0
+	if _port != null and (_port as PortGame).modal():
+		return axis
 	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
 		axis -= 1.0
 	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
@@ -500,6 +528,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var v3 := _v3 as View3D
 	var ashore := _walker.is_ashore()
+	if _port != null and (_port as PortGame).handle_key(k, _port_ctx()):
+		return  # CP-1 keys: E interact, F nets (at sea), M map, Y/N, Enter, Tab and Esc inside a panel, F6/F7 test helpers
 	if k.keycode == KEY_F:
 		_land_toggle()
 	elif k.keycode == KEY_T:
@@ -772,9 +802,9 @@ func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 	if _real < _banner_until:
 		lines.append(_banner)
 	if _walker.is_ashore():
-		lines.append("WASD / arrows walk  Shift run  F board (at pier)  T next stop  Tab weather  N time  P pause")
+		lines.append("WASD walk  Shift run  E talk / sell / read  M map  F board (at pier)  T next stop  N time  P pause   F6/F7 test money/fish")
 	else:
-		lines.append("A/D steer  SPACE dock/cast off  F ashore (moored)  N time  Z/X turn  W/Tab weather  G gust  R reset")
+		lines.append("A/D steer  F nets (on a fishing ground)  M map  SPACE dock/cast off  F ashore (moored)  Z/X turn  Shift+M motion  W/Tab weather  R reset")
 	_hud.text = "\n".join(PackedStringArray(lines))
 
 

@@ -1,3 +1,4 @@
+# gdlint: disable=max-public-methods
 extends RefCounted
 ## H2D-1.2 Anvil Cay as a world object: the baked maps (height, biome, palette), the ground patch that follows the
 ## camera,
@@ -16,6 +17,7 @@ const CLIFF_CLASS := 6
 const SAND_CLASS := 1
 
 var meta: Dictionary = {}
+var port: Dictionary = {}   # the "port" section of anvil_cay.json (CP-1 Fish Row)
 var n := 0
 var cell := 2.0
 var ox := 0.0
@@ -45,8 +47,7 @@ var _blob: MeshInstance3D
 var _chunks: Dictionary = {}
 var _chunk_m := 200.0
 var _active := false
-# CP-1 Fish Row (the "port" section of anvil_cay.json): decks and bridges, props, boats, NPC sprites, markers
-var port: Dictionary = {}
+# CP-1 Fish Row: decks, bridges, props, boats, NPC sprites and markers
 var _decks: Array = []
 var _deck_mat: ShaderMaterial
 var _zoom_mats: Array = []          # sprite materials drawn at the on-foot scale (14.4 px per metre)
@@ -457,6 +458,7 @@ func in_blocker(x: float, z: float, r: float) -> bool:
 ## May a person with a 0.45 m body radius stand at (x, z)? The rules are in docs/H2D1_2_SCALE_AND_LAND.md and are
 ## mirrored
 ## by tools/h2d/check_land.py (which checks the on-foot route statically).
+# gdlint: disable=max-returns
 func walkable(x: float, z: float, r: float = 0.45) -> bool:
 	if on_pier(x, z):
 		return true
@@ -472,6 +474,7 @@ func walkable(x: float, z: float, r: float = 0.45) -> bool:
 	if slope_at(x, z) > walk_max_slope:
 		return false
 	return not in_blocker(x, z, r)
+# gdlint: enable=max-returns
 
 
 # ---- CP-1 Fish Row: decks, bridges, people, markers -----------------------------------------------------------------
@@ -589,12 +592,12 @@ func set_npcs(people: Array) -> void:
 			mm.set_instance_custom_data(i, Color(0.0, 0.0, 0.0, 0.0))
 			bb.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(0.0, -50.0, 0.0)))
 			continue
-		var n := people[i] as Dictionary
-		var x := float(n["x"])
-		var z := float(n["z"])
+		var pe := people[i] as Dictionary
+		var x := float(pe["x"])
+		var z := float(pe["z"])
 		var y := ground_y(x, z)
 		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(x, y, z)))
-		mm.set_instance_custom_data(i, Color(float(int(n["look"]) * 16 + int(n["row"]) * 4 + int(n["frame"])), 1.0, 0.0, 0.0))
+		mm.set_instance_custom_data(i, Color(float(int(pe["look"]) * 16 + int(pe["row"]) * 4 + int(pe["frame"])), 1.0, 0.0, 0.0))
 		bb.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(x, y + 0.06, z)))
 		bb.set_instance_custom_data(i, Color(0.0, 0.0, 0.0, 0.0))
 

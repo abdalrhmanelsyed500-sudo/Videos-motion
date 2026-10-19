@@ -773,9 +773,26 @@ def big_atlas() -> Image.Image:
     return grid_atlas(cells, BW, BHT, 4, 2)
 
 
+def reduce_colours(im: Image.Image, cap: int) -> Image.Image:
+    """Merge the least-used opaque colours into their nearest neighbour until the atlas has at most `cap` (palette.json limit)."""
+    a = np.array(im.convert("RGBA"))
+    op = a[..., 3] >= 128
+    while True:
+        cols, counts = np.unique(a[op][:, :3], axis=0, return_counts=True)
+        if len(cols) <= cap:
+            break
+        i = int(np.argmin(counts))
+        d = np.abs(cols.astype(int) - cols[i].astype(int)).sum(axis=1)
+        d[i] = 10 ** 6
+        j = int(np.argmin(d))
+        m = op & (a[..., :3] == cols[i]).all(axis=-1)
+        a[m, :3] = cols[j]
+    return Image.fromarray(a, "RGBA")
+
+
 def build_all(out_dir: Path = ART) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
-    sheets = {"port_stall_atlas.png": stall_atlas(), "port_misc_atlas.png": misc_atlas(), "port_big_atlas.png": big_atlas(),
+    sheets = {"port_stall_atlas.png": reduce_colours(stall_atlas(), 32), "port_misc_atlas.png": misc_atlas(), "port_big_atlas.png": big_atlas(),
               "port_ships_atlas.png": ships_atlas(), "port_npc_atlas.png": npc_atlas()}
     for name, im in sheets.items():
         im.save(out_dir / name, optimize=True)
@@ -796,4 +813,5 @@ def preview(out: Path) -> None:
 
 
 if __name__ == "__main__":
+    build_all()          # writes the five atlases into game/h2d/art
     preview(Path(__file__).resolve().parents[2] / "art_bible/cp1")

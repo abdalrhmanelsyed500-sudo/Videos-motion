@@ -167,12 +167,40 @@ def check_island() -> None:
     check_atlas("anvil_hero_atlas.png", 24, 32, props, owner, "hero atlas", top_ok=True)   # the 30 px pirate has a closed outline on row 0
 
 
+def check_port_atlases() -> None:
+    """CP-1 Fish Row atlases: size is a whole number of cells, no cell content touches its border (a sprite must not be clipped),
+    and the colour caps hold (props <= 32, characters <= 48 from palette.json limits; ships follow the ship sheets: 48)."""
+    _owner, limits = palette()
+    caps = limits["max_colours_per_sheet"]
+    spec = [("port_stall_atlas.png", 64, 64, caps["props"]), ("port_misc_atlas.png", 64, 64, caps["props"]),
+            ("port_big_atlas.png", 192, 112, caps["props"]), ("port_ships_atlas.png", 112, 112, caps.get("characters", 48)),
+            ("port_npc_atlas.png", 24, 32, caps.get("characters", 48))]
+    for name, cw, ch, cap in spec:
+        atlas = load(name)
+        tc = colours(atlas)
+        if len(tc) > cap:
+            fail(f"{name}: {len(tc)} colours > cap {cap}")
+        if atlas.shape[1] % cw or atlas.shape[0] % ch:
+            fail(f"{name}: size {atlas.shape[1]}x{atlas.shape[0]} is not a multiple of {cw}x{ch}")
+            continue
+        clipped = []
+        for r in range(atlas.shape[0] // ch):
+            for c in range(atlas.shape[1] // cw):
+                cell = atlas[r * ch:(r + 1) * ch, c * cw:(c + 1) * cw, 3] >= 128
+                if cell.any() and (cell[-1].any() or cell[:, 0].any() or cell[:, -1].any() or (cell[0].any() and name != "port_npc_atlas.png")):   # people bob up 1 px: row 0 is allowed, like the hero
+                    clipped.append((c, r))
+        if clipped:
+            fail(f"{name}: cells touching their border (clipped sprite): {clipped[:6]}")
+        print(f"{name}: {len(tc)} colours (cap {cap}), {atlas.shape[1]}x{atlas.shape[0]}")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--sheet", action="store_true")
     a = ap.parse_args()
     check_ship(a.sheet)
     check_island()
+    check_port_atlases()
     for w in warnings:
         print("WARN", w)
     for e in errors:

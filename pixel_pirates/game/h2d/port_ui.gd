@@ -359,7 +359,7 @@ func _draw_map(vs: Vector2) -> void:
 	var pl := d.get("player", Vector2.ZERO) as Vector2
 	if bool(d.get("ashore", false)):
 		var pp2 := m.call(pl.x, pl.y) as Vector2
-		_glyph_player(pp2, float(d.get("player_heading", 0.0)))
+		_glyph_player(pp2)
 		_txt(pp2 + Vector2(12.0, -10.0), "you", 15, Color(1, 1, 1))
 	elif tab == 1:
 		_glyph_ship(m.call(ship.x, ship.y) as Vector2, float(d.get("ship_heading", 0.0)), 1.0, Color(1, 1, 1), "your ship")
@@ -437,7 +437,7 @@ func _glyph_ship(p: Vector2, heading_deg: float, scale: float, col: Color, label
 		_txt(p + Vector2(s * 0.9 + 6.0, 5.0), label, 15, CREAM)
 
 
-func _glyph_player(p: Vector2, heading_deg: float) -> void:
+func _glyph_player(p: Vector2) -> void:
 	var pulse := 1.0 + 0.12 * sin(_t * 5.0)
 	draw_circle(p, 9.0 * pulse, Color(1, 1, 1, 0.35))
 	draw_circle(p, 5.5, Color(1.0, 1.0, 1.0))

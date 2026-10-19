@@ -85,7 +85,7 @@ func step(dt: float, ctx: Dictionary) -> void:
 			var evs := fishing.step(dt, {"x": ctx["sx"], "z": ctx["sz"], "speed_kn": ctx["speed_kn"]}, float(ctx["hour"]), float(ctx["sea"]), state, float(ctx["now"]))
 			for e in evs:
 				_on_fishing_event(e as Dictionary)
-	_check_warnings(float(ctx["now"]))
+	_check_warnings()
 	_near = _find_near(ctx)
 	_update_markers(false)
 	_update_hud(ctx)
@@ -108,7 +108,7 @@ func _on_fishing_event(e: Dictionary) -> void:
 		ui.toast(str(e["text"]), PortUi.GOLD, 7.0)
 
 
-func _check_warnings(now: float) -> void:
+func _check_warnings() -> void:
 	var near_full := state.hold_frac() >= float(_tuning.get("port.hold_warn_frac", 0.85))
 	if near_full and not _hold_warned:
 		_hold_warned = true
@@ -165,6 +165,7 @@ func _update_hud(ctx: Dictionary) -> void:
 
 
 # ---- objective ---------------------------------------------------------------------------------------------------------
+# gdlint: disable=max-returns
 func objective(ctx: Dictionary) -> String:
 	var unh := state.unhired()
 	if unh.is_empty():
@@ -188,6 +189,7 @@ func objective(ctx: Dictionary) -> String:
 	if bool(ctx["ashore"]):
 		return "Earn %d more reales for %s (%d). Board the ship (F at the pier), sail to a fishing ground and cast the nets." % [need, str(rec["name"]), int(rec["cost"])]
 	return "Earn %d more reales for %s, the %s (%d). Fish a ground (M for the chart), return and sell." % [need, str(rec["name"]), str(rec["role"]), int(rec["cost"])]
+# gdlint: enable=max-returns
 
 
 # ---- markers ---------------------------------------------------------------------------------------------------------
@@ -222,27 +224,31 @@ func handle_key(k: InputEventKey, ctx: Dictionary) -> bool:
 	if not enabled:
 		return false
 	var key := k.keycode
-	# test helpers (always available)
-	if key == KEY_F6:
-		state.reales += 25
-		ui.toast("TEST: +25 reales (purse %d)" % state.reales, Color(1.0, 0.6, 1.0))
-		return true
-	if key == KEY_F7:
-		var put := state.add_catch("spc_mackerel", 10.0, float(ctx["now"]))
-		ui.toast("TEST: +%.1f kg mackerel in the hold" % put, Color(1.0, 0.6, 1.0))
+	if key == KEY_F6 or key == KEY_F7:
+		_test_key(key, ctx)
 		return true
 	if _mode != "none":
 		return _modal_key(k, ctx)
+	var used := true
 	if key == KEY_M and not k.shift_pressed:
 		_open_map(0 if bool(ctx["ashore"]) else (1 if not bool(ctx["docked"]) else 0), ctx)
-		return true
-	if key == KEY_E and bool(ctx["ashore"]):
+	elif key == KEY_E and bool(ctx["ashore"]):
 		_interact(ctx)
-		return true
-	if key == KEY_F and bool(ctx["sailing"]) and not bool(ctx["ashore"]):
+	elif key == KEY_F and bool(ctx["sailing"]) and not bool(ctx["ashore"]):
 		_toggle_nets(ctx)
-		return true
-	return false
+	else:
+		used = false
+	return used
+
+
+## F6 / F7: test helpers so the selling and hiring can be tried without an hour of fishing.
+func _test_key(key: int, ctx: Dictionary) -> void:
+	if key == KEY_F6:
+		state.reales += 25
+		ui.toast("TEST: +25 reales (purse %d)" % state.reales, Color(1.0, 0.6, 1.0))
+	else:
+		var put := state.add_catch("spc_mackerel", 10.0, float(ctx["now"]))
+		ui.toast("TEST: +%.1f kg mackerel in the hold" % put, Color(1.0, 0.6, 1.0))
 
 
 func _modal_key(k: InputEventKey, ctx: Dictionary) -> bool:
@@ -251,7 +257,7 @@ func _modal_key(k: InputEventKey, ctx: Dictionary) -> bool:
 		return false
 	match _mode:
 		"dialogue":
-			_dialogue_key(key, ctx)
+			_dialogue_key(key)
 		"market":
 			_market_key(key, ctx)
 		"map":
@@ -394,7 +400,7 @@ func _refresh_dialogue() -> void:
 	ui.panel = d
 
 
-func _dialogue_key(key: int, ctx: Dictionary) -> void:
+func _dialogue_key(key: int) -> void:
 	var stage := str(_dlg.get("stage", ""))
 	if key == KEY_ESCAPE:
 		_close()

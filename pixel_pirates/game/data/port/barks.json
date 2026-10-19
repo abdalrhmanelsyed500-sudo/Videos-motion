@@ -1,5 +1,5 @@
 {
- "note": "CP-1 street talk of Fish Row: a line is picked by group and by what the player has done (key: any, no_fish, has_fish, poor, crew). All speakers are men; no religious wording.",
+ "note": "CP-1 street talk of Fish Row: a line is picked by group and by what the player has done (key: any, no_fish, has_fish, poor, crew). All speakers are men; the Canon content rules apply to every line.",
  "fisher": {
   "any": ["Mackerel were thick at Gannet Bank this morning. Follow the birds.", "Nets, nets, nets. The sea gives and the sea takes, and my back remembers both.", "Dawn and dusk, friend. Fish bite when the light is thin."],
   "no_fish": ["That sloop of yours wants nets. The Pilchard Shallows are an easy sail south-west."],
