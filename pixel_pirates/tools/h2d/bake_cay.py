@@ -28,6 +28,9 @@ import bake_harbor as BH  # noqa: E402
 import bake_island as BI  # noqa: E402
 import cay_sprites as CS  # noqa: E402
 import cay_terrain as CT  # noqa: E402
+import city_export as CE  # noqa: E402
+import city_layout as CY  # noqa: E402
+import city_map as CM  # noqa: E402
 import port_layout as PL  # noqa: E402
 import port_sprites as PS  # noqa: E402
 
@@ -49,6 +52,10 @@ CLASS_LOOK = {
     CT.EARTH: ("dirt", 2.1, 1.1, "pebbles", ("grass", 2), ("dirt", 4)),
     CT.MARSH: ("foliage", 1.7, 1.0, "tufts", ("lagoon", 1), ("foliage", 0)),
     CT.HEATH: ("grass", 1.0, 1.4, "tufts", ("dirt", 3), ("grass", 4)),
+    CY.SLABS: ("stone_warm", 2.9, 0.7, "cobbles", ("stone_warm", 4), ("stone_warm", 2)),
+    CY.PAVER: ("cloth_red", 1.3, 0.8, "cobbles", ("dirt", 2), ("cloth_red", 3)),
+    CY.STEPS: ("stone_warm", 3.0, 0.5, "strata", ("stone_warm", 4), ("stone_warm", 1)),
+    CY.WALLC: ("stone_warm", 1.2, 0.9, "strata", ("stone_warm", 2), ("stone_warm", 0)),
 }
 
 # vegetation: veg atlas cell indices (BH.V_TYPES): palm_a 0, palm_b 1, jungle_a 2, jungle_b 3, bush 4, rock_a 5, rock_b 6,
@@ -82,6 +89,14 @@ VILLAGE_STRUCTS = [
     ("lantern_v3", 8, 13.2, -96.0, 1.0, 0.8, 4.4),
 ]
 EXTRA_LAMPS = ("lantern_v1", "lantern_v2", "lantern_v3")   # not added to the six lamp uniforms: they glow as sprites only
+
+
+# the roads out of the capital: from the two gates in the north wall
+CITY_PATHS = {
+    "lookout_road": [(120, -274), (104, -320), (128, -420), (146, -520), (150, -575)],
+    "pearl_track": [(128, -276), (200, -262), (290, -235), (350, -232)],
+    "wreck_track": [(-110, -274), (-170, -262), (-230, -240), (-262, -226)],
+}
 
 
 def cell_of(x, z):
@@ -121,7 +136,7 @@ def build_world():
     light = (float(CT.XS[ix[k]]), float(CT.ZS[iz[k]]))
 
     # ---- paths: wobbly polylines painted 3.2 m wide ---------------------------------------------------------------------
-    paths = {k: [tuple(p) for p in v] for k, v in CT.PATHS.items()}
+    paths = {k: [tuple(p) for p in v] for k, v in CITY_PATHS.items()}
     paths["pearl_track"][-1] = (pois["pearl"]["x"], pois["pearl"]["z"])
     paths["wreck_track"][-1] = (pois["wreck"]["x"], pois["wreck"]["z"])
     paths["lookout_road"][-1] = (pois["lookout"]["x"], pois["lookout"]["z"])
@@ -149,7 +164,9 @@ def build_world():
     pathmask |= CT.box(*CT.STREET)
 
     # ---- pads under structures and a gently smoothed terrain along the paths -----------------------------------------
-    structs = [s_ for s_ in BH.STRUCTS if s_[0] not in PL.REMOVE_STRUCTS] + VILLAGE_STRUCTS + list(PL.STRUCTS)
+    # the old harbour houses are gone (the capital's buildings come from the city plan); piles, bollards, lamps, buoys, props stay
+    structs = [s_ for s_ in BH.STRUCTS if not s_[0].startswith(("warehouse", "tavern", "harbourmaster", "fisher_hut"))]
+    structs += [s_ for s_ in VILLAGE_STRUCTS if s_[0].startswith("lantern")]
     structs.append(("lighthouse", 14, light[0], light[1], 6.0, 6.0, 20.0))
     structs.append(("signpost_pearl", 17, pois["pearl"]["x"] + 3.0, pois["pearl"]["z"] + 3.0, 1.4, 1.0, 5.0))
     structs.append(("signpost_wreck", 17, pois["wreck"]["x"] + 3.0, pois["wreck"]["z"] + 3.0, 1.4, 1.0, 5.0))
@@ -193,6 +210,8 @@ def build_world():
     pm2 = ndimage.gaussian_filter(pm2.astype(np.float32), 1.5)
     h = np.where(T.mask, h * (1 - 0.8 * pm2) + hs * 0.8 * pm2, h)
     h = np.where(T.mask & (T.h > 0), np.maximum(h, 0.15), h)
+    CE.small_sizes()
+    h = CY.shape(h, T)
 
     # ---- classes ------------------------------------------------------------------------------------------------------
     gz, gx = np.gradient(h, CELL)
@@ -238,6 +257,8 @@ def build_world():
     cls = np.where(CT.box(-122.0, -46.0, -34.0, -29.0) & land & (cls != CT.COBBLE), CT.EARTH, cls)
     cls = np.where(pathmask & land & (cls != CT.COBBLE), CT.PATH, cls)
     cls = np.where(T.rockmask & (h > 0.03), CT.ROCK, cls)
+    cls = CY.paint(cls, land & (h > 0.02), h)
+    city = CY.plan(h, cls, land & (h > 0.02), np.random.RandomState(7))
     # structure footprints: earth under every house, and no vegetation near anything (blue channel 255)
     clear = np.zeros((N, N), bool)
     blockers = []
@@ -256,6 +277,8 @@ def build_world():
         if solid and not name.startswith("signpost"):
             blockers.append([round(x - w / 2 - 0.3, 2), round(z - d, 2), round(x + w / 2 + 0.3, 2), round(z + 0.4, 2)])
     blockers.extend(PL.solid_rects())
+    blockers.extend(CE.blockers(city))
+    clear |= CT.box(*CY.CLEAR_BOX)
     clear |= ndimage.binary_dilation(pathmask, iterations=2)
     clear |= CT.box(-34.0, -128.0, 62.0, 8.0)
     clear |= CT.box(-125.0, -46.0, -1.0, 40.0)
@@ -283,6 +306,7 @@ def build_world():
         iz, ix = cell_of(x, z - d * 0.5)
         base = float(h[iz, ix]) if not (CT.PIER["x0"] - 0.2 <= x <= CT.PIER["x1"] + 0.2) else CT.PIER_H
         occ = np.where(m, np.maximum(occ, base + hh), occ)
+    occ = CE.occluders(city, occ, h, cell_of)
     pm = CT.pier_mask()
     occ = np.where(pm, np.maximum(occ, CT.PIER_H), occ)
     heightpng = np.zeros((N, N, 4), np.uint8)
@@ -291,7 +315,7 @@ def build_world():
     heightpng[..., 2] = np.clip(T.d_out / 64.0 * 255.0, 0, 255).astype(np.uint8)
     heightpng[..., 3] = 255
     return dict(T=T, h=h, cls=cls, f=f, slope=slope, pois=pois, paths=path_pts, structs=structs, blockers=blockers, light=light,
-                biome=biome, heightpng=heightpng, rs=rs)
+                biome=biome, heightpng=heightpng, rs=rs, city=city)
 
 
 def palette_image() -> Image.Image:
@@ -324,6 +348,8 @@ def main() -> int:
     palette_image().save(ART / "anvil_cay_palette.png")
     BH.build_veg_atlas().save(ART / "anvil_veg_atlas.png", optimize=True)
     PS.build_all(ART)
+    catl = CE.build_atlases(ART)
+    city = w["city"]
     CS.build_struct_atlas().save(ART / "anvil_struct_atlas.png", optimize=True)
     CS.build_hero_atlas().save(ART / "anvil_hero_atlas.png", optimize=True)
     # structures, with ground heights
@@ -360,6 +386,21 @@ def main() -> int:
     lamp_names = BH.LAMP_NAMES
     lamps = [{"name": s["name"], "x_m": s["x_m"], "z_m": s["z_m"], "y_m": round(s["y_m"] + 3.4, 2)} for s in structs if s["name"] in lamp_names]
     pois = w["pois"]
+    port = PL.port_json(h, lambda x, z: sample_h(w, x, z))
+    lists = CE.sprite_lists(city, catl, lambda x, z: sample_h(w, x, z))
+    port["atlases"].update(catl)
+    port["props"] = list(port["props"]) + lists.pop("stall")
+    port["city"] = {"lists": lists, "trees": CE.trees(city, lambda x, z: sample_h(w, x, z))}
+    port["npcs"] = list(port["npcs"]) + CE.npc_records(city)
+    port["places"] = city.places
+    port["spots"] = {k: list(v) for k, v in city.spots.items()}
+    port["name"] = "Anvil Harbor"
+    w2 = dict(w)
+    w2["port_map"] = port["map"]
+    CM.city_map(w2, city, ART)
+    CM.island_map(w2, ART)
+    CM.sea_map(w2, ART)
+    port["map"]["views"] = [CM.CITY_VIEW, CM.ISLAND_VIEW, CM.SEA_VIEW]
     meta = {
         "id": "h2d1_2_anvil_cay", "name": "Anvil Cay (H2D-1.2 prototype, medium island, not a registry island)", "harbor": BH.HARBOR_NAME,
         "version": 3, "scale_note": "1 scene unit = 1 m = 1 geographic metre",
@@ -391,12 +432,13 @@ def main() -> int:
                  "pois": [{"id": k, **pois[k]} for k in ("plaza", "fish_market", "pearl", "lookout", "wreck")]},
         "paths": w["paths"],
         "lamps": lamps, "structures": structs, "props": props, "blockers": w["blockers"],
-        "port": PL.port_json(h, lambda x, z: sample_h(w, x, z)),
+        "port": port,
     }
     (ART / "anvil_cay.json").write_text(json.dumps(meta, separators=(",", ":")) + "\n")
     names = ["anvil_cay_height.png", "anvil_cay_biome.png", "anvil_cay_palette.png", "anvil_veg_atlas.png", "anvil_struct_atlas.png",
              "anvil_hero_atlas.png", "port_stall_atlas.png", "port_misc_atlas.png", "port_big_atlas.png", "port_ships_atlas.png",
-             "port_npc_atlas.png"]
+             "port_npc_atlas.png", "city_small_atlas.png", "city_grand_atlas.png", "city_civic_atlas.png",
+             "city_props_atlas.png", "map_city.png", "map_island.png", "map_sea.png"]
     write_import_files(names)
     for old in ("anvil_cay_albedo.png", "anvil_cay_data.png", "anvil_cay_normal.png"):
         for ext in ("", ".import"):

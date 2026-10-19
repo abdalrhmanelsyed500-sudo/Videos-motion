@@ -246,7 +246,7 @@ def plan(h, cls, land, rs) -> City:
         city.forbid((x0, -272.0, x1, 12.0))
     for x0, z0, x1, z1 in PLAZAS.values():
         city.forbid((x0, z0, x1, z1))
-    city.forbid(FISH_ROW)
+    city.forbid((FISH_ROW[0], -28.0, FISH_ROW[2], FISH_ROW[3]))    # Fish Row proper (the cottages behind it are placed by the plan)
     city.forbid(CANAL_BOX)
     city.forbid((-36.0, -30.0, -19.0, -4.0))                    # Garrick's boatyard
     city.forbid((-10.0, 4.0, 40.0, 60.0))                       # the pier and the cove mouth
@@ -488,6 +488,7 @@ def plan(h, cls, land, rs) -> City:
     if yard:
         spots["yard_door"] = (yard.x, yard.z + 1.4, 0)
     city.yard, city.fort, city.tav = yard, fort, tav
+    city.people = people(city)
     return city
 
 

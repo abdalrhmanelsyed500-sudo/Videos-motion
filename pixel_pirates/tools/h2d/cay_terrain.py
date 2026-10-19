@@ -31,7 +31,7 @@ Z = ZS[:, None]
 # class ids (biome map red channel = id * 16)
 SAND, DUNE, MEADOW, FOREST, ROCK, CLIFF, PATH, COBBLE, EARTH, MARSH, HEATH = range(1, 12)
 CLASS_NAMES = {1: "sand", 2: "dune scrub", 3: "meadow", 4: "forest floor", 5: "rock", 6: "cliff", 7: "path", 8: "cobbles",
-               9: "village earth", 10: "marsh", 11: "heath"}
+               9: "village earth", 10: "marsh", 11: "heath", 12: "slabs", 13: "paver", 14: "steps", 15: "retaining wall"}
 
 
 def soft(a, lo, hi):
