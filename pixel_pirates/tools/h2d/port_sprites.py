@@ -576,6 +576,31 @@ LOOKS = {
                       bare_arms=True, carry="hammer"),
     "r_pip": dict(skin="skin_light", hair=("fire", 2), coat=("cloth_red", 2, 3, 1), shirt=("cloth_cream", 4), pants=("cloth_blue", 2, 1),
                   boots=("wood", 1), hat="floppy", hatc=("cloth_blue", 2, 3, 1), beard=False, belt=("wood", 2), carry="glass", slim=True),
+    # CP-1 revision: the capital's other people
+    "guard": dict(skin="skin_tan", hair=("iron", 1), coat=("cloth_blue", 2, 3, 1), shirt=("cloth_cream", 3), pants=("cloth_cream", 3, 2),
+                  boots=("wood", 1), hat="helmet", hatc=("iron", 3, 4, 2), beard=False, belt=("wood", 2), trim=("gold", 3), stripes=("cloth_cream", 4), carry="pike"),
+    "noble": dict(skin="skin_light", hair=("cloth_cream", 3), coat=("cloth_blue", 3, 4, 2), shirt=("cloth_cream", 4), pants=("cloth_cream", 4, 3),
+                  boots=("iron", 1), hat="tricorn", hatc=("iron", 1, 2, 0), beard=False, belt=("gold", 3), trim=("gold", 4)),
+    "tavernkeeper": dict(skin="skin_tan", hair=("dirt", 2), coat=("cloth_cream", 3, 4, 2), shirt=("cloth_cream", 4), pants=("dirt", 1, 0),
+                         boots=("wood", 1), hat="none", hatc=("dirt", 3, 4, 2), beard=True, belt=("wood", 2), apron=True, apron_c=("cloth_red", 3, 2), wide=True, carry="glass"),
+    "clerk": dict(skin="skin_light", hair=("dirt", 1), coat=("iron", 2, 3, 1), shirt=("cloth_cream", 4), pants=("iron", 1, 0),
+                  boots=("wood", 1), hat="brim", hatc=("iron", 2, 3, 1), beard=False, belt=("wood", 2), slim=True, carry="glass"),
+    "captain": dict(skin="skin_tan", hair=("iron", 2), coat=("cloth_red", 2, 3, 1), shirt=("cloth_cream", 4), pants=("cloth_cream", 3, 2),
+                    boots=("wood", 1), hat="bicorne", hatc=("cloth_blue", 1, 2, 0), beard=True, belt=("gold", 3), trim=("gold", 4)),
+    "townsman_b": dict(skin="skin_light", hair=("fire", 1), coat=("dirt", 3, 4, 2), shirt=("cloth_cream", 3), pants=("iron", 1, 0),
+                       boots=("wood", 1), hat="cap", hatc=("cloth_blue", 2, 3, 1), beard=False, belt=("wood", 2)),
+    "townsman_c": dict(skin="skin_dark", hair=("iron", 1), coat=("cloth_cream", 3, 4, 2), shirt=("cloth_red", 3), pants=("dirt", 2, 1),
+                       boots=("wood", 1), hat="none", hatc=("dirt", 3, 4, 2), beard=True, belt=("wood", 2), wide=True),
+    "merchant_b": dict(skin="skin_tan", hair=("cloth_cream", 2), coat=("cloth_blue", 2, 3, 1), shirt=("cloth_cream", 4), pants=("iron", 1, 0),
+                       boots=("wood", 1), hat="brim", hatc=("iron", 1, 2, 0), beard=True, belt=("gold", 3), trim=("gold", 4)),
+    "sailor_b": dict(skin="skin_light", hair=("dirt", 2), coat=("cloth_blue", 3, 4, 2), shirt=("cloth_cream", 4), pants=("dirt", 2, 1),
+                     boots=("wood", 1), hat="cap", hatc=("cloth_blue", 1, 2, 0), beard=False, belt=("wood", 2), stripes=("cloth_cream", 4)),
+    "docker_b": dict(skin="skin_dark", hair=("iron", 1), coat=("cloth_cream", 2, 3, 1), shirt=("cloth_cream", 3), pants=("dirt", 2, 1),
+                     boots=("wood", 1), hat="none", hatc=("dirt", 3, 4, 2), beard=False, belt=("wood", 2), bare_arms=True, wide=True),
+    "fisher_b": dict(skin="skin_light", hair=("cloth_cream", 3), coat=("cloth_blue", 2, 3, 1), shirt=("cloth_cream", 3), pants=("dirt", 2, 1),
+                     boots=("wood", 1), hat="sou", hatc=("cloth_blue", 2, 3, 1), beard=True, belt=("wood", 2)),
+    "shopkeeper_b": dict(skin="skin_tan", hair=("dirt", 1), coat=("cloth_red", 3, 4, 2), shirt=("cloth_cream", 4), pants=("dirt", 2, 1),
+                         boots=("wood", 1), hat="cap", hatc=("cloth_cream", 3, 4, 2), beard=False, belt=("wood", 2), apron=True),
 }
 LOOK_ORDER = list(LOOKS.keys())
 
@@ -645,6 +670,9 @@ def _look_frame(look: dict, facing: str, frame: int) -> np.ndarray:
         if look.get("carry") == "hammer" and facing == "S":
             rect(c, tx1 + 1, 17 + bob + ar, tx1 + 2, 22 + bob + ar, col("wood", 3))
             rect(c, tx1 - 1, 15 + bob + ar, tx1 + 3, 18 + bob + ar, col("iron", 3))
+        if look.get("carry") == "pike":
+            rect(c, tx1 + 2, 1 + bob, tx1 + 3, 29, col("wood", 3))
+            rect(c, tx1 + 1, -1 + bob if bob > 0 else 0, tx1 + 4, 3 + bob, col("iron", 4))
         if look.get("carry") == "glass" and facing == "S":
             rect(c, tx1, 15 + bob + ar, tx1 + 5, 17 + bob + ar, col("gold", 3))
             rect(c, tx1 + 4, 14 + bob + ar, tx1 + 6, 18 + bob + ar, col("gold", 2))
@@ -678,6 +706,9 @@ def _look_frame(look: dict, facing: str, frame: int) -> np.ndarray:
         _hat(c, hat, bob, hc, hc_l, hc_d, hair, "W", look)
         if look.get("carry") == "net":
             rect(c, 13, 11 + bob, 18, 19 + bob, col("cloth_blue", 3))
+        if look.get("carry") == "pike":
+            rect(c, 6, 1 + bob, 7, 29, col("wood", 3))
+            rect(c, 5, 0, 8, 3 + bob, col("iron", 4))
         if look.get("carry") == "glass":
             rect(c, 5, 15 + bob + s, 11, 17 + bob + s, col("gold", 3))
         if look.get("carry") == "hammer":
@@ -724,6 +755,16 @@ def _hat(c, hat, bob, hc, hc_l, hc_d, hair, facing, look):
         rect(c, 8, 2 + bob, 16, 6 + bob, hc)
         rect(c, 14, 4 + bob, 19, 8 + bob, hc_d)
         rect(c, 8, 2 + bob, 11, 3 + bob, hc_l)
+    elif hat == "helmet":                                 # town guard: a steel morion with a ridge
+        rect(c, 8, 2 + bob, 16, 6 + bob, hc)
+        rect(c, 8, 2 + bob, 11, 4 + bob, hc_l)
+        rect(c, 11, 0 + bob, 13, 2 + bob, hc_d)
+        rect(c, 6, 5 + bob, 18, 7 + bob, hc_d)
+    elif hat == "tricorn":                                # noble: three-cornered hat with a white plume
+        rect(c, 5, 4 + bob, 19, 6 + bob, hc)
+        rect(c, 7, 2 + bob, 17, 4 + bob, hc)
+        rect(c, 5, 4 + bob, 19, 5 + bob, col("gold", 4))
+        rect(c, 14, 0 + bob, 19, 2 + bob, col("cloth_cream", 4))
     else:                                                 # bare head: hair on top
         rect(c, 9, 3 + bob, 15, 6 + bob, hair)
         rect(c, 8, 5 + bob, 9, 9 + bob, hair)
