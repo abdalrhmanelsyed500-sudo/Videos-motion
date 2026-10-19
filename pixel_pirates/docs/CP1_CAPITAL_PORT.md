@@ -138,6 +138,7 @@ The design target (written in the script) is the first hire in 5-10 minutes and 
 | **Y / N** | a recruit's offer | hire / not now |
 | **Esc** | any panel | close |
 | F6 / F7 | any time | TEST: +25 reales / +10 kg mackerel in the hold |
+| **F8** | any time, no panel open | SELF-CHECK: runs `tests/test_port.gd` inside the running game plus live checks (every person and interaction point on walkable ground, grounds in open water) and prints `SELF-CHECK CP-1: N checks, M failed` on screen and in the Output panel |
 
 While a panel is open the game clock is paused (T1: planning screens pause) and WASD/A-D do nothing. Everything else is as in H2D-1.2 (A/D steer, SPACE dock/cast off, F ashore when moored, F board at the pier, T next stop).
 
@@ -149,7 +150,7 @@ While a panel is open the game clock is paused (T1: planning screens pause) and 
 
 ## 8. HOW TO TEST (about 15 minutes; Godot 4.7.2, open `pixel_pirates/game`, F5)
 
-If you can, run the project once headless first: `Godot_..._console.exe --headless --path game --import`, then `--script res://tests/run_all.gd` (this is the first time `test_port.gd` ever runs; tell me any red line).
+0. **Press F8 as soon as the game is running** (no batch file needed). It runs the CP-1 unit test inside the game; the first line of the result is the most useful single thing you can send me. (The headless `tests/run_all.gd` still exists if you prefer it.)
 
 1. **P1**: leave the harbour by ship, moor, F ashore, press T four times. Is the pirate visible at every stop? (Yes/No per stop.)
 2. At the start press **M**: the waters map shows your ship, the harbour and the four grounds. Press Tab: the district map shows Fish Row, the market, the notice board and the four recruits (gold diamonds).

@@ -4,7 +4,7 @@ extends Node
 ## the scene back only two things: whether the nets are down (the ship must stop) and whether a panel is open (the world waits).
 ## Keys it owns: E interact (ashore) | F nets down / up (at sea) | M map (Shift+M stays the ship-motion toggle) |
 ##   Y / N answer a recruit | Enter / Space / E continue or sell all | 1-5 sell one species | Tab switches the map |
-##   Esc closes | F6 test +25 reales | F7 test +10 kg mackerel.
+##   Esc closes | F6 test +25 reales | F7 test +10 kg mackerel | F8 self-check (runs tests/test_port.gd in the game).
 ## Objectives and dialogue come from real state: the purse, the hold, the crew, where the ship is.
 ## NO SAVE TO DISK in this slice: the state lives until the game is closed (docs/CP1_CAPITAL_PORT.md). NOT YET RUN IN GODOT.
 const PortState := preload("res://h2d/port_state.gd")
@@ -37,6 +37,18 @@ var _bark_n := 0
 var _hold_warned := false
 var _last_ctx: Dictionary = {}
 var _fishing_hint := true
+
+
+## Collects the results of tests/test_port.gd and the live checks (F8).
+class SelfCheck:
+	extends RefCounted
+	var checks := 0
+	var fails: Array[String] = []
+
+	func check(cond: bool, msg: String) -> void:
+		checks += 1
+		if not cond:
+			fails.append(msg)
 
 
 ## `layer` = the CanvasLayer for the interface; `view_world` = the cay_world.gd of the 3D view; `pause_fn(on: bool)` pauses the
@@ -227,6 +239,9 @@ func handle_key(k: InputEventKey, ctx: Dictionary) -> bool:
 	if key == KEY_F6 or key == KEY_F7:
 		_test_key(key, ctx)
 		return true
+	if key == KEY_F8 and _mode == "none":
+		_self_check()
+		return true
 	if _mode != "none":
 		return _modal_key(k, ctx)
 	var used := true
@@ -249,6 +264,45 @@ func _test_key(key: int, ctx: Dictionary) -> void:
 	else:
 		var put := state.add_catch("spc_mackerel", 10.0, float(ctx["now"]))
 		ui.toast("TEST: +%.1f kg mackerel in the hold" % put, Color(1.0, 0.6, 1.0))
+
+
+## F8: runs tests/test_port.gd INSIDE the running game plus checks against the live world, and reports the result on screen and
+## in the Output panel. It is the same test the headless runner executes, so you need no batch file to try it.
+func _self_check() -> void:
+	var sc := SelfCheck.new()
+	var scr := load("res://tests/test_port.gd") as GDScript
+	if scr == null:
+		ui.toast("SELF-CHECK: cannot load tests/test_port.gd", PortUi.RED, 8.0)
+		return
+	(scr.new() as Object).call("run", sc)
+	var unit_checks := sc.checks
+	# live checks: the real world answers the same questions the baker answered offline
+	for n in port["npcs"]:
+		var d := n as Dictionary
+		sc.check(bool(world.call("walkable", float(d["x"]), float(d["z"]), 0.4)), "live: %s stands on walkable ground" % str(d["id"]))
+	for it in port["interactions"]:
+		var q := it as Dictionary
+		sc.check(bool(world.call("walkable", float(q["x"]), float(q["z"]), 0.4)), "live: interaction point %s is walkable" % str(q["id"]))
+	sc.check(npcs.people.size() == (port["npcs"] as Array).size(), "live: every baked person is in the walker list")
+	sc.check(_grounds_in_water(), "live: the four fishing grounds are in open water (>= 100 m from land)")
+	var line := "SELF-CHECK CP-1: %d checks (%d from the unit test, %d live), %d failed" % [sc.checks, unit_checks, sc.checks - unit_checks, sc.fails.size()]
+	print(line)
+	for f in sc.fails:
+		print("  FAIL: ", f)
+	ui.toast(line + (" -> PASS" if sc.fails.is_empty() else " -> FAIL (see the Output panel)"), PortUi.GREEN if sc.fails.is_empty() else PortUi.RED, 9.0)
+	for i in mini(sc.fails.size(), 3):
+		ui.toast(sc.fails[i], PortUi.RED, 9.0)
+
+
+func _grounds_in_water() -> bool:
+	for id in fishing.ground_order:
+		var g: Dictionary = fishing.grounds[id]
+		for k in 8:
+			var a := TAU * float(k) / 8.0
+			var r := float(g["r"]) + 100.0
+			if float(world.call("height_at", float(g["x"]) + cos(a) * r, float(g["z"]) + sin(a) * r)) > 0.0:
+				return false
+	return true
 
 
 func _modal_key(k: InputEventKey, ctx: Dictionary) -> bool:
