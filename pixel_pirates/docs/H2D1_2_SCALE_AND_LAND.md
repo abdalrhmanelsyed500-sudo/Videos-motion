@@ -12,6 +12,10 @@
 - Scope: Anvil Cay becomes a **3.9 km island** you can walk on, and the pirate can leave the ship. Kept from H2D-1 and confirmed by you: launch, sailing, docking at the pier, casting off, smooth performance. Not started: E2, the 100 islands, H2D-2, any new system (no combat, no survival, no NPCs).
 - Honest limit: only a **560 m circle around the village (about 14 percent of the island)** is open on foot; the rest is baked and visible from the sea, but the pirate cannot enter it yet. The visual quality is still "prototype": you said it needs improving, and this module spent its effort on scale, streaming and walking, not on polish.
 
+## H2D-1.2.2 invisible pirate (2026-10-19): root cause and fix
+
+After H2D-1.2.1 the pirate was controllable but invisible away from the harbour. Cause: `custom_aabb` of the hero MultiMesh was fixed at the world origin while `set_hero()` moved only the instance, and Godot culls a MultiMesh by node transform x `custom_aabb` (it never adds the instance transforms). Fix: `set_hero()` moves the node (`cay_world.gd`). Guard: `tools/h2d/check_hero_cull.py` (cull model + source scan, in `check_all.py`). Not verified in Godot: see `docs/CP1_CAPITAL_PORT.md` section 1 for what to look at.
+
 ## 1. What changed
 | Before (H2D-1) | Now (H2D-1.2) |
 |---|---|

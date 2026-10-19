@@ -4,7 +4,7 @@ Every balance number in `game/data/` carries `provisional`, `owner` and `source`
 who is expected to finalise them, and where each came from. `owner` uses PROPOSED module numbers (N1..N14, B3); the N-module list is not
 fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is finalised only when this ledger has no `N*` rows left.
 
-**432 provisional records** | B2: 2, B3: 3, B4: 28, B5: 5, B6: 7, B7: 10, B8: 4, C1: 3, D1: 6, E1: 224, E2: 19, E7: 9, E8: 2, E9: 2, F0: 10, F1: 9, I17: 5, I19: 9, N1: 19, N10: 7, N11: 3, N13: 19, N2: 2, N3: 1, N4: 4, N5: 2, N6: 5, N7: 4, N8: 8, N9: 1
+**447 provisional records** | B2: 2, B3: 3, B4: 43, B5: 5, B6: 7, B7: 10, B8: 4, C1: 3, D1: 6, E1: 224, E2: 19, E7: 9, E8: 2, E9: 2, F0: 10, F1: 9, I17: 5, I19: 9, N1: 19, N10: 7, N11: 3, N13: 19, N2: 2, N3: 1, N4: 4, N5: 2, N6: 5, N7: 4, N8: 8, N9: 1
 
 | owner | kind | key | source |
 |---|---|---|---|
@@ -26,15 +26,30 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | B4 | tuning | `coin.changer_fee_pct` | B4 economy design; provisional until its owner module |
 | B4 | tuning | `coin.doubloon_value_reales` | B4 economy design; provisional until its owner module |
 | B4 | tuning | `coin.real_weight_g` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `fish.haul_interval_s` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
+| B4 | tuning | `fish.haul_kg` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
+| B4 | tuning | `fish.haul_spread` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
+| B4 | tuning | `fish.max_sea` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
+| B4 | tuning | `fish.max_speed_kn` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
+| B4 | tuning | `fish.mult_dawn` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
+| B4 | tuning | `fish.mult_day` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
+| B4 | tuning | `fish.mult_night` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
+| B4 | tuning | `fish.spoil_floor` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
+| B4 | tuning | `fish.spoil_per_day` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
+| B4 | tuning | `fish.spoil_warn` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
 | B4 | tuning | `market.depth_reales_t1` | B4 economy design; provisional until its owner module |
 | B4 | tuning | `market.depth_reales_t2` | B4 economy design; provisional until its owner module |
 | B4 | tuning | `market.depth_reales_t3` | B4 economy design; provisional until its owner module |
 | B4 | tuning | `market.differential_base` | B4 economy design; provisional until its owner module |
 | B4 | tuning | `market.differential_cap` | B4 economy design; provisional until its owner module |
 | B4 | tuning | `market.differential_per_day` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `market.fish_depth_reales` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
 | B4 | tuning | `market.recovery_half_life_days` | B4 economy design; provisional until its owner module |
 | B4 | tuning | `market.safe_sale_fraction` | B4 economy design; provisional until its owner module |
 | B4 | tuning | `market.spread_pct` | B4 economy design; provisional until its owner module |
+| B4 | tuning | `port.hold_kg` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
+| B4 | tuning | `port.hold_warn_frac` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
+| B4 | tuning | `port.start_reales` | CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC |
 | B4 | tuning | `running.misc_per_man_day` | B4 economy design; provisional until its owner module |
 | B4 | tuning | `running.upkeep_per_day_late` | B4 economy design; provisional until its owner module |
 | B4 | tuning | `running.upkeep_per_day_mid` | B4 economy design; provisional until its owner module |
