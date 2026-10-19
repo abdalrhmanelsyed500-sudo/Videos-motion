@@ -13,7 +13,7 @@ const GREEN := Color(0.52, 0.90, 0.44)
 const RED := Color(1.0, 0.45, 0.35)
 const AMBER := Color(1.0, 0.72, 0.25)
 const BORDER := Color(0.62, 0.43, 0.20)
-const TITLE_FONT := "res://ui/fonts/PirataOne-Regular.ttf"
+const TITLE_FONT := "res://ui/fonts/pirata_one_regular.ttf"
 
 static var _title_font: Font = null
 static var _title_tried := false

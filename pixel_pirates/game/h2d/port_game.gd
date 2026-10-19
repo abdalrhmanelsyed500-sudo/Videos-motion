@@ -641,7 +641,6 @@ func _on_trade_action(action: String, arg: String) -> void:
 # ---- recruits --------------------------------------------------------------------------------------------------------------
 func _hire(cid: String) -> void:
 	var rec: Dictionary = state.recruits[cid]
-	var before := state.reales
 	if state.hire(cid) != "ok":
 		return
 	npcs.hide_recruit(cid)
@@ -801,7 +800,8 @@ func _entries(ctx: Dictionary) -> Array:
 			detail = "%s  -  aboard your ship" % str(r["role"])
 			col = Color(0.5, 0.5, 0.5)
 		else:
-			detail = "%s  -  %d reales%s  -  %s" % [str(r["role"]), int(r["cost"]), "" if afford else " (short %d)" % (int(r["cost"]) - state.reales), _dist_text(org, Vector2(float(spot["x"]), float(spot["z"])))]
+			var short := "" if afford else " (short %d)" % (int(r["cost"]) - state.reales)
+			detail = "%s  -  %d reales%s  -  %s" % [str(r["role"]), int(r["cost"]), short, _dist_text(org, Vector2(float(spot["x"]), float(spot["z"])))]
 			col = Color(0.55, 0.92, 0.38) if afford else Color(0.98, 0.72, 0.25)
 		out.append({"id": "recruit_" + cid, "kind": "recruit", "name": str(r["name"]).replace("\"", ""), "detail": detail, "x": float(spot["x"]), "z": float(spot["z"]),
 				"rank": 2, "views": ["city", "island"], "color": col})

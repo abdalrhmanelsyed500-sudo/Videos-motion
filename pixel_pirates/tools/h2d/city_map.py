@@ -12,7 +12,7 @@ import cay_terrain as CT
 import city_layout as CY
 
 FONT_DIR = Path("/usr/share/fonts/truetype/dejavu")
-PIRATA = Path(__file__).resolve().parents[2] / "game/ui/fonts/PirataOne-Regular.ttf"
+PIRATA = Path(__file__).resolve().parents[2] / "game/ui/fonts/pirata_one_regular.ttf"
 PARCH = (226, 208, 160)
 INK = (62, 40, 20)
 SEA = (140, 178, 178)

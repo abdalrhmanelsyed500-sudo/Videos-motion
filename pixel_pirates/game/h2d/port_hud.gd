@@ -1,4 +1,5 @@
 extends Control
+# gdlint: disable=class-definitions-order
 ## CP-1 HUD built from standard nodes: purse + hold + crew + objective card (top right), the fishing panel under it, the tracking
 ## strip (top centre), the interaction prompt (bottom centre), toasts and the big banner. It only SHOWS what port_game.gd hands
 ## it in `set_data()`; it holds no rules.

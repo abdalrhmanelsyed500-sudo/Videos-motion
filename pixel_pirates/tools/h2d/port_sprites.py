@@ -582,7 +582,7 @@ LOOKS = {
     "noble": dict(skin="skin_light", hair=("cloth_cream", 3), coat=("cloth_blue", 3, 4, 2), shirt=("cloth_cream", 4), pants=("cloth_cream", 4, 3),
                   boots=("iron", 1), hat="tricorn", hatc=("iron", 1, 2, 0), beard=False, belt=("gold", 3), trim=("gold", 4)),
     "tavernkeeper": dict(skin="skin_tan", hair=("dirt", 2), coat=("cloth_cream", 3, 4, 2), shirt=("cloth_cream", 4), pants=("dirt", 1, 0),
-                         boots=("wood", 1), hat="none", hatc=("dirt", 3, 4, 2), beard=True, belt=("wood", 2), apron=True, apron_c=("cloth_red", 3, 2), wide=True, carry="glass"),
+                         boots=("wood", 1), hat="none", hatc=("dirt", 3, 4, 2), beard=True, belt=("wood", 2), apron=True, apron_c=("cloth_red", 3, 2), carry="glass"),
     "clerk": dict(skin="skin_light", hair=("dirt", 1), coat=("iron", 2, 3, 1), shirt=("cloth_cream", 4), pants=("iron", 1, 0),
                   boots=("wood", 1), hat="brim", hatc=("iron", 2, 3, 1), beard=False, belt=("wood", 2), slim=True, carry="glass"),
     "captain": dict(skin="skin_tan", hair=("iron", 2), coat=("cloth_red", 2, 3, 1), shirt=("cloth_cream", 4), pants=("cloth_cream", 3, 2),

@@ -83,11 +83,11 @@ static func fmt(s: String, vars: Dictionary) -> String:
 
 static func _holds(conds: Array, flags: Dictionary) -> bool:
 	for c in conds:
-		var name := str(c)
-		var neg := name.begins_with("!")
+		var flag_name := str(c)
+		var neg := flag_name.begins_with("!")
 		if neg:
-			name = name.substr(1)
-		var v := bool(flags.get(name, false))
+			flag_name = flag_name.substr(1)
+		var v := bool(flags.get(flag_name, false))
 		if v == neg:
 			return false
 	return true

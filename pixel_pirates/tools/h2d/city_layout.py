@@ -521,6 +521,8 @@ def people(city: City) -> list[dict]:
     def add(group, x, z, mode="stand", r=0.0, face=0, look=None, name=None, title=None, greeting=None, line=None, wares=None, ident=None):
         if blocked(x, z, 1.1):
             return False
+        if any(math.hypot(o["x"] - x, o["z"] - z) < 1.7 for o in out):
+            return False
         count["n"] += 1
         lk = look or LOOKS[group][count["n"] % len(LOOKS[group])]
         rec = {"id": ident or "npc_c%03d" % count["n"], "group": group, "look_name": lk, "x": round(x, 2), "z": round(z, 2), "mode": mode, "r": r, "facing": face}

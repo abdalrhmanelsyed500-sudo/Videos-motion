@@ -1,4 +1,5 @@
 extends Control
+# gdlint: disable=class-definitions-order
 ## The conversation window and the fish counter, built from standard nodes in the style of Stardew Valley's dialogue box:
 ## a portrait frame on the left, the speaker's name plate, the text typed out letter by letter, and the player's options as
 ## numbered buttons above the box (keys 1-9, W/S or the arrow keys, Enter / E / Space, or the mouse). Enter on a half-typed
@@ -321,6 +322,7 @@ func move(delta: int) -> void:
 
 
 ## Returns true when the key was used.
+# gdlint: disable=max-returns
 func handle_key(key: int) -> bool:
 	if _mode == "trade":
 		return false

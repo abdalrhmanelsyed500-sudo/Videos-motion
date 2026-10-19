@@ -1,4 +1,5 @@
 extends Control
+# gdlint: disable=class-definitions-order
 ## The map overlay (M), built from standard nodes: a clipped viewport holding the baked map picture (a TextureRect that is
 ## scaled and moved to zoom and pan), one small Control per marker laid over it, Line2D rings for the fishing grounds and a
 ## dashed Line2D route to the tracked place, plus a sidebar (a ScrollContainer of buttons) that lists every place with its

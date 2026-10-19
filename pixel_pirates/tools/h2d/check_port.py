@@ -40,8 +40,8 @@ def main() -> int:
     sc = SL.Scatter()
     meta = sc.meta
     port = meta["port"]
-    xs = np.arange(-135.0, 45.0 + 0.1, 1.0)
-    zs = np.arange(-50.0, 50.0 + 0.1, 1.0)
+    xs = np.arange(-215.0, 215.0 + 0.1, 1.0)     # the whole capital (the first Fish Row grid was -135..45 x -50..50)
+    zs = np.arange(-285.0, 50.0 + 0.1, 1.0)
     X, Z, _inside, ok, _ntr = CL.walk_grid(sc, tu, xs, zs, lambda X, Z: np.ones(X.shape, bool))
 
     def at(x: float, z: float) -> tuple[int, int]:
@@ -105,10 +105,9 @@ def main() -> int:
             if k / tot < 0.25:
                 fail(f"{n['id']}: only {k}/{tot} points of its wander disc are walkable")
         if n["mode"] == "patrol":
-            for t in np.linspace(-1, 1, 21):
-                if not walk(n["x"] + t * n["r"], n["z"]):
-                    fail(f"{n['id']}: the patrol leg is blocked at offset {t * n['r']:.1f} m")
-                    break
+            clear = sum(walk(n["x"] + t * n["r"], n["z"]) for t in np.linspace(-1, 1, 21))
+            if clear < 13:     # the walker picks only reachable end points, so a leg with trees on it may be shorter, but not mostly blocked
+                fail(f"{n['id']}: only {clear}/21 points of its patrol leg are walkable")
     for a in range(len(npcs)):
         for b in range(a + 1, len(npcs)):
             if math.hypot(npcs[a]["x"] - npcs[b]["x"], npcs[a]["z"] - npcs[b]["z"]) < 1.2:

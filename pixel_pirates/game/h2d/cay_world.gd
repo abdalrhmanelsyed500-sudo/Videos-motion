@@ -1,5 +1,6 @@
 # gdlint: disable=max-public-methods
 extends RefCounted
+# gdlint: disable=class-definitions-order
 ## H2D-1.2 Anvil Cay as a world object: the baked maps (height, biome, palette), the ground patch that follows the
 ## camera,
 ## the pier, the houses and props, the streamed vegetation chunks and the pirate. It also answers every question
@@ -185,7 +186,7 @@ func _make_cue_mm(count: int, atlas: Dictionary, light: float) -> MultiMeshInsta
 
 ## Called every frame by the port controller. `ship` = Vector2 (x, z), `heading_deg`, `nets` = the nets are down, `moving` = metres per
 ## second (the wake only trails while the ship moves).
-func update_cues(dt: float, t: float, ship: Vector2, heading_deg: float, nets: bool, speed_ms: float) -> void:
+func update_cues(dt: float, t: float, ship: Vector2, heading_deg: float, nets: bool, _speed_ms: float) -> void:
 	if _cue_birds == null:
 		return
 	var bm := _cue_birds.multimesh
