@@ -1,5 +1,6 @@
 extends CanvasLayer
-## Debug console UI (A7). F1 or ` (backtick) toggles it. Debug builds only: it removes itself in an exported release.
+## Debug console UI (A7). ` (backtick, the key left of 1) toggles it. F1 is NOT used here: the game binds it to the quality toggle, and a
+## console that opened on F1 grabbed the keyboard focus and swallowed every later key (M, A, D...), which looks like "dead keys". Debug builds only: it removes itself in an exported release.
 ## Up/Down = history, Tab = complete a command, Esc = close. Commands live in core/console_commands.gd.
 ## `state` is the GameState the commands edit; when the real game state exists (J1) call attach_state(real_state).
 const Commands := preload("res://core/console_commands.gd")
@@ -8,6 +9,7 @@ const MAX_HISTORY := 100
 const HUD_REFRESH_S := 0.25
 const MAX_LIVE_STEP_S := 0.25  # a stalled frame never moves the debug clock by more than this
 
+var force_enabled := false   ## tests only: keep the console alive in a release template (where it normally removes itself)
 var commands: RefCounted
 var state: RefCounted
 var _panel: PanelContainer
@@ -20,7 +22,7 @@ var _hud_timer := 0.0
 
 
 func _ready() -> void:
-	if not OS.is_debug_build():
+	if not OS.is_debug_build() and not force_enabled:
 		queue_free()
 		return
 	layer = 100
@@ -35,7 +37,7 @@ func _ready() -> void:
 	_build_ui()
 	_panel.visible = false
 	set_process(true)
-	_print("[color=#ffd9a0]Crown of the Seas debug console.[/color] Type 'help'. F1 or ` closes it.")
+	_print("[color=#ffd9a0]Crown of the Seas debug console.[/color] Type 'help'. ` or Esc closes it.")
 
 
 func attach_state(new_state: RefCounted) -> void:
@@ -93,6 +95,10 @@ static func _escape(text: String) -> String:
 	return text.replace("[", "[lb]")
 
 
+func is_open() -> bool:
+	return _panel != null and _panel.visible
+
+
 func _toggle() -> void:
 	_panel.visible = not _panel.visible
 	if _panel.visible:
@@ -108,7 +114,7 @@ func _input(event: InputEvent) -> void:
 	var k := event as InputEventKey
 	if not k.pressed or k.echo:
 		return
-	if k.keycode == KEY_F1 or k.keycode == KEY_QUOTELEFT:
+	if k.keycode == KEY_QUOTELEFT or k.physical_keycode == KEY_QUOTELEFT:
 		_toggle()
 		get_viewport().set_input_as_handled()
 		return

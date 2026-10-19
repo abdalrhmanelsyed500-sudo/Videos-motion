@@ -25,7 +25,7 @@ Godot is not available to CI here, so `gdparse` (syntax) is not enough. While wr
 The five world rules (`dist_short`, `not_mutual`, `asym`, `visible_no_landmark`, `visible_self`) now exist in Python and GDScript. `Registry` runs them after the reference check and reports `WORLD: ...` errors. Both implementations are run against `game/tests/fixtures/world_cases.json` (14 hand-written cases; Python 14/14, GDScript unrun).
 
 ## 3. Debug console (`ui/debug_console.gd`, autoload `DebugConsole`, debug builds only)
-Open with **F1** or **`** (backtick). Up/Down = history, Tab = complete, Esc = close. The command logic lives in `core/console_commands.gd` (no UI), so `tests/test_console.gd` runs it headless.
+Open with **`** (backtick, left of 1; F1 is the game's quality key since r6). Up/Down = history, Tab = complete, Esc = close. The command logic lives in `core/console_commands.gd` (no UI), so `tests/test_console.gd` runs it headless.
 
 | command | use |
 |---|---|
@@ -67,7 +67,7 @@ python tools/island_kit/new_island.py --id isl_012 --name "Saltglass" --tier 2 -
 
 ## 6. First run on the dev PC (the real test of the GDScript)
 1. `tools\run_godot_tests.bat` (set `GODOT_EXE` first). Expect `ALL TESTS PASSED`. Paste `build\godot_tests.txt` back if not.
-2. Open `game/` in Godot, press F5, press F1: type `help`, `check`, `data counts`, `island list`, `tp island isl_903`, `give item_hardtack 5`, `inv`, `save a`, `load a`, `perf`.
+2. Open `game/` in Godot, press F5, press ` (backtick): type `help`, `check`, `data counts`, `island list`, `tp island isl_903`, `give item_hardtack 5`, `inv`, `save a`, `load a`, `perf`.
 3. Switch the main scene to `res://ui/island_viewer.tscn` (Project Settings) to try click-to-inspect.
 
 ## 7. Decisions

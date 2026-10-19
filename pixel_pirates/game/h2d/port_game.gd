@@ -37,6 +37,11 @@ var port: Dictionary = {}
 var barks: Dictionary = {}
 ## What the last key press looked like to the game (shown in the debug text, F3 hides it): the first thing to read if a key seems dead.
 var last_key := "(none yet)"
+var setup_stage := "not started"      ## the last stage setup() reached: if it stopped early, this names where
+var setup_error := ""                 ## why setup() stopped (empty when it finished)
+var keys_routed := 0
+var map_opens := 0
+var map_fails := 0
 var _tuning: Dictionary = {}
 var _pause_fn: Callable
 var _mode := "none"                  # none | dialogue | market | map
@@ -70,22 +75,36 @@ class SelfCheck:
 ## `layer` = the CanvasLayer for the interface; `view_world` = the cay_world.gd of the 3D view; `pause_fn(on: bool)` pauses the
 ## game clock while a panel is open (T1: pause only in planning screens).
 func setup(layer: CanvasLayer, view_world: Object, tuning: Dictionary, pause_fn: Callable) -> void:
+	setup_stage = "start"
 	world = view_world
 	_tuning = tuning
 	_pause_fn = pause_fn
 	var meta: Dictionary = (world.get("meta") as Dictionary)
 	if not meta.has("port"):
-		push_warning("CP-1: anvil_cay.json has no port section; run tools/h2d/bake_cay.py")
+		_fail_setup("anvil_cay.json has no port section (run tools/h2d/bake_cay.py)")
 		return
 	port = meta["port"]
+	setup_stage = "loading data/port/*.json"
 	var fish_doc := DataLoader.load_dict("res://data/port/fish_market.json")
 	var rec_doc := DataLoader.load_dict("res://data/port/recruits_port.json")
 	var gr_doc := DataLoader.load_dict("res://data/port/fishing_grounds.json")
 	barks = DataLoader.load_dict("res://data/port/barks.json")
+	var bad := _doc_problems(fish_doc, rec_doc, gr_doc)
+	if not bad.is_empty():
+		_fail_setup("data/port/*.json is missing or malformed: " + "; ".join(PackedStringArray(bad)))
+		return
+	if not port.has("npcs") or not port.has("map") or not port.has("recruit_spots") or not port.has("interactions"):
+		_fail_setup("the port section of anvil_cay.json lacks npcs/map/recruit_spots/interactions (run tools/h2d/bake_cay.py)")
+		return
+	setup_stage = "economy (state.configure)"
 	state.configure(tuning, fish_doc, rec_doc)
+	setup_stage = "nets (fishing.configure)"
 	fishing.configure(tuning, gr_doc, 20261019)
+	setup_stage = "people (npcs.setup)"
 	npcs.setup(port["npcs"] as Array)
+	setup_stage = "dialogue (dialogue.json)"
 	dlg.load_file("res://data/port/dialogue.json")
+	setup_stage = "interface (PortUi)"
 	ui = PortUi.new()
 	layer.add_child(ui)
 	ui.dialogue.chosen.connect(_on_choice)
@@ -93,14 +112,39 @@ func setup(layer: CanvasLayer, view_world: Object, tuning: Dictionary, pause_fn:
 	ui.dialogue.trade_action.connect(_on_trade_action)
 	ui.map.closed.connect(_close)
 	ui.map.track_requested.connect(_on_track_requested)
+	setup_stage = "map views (set_views)"
 	ui.map.set_views((port["map"] as Dictionary)["views"] as Array)
 	enabled = true
+	setup_stage = "markers and cues"
 	_update_markers(true)
 	var gl: Array = []
 	for gid in fishing.ground_order:
 		var gg: Dictionary = fishing.grounds[gid]
 		gl.append({"id": gid, "x": gg["x"], "z": gg["z"], "r": gg["r"]})
 	world.call("build_cues", gl)
+	setup_stage = "done"
+
+
+## Problems in the three data documents (empty = usable). Pure: used by setup() and by tests.
+static func _doc_problems(fish_doc: Dictionary, rec_doc: Dictionary, gr_doc: Dictionary) -> Array:
+	var out: Array = []
+	if not fish_doc.has("species") or not (fish_doc["species"] is Dictionary) or (fish_doc["species"] as Dictionary).is_empty():
+		out.append("fish_market.json has no 'species'")
+	if not rec_doc.has("recruits") or not rec_doc.has("order") or not (rec_doc["order"] is Array):
+		out.append("recruits_port.json has no 'recruits'/'order'")
+	elif rec_doc["recruits"] is Dictionary:
+		for c in rec_doc["order"]:
+			if not (rec_doc["recruits"] as Dictionary).has(str(c)):
+				out.append("recruits_port.json: order names '%s' which is not defined" % str(c))
+	if gr_doc.is_empty() or not gr_doc.has("grounds"):
+		out.append("fishing_grounds.json has no 'grounds'")
+	return out
+
+
+func _fail_setup(why: String) -> void:
+	setup_error = why
+	enabled = false
+	push_error("CP-1 SETUP FAILED at '%s': %s" % [setup_stage, why])
 
 
 func modal() -> bool:
@@ -115,7 +159,9 @@ func step(dt: float, ctx: Dictionary) -> void:
 	_last_ctx = ctx
 	var px := float(ctx["wx"]) if bool(ctx["ashore"]) else float(ctx["sx"])
 	var pz := float(ctx["wz"]) if bool(ctx["ashore"]) else float(ctx["sz"])
-	npcs.step(dt, world, Vector2(px, pz))
+	# T1: the world waits while a panel is open or the clock is paused (the nets used to keep hauling and the people kept walking)
+	var wdt := 0.0 if (_mode != "none" or bool(ctx.get("paused", false))) else dt
+	npcs.step(wdt, world, Vector2(px, pz))
 	world.call("set_npcs", npcs.people)
 	_cue_t += dt
 	world.call("update_cues", dt, _cue_t, Vector2(float(ctx["sx"]), float(ctx["sz"])), float(ctx["sheading"]), fishing.active, float(ctx["speed_kn"]) * 0.514)
@@ -123,7 +169,7 @@ func step(dt: float, ctx: Dictionary) -> void:
 		if not bool(ctx["sailing"]):
 			fishing.stop("moored")
 		else:
-			var evs := fishing.step(dt, {"x": ctx["sx"], "z": ctx["sz"], "speed_kn": ctx["speed_kn"]}, float(ctx["hour"]), float(ctx["sea"]), state, float(ctx["now"]))
+			var evs := fishing.step(wdt, {"x": ctx["sx"], "z": ctx["sz"], "speed_kn": ctx["speed_kn"]}, float(ctx["hour"]), float(ctx["sea"]), state, float(ctx["now"]))
 			for e in evs:
 				_on_fishing_event(e as Dictionary)
 	_check_warnings()
@@ -181,7 +227,8 @@ func _find_near(ctx: Dictionary) -> Dictionary:
 			if str(d["kind"]) == "market":
 				var mi := npcs.index_of("npc_fishmonger")
 				return {"kind": "talk", "index": mi, "text": "Talk to Barnaby Gull, the fishmonger (sell your catch)"}
-			return {"kind": "notice", "index": -1, "text": "Read the notice board and open the map"}
+			if str(d["kind"]) == "notice":
+				return {"kind": "notice", "index": -1, "text": "Read the notice board and open the map"}
 	var ni := npcs.nearest(x, z, TALK_R, false)
 	if ni >= 0:
 		return {"kind": "talk", "index": ni, "text": "Talk to %s" % str(_speaker_for(ni)["label"])}
@@ -280,6 +327,7 @@ func handle_key(k: InputEventKey, ctx: Dictionary) -> bool:
 	if not enabled:
 		return false
 	var key := KeyUtil.code(k)
+	keys_routed += 1
 	last_key = "keycode %d  physical %d  -> %d (%s)  mode %s" % [int(k.keycode), int(k.physical_keycode), key, OS.get_keycode_string(key), _mode]
 	if key == KEY_F6 or key == KEY_F7:
 		_test_key(key, ctx)
@@ -496,7 +544,10 @@ func _speaker_for(i: int) -> Dictionary:
 
 
 func _open_dialogue(i: int, ctx: Dictionary) -> void:
-	if i < 0:
+	if i < 0 or i >= npcs.people.size():
+		# never fail silently: the player pressed E and must hear why nothing opened
+		ui.toast("Nobody answers: the person you wanted to talk to is not here.", PortUi.AMBER, 4.0)
+		push_warning("CP-1: _open_dialogue(%d) has no person (people: %d)" % [i, npcs.people.size()])
 		return
 	_spk = _speaker_for(i)
 	npcs.set_talking(i, true, float(ctx["wx"]), float(ctx["wz"]))
@@ -606,6 +657,8 @@ func _on_choice(i: int) -> void:
 				_hire(cid)
 				next = "hired"
 			else:
+				if cid != "":
+					ui.toast("You are %d reales short of %s's price (%d). Sell fish first." % [state.cost_of(cid) - state.reales, str(_spk.get("name", "him")), state.cost_of(cid)], PortUi.AMBER, 4.0)
 				return
 		"track":
 			var id := _resolve_target(str(o["arg"]))
@@ -618,7 +671,7 @@ func _on_choice(i: int) -> void:
 				_extra["track_name"] = "That place"
 				_extra["track_dist"] = "I do not know the way"
 		"pay":
-			var cost := int(o["arg"])
+			var cost := maxi(int(o["arg"]), 0)      # a negative price must never pay the player
 			if state.reales >= cost:
 				state.reales -= cost
 				ui.toast("-%d reales  (purse %d)" % [cost, state.reales], PortUi.AMBER, 4.0)
@@ -760,7 +813,10 @@ func _open_map(tab: int, ctx: Dictionary) -> void:
 	_open("map")
 	_map_state_t = 0.25
 	var ok: bool = ui.map.open(tab, _map_state(ctx))
+	if ok:
+		map_opens += 1
 	if not ok:
+		map_fails += 1
 		# never leave the game paused in a map mode with nothing on screen: undo the open and say why
 		var why := "visible=%s panel=%s tab=%d views=%d" % [ui.map.visible, ui.map.get_node("MapPanel").size, ui.map.tab, ui.map.views.size()]
 		push_error("MAP: failed to open (%s)" % why)

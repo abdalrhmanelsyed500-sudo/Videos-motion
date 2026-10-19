@@ -76,6 +76,9 @@ var _helm_hud: HelmHud
 var _harbor: Harbor = Harbor.new()
 var _moor := 0.0
 var _walker: LandWalker = LandWalker.new()
+var _key_raw := 0          ## key presses seen by _input (before any control or autoload that may swallow them)
+var _key_game := 0         ## key presses that reached _unhandled_input (i.e. nothing swallowed them)
+var _raw_last := "(none yet)"
 var _port: Node = null  ## CP-1: the Fish Row loop (economy, nets, people, map, dialogue)
 var _edge_said := -100.0
 var _tp_next := 0
@@ -326,7 +329,25 @@ func _port_pause(on: bool) -> void:
 func _port_ctx() -> Dictionary:
 	return {"ashore": _walker.is_ashore(), "wx": _walker.x, "wz": _walker.z, "sx": _pos.x, "sz": _pos.y, "sheading": _heading_disp,
 			"speed_kn": _helm.speed_kn, "hour": _hour, "now": float(_state.clock.t) / 86400.0, "sea": _env.sea,
-			"docked": _harbor.state == Harbor.DOCKED, "sailing": _harbor.state == Harbor.SAILING}
+			"docked": _harbor.state == Harbor.DOCKED, "sailing": _harbor.state == Harbor.SAILING, "paused": _state.clock.is_paused()}
+
+
+## One line that says at which stage a key press dies: raw (engine delivered it) -> game (nothing swallowed it) -> routed (the port
+## controller saw it) -> map opens / failures. Also shows the focused control and whether the debug console is open.
+func _key_diag_line() -> String:
+	var out := "keys: engine got %d, game got %d" % [_key_raw, _key_game]
+	var foc := get_viewport().gui_get_focus_owner()
+	if foc != null:
+		out += "   FOCUSED CONTROL: %s (it swallows keys; click the game or press Esc)" % foc.name
+	var con := get_node_or_null("/root/DebugConsole")
+	if con != null and con.has_method("is_open") and bool(con.call("is_open")):
+		out += "   DEBUG CONSOLE IS OPEN: typing goes to it, press ` or Esc to close it"
+	if _port == null:
+		return out + "   | port controller: MISSING"
+	var pg := _port as PortGame
+	if not pg.enabled:
+		return out + "   | PORT CONTROLLER OFF (setup stopped at: %s) %s" % [pg.setup_stage, pg.setup_error]
+	return out + "   | routed %d, map opened %d, failed %d | last key: %s" % [pg.keys_routed, pg.map_opens, pg.map_fails, pg.last_key]
 
 
 # ---- H2D-1.2: on foot -------------------------------------------------------------------------------------------
@@ -523,10 +544,21 @@ func _view() -> Dictionary:
 
 
 # ---- input -------------------------------------------------------------------------------------------------------
+## Stage 1 of the key diagnostic: _input runs BEFORE the GUI, so a key counted here but not in _unhandled_input was swallowed by the
+## GUI in between (a focused text field or button). The debug console is an autoload and sees keys first: when it is open the HUD says so.
+func _input(event: InputEvent) -> void:
+	var k := event as InputEventKey
+	if k == null or not k.pressed or k.echo:
+		return
+	_key_raw += 1
+	_raw_last = "%s (keycode %d physical %d)" % [OS.get_keycode_string(k.keycode if k.keycode != 0 else k.physical_keycode), int(k.keycode), int(k.physical_keycode)]
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	var k := event as InputEventKey
 	if k == null or not k.pressed or k.echo:
 		return
+	_key_game += 1
 	var kc: int = KeyUtil.code(k)     # layout-proof key (an Arabic layout would otherwise break every letter key)
 	var v3 := _v3 as View3D
 	var ashore := _walker.is_ashore()
@@ -560,6 +592,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif kc == KEY_G:
 		_env.trigger_gust()
 		_say("gust")
+	elif kc == KEY_M and _port != null and not (_port as PortGame).enabled and not k.shift_pressed:
+		# the map lives in the port controller: say so, instead of silently doing something else (the old fall-through toggled the motion mode)
+		_say("MAP UNAVAILABLE: the Fish Row controller did not start (stopped at '%s'). %s" % [(_port as PortGame).setup_stage, (_port as PortGame).setup_error])
 	elif kc == KEY_M:
 		v3.motion_mode = (v3.motion_mode + 1) % 3
 		_say("ship motion: " + MOTION_NAMES[v3.motion_mode])
@@ -791,8 +826,7 @@ func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 	lines.append("rain %.2f  storm %.2f  fog %.2f  ice %.2f  swell warning %.2f" % [
 			float(_d["rain"]), float(_d["storm"]), float(_d["fog"]), float(_d["ice"]), float(_d["herald"])])
 	lines.append(_advice_for(st))
-	if _port != null:
-		lines.append("last key: %s" % (_port as PortGame).last_key)
+	lines.append(_key_diag_line())
 	var pr := _harbor.prompt(_pos.x, _pos.y)
 	if bool(pr["near"]) and _harbor.state == Harbor.SAILING:
 		var zone_txt := "IN THE DOCK ZONE" if bool(pr["can_dock"]) else "outside the dock zone"
@@ -842,6 +876,10 @@ func _write_diagnostics() -> void:
 	lines.append("driver info: %s" % str(OS.get_video_adapter_driver_info()))
 	lines.append("window size: %s" % str(DisplayServer.window_get_size()))
 	lines.append("colour transfer: %s" % (_v3 as View3D).calibration_note)
+	if _port != null:
+		var pg := _port as PortGame
+		lines.append("port controller: enabled=%s setup stage='%s' error='%s'" % [str(pg.enabled), pg.setup_stage, pg.setup_error])
+	lines.append("debug console present: %s" % str(get_node_or_null("/root/DebugConsole") != null))
 	var declared := ProjectSettings.has_setting("shader_globals/h2d_gamma")
 	lines.append("shader globals declared in project.godot: %s" % str(declared))
 	var f := FileAccess.open("user://h2d0_diagnostics.txt", FileAccess.WRITE)
