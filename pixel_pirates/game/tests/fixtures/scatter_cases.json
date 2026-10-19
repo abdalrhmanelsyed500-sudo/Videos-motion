@@ -54,56 +54,56 @@
   {
    "cx": 0,
    "cz": -1,
-   "count": 235,
-   "trunks": 104,
-   "sum_x": 26611.731,
-   "sum_z": -25528.539,
-   "sum_type": 1295
+   "count": 0,
+   "trunks": 0,
+   "sum_x": 0,
+   "sum_z": 0,
+   "sum_type": 0
   },
   {
    "cx": 0,
    "cz": -2,
-   "count": 330,
-   "trunks": 238,
-   "sum_x": 29771.793,
-   "sum_z": -100186.323,
-   "sum_type": 1199
+   "count": 245,
+   "trunks": 190,
+   "sum_x": 21909.195,
+   "sum_z": -83702.185,
+   "sum_type": 799
   },
   {
    "cx": 0,
    "cz": -3,
-   "count": 316,
-   "trunks": 228,
-   "sum_x": 28688.497,
-   "sum_z": -155838.084,
-   "sum_type": 1183
+   "count": 326,
+   "trunks": 216,
+   "sum_x": 28475.293,
+   "sum_z": -159710.267,
+   "sum_type": 1362
   },
   {
    "cx": -2,
    "cz": -2,
-   "count": 252,
-   "trunks": 13,
-   "sum_x": -76482.929,
-   "sum_z": -76098.517,
-   "sum_type": 2040
+   "count": 380,
+   "trunks": 269,
+   "sum_x": -118518.257,
+   "sum_z": -113175.367,
+   "sum_type": 1477
   },
   {
    "cx": 2,
    "cz": -2,
-   "count": 68,
+   "count": 66,
    "trunks": 13,
-   "sum_x": 29200.815,
-   "sum_z": -22302.909,
-   "sum_type": 466
+   "sum_x": 28168.835,
+   "sum_z": -21459.98,
+   "sum_type": 441
   },
   {
    "cx": 0,
    "cz": -4,
-   "count": 259,
-   "trunks": 24,
-   "sum_x": 26445.618,
-   "sum_z": -181964.088,
-   "sum_type": 2032
+   "count": 258,
+   "trunks": 17,
+   "sum_x": 27191.773,
+   "sum_z": -180755.456,
+   "sum_type": 2004
   },
   {
    "cx": -5,
