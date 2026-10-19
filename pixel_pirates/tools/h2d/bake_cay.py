@@ -438,7 +438,7 @@ def main() -> int:
     names = ["anvil_cay_height.png", "anvil_cay_biome.png", "anvil_cay_palette.png", "anvil_veg_atlas.png", "anvil_struct_atlas.png",
              "anvil_hero_atlas.png", "port_stall_atlas.png", "port_misc_atlas.png", "port_big_atlas.png", "port_ships_atlas.png",
              "port_npc_atlas.png", "city_small_atlas.png", "city_grand_atlas.png", "city_civic_atlas.png",
-             "city_props_atlas.png", "map_city.png", "map_island.png", "map_sea.png"]
+             "city_props_atlas.png", "port_cue_atlas.png", "map_city.png", "map_island.png", "map_sea.png"]
     write_import_files(names)
     for old in ("anvil_cay_albedo.png", "anvil_cay_data.png", "anvil_cay_normal.png"):
         for ext in ("", ".import"):

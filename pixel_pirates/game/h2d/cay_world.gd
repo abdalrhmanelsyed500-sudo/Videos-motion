@@ -62,6 +62,8 @@ var _marker_node: MultiMeshInstance3D
 ## ResourceLoader path). `parent` is the root of the 3D world: the view's SubViewport (a Node, not a Node3D); the
 ## island's own Node3D "AnvilCay" is added under it.
 func build(parent: Node, ocean_mat: ShaderMaterial, tex_fn: Callable, mat_fn: Callable) -> void:
+	_tex_fn = tex_fn
+	_mat_fn = mat_fn
 	meta = DataLoader.load_dict(ART_DIR + "anvil_cay.json")
 	var g: Dictionary = meta["grid"]
 	n = int(g["cells"])
@@ -110,6 +112,137 @@ func build(parent: Node, ocean_mat: ShaderMaterial, tex_fn: Callable, mat_fn: Ca
 	_build_hero(tex_fn, mat_fn)
 	if meta.has("port"):
 		_build_port(tex_fn, mat_fn)
+
+
+# ---- CP-1 revision, P3: what the player sees on the fishing grounds -----------------------------------------------------------
+# A beacon pole and a ring of buoys mark every ground (visible from afar); gulls circle above it; the shoal glitters; and while the nets
+# are out a line of corks and foam trails behind the ship. All are camera-facing sprites of the cue atlas, in a few MultiMeshes.
+const CUE_AABB := AABB(Vector3(-1300.0, -10.0, -600.0), Vector3(2600.0, 90.0, 2900.0))
+const CUE_BEACON := 0
+const CUE_BUOY_RED := 1
+const CUE_BUOY_WHITE := 2
+const CUE_GULL_UP := 3
+const CUE_GULL_DOWN := 4
+const CUE_SPARK := 5
+const CUE_CORK := 6
+const CUE_FOAM := 7
+const GULLS_PER_GROUND := 6
+const SPARKS_PER_GROUND := 26
+const TRAIL_N := 16
+const CUE_NEAR_M := 950.0
+var _tex_fn: Callable
+var _mat_fn: Callable
+var _cue_grounds: Array = []
+var _cue_birds: MultiMeshInstance3D
+var _cue_sparks: MultiMeshInstance3D
+var _cue_trail: MultiMeshInstance3D
+var _cue_static: MultiMeshInstance3D
+var _cue_rng := RandomNumberGenerator.new()
+var _spark_off: PackedFloat32Array = PackedFloat32Array()
+var _trail: Array = []
+var _trail_t := 0.0
+
+
+## `grounds` = [{id, x, z, r}]. Builds the static markers and the animated sets.
+func build_cues(grounds: Array) -> void:
+	if _root == null or not port.has("atlases") or not (port["atlases"] as Dictionary).has("cue"):
+		return
+	var atlas: Dictionary = (port["atlases"] as Dictionary)["cue"]
+	_cue_grounds = grounds
+	_cue_rng.seed = 424242
+	var fixed: Array = []
+	for g in grounds:
+		var gd := g as Dictionary
+		var gx := float(gd["x"])
+		var gz := float(gd["z"])
+		var r := float(gd["r"])
+		fixed.append({"type": CUE_BEACON, "x_m": gx, "z_m": gz, "y_m": -0.1, "scale": 1.7, "bob": 0.1})
+		for k in 10:
+			var a := TAU * float(k) / 10.0
+			fixed.append({"type": CUE_BUOY_RED if k % 2 == 0 else CUE_BUOY_WHITE, "x_m": gx + cos(a) * r * 0.88, "z_m": gz + sin(a) * r * 0.88,
+					"y_m": -0.1, "scale": 1.25, "bob": 0.14})
+	_cue_static = _build_sprites(fixed, atlas, true, _tex_fn, _mat_fn)
+	_cue_static.multimesh.custom_aabb = CUE_AABB
+	_cue_birds = _make_cue_mm(grounds.size() * GULLS_PER_GROUND, atlas, 1.0)
+	_cue_sparks = _make_cue_mm(grounds.size() * SPARKS_PER_GROUND, atlas, 1.6)
+	_cue_trail = _make_cue_mm(TRAIL_N * 2, atlas, 1.0)
+	_spark_off.resize(grounds.size() * SPARKS_PER_GROUND * 3)
+	for i in grounds.size() * SPARKS_PER_GROUND:
+		var rr := sqrt(_cue_rng.randf()) * float((grounds[i / SPARKS_PER_GROUND] as Dictionary)["r"]) * 0.8
+		var aa := _cue_rng.randf() * TAU
+		_spark_off[i * 3] = cos(aa) * rr
+		_spark_off[i * 3 + 1] = sin(aa) * rr
+		_spark_off[i * 3 + 2] = _cue_rng.randf() * TAU
+
+
+func _make_cue_mm(count: int, atlas: Dictionary, light: float) -> MultiMeshInstance3D:
+	var mat := _sprite_material(atlas, true, _tex_fn, _mat_fn)
+	mat.set_shader_parameter("sprite_light", light)
+	var node := _make_dynamic_mm(count, mat, QuadMesh.new())
+	node.multimesh.custom_aabb = CUE_AABB
+	return node
+
+
+## Called every frame by the port controller. `ship` = Vector2 (x, z), `heading_deg`, `nets` = the nets are down, `moving` = metres per
+## second (the wake only trails while the ship moves).
+func update_cues(dt: float, t: float, ship: Vector2, heading_deg: float, nets: bool, speed_ms: float) -> void:
+	if _cue_birds == null:
+		return
+	var bm := _cue_birds.multimesh
+	var sm := _cue_sparks.multimesh
+	for gi in _cue_grounds.size():
+		var g := _cue_grounds[gi] as Dictionary
+		var gx := float(g["x"])
+		var gz := float(g["z"])
+		var near := ship.distance_to(Vector2(gx, gz)) < CUE_NEAR_M
+		for k in GULLS_PER_GROUND:
+			var i := gi * GULLS_PER_GROUND + k
+			if not near:
+				bm.set_instance_custom_data(i, Color(0.0, 0.0, 0.0, 0.0))
+				continue
+			var ph := float(k) * 1.047 + float(gi) * 0.7
+			var rad := 26.0 + 9.0 * float(k % 3)
+			var a := ph + t * (0.30 + 0.05 * float(k % 3)) * (1.0 if k % 2 == 0 else -1.0)
+			var y := 13.0 + 4.0 * sin(t * 0.8 + ph) + float(k % 3) * 2.0
+			bm.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(gx + cos(a) * rad, y, gz + sin(a) * rad)))
+			bm.set_instance_custom_data(i, Color(float(CUE_GULL_UP if fposmod(t * 2.6 + ph, 1.0) < 0.5 else CUE_GULL_DOWN), 1.0, 0.0, 0.0))
+		for k in SPARKS_PER_GROUND:
+			var i2 := gi * SPARKS_PER_GROUND + k
+			if not near:
+				sm.set_instance_custom_data(i2, Color(0.0, 0.0, 0.0, 0.0))
+				continue
+			var ox2 := _spark_off[i2 * 3]
+			var oz2 := _spark_off[i2 * 3 + 1]
+			var phs := _spark_off[i2 * 3 + 2]
+			var f := maxf(sin(t * 2.4 + phs), 0.0)
+			f = f * f * f
+			sm.set_instance_transform(i2, Transform3D(Basis.IDENTITY, Vector3(gx + ox2, 0.15, gz + oz2)))
+			sm.set_instance_custom_data(i2, Color(float(CUE_SPARK), 0.15 + 1.05 * f, 0.0, 0.0) if f > 0.02 else Color(0.0, 0.0, 0.0, 0.0))
+	# the net line: corks and foam behind the ship while the nets are down
+	var tm := _cue_trail.multimesh
+	if nets:
+		_trail_t -= dt
+		if _trail_t <= 0.0:
+			_trail_t = 0.45
+			var h := deg_to_rad(heading_deg)
+			var stern := ship - Vector2(sin(h), -cos(h)) * 9.0
+			_trail.push_front(Vector3(stern.x, stern.y, t))
+			if _trail.size() > TRAIL_N:
+				_trail.pop_back()
+	else:
+		_trail.clear()
+	for i in TRAIL_N:
+		var ci := i * 2
+		if i >= _trail.size():
+			tm.set_instance_custom_data(ci, Color(0.0, 0.0, 0.0, 0.0))
+			tm.set_instance_custom_data(ci + 1, Color(0.0, 0.0, 0.0, 0.0))
+			continue
+		var p := _trail[i] as Vector3
+		var age := clampf((t - p.z) / (TRAIL_N * 0.45), 0.0, 1.0)
+		tm.set_instance_transform(ci, Transform3D(Basis.IDENTITY, Vector3(p.x, 0.0 + 0.08 * sin(t * 3.0 + float(i)), p.y)))
+		tm.set_instance_custom_data(ci, Color(float(CUE_CORK), 1.0, 0.1, 0.0))
+		tm.set_instance_transform(ci + 1, Transform3D(Basis.IDENTITY, Vector3(p.x + 1.2, 0.02, p.y + 0.8)))
+		tm.set_instance_custom_data(ci + 1, Color(float(CUE_FOAM), 1.1 - 0.7 * age, 0.0, 0.0))
 
 
 func _bytes_of(tex: Texture2D) -> PackedByteArray:

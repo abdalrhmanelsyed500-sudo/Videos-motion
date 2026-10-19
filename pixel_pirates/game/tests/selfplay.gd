@@ -155,5 +155,8 @@ func _play() -> void:
 	print("status ", fi.get("status"), " speed ", scene.get("_helm").get("speed_kn"), " pos ", scene.get("_pos"))
 	await frames(60 * 14)
 	print("status ", fi.get("status"), " speed ", scene.get("_helm").get("speed_kn"), " hauls ", fi.get("hauls"), " hold ", st.call("hold_kg"), " pos ", scene.get("_pos"), " active ", fi.get("active"))
+	var wd: Object = port.get("world")
+	chk(wd.get("_cue_birds") != null, "the fishing-ground cues (beacons, buoys, gulls, shimmer) were built")
+	chk((wd.get("_trail") as Array).size() > 0, "the net line (corks and foam) trails behind the ship while the nets are out (%d marks)" % (wd.get("_trail") as Array).size())
 	print("SELFPLAY: %d checks, %d failed -> %s" % [checks, fails, "PASS" if fails == 0 else "FAIL"])
 	quit(0)

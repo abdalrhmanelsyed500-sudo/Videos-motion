@@ -49,6 +49,7 @@ var _marker_sig := ""
 var _hold_warned := false
 var _last_ctx: Dictionary = {}
 var _entries_cache: Array = []
+var _cue_t := 0.0
 var _extra: Dictionary = {}          # last dialogue variables that depend on an action (track name and distance)
 
 
@@ -93,6 +94,11 @@ func setup(layer: CanvasLayer, view_world: Object, tuning: Dictionary, pause_fn:
 	ui.map.set_views((port["map"] as Dictionary)["views"] as Array)
 	enabled = true
 	_update_markers(true)
+	var gl: Array = []
+	for gid in fishing.ground_order:
+		var gg: Dictionary = fishing.grounds[gid]
+		gl.append({"id": gid, "x": gg["x"], "z": gg["z"], "r": gg["r"]})
+	world.call("build_cues", gl)
 
 
 func modal() -> bool:
@@ -109,6 +115,8 @@ func step(dt: float, ctx: Dictionary) -> void:
 	var pz := float(ctx["wz"]) if bool(ctx["ashore"]) else float(ctx["sz"])
 	npcs.step(dt, world, Vector2(px, pz))
 	world.call("set_npcs", npcs.people)
+	_cue_t += dt
+	world.call("update_cues", dt, _cue_t, Vector2(float(ctx["sx"]), float(ctx["sz"])), float(ctx["sheading"]), fishing.active, float(ctx["speed_kn"]) * 0.514)
 	if fishing.active:
 		if not bool(ctx["sailing"]):
 			fishing.stop("moored")

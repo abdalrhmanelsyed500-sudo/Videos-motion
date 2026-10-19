@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image
 
 import city_art as CA
+import cue_sprites as CU
 import city_layout as CY
 import city_props as CP
 import cay_terrain as CT
@@ -49,6 +50,9 @@ def build_atlases(art):
     pim.save(art / "city_props_atlas.png", optimize=True)
     out["street"] = {"file": "city_props_atlas.png", "cell_px": [64, 64], "pivot_px": [32, 60], "cols": cols, "rows": rows,
                      "types": CP.PROP_TYPES, "px_per_m": PPM, "glow": True}
+    CU.atlas().save(art / "port_cue_atlas.png", optimize=True)
+    out["cue"] = {"file": "port_cue_atlas.png", "cell_px": [CU.CUE_W, CU.CUE_H], "pivot_px": list(CU.PIVOT), "cols": 4, "rows": 2,
+                  "types": CU.CUE_TYPES, "px_per_m": PPM, "glow": False}
     return out
 
 
