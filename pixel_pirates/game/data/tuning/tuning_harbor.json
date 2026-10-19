@@ -1,0 +1,160 @@
+{
+ "schema": 1,
+ "kind": "tuning",
+ "records": [
+  {
+   "key": "harbor.dock_speed_ms",
+   "value": 5.0,
+   "unit": "scene metres per second",
+   "min": 1,
+   "max": 15,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "Average speed of the assisted docking path. The time is path length / this, clamped to the two keys below."
+  },
+  {
+   "key": "harbor.dock_min_s",
+   "value": 6.0,
+   "unit": "seconds",
+   "min": 2,
+   "max": 30,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "The shortest docking manoeuvre (so a ship close to the berth does not snap into place)."
+  },
+  {
+   "key": "harbor.dock_max_s",
+   "value": 16.0,
+   "unit": "seconds",
+   "min": 4,
+   "max": 60,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "The longest docking manoeuvre (a ship at the far corner of the dock zone)."
+  },
+  {
+   "key": "harbor.undock_speed_ms",
+   "value": 3.5,
+   "unit": "scene metres per second",
+   "min": 1,
+   "max": 15,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "Average speed backing out of the berth to the approach point."
+  },
+  {
+   "key": "harbor.undock_min_s",
+   "value": 6.0,
+   "unit": "seconds",
+   "min": 2,
+   "max": 30,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "The shortest time backing out."
+  },
+  {
+   "key": "harbor.turn_out_s",
+   "value": 3.0,
+   "unit": "seconds",
+   "min": 1,
+   "max": 10,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "Time to swing the bow from north to south (heading 180) at the approach point before the helm is handed back."
+  },
+  {
+   "key": "harbor.head_turn_frac",
+   "value": 0.12,
+   "unit": "fraction",
+   "min": 0.02,
+   "max": 0.5,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "Share of the docking time over which the ship turns from its own heading onto the path."
+  },
+  {
+   "key": "harbor.ease_min",
+   "value": 0.3,
+   "unit": "ratio",
+   "min": 0.1,
+   "max": 1.0,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "Scene speed multiplier right at the berth (1 = no slowing near the harbour)."
+  },
+  {
+   "key": "harbor.ease_near_m",
+   "value": 40.0,
+   "unit": "metres",
+   "min": 5,
+   "max": 200,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "Distance to the berth at and below which the speed multiplier is ease_min."
+  },
+  {
+   "key": "harbor.ease_far_m",
+   "value": 110.0,
+   "unit": "metres",
+   "min": 20,
+   "max": 400,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "Distance to the berth at and beyond which the ship sails at full scene speed."
+  },
+  {
+   "key": "harbor.hint_radius_m",
+   "value": 260.0,
+   "unit": "metres",
+   "min": 50,
+   "max": 1000,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "Within this distance of the berth the HUD shows the distance, the bearing and how to dock."
+  },
+  {
+   "key": "harbor.half_len_m",
+   "value": 10.0,
+   "unit": "metres",
+   "min": 4,
+   "max": 14,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "Hull footprint: how far the bow and the stern probes are from the centre (the grounding test)."
+  },
+  {
+   "key": "harbor.side_m",
+   "value": 2.4,
+   "unit": "metres",
+   "min": 0.5,
+   "max": 4,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "Hull footprint: how far the side probes are from the centre line."
+  },
+  {
+   "key": "harbor.ground_limit_m",
+   "value": 0.3,
+   "unit": "metres",
+   "min": 0,
+   "max": 2,
+   "provisional": true,
+   "owner": "E1",
+   "source": "H2D-1 first harbor; first values chosen by simulation, confirm by hand on the dev PC",
+   "note": "Land higher than this under any hull probe runs the ship aground."
+  }
+ ]
+}
