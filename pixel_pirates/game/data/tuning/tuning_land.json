@@ -1,0 +1,138 @@
+{
+ "schema": 1,
+ "kind": "tuning",
+ "records": [
+  {
+   "key": "land.walk_ms",
+   "value": 4.0,
+   "unit": "metres per second",
+   "min": 1,
+   "max": 8,
+   "provisional": true,
+   "owner": "E2",
+   "source": "H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC",
+   "note": "Walking speed ashore. 4 m/s is a brisk walk (14 km/h) so a 520 m route stays under about 2.5 minutes; real walking is about 1.4 m/s. Tune after the first hand test."
+  },
+  {
+   "key": "land.run_ms",
+   "value": 7.5,
+   "unit": "metres per second",
+   "min": 3,
+   "max": 14,
+   "provisional": true,
+   "owner": "E2",
+   "source": "H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC",
+   "note": "Running speed (Shift). The island is 3-5 km across, so crossing it on foot takes 8-10 minutes at this speed."
+  },
+  {
+   "key": "land.speedup_s",
+   "value": 0.12,
+   "unit": "seconds",
+   "min": 0.02,
+   "max": 1,
+   "provisional": true,
+   "owner": "E2",
+   "source": "H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC",
+   "note": "Time to reach full walking speed: short, so the pirate feels responsive and not slidey."
+  },
+  {
+   "key": "land.body_r_m",
+   "value": 0.45,
+   "unit": "metres",
+   "min": 0.2,
+   "max": 1.2,
+   "provisional": true,
+   "owner": "E2",
+   "source": "H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC",
+   "note": "Body radius used against house walls and tree trunks."
+  },
+  {
+   "key": "land.board_radius_m",
+   "value": 5.0,
+   "unit": "metres",
+   "min": 1,
+   "max": 20,
+   "provisional": true,
+   "owner": "E2",
+   "source": "H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC",
+   "note": "How close to the boarding point (the pier, next to the moored ship) F must be pressed to go back aboard."
+  },
+  {
+   "key": "land.poi_radius_m",
+   "value": 12.0,
+   "unit": "metres",
+   "min": 3,
+   "max": 40,
+   "provisional": true,
+   "owner": "E2",
+   "source": "H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC",
+   "note": "A stop of the on-foot route counts as reached inside this radius."
+  },
+  {
+   "key": "land.stride_m",
+   "value": 0.8,
+   "unit": "metres",
+   "min": 0.3,
+   "max": 2,
+   "provisional": true,
+   "owner": "E2",
+   "source": "H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC",
+   "note": "Distance covered per walk-cycle frame (4 frames per step cycle)."
+  },
+  {
+   "key": "land.zoom",
+   "value": 4.0,
+   "unit": "x sea zoom",
+   "min": 2,
+   "max": 6,
+   "provisional": true,
+   "owner": "E2",
+   "source": "H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC",
+   "note": "Land camera zoom relative to the sea view (3.6 px/m): 4 gives 14.4 px/m so a 28 px pirate is 1.9 m tall and one sprite pixel is one screen pixel. Keep it near 4; other values blur the pirate against the ground."
+  },
+  {
+   "key": "land.zoom_s",
+   "value": 1.1,
+   "unit": "seconds",
+   "min": 0.2,
+   "max": 4,
+   "provisional": true,
+   "owner": "E2",
+   "source": "H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC",
+   "note": "Time of the camera transition when going ashore or boarding."
+  },
+  {
+   "key": "land.min_h",
+   "value": 0.45,
+   "unit": "metres",
+   "min": 0.2,
+   "max": 1.5,
+   "provisional": true,
+   "owner": "E2",
+   "source": "H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC",
+   "note": "Lowest ground height (above the sea) the pirate may stand on: keeps feet out of the surf. Mirrored in tools/h2d/check_land.py."
+  },
+  {
+   "key": "land.max_slope",
+   "value": 0.55,
+   "unit": "rise/run",
+   "min": 0.2,
+   "max": 1.5,
+   "provisional": true,
+   "owner": "E2",
+   "source": "H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC",
+   "note": "Steepest ground the pirate may climb (0.55 = 29 degrees). Mirrored in tools/h2d/check_land.py."
+  },
+  {
+   "key": "land.edge_margin_m",
+   "value": 0.0,
+   "unit": "metres",
+   "min": 0,
+   "max": 200,
+   "provisional": true,
+   "owner": "E2",
+   "source": "H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC",
+   "note": "Extra metres added to the baked explore radius (anvil_cay.json land.explore.r). The prototype opens a 560 m circle only."
+  }
+ ]
+}

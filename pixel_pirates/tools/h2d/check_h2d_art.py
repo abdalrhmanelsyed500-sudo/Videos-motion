@@ -121,7 +121,8 @@ def check_ship(sheet: bool) -> None:
         print("wrote", dst)
 
 
-def check_atlas(name: str, cw: int, ch: int, cap: int, owner: dict[str, str], label: str) -> None:
+def check_atlas(name: str, cw: int, ch: int, cap: int, owner: dict[str, str], label: str,
+                top_ok: bool | set = False) -> None:
     atlas = load(name)
     tc = colours(atlas)
     out_t = sorted(c for c in tc if c not in owner)
@@ -135,31 +136,35 @@ def check_atlas(name: str, cw: int, ch: int, cap: int, owner: dict[str, str], la
         for r in range(atlas.shape[0] // ch):
             for c in range(atlas.shape[1] // cw):
                 cell = atlas[r * ch:(r + 1) * ch, c * cw:(c + 1) * cw, 3] >= 128
-                if cell.any() and (cell[0].any() or cell[-1].any() or cell[:, 0].any() or cell[:, -1].any()):
+                if cell.any() and ((cell[0].any() and not (top_ok is True or (c, r) in (top_ok or ()))) or cell[-1].any() or cell[:, 0].any() or cell[:, -1].any()):
                     fail(f"{label} cell ({c},{r}) touches its border")
     print(f"{label}: {len(tc)} colours, atlas {atlas.shape[1]}x{atlas.shape[0]}")
 
 
 def check_island() -> None:
-    """H2D-1 Anvil Cay (the older H2D-0 island files stay in the repo, unused, and are no longer checked)."""
+    """H2D-1.2 Anvil Cay: the data maps, the 8 x 16 ground palette image and the three atlases."""
     owner, limits = palette()
     meta = json.loads((ART / "anvil_cay.json").read_text())
-    albedo = load("anvil_cay_albedo.png")
-    cols = colours(albedo)
+    n = int(meta["grid"]["cells"])
+    for name in ("anvil_cay_height.png", "anvil_cay_biome.png"):
+        if load(name).shape[:2] != (n, n):
+            fail(f"{name} is not {n} x {n} like the json grid")
+    pal = load("anvil_cay_palette.png")
+    cols = colours(np.delete(pal, 5, axis=1))     # column 5 holds numbers (base, spread, pattern), not a colour
     outside = sorted(c for c in cols if c not in owner)
     if outside:
-        fail(f"island albedo colours not in palette.json: {outside[:6]}")
-    cap = limits["max_colours_per_sheet"]["tiles"] + limits["max_colours_per_sheet"]["props"]
-    if len(cols) > cap:
-        fail(f"island albedo colours {len(cols)} > {cap}")
-    if load("anvil_cay_data.png").shape[:2] != albedo.shape[:2]:
-        fail("island data map size differs from albedo")
-    if load("anvil_cay_normal.png").shape[:2] != albedo.shape[:2]:
-        fail("island normal map size differs from albedo")
-    print(f"island: {albedo.shape[1]}x{albedo.shape[0]} px, {len(cols)} albedo colours, size {meta.get('size_m')} m")
+        fail(f"ground palette colours not in palette.json: {outside[:6]}")
+    biome = load("anvil_cay_biome.png")
+    classes = np.unique(biome[..., 0] // 16)
+    if int(classes.max()) >= pal.shape[0]:
+        fail("a biome class has no row in the ground palette image")
+    print(f"island: grid {n} x {n} at {meta['grid']['cell_m']} m, ground palette {len(cols)} colours, {len(classes)} biome classes, "
+          f"extent {meta['extent']}")
     props = limits["max_colours_per_sheet"]["props"]
     check_atlas("anvil_veg_atlas.png", 48, 56, props, owner, "vegetation atlas")
-    check_atlas("anvil_struct_atlas.png", 80, 72, props, owner, "structure atlas")
+    check_atlas("anvil_struct_atlas.png", 80, 72, props, owner, "structure atlas",
+                top_ok={(2, 3)})   # the lighthouse finial is a one-pixel spike on row 0
+    check_atlas("anvil_hero_atlas.png", 24, 32, props, owner, "hero atlas", top_ok=True)   # the 30 px pirate has a closed outline on row 0
 
 
 def main() -> int:

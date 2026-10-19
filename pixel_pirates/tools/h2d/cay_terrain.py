@@ -202,11 +202,12 @@ def build() -> Terrain:
         T.stacks.append([float(XS[ix]), float(ZS[iz]), float(rs.uniform(2.0, 4.6)), float(rs.uniform(1.0, 2.6))])
     warp_small = fbm(rs, 14.0, 2)
     T.rockmask = np.zeros((N, N), bool)
-    for cx, cz, r, hh in T.stacks:
+    for cx, cz, r0, hh in T.stacks:
+        r = max(r0, 3.2)     # a stack narrower than ~1.5 cells of the 2 m grid would vanish in the blur
         x0, x1 = int((cx - r * 2 - X0) / CELL), int((cx + r * 2 - X0) / CELL) + 1
         z0, z1 = int((cz - r * 2 - Z0) / CELL), int((cz + r * 2 - Z0) / CELL) + 1
         x0, z0, x1, z1 = max(x0, 0), max(z0, 0), min(x1, N), min(z1, N)
-        dd = np.sqrt((X[:, x0:x1] - cx) ** 2 + (Z[z0:z1, :] - cz) ** 2) / r + 0.25 * warp_small[z0:z1, x0:x1]
+        dd = np.sqrt((X[:, x0:x1] - cx) ** 2 + (Z[z0:z1, :] - cz) ** 2) / r + 0.15 * warp_small[z0:z1, x0:x1]
         blob = np.clip(1.0 - dd, 0.0, 1.0)
         sub = h[z0:z1, x0:x1]
         top = hh * np.minimum(blob * 2.2, 1.0) - 0.2 * (1 - np.minimum(blob * 2.2, 1.0)) + 0.1

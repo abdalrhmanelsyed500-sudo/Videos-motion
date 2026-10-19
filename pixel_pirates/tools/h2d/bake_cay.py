@@ -156,6 +156,18 @@ def build_world():
     structs.append(("wreck_crates", 4, pois["wreck"]["x"] + 2.0, pois["wreck"]["z"] - 9.0, 3.8, 3.0, 2.4))
     structs.append(("wreck_barrels", 5, pois["wreck"]["x"] + 9.0, pois["wreck"]["z"] - 3.0, 3.0, 2.0, 1.4))
     structs.append(("pearl_barrels", 5, pois["pearl"]["x"] + 6.0, pois["pearl"]["z"] - 5.0, 3.0, 2.0, 1.4))
+    # the POI props were placed by offset from the stop; if the offset lands in the surf, walk it inland (1 m steps)
+    ex, ez = CT.EXPLORE["x"], CT.EXPLORE["z"]
+    for k, (name, cell, x, z, w, d, hh) in enumerate(structs):
+        if not name.startswith(("signpost_", "rowboat_", "wreck_", "pearl_")):
+            continue
+        for _ in range(120):
+            iz, ix = cell_of(x, z - d * 0.5)
+            if h[iz, ix] >= 0.7:
+                break
+            L = math.hypot(ex - x, ez - z)
+            x, z = x + (ex - x) / L, z + (ez - z) / L
+        structs[k] = (name, cell, x, z, w, d, hh)
     pad = np.zeros((N, N), np.float32)
     padh = np.zeros((N, N), np.float32)
     for name, _cell, x, z, w, d, _hh in structs:
@@ -318,6 +330,8 @@ def main() -> int:
             continue
         iz, ix = cell_of(cx, cz)
         top = float(h[iz, ix])
+        if top < 0.3:
+            continue     # drowned by the blur: no sprite without something to grind on
         props.append({"x_m": round(cx, 1), "z_m": round(cz, 1), "y_m": round(max(top, 0.0) - 0.1, 2), "type": 12,
                       "scale": round(min(max(r / 3.0, 0.7), 1.5), 2)})
     # land measures

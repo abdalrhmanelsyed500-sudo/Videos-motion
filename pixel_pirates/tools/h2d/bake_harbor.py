@@ -1,4 +1,8 @@
-"""Bakes Anvil Cay for H2D-1 (First Island and Harbor prototype): terrain, ground texture, height/shadow data, normal map,
+"""LEGACY (H2D-1, the 240 m harbour patch). Since H2D-1.2 this file is only a LIBRARY (palette helpers, structure and vegetation
+artwork, STRUCTS) for bake_cay.py; running it as a script is refused because it would overwrite anvil_cay.json with the old
+240 m island. Use tools/h2d/bake_cay.py.
+
+Bakes Anvil Cay for H2D-1 (First Island and Harbor prototype): terrain, ground texture, height/shadow data, normal map,
 vegetation atlas, structure atlas, and anvil_cay.json (trees, structures, lamps, pier, berth, dock zone).
 
   python tools/h2d/bake_harbor.py            # writes game/h2d/art/anvil_cay_*.png, anvil_veg_atlas.png, anvil_struct_atlas.png, anvil_cay.json
@@ -979,7 +983,11 @@ def preview(ground, h, n, atlas_v, atlas_s, trees, structs, path_dir):
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--preview", action="store_true")
+    ap.add_argument("--legacy", action="store_true", help="really rebuild the old 240 m island (breaks the H2D-1.2 files)")
     args = ap.parse_args()
+    if not args.legacy:
+        print("bake_harbor.py is a library since H2D-1.2. Run tools/h2d/bake_cay.py (or pass --legacy to rebuild the old island).")
+        return 2
     h, mask, rock_mask, _rs = build_terrain()
     n = normals(h)
     slope = np.sqrt(np.maximum(1.0 - n[..., 1] ** 2, 0)) / np.maximum(n[..., 1], 1e-3)

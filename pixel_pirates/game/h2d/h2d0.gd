@@ -6,6 +6,9 @@ extends Node
 ##       M ship motion off / half / full | E effects budget (low / medium / high)
 ## H2D-1: Anvil Cay has a harbour. SPACE docks inside the dock zone (between the buoys) and casts off again;
 ##       N cycles the time of day (dawn / noon / sunset / night) to look at the lighting.
+## H2D-1.2: F goes ashore from the moored ship (and back aboard at the pier); on foot WASD / arrows walk, Shift
+## runs, T jumps to the
+##       next stop (test); Tab cycles the weather lab anywhere (W does it only at sea, because W walks north ashore).
 ## Keys: A/D (or Left/Right) steer | Z/X turn sensitivity | 1-7 weather (1 squall 2 fair 4 fog 5 swell 6 gale 7 ice)
 ##       P pause | R reset ship | F1 quality (Dev-Lite / Standard / Ultra) | F2 path (3D / 2D) | F3 HUD | F4 flip colour
 ##       transfer | F12 screenshot | [ ] camera pitch | - = exposure | , . visual speed | B benchmark (about 80 s)
@@ -25,6 +28,7 @@ const Helm := preload("res://h2d/helm.gd")
 const EnvModel := preload("res://h2d/env_model.gd")
 const HelmHud := preload("res://h2d/helm_hud.gd")
 const Harbor := preload("res://h2d/harbor.gd")
+const LandWalker := preload("res://h2d/land_walker.gd")
 const MAX_STEP_S := 0.25
 const SMOOTH_S := 2.0
 const START_POS := Vector2(-100.0, 140.0)  ## keep in step with START in tools/h2d/check_harbor.py
@@ -69,6 +73,9 @@ var _helm_snap := true
 var _helm_hud: HelmHud
 var _harbor: Harbor = Harbor.new()
 var _moor := 0.0
+var _walker: LandWalker = LandWalker.new()
+var _edge_said := -100.0
+var _tp_next := 0
 var _tod := 0
 var _dock_label: Label
 var _alert: Label
@@ -128,6 +135,9 @@ func _ready() -> void:
 	_env.configure(_oc.tuning())
 	(_v3 as View3D).configure_env(_oc.tuning())
 	_harbor.configure((_v3 as View3D).harbor_layout(), _oc.tuning())
+	_walker.configure((_v3 as View3D).land_world().meta["land"], _oc.tuning())
+	(_v3 as View3D).land_world().walk_min_h = _walker.param("min_h")
+	(_v3 as View3D).land_world().walk_max_slope = _walker.param("max_slope")
 	_jump(2)
 	_reset_ship()
 	_set_path("3d")
@@ -165,9 +175,12 @@ func _reset_ship() -> void:
 	_grounded = false
 	_harbor.reset()
 	_moor = 0.0
+	_walker.board()
 
 
 func _set_path(which: String) -> void:
+	if which == "2d" and _walker.is_ashore():
+		_walker.board()     # the 2D fallback has no land: step back aboard instead of leaving the pirate nowhere
 	_active = _v3 if which == "3d" else _v2
 	_v3.set_active(which == "3d")
 	_v2.set_active(which == "2d")
@@ -195,6 +208,7 @@ func _process(delta: float) -> void:
 	# the helm: A/D -> rudder -> turn rate -> heading; the sails' speed at this heading -> actual speed (with momentum)
 	_apply_lab()
 	_step_env(dt)
+	_land_step(dt, gs)
 	var target_kn: float = _sea.speed_kn() * (1.0 + _env.gust_surge())
 	var speed_scene := 0.0
 	if _harbor.state == Harbor.SAILING:
@@ -207,6 +221,7 @@ func _process(delta: float) -> void:
 	_curve = clampf(deg_to_rad(_helm.yaw_rate) / maxf(speed_scene, 3.0), -0.04, 0.04)
 	_update_light(float(_state.clock.t) / 86400.0)
 	_update_region()
+	(_v3 as View3D).set_land(_land_view_state())
 	_active.update_view(_view(), {"x": _pos.x, "z": _pos.y, "heading_deg": _heading_disp,
 			"speed_kn": float(_d["speed_kn"]), "scene_speed": speed_scene, "curve": _curve, "moor": _moor}, delta)
 	var advice := _helm_state(target_kn)
@@ -287,6 +302,85 @@ func _dock_request() -> void:
 			_say("Casting off from %s." % _harbor.port_name)
 		"not_in_zone":
 			_say("Too far from the berth: sail into the harbour mouth (between the buoys) first.")
+
+
+# ---- H2D-1.2: on foot -------------------------------------------------------------------------------------------
+func _land_view_state() -> Dictionary:
+	return {"ashore": _walker.is_ashore(), "x": _walker.x, "z": _walker.z, "row": _walker.row, "frame": _walker.frame,
+			"zoom": _walker.param("zoom"), "zoom_s": _walker.param("zoom_s")}
+
+
+func _walk_axis() -> Vector2:
+	var a := Vector2.ZERO
+	if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT):
+		a.x -= 1.0
+	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
+		a.x += 1.0
+	if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP):
+		a.y -= 1.0
+	if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN):
+		a.y += 1.0
+	return a
+
+
+func _land_step(dt: float, gs: float) -> void:
+	if not _walker.is_ashore():
+		return
+	_walker.step(dt if gs > 0.0 else 0.0, _walk_axis(), Input.is_key_pressed(KEY_SHIFT), (_v3 as View3D).land_world())
+	if _walker.last_reached != "":
+		_say("Reached %s (stop %d of %d)." % [_walker.last_reached, _walker.visited_count(), _walker.pois.size()])
+		_walker.last_reached = ""
+		if _walker.route_complete():
+			_say("Route complete. Walk back to the pier and press F to board, then SPACE to cast off.")
+	if _walker.blocked_by_edge and _real - _edge_said > 5.0:
+		_edge_said = _real
+		_say("That is the edge of the walkable area in this prototype. The rest of the island is not open yet.")
+
+
+## F: go ashore from the moored ship, or board again at the pier.
+func _land_toggle() -> void:
+	if _active != _v3:
+		_say("Walking ashore needs the 3D path (F2).")
+		return
+	if _walker.is_ashore():
+		if _walker.can_board():
+			_walker.board()
+			_say("Back aboard. SPACE casts off.")
+		else:
+			_say("Too far from the ship to board: walk back to the pier. %s" % _walker.hint_text())
+		return
+	if _harbor.state != Harbor.DOCKED:
+		_say("Dock first: sail into the harbour mouth and press SPACE. Then F goes ashore.")
+		return
+	_walker.disembark((_v3 as View3D).land_world().meta["land"])
+	(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))
+	_say("Ashore. WASD or arrows walk, Shift runs. Follow the route: %s" % _walker.hint_text())
+
+
+## T (test): jump to the next stop of the route.
+func _land_teleport() -> void:
+	if not _walker.is_ashore():
+		_say("T jumps between the stops while you are ashore (F first).")
+		return
+	var d: Dictionary = _walker.pois[_tp_next % _walker.pois.size()]
+	_tp_next += 1
+	_walker.teleport_to(str(d["id"]))
+	(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))
+	_say("Test jump: %s. (The stop only counts as reached when you walk into it.)" % str(d["name"]))
+
+
+func _dock_prompt() -> String:
+	if _walker.is_ashore():
+		return "Press F to board the ship" if _walker.can_board() else ""
+	var t := str(_harbor.prompt(_pos.x, _pos.y)["text"])
+	if _harbor.state == Harbor.DOCKED:
+		t += "   F: go ashore"
+	return t
+
+
+func _cycle_lab() -> void:
+	_lab = LAB_ORDER[(LAB_ORDER.find(_lab) + 1) % LAB_ORDER.size()]
+	_say("weather lab: %s (the sea builds up or dies away over about half a minute)" % _lab)
 
 
 func _cycle_time_of_day() -> void:
@@ -405,7 +499,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	if k == null or not k.pressed or k.echo:
 		return
 	var v3 := _v3 as View3D
-	if k.keycode >= KEY_1 and k.keycode <= KEY_7:
+	var ashore := _walker.is_ashore()
+	if k.keycode == KEY_F:
+		_land_toggle()
+	elif k.keycode == KEY_T:
+		_land_teleport()
+	elif k.keycode == KEY_TAB:
+		_cycle_lab()
+	elif ashore and (k.keycode == KEY_R or k.keycode == KEY_SPACE or (k.keycode >= KEY_1 and k.keycode <= KEY_7)):
+		_say("You are ashore: board the ship first (F at the pier). %s" % _walker.hint_text())
+	elif k.keycode >= KEY_1 and k.keycode <= KEY_7:
 		_jump(int(k.keycode) - int(KEY_1) + 1)
 	elif k.keycode == KEY_P:
 		var reason := "menu"
@@ -416,8 +519,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif k.keycode == KEY_R:
 		_reset_ship()
 	elif k.keycode == KEY_W:
-		_lab = LAB_ORDER[(LAB_ORDER.find(_lab) + 1) % LAB_ORDER.size()]
-		_say("weather lab: %s (the sea builds up or dies away over about half a minute)" % _lab)
+		if not ashore:
+			_cycle_lab()
 	elif k.keycode == KEY_SPACE:
 		_dock_request()
 	elif k.keycode == KEY_N:
@@ -555,8 +658,8 @@ func _helm_state(target_kn: float) -> Dictionary:
 ## One or two plain sentences that say what the ship is doing and why its speed is what it is.
 func _advice_for(st: Dictionary) -> String:
 	var eff := float(st["target_kn"]) / maxf(float(st["best_kn"]), 0.1)
-	if _harbor.state != Harbor.SAILING:
-		return str(_harbor.prompt(_pos.x, _pos.y)["text"])
+	if _walker.is_ashore() or _harbor.state != Harbor.SAILING:
+		return _walker.hint_text() if _walker.is_ashore() else _dock_prompt()
 	if _grounded:
 		return "AGROUND on Anvil Cay. Turn away from the island with A or D (or press R to start again)."
 	if bool(st["in_irons"]):
@@ -616,13 +719,14 @@ func _build_helm_widgets(layer: CanvasLayer) -> void:
 
 ## The big IN IRONS / AGROUND banner. Pulses so it cannot be missed, and says which key to press.
 func _update_alert(st: Dictionary) -> void:
-	var pr := _harbor.prompt(_pos.x, _pos.y)
-	_dock_label.visible = _hud_on and str(pr["text"]) != ""
-	_dock_label.text = str(pr["text"])
-	var alarm := _hud_on and _harbor.state == Harbor.SAILING and (bool(st["in_irons"]) or _grounded)
+	var ptxt := _dock_prompt()
+	_dock_label.visible = _hud_on and ptxt != ""
+	_dock_label.text = ptxt
+	var sailing := _harbor.state == Harbor.SAILING and not _walker.is_ashore()
+	var alarm := _hud_on and sailing and (bool(st["in_irons"]) or _grounded)
 	_alert.visible = alarm
 	_alert_sub.visible = alarm
-	_helm_hud.visible = _hud_on
+	_helm_hud.visible = _hud_on and not _walker.is_ashore()
 	if not alarm:
 		return
 	_alert.text = "AGROUND" if _grounded else "IN IRONS"
@@ -637,15 +741,20 @@ func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 		return
 	var wind_from := float(_d["wind_from"])
 	var lines: Array[String] = []
-	lines.append("CROWN OF THE SEAS - H2D-1 Anvil Cay   [%s]   %.0f fps" % [_active.describe(), _fps])
+	lines.append("CROWN OF THE SEAS - H2D-1.2 Anvil Cay (scale + land)   [%s]   %.0f fps" % [_active.describe(), _fps])
 	lines.append(_renderer_line)
 	lines.append("%s   %02d:%02d   wind %.0f kn (gusting %.0f) from %s   waves %.1f m   visibility %.1f km" % [
 			_region_name(), int(_hour), int((_hour - floorf(_hour)) * 60.0), float(_d["wind_kn"]), _env.wind_inst_kn,
 			_compass(wind_from), float(_d["wave_m"]), float(_d["visibility_km"])])
 	lines.append("sea state: %s (%.2f)   gust %.2f   weather: %s   effects: %s" % [_env.sea_name(), _env.sea, _env.gust,
 			"real" if _lab == "real" else "LAB " + _lab, (_v3 as View3D).effects])
-	lines.append("ship motion [%s]: %s" % [MOTION_NAMES[(_v3 as View3D).motion_mode], (_v3 as View3D).motion_summary()])
-	lines.append("turn rate %.0f deg/s (sensitivity x%.1f, Z/X)   scene speed %.1f m/s (x%.2f)   sprite frame %d/16" % [
+	if _walker.is_ashore():
+		var w3 := (_v3 as View3D).land_world()
+		lines.append("ON FOOT  x %.0f  z %.0f  ground %.1f m  speed %.1f m/s  walked %d m   %s" % [_walker.x, _walker.z,
+				w3.height_smooth(_walker.x, _walker.z), _walker.speed_ms, int(_walker.distance_m), w3.chunk_stats()])
+	else:
+		lines.append("ship motion [%s]: %s" % [MOTION_NAMES[(_v3 as View3D).motion_mode], (_v3 as View3D).motion_summary()])
+		lines.append("turn rate %.0f deg/s (sensitivity x%.1f, Z/X)   scene speed %.1f m/s (x%.2f)   sprite frame %d/16" % [
 			absf(_helm.yaw_rate), _helm.sensitivity, speed_scene, _speed_mul, ShipSprite.heading_frame(_heading_disp)])
 	lines.append("rain %.2f  storm %.2f  fog %.2f  ice %.2f  swell warning %.2f" % [
 			float(_d["rain"]), float(_d["storm"]), float(_d["fog"]), float(_d["ice"]), float(_d["herald"])])
@@ -662,7 +771,10 @@ func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 		lines.append("BENCHMARK " + (_bench as Bench).current_label())
 	if _real < _banner_until:
 		lines.append(_banner)
-	lines.append("A/D steer  SPACE dock  N time  Z/X turn  W weather  G gust  M motion  E effects  P pause  R reset")
+	if _walker.is_ashore():
+		lines.append("WASD / arrows walk  Shift run  F board (at pier)  T next stop  Tab weather  N time  P pause")
+	else:
+		lines.append("A/D steer  SPACE dock/cast off  F ashore (moored)  N time  Z/X turn  W/Tab weather  G gust  R reset")
 	_hud.text = "\n".join(PackedStringArray(lines))
 
 

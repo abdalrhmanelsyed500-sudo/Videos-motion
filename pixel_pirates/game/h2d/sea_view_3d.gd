@@ -11,6 +11,7 @@ const LightModel := preload("res://h2d/light_model.gd")
 const ShipMotion := preload("res://h2d/ship_motion.gd")
 const EnvModel := preload("res://h2d/env_model.gd")
 const SailModel := preload("res://h2d/sail_model.gd")
+const CayWorld := preload("res://h2d/cay_world.gd")
 const WeatherLook := preload("res://h2d/weather_look.gd")
 const DataLoader := preload("res://core/data_loader.gd")
 const SHADER_DIR := "res://h2d/shaders/"
@@ -51,18 +52,12 @@ var _rect: TextureRect
 var _cam: Camera3D
 var _ocean: MeshInstance3D
 var _ocean_mat: ShaderMaterial
-var _island: MeshInstance3D
-var _island_mat: ShaderMaterial
-var _trees: MultiMeshInstance3D
-var _structs: MultiMeshInstance3D
+var _cay: CayWorld = CayWorld.new()
 var _harbor_layout: Dictionary = {}
-var _lamp_mats: Array[ShaderMaterial] = []
 var _ship: MeshInstance3D
 var _ship_mat: ShaderMaterial
 var _post_mat: ShaderMaterial
 var _look_profiles: Dictionary = {}
-var _island_meta: Dictionary = {}
-var _island_img: Image
 var _wave_b: Dictionary = {}
 var _time := 0.0
 var _rain: MultiMeshInstance3D
@@ -80,6 +75,9 @@ var _burst_next := 0
 var _slam_count := 0
 var _last_out: Dictionary = {"roll_deg": 0.0, "pitch_deg": 0.0, "heave_m": 0.0}
 var _focus := Vector2.ZERO
+## 1 at sea; the land view eases it to land.zoom (about 4): the pirate keeps one sprite pixel per screen pixel
+var _zoom := 1.0
+var _land: Dictionary = {"ashore": false}
 
 
 func setup(host: Node) -> void:
@@ -157,7 +155,7 @@ func set_quality(q: String) -> void:
 	plane.subdivide_depth = int(p["ocean_div"])
 	_ocean_mat.set_shader_parameter("detail", float(p["detail"]))
 	_ocean_mat.set_shader_parameter("posterize", float(p["posterize"]))
-	_island_mat.set_shader_parameter("shadow_steps", float(p["shadow_steps"]))
+	_cay.set_quality(float(p["shadow_steps"]), 1.0 if q != "dev_lite" else 0.0)
 	var prof: Dictionary = (_look_profiles["profiles"] as Dictionary)["dev_lite" if q == "dev_lite" else "standard"]
 	var ts: Dictionary = prof["tilt_shift"]
 	var vg: Dictionary = prof["vignette"]
@@ -199,16 +197,23 @@ func motion_summary() -> String:
 
 
 func land_height_at(x: float, z: float) -> float:
-	if _island_img == null:
-		return -99.0
-	var size: float = float(_island_meta["size_m"])
-	var w := _island_img.get_width()
-	var h := _island_img.get_height()
-	var px := int(floorf((x - _island_origin().x) / size * float(w) + float(w) * 0.5))
-	var py := int(floorf((z - _island_origin().y) / size * float(h) + float(h) * 0.5))
-	if px < 0 or py < 0 or px >= w or py >= h:
-		return -99.0
-	return _island_img.get_pixel(px, py).r * 48.0 - 8.0
+	return _cay.height_at(x, z)
+
+
+## The land (anvil_cay.json + the baked maps) for the on-foot controller: walkable(), height_smooth(), ...
+func land_world() -> CayWorld:
+	return _cay
+
+
+## The pirate on foot, set by the controller every frame: {ashore, x, z, row, frame, zoom, zoom_s}. `ashore` false
+## = at sea.
+func set_land(state: Dictionary) -> void:
+	_land = state
+
+
+## Where the camera looks now (scene metres): the ship at sea, the pirate ashore, blended while the zoom eases.
+func camera_focus() -> Vector2:
+	return _focus
 
 
 func update_view(v: Dictionary, ship: Dictionary, dt: float) -> void:
@@ -222,7 +227,7 @@ func update_view(v: Dictionary, ship: Dictionary, dt: float) -> void:
 	_update_ocean(v, ship, lm)
 	_update_weather_fx(v, ship)
 	_update_ship(v, ship, dt)
-	_update_camera(ship)
+	_update_camera(ship, dt)
 	_update_post(v, lm)
 
 
@@ -312,10 +317,6 @@ func _mat(shader_file: String) -> ShaderMaterial:
 	return m
 
 
-func _island_origin() -> Vector2:
-	return Vector2.ZERO
-
-
 func _build_ocean() -> void:
 	_ocean = MeshInstance3D.new()
 	var plane := PlaneMesh.new()
@@ -329,87 +330,28 @@ func _build_ocean() -> void:
 
 
 func _build_island() -> void:
-	_island_meta = DataLoader.load_dict(ART_DIR + "anvil_cay.json")
-	_harbor_layout = _island_meta["harbor_layout"]
-	var files: Dictionary = _island_meta["files"]
-	var size: float = float(_island_meta["size_m"])
-	var data_tex := _tex(str(files["data"]))
-	if data_tex != null:
-		_island_img = data_tex.get_image()
-		_island_img.convert(Image.FORMAT_RGBA8)
-	_ocean_mat.set_shader_parameter("island_data", data_tex)
-	_ocean_mat.set_shader_parameter("island_origin", _island_origin())
-	_ocean_mat.set_shader_parameter("island_size", size)
+	_cay.build(_vp, _ocean_mat, Callable(self, "_tex"), Callable(self, "_mat"))
+	_harbor_layout = _cay.harbor_layout()
 	var b: Dictionary = _harbor_layout["berth"]
 	var hl: float = float(_harbor_layout["ship_half_len_m"]) + 0.8
 	var hb: float = float(_harbor_layout["ship_half_beam_m"]) + 0.4
 	_ocean_mat.set_shader_parameter("berth_rect", Vector4(float(b["x"]) - hb, float(b["z"]) - hl, float(b["x"]) + hb,
 			float(b["z"]) + hl))
-	_island_mat = _mat("island.gdshader")
-	_island_mat.set_shader_parameter("albedo_tex", _tex(str(files["albedo"])))
-	_island_mat.set_shader_parameter("data_tex", data_tex)
-	_island_mat.set_shader_parameter("normal_tex", _tex(str(files["normal"])))
-	_island_mat.set_shader_parameter("island_size", size)
-	_island = MeshInstance3D.new()
-	var plane := PlaneMesh.new()
-	plane.size = Vector2(size, size)
-	plane.subdivide_width = int(size) - 1  # one vertex per metre: the 3 m pier deck needs it (H2D-0 used 1.7 m cells)
-	plane.subdivide_depth = int(size) - 1
-	_island.mesh = plane
-	_island.material_override = _island_mat
-	_island.position = Vector3(_island_origin().x, 0.0, _island_origin().y)
-	_island.extra_cull_margin = 40.0
-	_island.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_vp.add_child(_island)
-	_trees = _build_sprites(_island_meta["trees"] as Array, _island_meta["veg_atlas"] as Dictionary, false)
-	_structs = _build_sprites(_island_meta["structures"] as Array, _island_meta["struct_atlas"] as Dictionary, true)
 	_set_lamps()
 
 
-## One MultiMesh of camera-facing sprites (ONE draw call per atlas). `glow` turns on the lit-window / lantern emission.
-func _build_sprites(list: Array, atlas: Dictionary, glow: bool) -> MultiMeshInstance3D:
-	var mm := MultiMesh.new()
-	mm.transform_format = MultiMesh.TRANSFORM_3D
-	mm.use_custom_data = true
-	mm.mesh = QuadMesh.new()
-	mm.instance_count = list.size()
-	for i in list.size():
-		var t: Dictionary = list[i]
-		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(float(t["x_m"]), float(t["y_m"]), float(t["z_m"]))))
-		var bob := 0.12 if str(t.get("name", "")).begins_with("buoy") else 0.0
-		mm.set_instance_custom_data(i, Color(float(t["type"]), float(t["scale"]), bob, 0.0))
-	mm.custom_aabb = AABB(Vector3(-130.0, -10.0, -130.0), Vector3(260.0, 80.0, 260.0))
-	var inst := MultiMeshInstance3D.new()
-	inst.multimesh = mm
-	var m := _mat("trees.gdshader")
-	m.set_shader_parameter("atlas", _tex(str(atlas["file"])))
-	var cell: Array = atlas["cell_px"]
-	var piv: Array = atlas["pivot_px"]
-	m.set_shader_parameter("cell_px", Vector2(float(cell[0]), float(cell[1])))
-	m.set_shader_parameter("pivot_px", Vector2(float(piv[0]), float(piv[1])))
-	m.set_shader_parameter("atlas_grid", Vector2(float(atlas["cols"]), float(atlas["rows"])))
-	m.set_shader_parameter("m_per_px", 1.0 / PX_PER_M)
-	m.set_shader_parameter("glow_on", 1.0 if glow else 0.0)
-	inst.material_override = m
-	inst.position = Vector3(_island_origin().x, 0.0, _island_origin().y)
-	inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_vp.add_child(inst)
-	_lamp_mats.append(m)
-	return inst
-
-
-## The six harbour lamps (anvil_cay.json "lamps") go to every material that lights things at night.
+## The six harbour lamps (anvil_cay.json \"lamps\") go to every material that lights things at night.
 func _set_lamps() -> void:
-	var lamps: Array = _island_meta["lamps"]
-	var mats: Array[ShaderMaterial] = [_ocean_mat, _island_mat]
-	mats.append_array(_lamp_mats)
+	var lamps: Array = _cay.lamps()
+	var mats: Array = [_ocean_mat]
+	mats.append_array(_cay.lamp_materials())
 	for i in 6:
 		var v := Vector4(0.0, 0.0, 1.0, 0.0)
 		if i < lamps.size():
 			var l: Dictionary = lamps[i]
-			v = Vector4(float(l["x_m"]) + _island_origin().x, float(l["z_m"]) + _island_origin().y, 15.0, 0.9)
+			v = Vector4(float(l["x_m"]), float(l["z_m"]), 15.0, 0.9)
 		for m in mats:
-			m.set_shader_parameter("lamp%d" % i, v)
+			(m as ShaderMaterial).set_shader_parameter("lamp%d" % i, v)
 
 
 ## Harbour data for the controller (the layout of anvil_cay.json: berth, approach, dock zone, pier).
@@ -543,8 +485,8 @@ func _update_ocean(v: Dictionary, ship: Dictionary, lm: Dictionary) -> void:
 	_ocean_mat.set_shader_parameter("ship_roll", float(_last_out["roll_deg"]) / 10.0)
 	_ocean_mat.set_shader_parameter("wash", clampf(0.15 * speed_frac + 0.55 * sea + 0.5 * _motion.slam, 0.0, 1.0))
 	_ocean_mat.set_shader_parameter("slam", _motion.slam)
-	var cell := OCEAN_SIZE_M / float(PROFILES[quality]["ocean_div"])
-	_ocean.position = Vector3(roundf(float(ship["x"]) / cell) * cell, 0.0, roundf(float(ship["z"]) / cell) * cell)
+	var cell := OCEAN_SIZE_M * _ocean.scale.x / float(PROFILES[quality]["ocean_div"])
+	_ocean.position = Vector3(roundf(_focus.x / cell) * cell, 0.0, roundf(_focus.y / cell) * cell)
 
 
 ## The hull feels the same waves the ocean draws. Spray events (bow or a rail meeting the water fast) become bursts.
@@ -623,7 +565,6 @@ func _update_weather_fx(v: Dictionary, ship: Dictionary) -> void:
 	var sea := float(env["sea"])
 	var wt: Vector2 = env["wind_to"]
 	var wms := float(env["wind_ms"])
-	_focus = Vector2(float(ship["x"]), float(ship["z"]) - TARGET_LEAD_M)
 	var e: Dictionary = EFFECTS[effects]
 	var g: Vector2i = e["grid"]
 	var cell: float = e["cell_m"]
@@ -659,14 +600,36 @@ func _update_weather_fx(v: Dictionary, ship: Dictionary) -> void:
 		_spray_mat.set_shader_parameter("burst_b%d" % i, Vector4(float(b[4]), float(b[5]), float(b[6]), float(b[7])))
 
 
-func _update_camera(ship: Dictionary) -> void:
-	var dist := ART_H / (2.0 * tan(deg_to_rad(FOV_DEG) * 0.5) * PX_PER_M)
+## The camera looks at the ship at sea and at the pirate ashore. The zoom eases between 1 (sea: 3.6 px per metre)
+## and the land
+## zoom (about 4: 14.4 px per metre, so a 28 px pirate is 1.9 m tall and one sprite pixel is one screen pixel).
+func _update_camera(ship: Dictionary, dt: float) -> void:
+	var ashore: bool = bool(_land.get("ashore", false))
+	var zt := float(_land.get("zoom", 4.0)) if ashore else 1.0
+	var tau := maxf(float(_land.get("zoom_s", 1.1)), 0.05) / 3.0
+	_zoom = zt if absf(_zoom - zt) < 0.002 else lerpf(_zoom, zt, 1.0 - exp(-minf(dt, 0.1) / tau))
+	var zmax := maxf(float(_land.get("zoom", 4.0)), 1.01)
+	var s := clampf((_zoom - 1.0) / (zmax - 1.0), 0.0, 1.0)
+	var ship_t := Vector2(float(ship["x"]), float(ship["z"]) - TARGET_LEAD_M)
+	var hero_t := Vector2(float(_land.get("x", ship_t.x)), float(_land.get("z", ship_t.y)) - 1.6)
+	_focus = ship_t.lerp(hero_t, s)
+	var gy := 0.0
+	if s > 0.001:
+		gy = _cay.height_smooth(_focus.x, _focus.y)
+		gy = lerpf(0.0, maxf(gy, 0.0), s)
+	var dist := ART_H / (2.0 * tan(deg_to_rad(FOV_DEG) * 0.5) * PX_PER_M * _zoom)
 	var p := deg_to_rad(pitch_deg)
-	var target := Vector3(float(ship["x"]), 0.0, float(ship["z"]) - TARGET_LEAD_M)
+	var target := Vector3(_focus.x, gy, _focus.y)
+	_cam.near = clampf(dist * 0.18, 8.0, 40.0)
 	_cam.position = target + Vector3(0.0, dist * sin(p), dist * cos(p))
 	_cam.rotation_degrees = Vector3(-pitch_deg, 0.0, 0.0)
 	_ship_mat.set_shader_parameter("cam_cos", cos(p))
 	_ship_mat.set_shader_parameter("cam_tan", tan(p))
+	_cay.update(_focus, _zoom)
+	_cay.set_hero(ashore, float(_land.get("x", 0.0)), float(_land.get("z", 0.0)), int(_land.get("row", 0)),
+			int(_land.get("frame", 0)), _zoom)
+	var os := clampf(1.6 / _zoom, 0.4, 1.0)
+	_ocean.scale = Vector3(os, 1.0, os)
 
 
 ## Colour grade only. H2D-0.3 removed the screen-space haze and lightning flash that H2D-0.2 laid over the picture:

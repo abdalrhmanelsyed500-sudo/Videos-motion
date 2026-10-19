@@ -38,6 +38,12 @@ uniform vec4 lamp3 = vec4(0.0, 0.0, 1.0, 0.0);
 uniform vec4 lamp4 = vec4(0.0, 0.0, 1.0, 0.0);
 uniform vec4 lamp5 = vec4(0.0, 0.0, 1.0, 0.0);
 
+// H2D-1.2 height encoding of anvil_cay_height.png (tools/h2d/cay_terrain.py enc_h): below 0 the sea floor, -8..0 m in 10 % of
+// the range; above 0 a square-root curve to 100 m, so the beach (the first metre) keeps fine steps.
+float h2d_dec_h(float v) {
+	return v < 0.1 ? v * 80.0 - 8.0 : pow((v - 0.1) / 0.9, 2.0) * 100.0;
+}
+
 float h2d_hash(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
 	p += dot(p, p + 45.32);

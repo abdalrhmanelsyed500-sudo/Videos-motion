@@ -20,7 +20,7 @@ uniform float posterize = 12.0;     // colour bands for the water body; 0 = off
 uniform float sun_k = 1.0;          // how strongly the sun casts the ship's shadow
 uniform sampler2D island_data : filter_linear, repeat_disable;
 uniform vec2 island_origin = vec2(0.0);
-uniform float island_size = 240.0;
+uniform float island_size = 4400.0;   // H2D-1.2: the whole data grid (4.4 km); island_origin is its north-west corner
 uniform vec4 berth_rect = vec4(0.0, 0.0, 0.0, 0.0);  // H2D-1: x0, z0, x1, z1 of the painted berth outline (scene metres)
 uniform float berth_show = 0.0;     // 0..1: the outline fades in when the ship is near and out once it is moored
 uniform float shade_water = 1.0;    // 1 = the island, pier and houses throw shadows on the water
@@ -73,11 +73,11 @@ void fragment() {
 	float depth_m = 99.0;
 	float shore_m = 99.0;
 	float isl_shade = 0.0;
-	vec2 iuv = (w_pos.xz - island_origin) / island_size + 0.5;
+	vec2 iuv = (w_pos.xz - island_origin) / island_size;
 	if (iuv.x > 0.0 && iuv.x < 1.0 && iuv.y > 0.0 && iuv.y < 1.0) {
 		vec4 d = texture(island_data, iuv);
-		depth_m = max(-(d.r * 48.0 - 8.0), 0.0);
-		shore_m = d.b * 40.0;
+		depth_m = max(-h2d_dec_h(d.r), 0.0);
+		shore_m = d.b * 64.0;
 		// the island, the pier, the houses and the trees shade the water they stand beside: three taps towards the sun
 		// (the same height data that shades the land), only close to shore
 		vec2 shd = h2d_sun_dir.xz;
@@ -88,7 +88,7 @@ void fragment() {
 			for (int i = 0; i < 3; i++) {
 				float sm = 1.5 + 3.0 * float(i * i);
 				vec2 suv = iuv + sdir * sm / island_size;
-				float occ = textureLod(island_data, suv, 0.0).g * 48.0 - 8.0;
+				float occ = h2d_dec_h(textureLod(island_data, suv, 0.0).g);
 				if (occ > sl * sm + 0.3) {
 					isl_shade = 1.0;
 					break;
