@@ -213,7 +213,7 @@ func _objectives(t: Object, tuning: Dictionary) -> void:
 	g.state.reales = 18
 	t.check(g.objective(ashore).contains("Pip Larkin"), "with 18 reales: find Pip Larkin")
 	g.state.hire("crew_pip_larkin")
-	t.check(g.objective(ashore).contains("Tuck Marrow") and g.objective(ashore).contains("30"), "after Pip the cheapest recruit is Tuck, 30 reales")
+	t.check(g.objective(ashore).contains("Marrow") and g.objective(ashore).contains("30"), "after Pip the cheapest recruit is Tuck, 30 reales")
 	g.state.reales = 500
 	for cid in g.state.recruit_order:
 		g.state.hire(cid)

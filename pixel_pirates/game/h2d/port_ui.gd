@@ -22,6 +22,7 @@ var big_note: Dictionary = {}       # the sale banner {text, sub, t}
 var _font: Font
 var _images: Dictionary = {}        # "district" / "waters" -> ImageTexture
 var _t := 0.0
+var draw_count := 0                 # how many times _draw ran (the self-play test checks that the interface really draws)
 
 
 func _ready() -> void:
@@ -74,6 +75,7 @@ func _box(r: Rect2, fill: Color = INK, edge: Color = GOLD) -> void:
 
 # ---- frame --------------------------------------------------------------------------------------------------------
 func _draw() -> void:
+	draw_count += 1
 	if _font == null:
 		return
 	var vs := get_viewport_rect().size

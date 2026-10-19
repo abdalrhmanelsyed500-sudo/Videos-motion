@@ -1,0 +1,7 @@
+{
+  "name": "pixel-pirates-godot-node",
+  "private": true,
+  "type": "module",
+  "description": "Runs the real Godot 4.7.2 engine (WebAssembly release template, headless) under Node so GDScript can be executed without a desktop. See README.md.",
+  "dependencies": { "@ringozz/godot-web-wasm32": "4.7.2-664" }
+}
