@@ -556,7 +556,7 @@ func _helm_state(target_kn: float) -> Dictionary:
 func _advice_for(st: Dictionary) -> String:
 	var eff := float(st["target_kn"]) / maxf(float(st["best_kn"]), 0.1)
 	if _harbor.state != Harbor.SAILING:
-		return _harbor.prompt(_pos.x, _pos.y)["text"]
+		return str(_harbor.prompt(_pos.x, _pos.y)["text"])
 	if _grounded:
 		return "AGROUND on Anvil Cay. Turn away from the island with A or D (or press R to start again)."
 	if bool(st["in_irons"]):

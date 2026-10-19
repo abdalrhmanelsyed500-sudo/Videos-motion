@@ -88,7 +88,7 @@ void fragment() {
 			for (int i = 0; i < 3; i++) {
 				float sm = 1.5 + 3.0 * float(i * i);
 				vec2 suv = iuv + sdir * sm / island_size;
-				float occ = texture(island_data, suv).g * 48.0 - 8.0;
+				float occ = textureLod(island_data, suv, 0.0).g * 48.0 - 8.0;
 				if (occ > sl * sm + 0.3) {
 					isl_shade = 1.0;
 					break;
