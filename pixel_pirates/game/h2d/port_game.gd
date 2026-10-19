@@ -311,14 +311,19 @@ func _self_check() -> void:
 	(scr.new() as Object).call("run", sc)
 	var unit_checks := sc.checks
 	# live checks: the real world answers the same questions the baker answered offline
-	for n in port["npcs"]:
-		var d := n as Dictionary
-		sc.check(bool(world.call("walkable", float(d["x"]), float(d["z"]), 0.4)), "live: %s stands on walkable ground" % str(d["id"]))
-	for it in port["interactions"]:
-		var q := it as Dictionary
-		sc.check(bool(world.call("walkable", float(q["x"]), float(q["z"]), 0.4)), "live: interaction point %s is walkable" % str(q["id"]))
+	if (world.get("_hd") as PackedByteArray).is_empty():
+		print("SELF-CHECK: this runtime has no ground texture (headless), so live walkability is skipped here; it runs in the real game")
+	else:
+		for n in port["npcs"]:
+			var d := n as Dictionary
+			sc.check(bool(world.call("walkable", float(d["x"]), float(d["z"]), 0.4)), "live: %s stands on walkable ground" % str(d["id"]))
+		for it in port["interactions"]:
+			var q := it as Dictionary
+			sc.check(bool(world.call("walkable", float(q["x"]), float(q["z"]), 0.4)), "live: interaction point %s is walkable" % str(q["id"]))
 	sc.check(npcs.people.size() == (port["npcs"] as Array).size(), "live: every baked person is in the walker list")
 	sc.check(_grounds_in_water(), "live: the four fishing grounds are in open water (>= 100 m from land)")
+	if _mode == "none" and not _last_ctx.is_empty():
+		await _ui_diag(sc)
 	var line := "SELF-CHECK CP-1: %d checks (%d from the unit test, %d live), %d failed" % [sc.checks, unit_checks, sc.checks - unit_checks, sc.fails.size()]
 	print(line)
 	for f in sc.fails:
@@ -326,6 +331,42 @@ func _self_check() -> void:
 	ui.toast(line + (" -> PASS" if sc.fails.is_empty() else " -> FAIL (see the Output panel)"), PortUi.GREEN if sc.fails.is_empty() else PortUi.RED, 9.0)
 	for i in mini(sc.fails.size(), 3):
 		ui.toast(sc.fails[i], PortUi.RED, 9.0)
+
+
+## F8, part 2: the interface itself. Opens the dialogue window and the map for two frames, then measures what the player would see:
+## the window size, the font, the portrait, the text, the box and map rectangles (inside the screen? non-empty?), the map picture
+## and the marker count. A failure here names the exact control, which is what a "nothing appears" report needs.
+func _ui_diag(sc: SelfCheck) -> void:
+	var vp := ui.get_viewport().get_visible_rect().size
+	sc.check(vp.x >= 300.0 and vp.y >= 200.0, "UI: the game window is %d x %d px (needs >= 300 x 200)" % [int(vp.x), int(vp.y)])
+	sc.check(PortUi.K.title_font() != null, "UI: the title font loaded")
+	sc.check(ui.dialogue.portrait("pip") != null and ui.dialogue.portrait("guard") != null, "UI: the portrait atlas loaded (pip, guard)")
+	var view := {"pages": ["Diagnostic line: if you can read this sentence, the dialogue window shows names, portraits and text."],
+			"options": [{"label": "Continue", "enabled": true}], "status": {"text": "diagnostic", "color": Color(0.2, 0.38, 0.12)}}
+	ui.dialogue.show_view({"portrait": "pip", "name": "Pip Larkin", "sub": "Deckhand, 14 - asks 18 reales"}, view)
+	await ui.get_tree().process_frame
+	await ui.get_tree().process_frame
+	ui.dialogue.finish_typing()
+	await ui.get_tree().process_frame
+	var box := ui.dialogue.get("_box") as Control
+	var br := box.get_global_rect()
+	sc.check(box.is_visible_in_tree() and br.size.x > 200.0 and br.size.y > 80.0, "UI: the dialogue box is visible and %d x %d px" % [int(br.size.x), int(br.size.y)])
+	sc.check(Rect2(Vector2.ZERO, vp).encloses(br), "UI: the dialogue box lies inside the screen (%s in %s)" % [str(br), str(vp)])
+	var pt := ui.dialogue.get("_portrait") as TextureRect
+	sc.check(pt.texture != null and pt.get_global_rect().size.x > 40.0, "UI: the portrait is drawn (%d px wide)" % int(pt.get_global_rect().size.x))
+	sc.check(str((ui.dialogue.get("_name") as Label).text) == "Pip Larkin", "UI: the speaker name label holds 'Pip Larkin'")
+	sc.check(str(ui.dialogue.call("shown_text")).length() > 40, "UI: the dialogue text label holds %d characters" % str(ui.dialogue.call("shown_text")).length())
+	ui.dialogue.close()
+	ui.map.open(0, _map_state(_last_ctx))
+	await ui.get_tree().process_frame
+	await ui.get_tree().process_frame
+	var mr := (ui.map.get("_panel") as Control).get_global_rect()
+	sc.check(mr.size.x > 300.0 and mr.size.y > 200.0, "UI: the map panel is %d x %d px" % [int(mr.size.x), int(mr.size.y)])
+	var tr := ui.map.get("_tex") as TextureRect
+	sc.check(tr.texture != null and tr.get_global_rect().size.x > 100.0, "UI: the map picture is loaded and %d px wide" % int(tr.get_global_rect().size.x))
+	sc.check((ui.map.get("_markers") as Dictionary).size() >= 3, "UI: the map shows %d markers on this view" % (ui.map.get("_markers") as Dictionary).size())
+	ui.map.close()
+	_close()
 
 
 func _grounds_in_water() -> bool:

@@ -20,10 +20,37 @@ var dialogue: DialogueUi
 var map: MapUi
 
 
+## The interface root lives under a CanvasLayer, which is not a Control: nothing lays it out. So it does not trust anchors against a
+## parent; it owns its size and copies the viewport's rectangle (stretch mode canvas_items gives the 1280 x 720 design canvas) on
+## start, on every resize and, as a safety net, whenever a frame finds it different. Every child anchors to THIS rectangle.
+func _fit() -> void:
+	var r := get_viewport().get_visible_rect()
+	if r.size.x < 1.0 or r.size.y < 1.0:
+		return
+	if position != r.position or size != r.size:
+		set_anchors_preset(Control.PRESET_TOP_LEFT)
+		position = r.position
+		size = r.size
+	# a hidden Control is not laid out when its parent resizes (found by the F8 diagnostic: a hidden dialogue layer stayed 0 x 0 and its
+	# window was drawn off the top of the screen), so the three layers are sized by hand too
+	for c in get_children():
+		var cc := c as Control
+		if cc != null and (cc.size != size or cc.position != Vector2.ZERO):
+			cc.set_anchors_preset(Control.PRESET_TOP_LEFT)
+			cc.position = Vector2.ZERO
+			cc.size = size
+
+
+func _process(_dt: float) -> void:
+	_fit()
+
+
 func _ready() -> void:
 	name = "PortUi"
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_preset(Control.PRESET_TOP_LEFT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	get_viewport().size_changed.connect(_fit)
+	_fit()
 	hud = Hud.new()
 	hud.name = "Hud"
 	add_child(hud)
