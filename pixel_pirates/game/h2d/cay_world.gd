@@ -432,11 +432,37 @@ func slope_at(x: float, z: float) -> float:
 	return sqrt(gx * gx + gz * gz)
 
 
-func in_blocker(x: float, z: float, r: float) -> bool:
+## The blockers are bucketed in 16 m cells (a rectangle goes into every cell it touches, grown by 1 m), so a walk test reads a handful of
+## rectangles instead of all ~1000 (the capital has that many; ~150 people ask every frame).
+const BGRID_M := 16.0
+var _bgrid: Dictionary = {}
+
+
+func _build_bgrid() -> void:
+	_bgrid.clear()
 	for b in blockers:
 		var bb := b as Array
-		if x > float(bb[0]) - r and x < float(bb[2]) + r and z > float(bb[1]) - r and z < float(bb[3]) + r:
-			return true
+		var cx0 := int(floorf((float(bb[0]) - 1.0) / BGRID_M))
+		var cx1 := int(floorf((float(bb[2]) + 1.0) / BGRID_M))
+		var cz0 := int(floorf((float(bb[1]) - 1.0) / BGRID_M))
+		var cz1 := int(floorf((float(bb[3]) + 1.0) / BGRID_M))
+		for cz in range(cz0, cz1 + 1):
+			for cx in range(cx0, cx1 + 1):
+				var k := Vector2i(cx, cz)
+				if not _bgrid.has(k):
+					_bgrid[k] = []
+				(_bgrid[k] as Array).append(bb)
+
+
+func in_blocker(x: float, z: float, r: float) -> bool:
+	if _bgrid.is_empty() and not blockers.is_empty():
+		_build_bgrid()
+	var cell_list: Variant = _bgrid.get(Vector2i(int(floorf(x / BGRID_M)), int(floorf(z / BGRID_M))))
+	if cell_list != null:
+		for b in cell_list as Array:
+			var bb := b as Array
+			if x > float(bb[0]) - r and x < float(bb[2]) + r and z > float(bb[1]) - r and z < float(bb[3]) + r:
+				return true
 	var key := Vector2i(int(floorf(x / _chunk_m)), int(floorf(z / _chunk_m)))
 	for dz in range(-1, 2):
 		for dx in range(-1, 2):
@@ -523,6 +549,15 @@ func _build_port(tex_fn: Callable, mat_fn: Callable) -> void:
 	_port_nodes.append(_build_sprites(port["props"] as Array, at["stall"] as Dictionary, true, tex_fn, mat_fn))
 	_port_nodes.append(_build_sprites(port["big"] as Array, at["big"] as Dictionary, true, tex_fn, mat_fn))
 	_port_nodes.append(_build_sprites(port["ships"] as Array, at["ships"] as Dictionary, false, tex_fn, mat_fn))
+	# the capital: one MultiMesh per atlas (small houses, grand buildings, civic monuments, street props) and the planted trees
+	if port.has("city"):
+		var cl: Dictionary = (port["city"] as Dictionary)["lists"]
+		for key in ["bld", "grand", "civic", "street"]:
+			if cl.has(key) and not (cl[key] as Array).is_empty():
+				_port_nodes.append(_build_sprites(cl[key] as Array, at[key] as Dictionary, true, tex_fn, mat_fn))
+		var trees: Array = (port["city"] as Dictionary)["trees"]
+		if not trees.is_empty():
+			_port_nodes.append(_build_sprites(trees, meta["veg_atlas"] as Dictionary, false, tex_fn, mat_fn))
 	var npcs: Array = port["npcs"]
 	# one MultiMesh for every person (ONE draw call), one for their contact shadows, one for the floating markers
 	var nat: Dictionary = at["npc"]
@@ -549,7 +584,7 @@ func _make_dynamic_mm(count: int, mat: Material, mesh: Mesh) -> MultiMeshInstanc
 	mm.use_custom_data = true
 	mm.mesh = mesh
 	mm.instance_count = maxi(count, 1)
-	mm.custom_aabb = AABB(Vector3(-200.0, -10.0, -120.0), Vector3(320.0, 40.0, 240.0))
+	mm.custom_aabb = AABB(Vector3(-260.0, -10.0, -340.0), Vector3(520.0, 60.0, 400.0))
 	var node := MultiMeshInstance3D.new()
 	node.multimesh = mm
 	node.material_override = mat

@@ -151,6 +151,28 @@ def main() -> int:
         area = float(ok[disc].sum()) * STEP * STEP
         if area < 100.0:
             errors.append(f"stop {p['id']}: only {area:.0f} m2 walkable inside its {tu['land.poi_radius_m']:.0f} m radius")
+    # CP-1 revision: every place on the map, every named spot and every person must be standable AND reachable from the pier
+    port = meta.get("port", {})
+    bad = 0
+    far = 0.0
+    for kind, items in (("place", [(p["id"], p["x"], p["z"]) for p in port.get("places", []) if p["id"] not in ("lighthouse",)]),
+                        ("npc", [(n["id"], n["x"], n["z"]) for n in port.get("npcs", [])])):
+        for nid, x, z in items:
+            j, i = at(x, z)
+            if not (0 <= j < ok.shape[0] and 0 <= i < ok.shape[1]) or not ok[j, i]:
+                # a place is a door: allow a walkable cell within 2.5 m
+                near = ok[max(j - 2, 0):j + 3, max(i - 2, 0):i + 3].any() if (0 <= j < ok.shape[0] and 0 <= i < ok.shape[1]) else False
+                if kind == "npc" or not near:
+                    errors.append(f"{kind} {nid} at ({x:.1f}, {z:.1f}) is not on walkable ground")
+                    bad += 1
+                continue
+            d = float(dist[int(idx[j, i])])
+            if not math.isfinite(d):
+                errors.append(f"{kind} {nid} at ({x:.1f}, {z:.1f}) cannot be reached from the pier")
+                bad += 1
+            else:
+                far = max(far, d)
+    print(f"  city check: {len(port.get('places', []))} places, {len(port.get('npcs', []))} people; {bad} problems; farthest {far:.0f} m from the pier")
     lab, nlab = ndimage.label(ok, structure=np.ones((3, 3)))
     sizes = ndimage.sum(ok, lab, range(1, nlab + 1))
     main_lab = lab[bj, bi]

@@ -519,7 +519,7 @@ def people(city: City) -> list[dict]:
         return False
 
     def add(group, x, z, mode="stand", r=0.0, face=0, look=None, name=None, title=None, greeting=None, line=None, wares=None, ident=None):
-        if blocked(x, z, 0.5):
+        if blocked(x, z, 1.1):
             return False
         count["n"] += 1
         lk = look or LOOKS[group][count["n"] % len(LOOKS[group])]

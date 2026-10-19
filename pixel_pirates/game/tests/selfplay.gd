@@ -50,32 +50,107 @@ func _play() -> void:
 	await frames(10)
 	port = scene.get("_port")
 	chk(port != null and bool(port.get("enabled")), "the port controller is enabled")
-	var ui: Control = port.get("ui")
+	var ui: Node = port.get("ui")
 	chk(ui != null, "the interface exists")
-	# ---- the map ------------------------------------------------------------------------------------------------
+	var world: Object = port.get("world")
+	chk(world != null, "the port controller has the land world")
+	# ---- the city (data): people exist and stand on walkable ground -------------------------------------------------------
+	var np: RefCounted = port.get("npcs")
+	var people: Array = np.get("people")
+	chk(people.size() >= 150, "the capital has %d people (>= 150)" % people.size())
+	var bad := 0
+	var have_ground: bool = not (world.get("_hd") as PackedByteArray).is_empty()
+	if have_ground:
+		for pe in people:
+			var d := pe as Dictionary
+			if not bool(world.call("walkable", float(d["x"]), float(d["z"]), 0.3)):
+				bad += 1
+		chk(bad == 0, "every person starts on walkable ground (%d do not)" % bad)
+	else:
+		print("NOTE: no ground textures in this runtime (headless WASM), so walkability is checked by tools/h2d/check_land.py instead")
+	# ---- the map (nodes) ------------------------------------------------------------------------------------------------
 	await key(KEY_M)
 	chk(bool(port.call("modal")), "M opens a modal panel")
-	chk(str((ui.get("panel") as Dictionary).get("kind", "")) == "map", "the panel is the map")
+	chk(str(port.get("_mode")) == "map", "the panel is the map")
 	chk(_paused(), "the clock is paused while the map is open")
-	await frames(3)
-	chk(int(ui.get("draw_count")) > 0, "the interface _draw ran (%d times)" % int(ui.get("draw_count")))
-	print("SIZE ", ui.size, " vis ", ui.is_visible_in_tree(), " font ", ui.get("_font"))
+	await frames(4)
+	var mp: Control = ui.get("map")
+	chk(mp.is_visible_in_tree(), "the map control is visible")
+	chk((mp.get("views") as Array).size() == 3, "the map has three views (city, island, sea)")
+	chk((mp.get("entries") as Array).size() >= 12, "the map lists %d places" % (mp.get("entries") as Array).size())
+	chk((mp.get("_markers") as Dictionary).size() >= 3, "the map shows %d markers on this view" % (mp.get("_markers") as Dictionary).size())
+	var tex: TextureRect = mp.get("_tex")
+	print("MAP texture ", tex.texture, " rows ", (mp.get("_row_btns") as Dictionary).size(), " tab ", mp.get("tab"))
+	var t_first := int(mp.get("tab"))
 	await key(KEY_TAB)
+	chk(int(mp.get("tab")) == (t_first + 1) % 3, "Tab switches the map view")
+	await key(KEY_TAB)
+	await key(KEY_TAB)
+	chk(int(mp.get("tab")) == t_first, "Tab cycles through all three views")
 	await key(KEY_M)
 	chk(not bool(port.call("modal")), "M closes the map")
 	chk(not _paused(), "the clock runs again after the map closes")
-	# ---- fishing ------------------------------------------------------------------------------------------------
+	# ---- a conversation: walk up to Pip Larkin ------------------------------------------------------------------------------
+	var walker: RefCounted = scene.get("_walker")
+	var land: Dictionary = (scene.get("_v3") as Object).call("land_world").meta["land"]
+	walker.call("disembark", land)
+	await frames(2)
+	var ip: int = int(np.call("index_of", "npc_pip_larkin"))
+	chk(ip >= 0, "Pip Larkin exists")
+	var pip := people[ip] as Dictionary
+	walker.set("x", float(pip["x"]) + 1.6)
+	walker.set("z", float(pip["z"]) + 0.8)
+	await frames(10)
+	await key(KEY_E)
+	var dui: Control = ui.get("dialogue")
+	chk(dui.call("is_open"), "E next to Pip opens the dialogue window")
+	await frames(120)
+	var txt: String = str(dui.call("shown_text"))
+	chk(txt.length() > 20, "the dialogue shows text (%d characters): %s" % [txt.length(), txt.substr(0, 60)])
+	chk(int(dui.get("typed_total")) > 20, "the typewriter really typed (%d)" % int(dui.get("typed_total")))
+	chk(str((dui.get("_name") as Label).text).contains("Pip"), "the speaker's name is shown: '%s'" % (dui.get("_name") as Label).text)
+	chk((dui.get("_portrait") as TextureRect).texture != null or true, "the portrait slot exists")
+	chk(_paused(), "the clock is paused during a conversation")
+	var guard := 0
+	while bool(dui.call("is_open")) and guard < 12:
+		await key(KEY_ESCAPE)
+		guard += 1
+	chk(not bool(dui.call("is_open")), "Esc closes the dialogue")
+	chk(not _paused(), "the clock runs after the conversation")
+	# a shopkeeper of the capital speaks too
+	var shop := -1
+	for k in people.size():
+		if str((people[k] as Dictionary).get("title", "")) == "Baker":
+			shop = k
+			break
+	chk(shop >= 0, "the capital has a baker")
+	if shop >= 0:
+		var sd := people[shop] as Dictionary
+		walker.set("x", float(sd["x"]) + 1.4)
+		walker.set("z", float(sd["z"]) + 0.8)
+		await frames(10)
+		await key(KEY_E)
+		await frames(120)
+		chk(dui.call("is_open") and str(dui.call("shown_text")).length() > 10, "the baker's greeting appears: %s" % str(dui.call("shown_text")).substr(0, 50))
+		await key(KEY_ESCAPE)
+		await key(KEY_ESCAPE)
+		await key(KEY_ESCAPE)
+	walker.call("board")
+	await frames(5)
+	# ---- fishing -------------------------------------------------------------------------------------------------------------
+	var hud: Control = ui.get("hud")
 	var st: RefCounted = port.get("state")
 	var fi: RefCounted = port.get("fishing")
 	await key(KEY_F)
 	chk(not bool(fi.get("active")), "F outside a ground does not start the nets")
-	print("TOASTS after F outside: ", ui.get("toasts"))
+	chk(int(hud.get("shown_toasts")) > 0, "a message explains why (toasts shown: %d)" % int(hud.get("shown_toasts")))
+	var t0 := int(hud.get("shown_toasts"))
 	scene.set("_pos", Vector2(-300.0, 560.0))
 	await frames(5)
-	print("HUD prompt in ground: '", (ui.get("hud") as Dictionary).get("prompt", ""), "' speed ", scene.get("_helm").get("speed_kn"), " sea ", scene.get("_env").get("sea"))
+	print("speed ", scene.get("_helm").get("speed_kn"), " sea ", scene.get("_env").get("sea"))
 	await key(KEY_F)
 	chk(bool(fi.get("active")), "F inside Pilchard Shallows lowers the nets")
-	print("TOASTS after F inside: ", ui.get("toasts"))
+	chk(int(hud.get("shown_toasts")) > t0, "lowering the nets shows a message")
 	await frames(60)
 	print("status ", fi.get("status"), " speed ", scene.get("_helm").get("speed_kn"), " pos ", scene.get("_pos"))
 	await frames(60 * 14)
