@@ -4,7 +4,7 @@ Every balance number in `game/data/` carries `provisional`, `owner` and `source`
 who is expected to finalise them, and where each came from. `owner` uses PROPOSED module numbers (N1..N14, B3); the N-module list is not
 fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is finalised only when this ledger has no `N*` rows left.
 
-**420 provisional records** | B2: 2, B3: 3, B4: 28, B5: 5, B6: 7, B7: 10, B8: 4, C1: 3, D1: 6, E1: 224, E2: 7, E7: 9, E8: 2, E9: 2, F0: 10, F1: 9, I17: 5, I19: 9, N1: 19, N10: 7, N11: 3, N13: 19, N2: 2, N3: 1, N4: 4, N5: 2, N6: 5, N7: 4, N8: 8, N9: 1
+**432 provisional records** | B2: 2, B3: 3, B4: 28, B5: 5, B6: 7, B7: 10, B8: 4, C1: 3, D1: 6, E1: 224, E2: 19, E7: 9, E8: 2, E9: 2, F0: 10, F1: 9, I17: 5, I19: 9, N1: 19, N10: 7, N11: 3, N13: 19, N2: 2, N3: 1, N4: 4, N5: 2, N6: 5, N7: 4, N8: 8, N9: 1
 
 | owner | kind | key | source |
 |---|---|---|---|
@@ -300,6 +300,18 @@ fixed yet, so treat the tags as routing hints. Rule: B3 (survival overview) is f
 | E1 | tuning | `world.islands_t1` | E1 world design; island budget from the brief (T1 12-15, T2 20-25, T3 15-25) |
 | E1 | tuning | `world.islands_t2` | E1 world design; island budget from the brief (T1 12-15, T2 20-25, T3 15-25) |
 | E1 | tuning | `world.islands_t3` | E1 world design; island budget from the brief (T1 12-15, T2 20-25, T3 15-25) |
+| E2 | tuning | `land.board_radius_m` | H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC |
+| E2 | tuning | `land.body_r_m` | H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC |
+| E2 | tuning | `land.edge_margin_m` | H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC |
+| E2 | tuning | `land.max_slope` | H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC |
+| E2 | tuning | `land.min_h` | H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC |
+| E2 | tuning | `land.poi_radius_m` | H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC |
+| E2 | tuning | `land.run_ms` | H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC |
+| E2 | tuning | `land.speedup_s` | H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC |
+| E2 | tuning | `land.stride_m` | H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC |
+| E2 | tuning | `land.walk_ms` | H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC |
+| E2 | tuning | `land.zoom` | H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC |
+| E2 | tuning | `land.zoom_s` | H2D-1.2 on-foot prototype; first values chosen by design, confirm by hand on the dev PC |
 | E2 | tuning | `loop.choice_moments_per_10min` | B2 design target; provisional until its owner module |
 | E2 | tuning | `loop.crisis_moments_per_10min_max` | B2 design target; provisional until its owner module |
 | E2 | tuning | `loop.max_quiet_minutes` | B2 design target; provisional until its owner module |
