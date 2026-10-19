@@ -212,6 +212,8 @@ def build_world():
     h = np.where(T.mask & (T.h > 0), np.maximum(h, 0.15), h)
     CE.small_sizes()
     h = CY.shape(h, T)
+    h = CY.shore_ramp(h, T)
+
 
     # ---- classes ------------------------------------------------------------------------------------------------------
     gz, gx = np.gradient(h, CELL)

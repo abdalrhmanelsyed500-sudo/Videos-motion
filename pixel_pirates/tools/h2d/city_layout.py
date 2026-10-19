@@ -77,6 +77,29 @@ def shape(h: np.ndarray, T) -> np.ndarray:
     return out
 
 
+SHORE_SLOPE = 0.40      # the walker refuses ground steeper than land.max_slope (0.55); keep the quay's shore ramp well under it
+
+
+def shore_ramp(h: np.ndarray, T) -> np.ndarray:
+    """A gentle ramp from the waterline up to the quay (r4 blocker: the player could not leave the pier).
+
+    The island's beach starts at 0.15 m on the ring of cells next to the sea, and the terrace blend then put the next ring at
+    1.58 m and the one after at 1.95 m. Cells are 2 m wide, so the ground rose 1.4 m in one cell: slope 0.7 against the walker's
+    limit of 0.55. The pier lands on exactly that edge; the walker (steps of at most 0.125 m) found a band about 0.5 m wide at
+    the landing (z 1.4 .. 1.9) that it may not enter: an invisible wall between the pier and the city.
+    In the quay zone (inside the walls' x range, z -26 .. 30) the land height above the waterline is now
+    min(quay height, 0.15 + SHORE_SLOPE x distance from the sea), which is 0.95 m, 1.75 m, 1.95 m on the first three rings.
+    Hills, cliffs and everything else keep their heights."""
+    ix0, ix1, iz0, iz1 = window_idx(BOX["x0"], -26.0, BOX["x1"], BOX["z1"])
+    d_in = T.d_in[iz0:iz1, ix0:ix1]
+    ramp = np.minimum(0.15 + SHORE_SLOPE * d_in, float(H_WALL[-1]))
+    sub = h[iz0:iz1, ix0:ix1]
+    quay = T.mask[iz0:iz1, ix0:ix1] & (sub > 0.0) & (sub < float(H_WALL[-1]) + 0.01)
+    out = h.copy()
+    out[iz0:iz1, ix0:ix1] = np.where(quay, ramp, sub)
+    return out
+
+
 def box_mask(x0, z0, x1, z1):
     return CT.box(x0, z0, x1, z1)
 
