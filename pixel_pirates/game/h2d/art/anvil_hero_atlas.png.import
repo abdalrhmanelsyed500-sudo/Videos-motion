@@ -2,15 +2,15 @@
 
 importer="texture"
 type="CompressedTexture2D"
-path="res://.godot/imported/anvil_cay_albedo.png-a47b6bd41e6f24b003d87889e30bbd67.ctex"
+path="res://.godot/imported/anvil_hero_atlas.png-73a7d8643eb9fc700e277f5b1673b241.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://h2d/art/anvil_cay_albedo.png"
-dest_files=["res://.godot/imported/anvil_cay_albedo.png-a47b6bd41e6f24b003d87889e30bbd67.ctex"]
+source_file="res://h2d/art/anvil_hero_atlas.png"
+dest_files=["res://.godot/imported/anvil_hero_atlas.png-73a7d8643eb9fc700e277f5b1673b241.ctex"]
 
 [params]
 

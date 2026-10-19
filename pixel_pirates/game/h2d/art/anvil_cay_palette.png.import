@@ -2,15 +2,15 @@
 
 importer="texture"
 type="CompressedTexture2D"
-path="res://.godot/imported/anvil_cay_normal.png-a4ee196aea6e0572302ec024b12dedfb.ctex"
+path="res://.godot/imported/anvil_cay_palette.png-0b32842ba977340bf31c199f885cfb7f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://h2d/art/anvil_cay_normal.png"
-dest_files=["res://.godot/imported/anvil_cay_normal.png-a4ee196aea6e0572302ec024b12dedfb.ctex"]
+source_file="res://h2d/art/anvil_cay_palette.png"
+dest_files=["res://.godot/imported/anvil_cay_palette.png-0b32842ba977340bf31c199f885cfb7f.ctex"]
 
 [params]
 
