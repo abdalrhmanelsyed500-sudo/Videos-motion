@@ -791,6 +791,8 @@ func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 	lines.append("rain %.2f  storm %.2f  fog %.2f  ice %.2f  swell warning %.2f" % [
 			float(_d["rain"]), float(_d["storm"]), float(_d["fog"]), float(_d["ice"]), float(_d["herald"])])
 	lines.append(_advice_for(st))
+	if _port != null:
+		lines.append("last key: %s" % (_port as PortGame).last_key)
 	var pr := _harbor.prompt(_pos.x, _pos.y)
 	if bool(pr["near"]) and _harbor.state == Harbor.SAILING:
 		var zone_txt := "IN THE DOCK ZONE" if bool(pr["can_dock"]) else "outside the dock zone"

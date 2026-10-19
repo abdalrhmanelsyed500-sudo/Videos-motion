@@ -35,6 +35,8 @@ var enabled := false
 var world: Object = null
 var port: Dictionary = {}
 var barks: Dictionary = {}
+## What the last key press looked like to the game (shown in the debug text, F3 hides it): the first thing to read if a key seems dead.
+var last_key := "(none yet)"
 var _tuning: Dictionary = {}
 var _pause_fn: Callable
 var _mode := "none"                  # none | dialogue | market | map
@@ -278,6 +280,7 @@ func handle_key(k: InputEventKey, ctx: Dictionary) -> bool:
 	if not enabled:
 		return false
 	var key := KeyUtil.code(k)
+	last_key = "keycode %d  physical %d  -> %d (%s)  mode %s" % [int(k.keycode), int(k.physical_keycode), key, OS.get_keycode_string(key), _mode]
 	if key == KEY_F6 or key == KEY_F7:
 		_test_key(key, ctx)
 		return true
@@ -756,7 +759,13 @@ func _sell(key: int, ctx: Dictionary) -> void:
 func _open_map(tab: int, ctx: Dictionary) -> void:
 	_open("map")
 	_map_state_t = 0.25
-	ui.map.open(tab, _map_state(ctx))
+	var ok: bool = ui.map.open(tab, _map_state(ctx))
+	if not ok:
+		# never leave the game paused in a map mode with nothing on screen: undo the open and say why
+		var why := "visible=%s panel=%s tab=%d views=%d" % [ui.map.visible, ui.map.get_node("MapPanel").size, ui.map.tab, ui.map.views.size()]
+		push_error("MAP: failed to open (%s)" % why)
+		_close()
+		ui.toast("The map could not open (%s). Please report this line." % why, PortUi.RED, 9.0)
 
 
 func _origin_point(ctx: Dictionary) -> Vector2:

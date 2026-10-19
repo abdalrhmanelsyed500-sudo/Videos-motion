@@ -97,7 +97,9 @@ def main() -> int:
         for z in zs:
             i, j = int(np.floor((x - gx0) / cell)), int(np.floor((z - gz0) / cell))
             deck.append(float(occ[j, i]))
-            if height[j, i] > 0.3 and z > pier["z0"] + 1.5:
+            # the first 2 m cell of the pier (z0..z0+2) is the shore ramp the walker steps onto (r5: shore_ramp in city_layout.py); the
+            # rest must be water
+            if height[j, i] > 0.3 and z > pier["z0"] + 2.5:
                 fail(f"ground under the pier at ({x:.1f}, {z:.1f}) rises to {height[j, i]:.2f} m")
     if min(deck) < pier["height_m"] - 0.15 or max(deck) > pier["height_m"] + 0.2:
         fail(f"pier occluder heights {min(deck):.2f}..{max(deck):.2f} are not near {pier['height_m']}")

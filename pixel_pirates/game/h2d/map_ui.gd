@@ -10,8 +10,8 @@ const K := preload("res://h2d/ui_kit.gd")
 const KeyUtil := preload("res://h2d/key_util.gd")
 const PANEL_POS := Vector2(24, 16)
 const PANEL_SIZE := Vector2(1232, 688)
-const VP_POS := Vector2(16, 76)          # inside the panel
-const VP_SIZE := Vector2(884, 552)
+const VP_POS := Vector2(16, 96)          # inside the panel; the tab row (y 40 + its button height) must end above VP_POS.y - 12 (test_map_key checks it)
+const VP_SIZE := Vector2(884, 536)
 const KIND_STYLE := {   # kind -> [letter, fill colour, ring colour]
 	"recruit": ["R", Color(0.98, 0.80, 0.25), Color(0.20, 0.12, 0.02)], "market": ["F", Color(0.35, 0.78, 0.88), Color(0.04, 0.2, 0.28)],
 	"ship": ["S", Color(0.40, 0.58, 1.0), Color(0.04, 0.08, 0.3)], "player": ["", Color(1.0, 0.35, 0.30), Color(0.3, 0.02, 0.02)],
@@ -174,6 +174,7 @@ func _ready() -> void:
 	sc.name = "RowScroll"
 	sc.custom_minimum_size = Vector2(290, 440)
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.clip_contents = true
 	side.add_child(sc)
 	_rows = K.box(true, 4)
 	_rows.custom_minimum_size = Vector2(272, 0)
@@ -233,7 +234,8 @@ func set_views(v: Array) -> void:
 		_tab_btns.append(b)
 
 
-func open(first_tab: int, state: Dictionary) -> void:
+## Opens the map. Returns whether it is really on screen afterwards (visible, laid out, a view selected); the caller reports a failure.
+func open(first_tab: int, state: Dictionary) -> bool:
 	visible = true
 	tab = -1
 	set_state(state)
@@ -241,6 +243,12 @@ func open(first_tab: int, state: Dictionary) -> void:
 	set_tab(clampi(first_tab, 0, maxi(views.size() - 1, 0)))
 	_sel_id = tracked
 	_center_on(player if ashore else ship)
+	return is_shown()
+
+
+## True when the map is visible, its panel has a size and a view is selected.
+func is_shown() -> bool:
+	return visible and _panel != null and _panel.size.x > 1.0 and _panel.size.y > 1.0 and tab >= 0 and tab < views.size()
 
 
 func close() -> void:
@@ -387,6 +395,8 @@ func _make_rows(want: Array) -> void:
 		var b := K.button("", 15)
 		b.name = "Row_" + str(e["id"])
 		b.custom_minimum_size = Vector2(268, 48)
+		b.clip_text = true      # a long detail line must not widen the sidebar past the panel edge (seen in the r4 screenshots)
+		b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		b.mouse_filter = Control.MOUSE_FILTER_STOP
 		b.pressed.connect(_on_row.bind(str(e["id"])))
 		b.mouse_entered.connect(func() -> void: _hover_id(str(e["id"])))

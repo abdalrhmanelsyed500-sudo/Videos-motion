@@ -61,8 +61,8 @@ func run(t: Object) -> void:
 	_targets(t, audit, port)
 	_walls(t, audit)
 	_solids(t, w, port)
-	_drive(t, w, audit, tuning, land, port)
-	_island(t, w, tuning, land, r)
+	_drive(t, w, audit, tuning, land)
+	_island(t, w, land, r)
 	holder.queue_free()
 
 
@@ -172,7 +172,7 @@ func _solids(t: Object, w: CayWorld, port: Dictionary) -> void:
 
 
 ## The real LandWalker (the code the keys drive) walks the strict flood's route from the pier to the places that matter.
-func _drive(t: Object, w: CayWorld, audit: RefCounted, tuning: Dictionary, land: Dictionary, port: Dictionary) -> void:
+func _drive(t: Object, w: CayWorld, audit: RefCounted, tuning: Dictionary, land: Dictionary) -> void:
 	var targets: Array = [["the fish counter", Vector2(-77.0, -10.6)], ["Pip Larkin", Vector2(27.5, -2.4)], ["Garrick Stave", Vector2(-26.5, -22.0)],
 			["Silas Reed", Vector2(-57.5, -13.8)], ["Tuck Marrow", Vector2(-100.5, 8.6)], ["the tavern", Vector2(50.0, -1.0)], ["the palace forecourt", Vector2(16.0, -200.5)],
 			["the east gate", Vector2(120.0, -262.0)]]
@@ -188,7 +188,9 @@ func _drive(t: Object, w: CayWorld, audit: RefCounted, tuning: Dictionary, land:
 		var path: Array[Vector2] = audit.call("path_to", near)
 		var left: float = WalkAudit.drive(walker, w, path)
 		if left < 0.0:
-			print("  (stuck at %.2f, %.2f; the route's waypoints near there: %s)" % [float(walker.get("x")), float(walker.get("z")), str(path.filter(func(q: Vector2) -> bool: return q.distance_to(Vector2(-3.5, -135.2)) < 5.0))])
+			var here := Vector2(float(walker.get("x")), float(walker.get("z")))
+			var close_pts: Array = path.filter(func(q: Vector2) -> bool: return q.distance_to(here) < 5.0)
+			print("  (stuck at %.2f, %.2f; the route's waypoints near there: %s)" % [here.x, here.y, str(close_pts)])
 			for b in w.blockers:
 				var bb := b as Array
 				if float(bb[0]) < 3.0 and float(bb[2]) > -10.0 and float(bb[1]) < -128.0 and float(bb[3]) > -142.0:
@@ -203,7 +205,7 @@ func _drive(t: Object, w: CayWorld, audit: RefCounted, tuning: Dictionary, land:
 
 ## The island beyond the walls: from the pier to every stop of the exploration route (Pearl Cove, Lookout Hill, Wreck Beach...), on
 ## a coarser 3 m grid but with the same strict edges.
-func _island(t: Object, w: CayWorld, tuning: Dictionary, land: Dictionary, r: float) -> void:
+func _island(t: Object, w: CayWorld, land: Dictionary, r: float) -> void:
 	var audit := WalkAudit.new(w, Rect2(-520.0, -620.0, 1060.0, 666.0), 3.0, r + 0.15, 0.25)
 	audit.scan()
 	var d := land["disembark"] as Dictionary

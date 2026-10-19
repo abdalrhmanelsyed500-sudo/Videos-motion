@@ -86,7 +86,7 @@ func flood(start: Vector2) -> int:
 	seen[s] = 1
 	var head := 0
 	while head < q.size():
-		var c := q[head]
+		var c: int = q[head]
 		head += 1
 		var cx := c % nx
 		var cz := c / nx
@@ -159,7 +159,7 @@ func path_to(p: Vector2) -> Array[Vector2]:
 static func drive(walker: RefCounted, w: Object, path: Array[Vector2], dt: float = 1.0 / 60.0) -> float:
 	var step_n := 0
 	for k in range(1, path.size()):
-		var wp := path[k]
+		var wp: Vector2 = path[k]
 		var guard := 0
 		var last := Vector2(walker.get("x"), walker.get("z"))
 		var stuck := 0

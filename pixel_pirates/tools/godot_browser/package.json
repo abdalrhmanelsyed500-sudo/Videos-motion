@@ -1,0 +1,11 @@
+{
+  "name": "pp-godot-browser",
+  "private": true,
+  "type": "module",
+  "description": "Runs the Godot web template (4.7.2) in headless Chromium with a software WebGL2 renderer (SwiftShader), so the game can really draw, receive real key events and be screenshotted. Dev tool only; slow (software rendering).",
+  "dependencies": {
+    "@ringozz/godot-web-wasm32": "4.7.2-664",
+    "@sparticuz/chromium": "^153.0.0",
+    "puppeteer-core": "^24.0.0"
+  }
+}
