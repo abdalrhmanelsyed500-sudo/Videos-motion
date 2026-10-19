@@ -28,7 +28,7 @@ const NOISE = [/RegEx/, /Cannot infer the type of "re" variable/, /Failed to com
 let skipAt = false;
 const emit = (tag, s) => {
   if (/^\s+at: /.test(s) && skipAt) return;
-  skipAt = !process.env.GODOT_RAW && NOISE.some((r) => r.test(s));
+  skipAt = !process.env.GODOT_RAW && process.env.GODOT_REGEX_SHIM !== '1' && NOISE.some((r) => r.test(s));
   if (skipAt) return;
   lines.push(s); if (!quiet) console.log(s);
 };
@@ -43,10 +43,23 @@ function copyDir(src, dst) {
     if (e.name === '.godot' || e.name === '.git') continue;
     const s = path.join(src, e.name), d = dst + '/' + e.name;
     if (e.isDirectory()) copyDir(s, d);
-    else { M.copyToFS(d, new Uint8Array(fs.readFileSync(s))); nfiles++; }
+    else {
+      let buf = fs.readFileSync(s);
+      if (process.env.GODOT_REGEX_SHIM === '1' && e.name.endsWith('.gd') && buf.includes('RegEx')) {
+        let txt = buf.toString('utf8').replace(/\bRegEx\b/g, 'RegExShim');
+        txt = txt.replace(/^(extends [^\n]*\n)/m, '$1const RegExShim := preload("res://core/regex_shim.gd")\n');
+        buf = Buffer.from(txt);
+      }
+      M.copyToFS(d, new Uint8Array(buf)); nfiles++;
+    }
   }
 }
 copyDir(projectDir, '/proj');
+// GODOT_REGEX_SHIM=1: this engine build has no RegEx module; inject a harness-only polyfill (never part of the game) and its self-test
+if (process.env.GODOT_REGEX_SHIM === '1') {
+  M.copyToFS('/proj/core/regex_shim.gd', new Uint8Array(fs.readFileSync(path.join(here, 'regex_shim.gd'))));
+  M.copyToFS('/proj/tests/_regex_shim_selftest.gd', new Uint8Array(fs.readFileSync(path.join(here, 'regex_shim_selftest.gd'))));
+}
 let status = 0;
 let finished = false;
 function finish() {

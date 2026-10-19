@@ -15,14 +15,14 @@ func _cleanup() -> void:
 func _ok(t: Object, c: RefCounted, line: String, must_contain: String = "") -> Dictionary:
 	var r: Dictionary = c.execute(line)
 	var msg := "'%s' ok and contains '%s' (got: %s)" % [line, must_contain, r["text"]]
-	t.check(r["ok"] and must_contain in str(r["text"]), msg)
+	t.check(r["ok"] and (must_contain == "" or must_contain in str(r["text"])), msg)   # String.contains("") is false in Godot 4
 	return r
 
 
 func _bad(t: Object, c: RefCounted, line: String, must_contain: String = "") -> void:
 	var r: Dictionary = c.execute(line)
 	var msg := "'%s' fails with '%s' (got: %s)" % [line, must_contain, r["text"]]
-	t.check(not r["ok"] and must_contain in str(r["text"]), msg)
+	t.check(not r["ok"] and (must_contain == "" or must_contain in str(r["text"])), msg)
 
 
 func run(t: Object) -> void:
@@ -67,7 +67,8 @@ func _dispatch(t: Object, c: RefCounted) -> void:
 
 
 func _data_and_tuning(t: Object, c: RefCounted) -> void:
-	_ok(t, c, "data counts", "item: 16")
+	var n_items: int = (c.get("data") as Object).call("count", "item")   # the item table grew in B4 (9 trade items): compare with the real count
+	_ok(t, c, "data counts", "item: %d" % n_items)
 	_ok(t, c, "data list difficulty_mode", "mode_hardcore")
 	_ok(t, c, "data show item item_hardtack", "weight_kg")
 	_bad(t, c, "data show item item_nope")

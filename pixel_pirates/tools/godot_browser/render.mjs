@@ -30,6 +30,12 @@ const files = [];
   }
 })(projectDir, '');
 
+// RENDER_REGEX_SHIM=1: the web template has no RegEx module, so the Data/DebugConsole autoloads cannot compile; inject the harness-only
+// polyfill (tools/godot_node/regex_shim.gd) exactly as tools/godot_node/run.mjs does
+const SHIM = process.env.RENDER_REGEX_SHIM === '1';
+if (SHIM) files.push('core/regex_shim.gd');
+const shimSrc = () => fs.readFileSync(path.join(here, '../godot_node/regex_shim.gd'), 'utf8');
+
 // the one change the raw (never imported) project needs: the view's texture loader returns the raw PNG as a texture
 const PATCHES = {
   // harness-only hook: F9 steps ashore at the pier without the docking manoeuvre (steering into the berth by script is not the point)
@@ -56,7 +62,12 @@ const server = http.createServer((req, res) => {
   if (u.startsWith('/proj/')) {
     const rel = u.slice(6);
     if (!files.includes(rel)) { res.statusCode = 404; return res.end(); }
-    let buf = fs.readFileSync(path.join(projectDir, rel));
+    let buf = rel === 'core/regex_shim.gd' ? Buffer.from(shimSrc()) : fs.readFileSync(path.join(projectDir, rel));
+    if (SHIM && rel.endsWith('.gd') && rel !== 'core/regex_shim.gd' && buf.includes('RegEx')) {
+      let txt = buf.toString('utf8').replace(/\bRegEx\b/g, 'RegExShim');
+      txt = txt.replace(/^(extends [^\n]*\n)/m, '$1const RegExShim := preload("res://core/regex_shim.gd")\n');
+      buf = Buffer.from(txt);
+    }
     if (PATCHES[rel]) buf = Buffer.from(PATCHES[rel](buf.toString('utf8')));
     return res.end(buf);
   }

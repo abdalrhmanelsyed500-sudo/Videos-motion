@@ -36,11 +36,11 @@ func run(t: Object) -> void:
 		t.check(landing_ok, "%s: landings are beaches next to shallows" % f)
 	var m1: RefCounted = IslandMap.from_file(DIR + "isl_901.map.json")
 	t.check(m1.width == 128, "tier-2 island is 128 tiles wide")
-	var o := m1.offers()
+	var o: Array = m1.offers()
 	var offers_ok: bool = o.size() == 3 and o.has("fresh_water") and o.has("fruit") and o.has("timber")
 	t.check(offers_ok, "isl_901 offers fresh_water, fruit, timber")
 	t.check(m1.explore_minutes() > 0.0 and m1.explore_minutes() < 16.0, "explore time is inside the tier-2 budget")
-	var c := m1.local_to_cell(m1.cell_to_local(10, 20))
+	var c: Vector2i = m1.local_to_cell(m1.cell_to_local(10, 20))
 	t.check(c == Vector2i(10, 20), "cell <-> local metres round trip")
 	t.check(m1.cell_to_local(64, 64).is_equal_approx(Vector2(1.0, 1.0)), "centre cell is near local (0,0) in metres")
 	# tamper: a changed terrain row must be refused

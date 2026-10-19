@@ -216,11 +216,18 @@ func _wildlife(t: Object, oc: RefCounted) -> void:
 		var tb: Array = Wildlife.table(oc, sp, x, y, tt)
 		tb.sort_custom(func(p: Array, q: Array) -> bool: return float(p[1]) > float(q[1]))
 		var top: Array = c["top"]
+		# Python's sort is stable, GDScript's sort_custom is not: species with the same score (to 1e-4) may come in either order, so
+		# compare the top entries as "score|species" keys (score rounded to 4 decimals, then species id)
 		var top_ok := tb.size() >= top.size()
 		if top_ok:
+			var want_keys: Array = []
+			var got_keys: Array = []
 			for i in top.size():
-				top_ok = top_ok and str(tb[i][0]) == str(top[i][0])
-				top_ok = top_ok and _near(float(tb[i][1]), float(top[i][1]))
+				want_keys.append("%.4f|%s" % [float(top[i][1]), str(top[i][0])])
+				got_keys.append("%.4f|%s" % [float(tb[i][1]), str(tb[i][0])])
+			want_keys.sort()
+			got_keys.sort()
+			top_ok = want_keys == got_keys
 		t.check(top_ok, "species table at %s: top entries differ from the golden file" % where)
 	var night: float = Wildlife.activity_factor("nocturnal", 0.0)
 	t.check(night > Wildlife.activity_factor("nocturnal", 12.0), "nocturnal animals prefer the night")
