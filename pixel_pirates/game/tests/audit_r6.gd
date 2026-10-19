@@ -56,6 +56,7 @@ func _play() -> void:
 	await _pause_rules()
 	await _setup_failures()
 	await _money_rules()
+	await _dialogue_audit()
 	print("AUDIT6 %d checks, %d failed -> %s" % [checks, fails, "PASS" if fails == 0 else "FAIL"])
 	quit(0 if fails == 0 else 1)
 
@@ -252,3 +253,60 @@ func _money_rules() -> void:
 	# the dialogue for a missing person is explained, not silent
 	port.call("_open_dialogue", -1, {"wx": 0.0, "wz": 0.0})
 	chk(not bool(port.call("modal")), "a missing speaker leaves no dialogue open")
+
+
+## Every person in the city, every node of the tree they speak, with the real variables and several purse/hold situations: no
+## placeholder may stay unresolved ("{page1}" on screen), no option may be empty, every `next` must exist.
+func _dialogue_audit() -> void:
+	var state: RefCounted = port.get("state")
+	var npcs: RefCounted = port.get("npcs")
+	var dlg: RefCounted = port.get("dlg")
+	chk((dlg.call("validate") as Array).is_empty(), "dialogue.json validates (%s)" % str(dlg.call("validate")))
+	var people: Array = npcs.get("people")
+	var trees_seen := {}
+	var bad: Array = []
+	var no_tree: Array = []
+	var situations := [[5, false, 0.0], [5, false, 12.0], [200, false, 0.0], [200, true, 30.0]]
+	for i in people.size():
+		var spk: Dictionary = port.call("_speaker_for", i)
+		var tree := str(spk["tree"])
+		if not bool(dlg.call("has_tree", tree)):
+			no_tree.append(str(spk["id"]))
+			continue
+		for sit in situations:
+			state.set("reales", int(sit[0]))
+			state.set("crew", [])
+			state.set("lots", [])
+			if bool(sit[1]):
+				state.call("hire", str(state.call("cheapest_unhired")))
+			if float(sit[2]) > 0.0:
+				state.call("add_catch", str((state.get("fish") as Dictionary).keys()[0]), float(sit[2]), 0.0)
+			if i % 9 != 0 and trees_seen.has(tree + str(spk.get("cid", ""))) and sit != situations[0]:
+				continue     # one person per tree and recruit is enough for the heavy cases; the first situation is checked for everyone
+			port.set("_spk", spk)
+			port.set("_extra", {"track_name": "the fish market", "track_dist": "80 m west"})   # set by the "track" action before the "tracked" nodes
+			var flags: Dictionary = port.call("_flags")
+			var vars: Dictionary = port.call("_vars")
+			var tr: Dictionary = (dlg.get("trees") as Dictionary)[tree]
+			var nodes: Dictionary = tr["nodes"]
+			for nid in nodes.keys():
+				var v: Dictionary = dlg.call("view", tree, str(nid), flags, vars)
+				for pg in v["pages"]:
+					if str(pg).contains("{") or str(pg).strip_edges() == "":
+						bad.append("%s/%s page '%s'" % [tree, nid, str(pg).substr(0, 40)])
+				for o in v["options"]:
+					var od := o as Dictionary
+					if str(od["label"]).strip_edges() == "" and str(v["goto"]) == "":
+						bad.append("%s/%s empty option label" % [tree, nid])
+					if str(od["label"]).contains("{"):
+						bad.append("%s/%s label '%s'" % [tree, nid, str(od["label"]).substr(0, 40)])
+				if (v["options"] as Array).is_empty() and str(v["goto"]) == "":
+					bad.append("%s/%s has no option and no goto (a dead end)" % [tree, nid])
+		trees_seen[tree + str(spk.get("cid", ""))] = true
+	chk(no_tree.is_empty(), "every one of the %d people has a dialogue tree (without: %s)" % [people.size(), str(no_tree.slice(0, 5))])
+	var uniq := {}
+	for b in bad:
+		uniq[b] = true
+	chk(uniq.is_empty(), "no unresolved placeholder, empty option or dead end in any node (%d: %s)" % [uniq.size(), str(uniq.keys().slice(0, 6))])
+	chk(trees_seen.size() >= 12, "the audit covered %d tree/recruit combinations (>= 12)" % trees_seen.size())
+	state.call("reset")

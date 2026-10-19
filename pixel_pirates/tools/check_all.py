@@ -78,6 +78,7 @@ def main() -> int:
     steps.append(("H2D-1.2.1 GDScript static type scan (argument and member types across project classes; heuristic, NOT Godot)", [PY, "tools/h2d/check_gd_types.py", "--all"], ROOT))
     steps.append(("CP-1 economy: Python twin, fixture, tuning JSON, GDScript defaults and balance targets in sync", [PY, "tools/h2d/economy_logic.py", "--check"], ROOT))
     steps.append(("CP-1 Fish Row layout (people, recruits, market, bridges, decks, moored hulls, fishing grounds; NOT Godot)", [PY, "tools/h2d/check_port.py"], ROOT))
+    steps.append(("CP-1 docs vs data (purse, prices, recruit costs, grounds, hold, spoilage must match the manual; NOT Godot)", [PY, "tools/h2d/check_docs.py"], ROOT))
     steps.append(("H2D-1.2.2 hero frustum-cull model + source guard (reproduces the invisible-pirate bug; NOT Godot)", [PY, "tools/h2d/check_hero_cull.py"], ROOT))
     steps.append(("H2D-0.1 GDScript warning scan (heuristic, NOT Godot)", [PY, "tools/h2d/check_gd_warnings.py"], ROOT))
     if not a.quick:

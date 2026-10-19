@@ -7,6 +7,7 @@ const CayWorld := preload("res://h2d/cay_world.gd")
 const WalkAudit := preload("res://h2d/walk_audit.gd")
 const LandWalker := preload("res://h2d/land_walker.gd")
 const Ocean := preload("res://core/ocean.gd")
+const DataLoader := preload("res://core/data_loader.gd")
 const CITY_BOX := Rect2(-215.0, -285.0, 430.0, 335.0)
 const WALL_Z := [-106.0, -151.0, -197.0]
 const STAIR_X := [[16.0, 16.0], [-28.0, 6.0], [62.0, 6.0], [-150.0, 6.0], [140.0, 6.0]]
@@ -63,6 +64,7 @@ func run(t: Object) -> void:
 	_solids(t, w, port)
 	_drive(t, w, audit, tuning, land)
 	_island(t, w, land, r)
+	_sea_routes(t, w, tuning)
 	holder.queue_free()
 
 
@@ -102,10 +104,10 @@ func _targets(t: Object, audit: RefCounted, port: Dictionary) -> void:
 	var miss: Array = []
 	for pl in port["places"]:
 		var p := Vector2(float(pl["x"]), float(pl["z"]))
-		if not is_nan(audit.nearest_reached(p, 7.0).x):
+		if not is_nan(audit.nearest_reached(p, 3.5).x):
 			continue
 		miss.append(str(pl["id"]))
-	t.check(miss.is_empty(), "every place on the map can be reached on foot to within 7 m (not reached: %s)" % str(miss))
+	t.check(miss.is_empty(), "every place on the map can be reached on foot to within 3.5 m (not reached: %s)" % str(miss))
 	var spots: Dictionary = port["recruit_spots"]
 	for k in spots.keys():
 		var p := Vector2(float((spots[k] as Dictionary)["x"]), float((spots[k] as Dictionary)["z"]))
@@ -115,9 +117,9 @@ func _targets(t: Object, audit: RefCounted, port: Dictionary) -> void:
 		t.check(not is_nan(audit.nearest_reached(p2, 2.0).x), "the player can reach the interaction point '%s'" % str(it["id"]))
 	var lost := 0
 	for n in port["npcs"]:
-		if is_nan(audit.nearest_reached(Vector2(float(n["x"]), float(n["z"])), 1.6).x):
+		if is_nan(audit.nearest_reached(Vector2(float(n["x"]), float(n["z"])), 1.2).x):
 			lost += 1
-	t.check(lost == 0, "every one of the %d people stands where the player can reach (%d cut off)" % [(port["npcs"] as Array).size(), lost])
+	t.check(lost == 0, "every one of the %d people stands within 1.2 m of ground the player can reach (%d cut off)" % [(port["npcs"] as Array).size(), lost])
 	# Governor's Hill, the gates and the far terraces
 	for q in [["palace forecourt", Vector2(16.0, -200.5)], ["town hall steps", Vector2(-62.0, -207.0)], ["barracks yard", Vector2(94.0, -207.0)], ["west gate", Vector2(-110.0, -262.0)],
 			["east gate", Vector2(120.0, -262.0)], ["terrace walk", Vector2(-100.0, -158.0)], ["hill road", Vector2(100.0, -113.0)], ["market square", Vector2(16.0, -58.0)]]:
@@ -173,12 +175,21 @@ func _solids(t: Object, w: CayWorld, port: Dictionary) -> void:
 
 ## The real LandWalker (the code the keys drive) walks the strict flood's route from the pier to the places that matter.
 func _drive(t: Object, w: CayWorld, audit: RefCounted, tuning: Dictionary, land: Dictionary) -> void:
-	var targets: Array = [["the fish counter", Vector2(-77.0, -10.6)], ["Pip Larkin", Vector2(27.5, -2.4)], ["Garrick Stave", Vector2(-26.5, -22.0)],
-			["Silas Reed", Vector2(-57.5, -13.8)], ["Tuck Marrow", Vector2(-100.5, 8.6)], ["the tavern", Vector2(50.0, -1.0)], ["the palace forecourt", Vector2(16.0, -200.5)],
-			["the east gate", Vector2(120.0, -262.0)]]
+	var port: Dictionary = w.meta["port"]
+	# every place on the map, every recruit, every interaction and every 12th person, from the data (not a hand-picked list)
+	var targets: Array = [["the east gate", Vector2(120.0, -262.0)], ["the palace forecourt", Vector2(16.0, -200.5)]]
+	for pl in port["places"]:
+		targets.append(["place " + str(pl["id"]), Vector2(float(pl["x"]), float(pl["z"]))])
+	for k in (port["recruit_spots"] as Dictionary).keys():
+		targets.append(["recruit " + str(k), Vector2(float(port["recruit_spots"][k]["x"]), float(port["recruit_spots"][k]["z"]))])
+	for it in port["interactions"]:
+		targets.append(["interaction " + str(it["id"]), Vector2(float(it["x"]), float(it["z"]))])
+	var npcs: Array = port["npcs"]
+	for i in range(0, npcs.size(), 12):
+		targets.append(["person " + str(npcs[i]["id"]), Vector2(float(npcs[i]["x"]), float(npcs[i]["z"]))])
 	for q in targets:
 		var tp: Vector2 = q[1]
-		var near: Vector2 = audit.call("nearest_reached", tp, 4.0)
+		var near: Vector2 = audit.call("nearest_reached", tp, 3.5)
 		if is_nan(near.x):
 			t.check(false, "walk to %s: no route found" % str(q[0]))
 			continue
@@ -214,3 +225,66 @@ func _island(t: Object, w: CayWorld, land: Dictionary, r: float) -> void:
 	for q in land["pois"]:
 		var p := Vector2(float(q["x"]), float(q["z"]))
 		t.check(not is_nan(audit.nearest_reached(p, 8.0).x), "the pier reaches the stop '%s' on foot" % str(q["name"]))
+
+
+## By sea: from where the game starts the ship, a hull-sized water route leads to the middle and to the rim of every fishing ground
+## (the nets work only inside a ground, so an unreachable ground would silently end the economy loop). 8 m grid, five hull probes per cell
+## with the game's own aground rule (height under any probe > harbor.ground_limit_m).
+func _sea_routes(t: Object, w: CayWorld, tuning: Dictionary) -> void:
+	var limit := float(tuning.get("harbor.ground_limit_m", 0.5))
+	var bounds := Rect2(-900.0, -420.0, 1700.0, 2370.0)
+	var step := 8.0
+	var nx := int(bounds.size.x / step)
+	var nz := int(bounds.size.y / step)
+	var free := PackedByteArray()
+	free.resize(nx * nz)
+	for j in nz:
+		for i in nx:
+			var x := bounds.position.x + (float(i) + 0.5) * step
+			var z := bounds.position.y + (float(j) + 0.5) * step
+			var ok := true
+			for off in [Vector2.ZERO, Vector2(10, 0), Vector2(-10, 0), Vector2(0, 10), Vector2(0, -10)]:
+				if w.height_at(x + off.x, z + off.y) > limit:
+					ok = false
+					break
+			free[j * nx + i] = 1 if ok else 0
+	var start := Vector2(-100.0, 140.0)    # H2D0.START_POS
+	var si := int((start.x - bounds.position.x) / step)
+	var sj := int((start.y - bounds.position.y) / step)
+	t.check(free[sj * nx + si] == 1, "the ship's start position is open water")
+	var seen := PackedByteArray()
+	seen.resize(nx * nz)
+	var queue: Array[int] = [sj * nx + si]
+	seen[sj * nx + si] = 1
+	var head := 0
+	while head < queue.size():
+		var c := queue[head]
+		head += 1
+		var ci := c % nx
+		var cj := c / nx
+		for d in [[1, 0], [-1, 0], [0, 1], [0, -1]]:
+			var ni: int = ci + int(d[0])
+			var nj: int = cj + int(d[1])
+			if ni < 0 or nj < 0 or ni >= nx or nj >= nz:
+				continue
+			var n: int = nj * nx + ni
+			if seen[n] == 0 and free[n] == 1:
+				seen[n] = 1
+				queue.append(n)
+	t.check(queue.size() > 20000, "the sea around the start is one large body of open water (%d cells)" % queue.size())
+	var doc := DataLoader.load_dict("res://data/port/fishing_grounds.json")
+	var grounds: Dictionary = doc["grounds"]
+	t.check(grounds.size() == 4, "there are four fishing grounds (%d)" % grounds.size())
+	for id in grounds.keys():
+		var g: Dictionary = grounds[id]
+		var pts: Array = [Vector2(float(g["x"]), float(g["z"]))]
+		for k in 8:
+			var a := TAU * float(k) / 8.0
+			pts.append(Vector2(float(g["x"]) + cos(a) * float(g["r"]) * 0.6, float(g["z"]) + sin(a) * float(g["r"]) * 0.6))
+		var reached := 0
+		for p in pts:
+			var i2 := int((p.x - bounds.position.x) / step)
+			var j2 := int((p.y - bounds.position.y) / step)
+			if i2 >= 0 and j2 >= 0 and i2 < nx and j2 < nz and seen[j2 * nx + i2] == 1:
+				reached += 1
+		t.check(reached == pts.size(), "%s: the middle and 8 points inside its rim can be sailed to from the start (%d of %d)" % [str(g["name"]), reached, pts.size()])
