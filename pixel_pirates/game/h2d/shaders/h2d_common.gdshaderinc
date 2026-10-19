@@ -19,6 +19,7 @@ global uniform float h2d_sea;          // 0..1 sea-state index (calm .. storm), 
 global uniform float h2d_overcast;     // 0 open sky .. 1 full overcast (rain, storm, fog): no cloud shadows, no sun glints, flat light
 global uniform float h2d_fog_start;    // scene metres from the camera where the fog begins (closer in thick fog)
 global uniform vec2 h2d_focus;         // the ship's position: the gust patch is always over it while a gust blows
+global uniform float h2d_night;        // 0 day .. 1 night (also rises a little in a storm): lamps and lit windows glow
 global uniform float h2d_rain_dens;    // share of the rain slots that are active at full rain (set by the effects budget, so every level looks alike)
 
 // The wave field (h2d/env_model.gd -> wave_model.gd build()): four waves [dir_x, dir_z, k, amplitude] and the crest shape
@@ -28,6 +29,14 @@ uniform vec4 w1;
 uniform vec4 w2;
 uniform vec4 w3;
 uniform vec2 crest_pb = vec2(1.0, 0.0);
+
+// The harbour lamps (H2D-1): x, z (scene metres), radius (m), intensity. Six of them, set by sea_view_3d.gd from anvil_cay.json.
+uniform vec4 lamp0 = vec4(0.0, 0.0, 1.0, 0.0);
+uniform vec4 lamp1 = vec4(0.0, 0.0, 1.0, 0.0);
+uniform vec4 lamp2 = vec4(0.0, 0.0, 1.0, 0.0);
+uniform vec4 lamp3 = vec4(0.0, 0.0, 1.0, 0.0);
+uniform vec4 lamp4 = vec4(0.0, 0.0, 1.0, 0.0);
+uniform vec4 lamp5 = vec4(0.0, 0.0, 1.0, 0.0);
 
 float h2d_hash(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -147,6 +156,22 @@ float h2d_drop_on(vec2 cell, float seed) {
 // 0..1 per drop: its size, speed and brightness tier
 float h2d_drop_var(vec2 cell, float seed) {
 	return h2d_hash(mod(cell, 1024.0) * 1.31 + seed * 2.9 + 61.0);
+}
+
+// Warm lamp light at a ground or water position (0 by day): a soft pool per lamp with its own slow flicker.
+float h2d_lamp_one(vec4 l, vec2 xz, float seed) {
+	float d = length(xz - l.xy) / max(l.z, 0.1);
+	float k = clamp(1.0 - d, 0.0, 1.0);
+	return k * k * l.w * (0.88 + 0.12 * sin(h2d_time * (5.0 + seed) + seed * 2.3));
+}
+
+vec3 h2d_lamps(vec2 xz) {
+	if (h2d_night < 0.01) {
+		return vec3(0.0);
+	}
+	float s = h2d_lamp_one(lamp0, xz, 0.0) + h2d_lamp_one(lamp1, xz, 1.0) + h2d_lamp_one(lamp2, xz, 2.0)
+			+ h2d_lamp_one(lamp3, xz, 3.0) + h2d_lamp_one(lamp4, xz, 4.0) + h2d_lamp_one(lamp5, xz, 5.0);
+	return vec3(1.0, 0.66, 0.30) * s * h2d_night;
 }
 
 vec3 h2d_out(vec3 c) {

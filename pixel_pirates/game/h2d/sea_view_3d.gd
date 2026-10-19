@@ -54,6 +54,9 @@ var _ocean_mat: ShaderMaterial
 var _island: MeshInstance3D
 var _island_mat: ShaderMaterial
 var _trees: MultiMeshInstance3D
+var _structs: MultiMeshInstance3D
+var _harbor_layout: Dictionary = {}
+var _lamp_mats: Array[ShaderMaterial] = []
 var _ship: MeshInstance3D
 var _ship_mat: ShaderMaterial
 var _post_mat: ShaderMaterial
@@ -271,7 +274,7 @@ func _global_defaults() -> Array:
 		["h2d_wind_to", vec2, Vector2(0.0, 1.0)], ["h2d_cloud", flt, 0.2], ["h2d_storm", flt, 0.0],
 		["h2d_rain", flt, 0.0], ["h2d_adv", vec2, Vector2.ZERO], ["h2d_wind_ms", flt, 0.0], ["h2d_gust", flt, 0.0],
 		["h2d_sea", flt, 0.0], ["h2d_overcast", flt, 0.0], ["h2d_fog_start", flt, 190.0],
-		["h2d_focus", vec2, Vector2.ZERO], ["h2d_rain_dens", flt, 0.5],
+		["h2d_focus", vec2, Vector2.ZERO], ["h2d_rain_dens", flt, 0.5], ["h2d_night", flt, 0.0],
 	]
 
 
@@ -326,7 +329,8 @@ func _build_ocean() -> void:
 
 
 func _build_island() -> void:
-	_island_meta = DataLoader.load_dict(ART_DIR + "island_anvil.json")
+	_island_meta = DataLoader.load_dict(ART_DIR + "anvil_cay.json")
+	_harbor_layout = _island_meta["harbor_layout"]
 	var files: Dictionary = _island_meta["files"]
 	var size: float = float(_island_meta["size_m"])
 	var data_tex := _tex(str(files["data"]))
@@ -336,6 +340,11 @@ func _build_island() -> void:
 	_ocean_mat.set_shader_parameter("island_data", data_tex)
 	_ocean_mat.set_shader_parameter("island_origin", _island_origin())
 	_ocean_mat.set_shader_parameter("island_size", size)
+	var b: Dictionary = _harbor_layout["berth"]
+	var hl: float = float(_harbor_layout["ship_half_len_m"]) + 0.8
+	var hb: float = float(_harbor_layout["ship_half_beam_m"]) + 0.4
+	_ocean_mat.set_shader_parameter("berth_rect", Vector4(float(b["x"]) - hb, float(b["z"]) - hl, float(b["x"]) + hb,
+			float(b["z"]) + hl))
 	_island_mat = _mat("island.gdshader")
 	_island_mat.set_shader_parameter("albedo_tex", _tex(str(files["albedo"])))
 	_island_mat.set_shader_parameter("data_tex", data_tex)
@@ -344,20 +353,21 @@ func _build_island() -> void:
 	_island = MeshInstance3D.new()
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(size, size)
-	plane.subdivide_width = 95
-	plane.subdivide_depth = 95
+	plane.subdivide_width = int(size) - 1  # one vertex per metre: the 3 m pier deck needs it (H2D-0 used 1.7 m cells)
+	plane.subdivide_depth = int(size) - 1
 	_island.mesh = plane
 	_island.material_override = _island_mat
 	_island.position = Vector3(_island_origin().x, 0.0, _island_origin().y)
 	_island.extra_cull_margin = 40.0
 	_island.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_vp.add_child(_island)
-	_build_trees()
+	_trees = _build_sprites(_island_meta["trees"] as Array, _island_meta["veg_atlas"] as Dictionary, false)
+	_structs = _build_sprites(_island_meta["structures"] as Array, _island_meta["struct_atlas"] as Dictionary, true)
+	_set_lamps()
 
 
-func _build_trees() -> void:
-	var atlas: Dictionary = _island_meta["atlas"]
-	var list: Array = _island_meta["trees"]
+## One MultiMesh of camera-facing sprites (ONE draw call per atlas). `glow` turns on the lit-window / lantern emission.
+func _build_sprites(list: Array, atlas: Dictionary, glow: bool) -> MultiMeshInstance3D:
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.use_custom_data = true
@@ -366,10 +376,11 @@ func _build_trees() -> void:
 	for i in list.size():
 		var t: Dictionary = list[i]
 		mm.set_instance_transform(i, Transform3D(Basis.IDENTITY, Vector3(float(t["x_m"]), float(t["y_m"]), float(t["z_m"]))))
-		mm.set_instance_custom_data(i, Color(float(t["type"]), float(t["scale"]), 0.0, 0.0))
-	mm.custom_aabb = AABB(Vector3(-90.0, -10.0, -90.0), Vector3(180.0, 80.0, 180.0))
-	_trees = MultiMeshInstance3D.new()
-	_trees.multimesh = mm
+		var bob := 0.12 if str(t.get("name", "")).begins_with("buoy") else 0.0
+		mm.set_instance_custom_data(i, Color(float(t["type"]), float(t["scale"]), bob, 0.0))
+	mm.custom_aabb = AABB(Vector3(-130.0, -10.0, -130.0), Vector3(260.0, 80.0, 260.0))
+	var inst := MultiMeshInstance3D.new()
+	inst.multimesh = mm
 	var m := _mat("trees.gdshader")
 	m.set_shader_parameter("atlas", _tex(str(atlas["file"])))
 	var cell: Array = atlas["cell_px"]
@@ -378,10 +389,32 @@ func _build_trees() -> void:
 	m.set_shader_parameter("pivot_px", Vector2(float(piv[0]), float(piv[1])))
 	m.set_shader_parameter("atlas_grid", Vector2(float(atlas["cols"]), float(atlas["rows"])))
 	m.set_shader_parameter("m_per_px", 1.0 / PX_PER_M)
-	_trees.material_override = m
-	_trees.position = Vector3(_island_origin().x, 0.0, _island_origin().y)
-	_trees.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_vp.add_child(_trees)
+	m.set_shader_parameter("glow_on", 1.0 if glow else 0.0)
+	inst.material_override = m
+	inst.position = Vector3(_island_origin().x, 0.0, _island_origin().y)
+	inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_vp.add_child(inst)
+	_lamp_mats.append(m)
+	return inst
+
+
+## The six harbour lamps (anvil_cay.json "lamps") go to every material that lights things at night.
+func _set_lamps() -> void:
+	var lamps: Array = _island_meta["lamps"]
+	var mats: Array[ShaderMaterial] = [_ocean_mat, _island_mat]
+	mats.append_array(_lamp_mats)
+	for i in 6:
+		var v := Vector4(0.0, 0.0, 1.0, 0.0)
+		if i < lamps.size():
+			var l: Dictionary = lamps[i]
+			v = Vector4(float(l["x_m"]) + _island_origin().x, float(l["z_m"]) + _island_origin().y, 15.0, 0.9)
+		for m in mats:
+			m.set_shader_parameter("lamp%d" % i, v)
+
+
+## Harbour data for the controller (the layout of anvil_cay.json: berth, approach, dock zone, pier).
+func harbor_layout() -> Dictionary:
+	return _harbor_layout
 
 
 func _build_ship() -> void:
@@ -449,6 +482,7 @@ func _set_globals(v: Dictionary, lm: Dictionary) -> void:
 	g.global_shader_parameter_set("h2d_fog_col", lm["fog_col"])
 	g.global_shader_parameter_set("h2d_fog_density", float(lm["fog_density"]))
 	g.global_shader_parameter_set("h2d_time", _time)
+	g.global_shader_parameter_set("h2d_night", night_level(float(v["hour"]), float(v["storm"]), float(lm["overcast"])))
 	g.global_shader_parameter_set("h2d_wind_to", lm["wind_to"])
 	g.global_shader_parameter_set("h2d_cloud", float(v["cloud"]))
 	g.global_shader_parameter_set("h2d_storm", float(v["storm"]))
@@ -462,6 +496,12 @@ func _set_globals(v: Dictionary, lm: Dictionary) -> void:
 	g.global_shader_parameter_set("h2d_fog_start", _look.fog_start_m(float(v["fog"])))
 	var dens: float = (EFFECTS[effects] as Dictionary)["dens"]
 	g.global_shader_parameter_set("h2d_rain_dens", dens * _look.param("rain_density"))
+
+
+## 0 (day) .. 1 (night): the lamps come on through the evening, go out through the dawn, and glow a little in a storm.
+static func night_level(hour: float, storm: float, overcast: float) -> float:
+	var n := (1.0 - smoothstep(4.5, 6.5, hour)) if hour < 12.0 else smoothstep(17.0, 19.5, hour)
+	return clampf(maxf(n, 0.35 * storm + 0.15 * overcast), 0.0, 1.0)
 
 
 func _set_waves(m: ShaderMaterial) -> void:
@@ -490,6 +530,11 @@ func _update_ocean(v: Dictionary, ship: Dictionary, lm: Dictionary) -> void:
 	_ocean_mat.set_shader_parameter("foam_col", lm["foam"])
 	_ocean_mat.set_shader_parameter("sun_k", clampf((lm["sun_col"] as Vector3).length() / 0.6, 0.0, 1.0))
 	var h := deg_to_rad(float(ship["heading_deg"]))
+	var berth: Dictionary = _harbor_layout.get("berth", {"x": 0.0, "z": 0.0})
+	var bd := Vector2(float(ship["x"]) - float(berth["x"]), float(ship["z"]) - float(berth["z"])).length()
+	var moor := float(ship.get("moor", 0.0))
+	var show := (1.0 - smoothstep(110.0, 170.0, bd)) * (1.0 - smoothstep(0.3, 0.9, moor))
+	_ocean_mat.set_shader_parameter("berth_show", show)
 	_ocean_mat.set_shader_parameter("ship_pos", Vector2(float(ship["x"]), float(ship["z"])))
 	_ocean_mat.set_shader_parameter("ship_dir", Vector2(sin(h), -cos(h)))
 	_ocean_mat.set_shader_parameter("ship_speed", float(ship["scene_speed"]))
@@ -556,7 +601,8 @@ func _update_ship(v: Dictionary, ship: Dictionary, dt: float) -> void:
 	var wind := float(env["wind_inst_kn"])
 	var no_go := float(v["no_go_deg"])
 	var off := absf(EnvModel.wrap180(hd - float(v["wind_from_deg"])))
-	_sail.step(minf(dt, 0.1), wind, float(env["gust"]), off, no_go, _time)
+	var slack_k := 1.0 - clampf(float(ship.get("moor", 0.0)), 0.0, 1.0)   # moored: no wind in the sails, they hang slack
+	_sail.step(minf(dt, 0.1), wind * slack_k, float(env["gust"]) * slack_k, off, no_go, _time)
 	var so := _sail.out()
 	var loose := maxf(float(so["slack"]), float(so["luff"]))
 	var folds := clampf(loose * (1.0 - 0.5 * clampf(float(so["fill"]), 0.0, 1.0)), 0.0, 1.0)

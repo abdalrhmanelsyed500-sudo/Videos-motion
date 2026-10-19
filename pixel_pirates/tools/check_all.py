@@ -70,6 +70,8 @@ def main() -> int:
     steps.append(("H2D-0.1 helm: Python twin, fixture, tuning JSON in sync", [PY, "tools/h2d/helm_logic.py", "--check"], ROOT))
     steps.append(("H2D-0.2 environment: Python twin, fixture, tuning JSON and GDScript defaults in sync", [PY, "tools/h2d/env_logic.py", "--check"], ROOT))
     steps.append(("H2D-0.3 sail model: Python twin and fixture in sync", [PY, "tools/h2d/sail_logic.py", "--check"], ROOT))
+    steps.append(("H2D-1 harbor: Python twin, fixture, tuning JSON and GDScript defaults in sync", [PY, "tools/h2d/harbor_logic.py", "--check"], ROOT))
+    steps.append(("H2D-1 harbor geometry (berth, lane, pier, props, start reachable)", [PY, "tools/h2d/check_harbor.py"], ROOT))
     steps.append(("H2D-0.1 GDScript warning scan (heuristic, NOT Godot)", [PY, "tools/h2d/check_gd_warnings.py"], ROOT))
     if not a.quick:
         steps.append(("island kit tests", [PY, "tools/island_kit/test_island_kit.py"], ROOT))

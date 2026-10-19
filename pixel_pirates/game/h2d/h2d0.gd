@@ -4,6 +4,8 @@ extends Node
 ## H2D-0.2: weather, sea, rain, spray, sail shape and ship motion all come from ONE shared environment (env_model.gd).
 ## Keys: W weather lab (real / calm / breezy / drizzle / rain / fog / rough / gale / storm) | G gust |
 ##       M ship motion off / half / full | E effects budget (low / medium / high)
+## H2D-1: Anvil Cay has a harbour. SPACE docks inside the dock zone (between the buoys) and casts off again;
+##       N cycles the time of day (dawn / noon / sunset / night) to look at the lighting.
 ## Keys: A/D (or Left/Right) steer | Z/X turn sensitivity | 1-7 weather (1 squall 2 fair 4 fog 5 swell 6 gale 7 ice)
 ##       P pause | R reset ship | F1 quality (Dev-Lite / Standard / Ultra) | F2 path (3D / 2D) | F3 HUD | F4 flip colour
 ##       transfer | F12 screenshot | [ ] camera pitch | - = exposure | , . visual speed | B benchmark (about 80 s)
@@ -22,10 +24,11 @@ const Bench := preload("res://h2d/bench.gd")
 const Helm := preload("res://h2d/helm.gd")
 const EnvModel := preload("res://h2d/env_model.gd")
 const HelmHud := preload("res://h2d/helm_hud.gd")
+const Harbor := preload("res://h2d/harbor.gd")
 const MAX_STEP_S := 0.25
 const SMOOTH_S := 2.0
-const START_POS := Vector2(-150.0, 190.0)
-const START_HEADING := 39.0
+const START_POS := Vector2(-100.0, 140.0)  ## keep in step with START in tools/h2d/check_harbor.py
+const START_HEADING := 58.0  ## points at the harbour mouth: the dock zone is about 145 m ahead
 const SMOOTH_KEYS: Array[String] = ["wind_kn", "wave_m", "visibility_km", "cloud", "storm", "herald", "rain", "fog",
 		"ice", "sst_c", "air_c", "light_peak", "light_floor"]
 const COMPASS: Array[String] = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
@@ -42,6 +45,9 @@ const LAB := {
 	"gale": {"wind_kn": 36.0, "wave_m": 6.0, "rain": 0.8, "storm": 0.7, "fog": 0.15},
 	"storm": {"wind_kn": 48.0, "wave_m": 9.5, "rain": 1.0, "storm": 1.0, "fog": 0.2},
 }
+## Test hours for key N (the time of day moves on by itself too: 1 day = 15 real minutes).
+const TOD_HOURS: Array[float] = [6.5, 12.0, 18.0, 22.5]
+const TOD_NAMES: Array[String] = ["dawn 06:30", "noon 12:00", "sunset 18:00", "night 22:30"]
 const MOTION_NAMES: Array[String] = ["off", "half", "full"]
 const EFFECT_LEVELS: Array[String] = ["low", "medium", "high"]
 
@@ -61,6 +67,10 @@ var _heading_disp := 0.0
 var _helm: Helm = Helm.new()
 var _helm_snap := true
 var _helm_hud: HelmHud
+var _harbor: Harbor = Harbor.new()
+var _moor := 0.0
+var _tod := 0
+var _dock_label: Label
 var _alert: Label
 var _alert_sub: Label
 var _advice := ""
@@ -117,6 +127,7 @@ func _ready() -> void:
 	_helm.configure(_oc.tuning())
 	_env.configure(_oc.tuning())
 	(_v3 as View3D).configure_env(_oc.tuning())
+	_harbor.configure((_v3 as View3D).harbor_layout(), _oc.tuning())
 	_jump(2)
 	_reset_ship()
 	_set_path("3d")
@@ -152,6 +163,8 @@ func _reset_ship() -> void:
 	_turn = 0.0
 	_curve = 0.0
 	_grounded = false
+	_harbor.reset()
+	_moor = 0.0
 
 
 func _set_path(which: String) -> void:
@@ -183,6 +196,31 @@ func _process(delta: float) -> void:
 	_apply_lab()
 	_step_env(dt)
 	var target_kn: float = _sea.speed_kn() * (1.0 + _env.gust_surge())
+	var speed_scene := 0.0
+	if _harbor.state == Harbor.SAILING:
+		speed_scene = _sail_step(dt, gs, t0, target_kn)
+	else:
+		speed_scene = _harbor_step(dt, gs)
+	_smooth(dt)
+	_apply_env_to_view()
+	_d["speed_kn"] = _helm.speed_kn
+	_curve = clampf(deg_to_rad(_helm.yaw_rate) / maxf(speed_scene, 3.0), -0.04, 0.04)
+	_update_light(float(_state.clock.t) / 86400.0)
+	_update_region()
+	_active.update_view(_view(), {"x": _pos.x, "z": _pos.y, "heading_deg": _heading_disp,
+			"speed_kn": float(_d["speed_kn"]), "scene_speed": speed_scene, "curve": _curve, "moor": _moor}, delta)
+	var advice := _helm_state(target_kn)
+	_helm_hud.set_state(advice)
+	_update_alert(advice)
+	_hud_t -= delta
+	if _hud_t <= 0.0:
+		_hud_t = 0.2
+		_draw_hud(speed_scene, advice)
+
+
+## Free sailing: the helm and the sails move the ship; the hull footprint is tested against the land; the scene speed is
+## eased near the berth. Returns the scene speed in m/s (what the wake shows).
+func _sail_step(dt: float, gs: float, t0: float, target_kn: float) -> float:
 	if _helm_snap:
 		_helm.speed_kn = target_kn
 		_helm_snap = false
@@ -191,14 +229,11 @@ func _process(delta: float) -> void:
 		_sea.heading_deg = _helm.heading_deg
 	_heading_disp = _helm.heading_deg
 	_turn = _helm.yaw_rate * 0.5
-	_smooth(dt)
-	_apply_env_to_view()
-	_d["speed_kn"] = _helm.speed_kn
-	var speed_scene := ShipSprite.scene_speed_ms(_helm.speed_kn) * _speed_mul
+	var speed_scene := ShipSprite.scene_speed_ms(_helm.speed_kn) * _speed_mul * _harbor.speed_scale(_pos.x, _pos.y)
 	if gs > 0.0:
 		var hd := deg_to_rad(_sea.heading_deg)
 		var np := _pos + Vector2(sin(hd), -cos(hd)) * speed_scene * dt
-		if _v3.land_height_at(np.x, np.y) > 0.3:
+		if _hull_aground(np):
 			_grounded = true
 			_helm.speed_kn = 0.0
 		else:
@@ -207,18 +242,57 @@ func _process(delta: float) -> void:
 			_sea.advance(t0, gs)
 	if _grounded:
 		speed_scene = 0.0
-	_curve = clampf(deg_to_rad(_helm.yaw_rate) / maxf(speed_scene, 3.0), -0.04, 0.04)
-	_update_light(float(_state.clock.t) / 86400.0)
-	_update_region()
-	_active.update_view(_view(), {"x": _pos.x, "z": _pos.y, "heading_deg": _heading_disp,
-			"speed_kn": float(_d["speed_kn"]), "scene_speed": speed_scene, "curve": _curve}, delta)
-	var advice := _helm_state(target_kn)
-	_helm_hud.set_state(advice)
-	_update_alert(advice)
-	_hud_t -= delta
-	if _hud_t <= 0.0:
-		_hud_t = 0.2
-		_draw_hud(speed_scene, advice)
+	return speed_scene
+
+
+## True if any probe of the hull (bow, stern, centre, both sides) is over land higher than harbor.ground_limit_m.
+func _hull_aground(p: Vector2) -> bool:
+	var limit := _harbor.param("ground_limit_m")
+	for pt in _harbor.footprint(p.x, p.y, _sea.heading_deg):
+		if _v3.land_height_at(float(pt[0]), float(pt[1])) > limit:
+			return true
+	return false
+
+
+## Docking, moored, casting off: the harbour logic moves the ship and the helm only watches.
+func _harbor_step(dt: float, gs: float) -> float:
+	var before := _pos
+	var pose: Dictionary = _harbor.step(dt if gs > 0.0 else 0.0)
+	_pos = Vector2(float(pose["x"]), float(pose["z"]))
+	_moor = float(pose["moor"])
+	_sea.heading_deg = float(pose["heading"])
+	_helm.reset(float(pose["heading"]), 0.0)
+	_heading_disp = float(pose["heading"])
+	_turn = 0.0
+	_grounded = false
+	_helm_snap = false
+	if bool(pose["done"]):
+		if int(pose["state"]) == Harbor.DOCKED:
+			_say("Moored at %s. The sails hang slack. Press SPACE to cast off." % _harbor.port_name)
+		else:
+			_helm.reset(float(pose["heading"]), 0.8)
+			_say("Clear of the berth: you have the helm. A / D steer.")
+	if _harbor.state != Harbor.DOCKING or dt <= 0.0:
+		return 0.0
+	return minf((_pos - before).length() / dt, 25.0) * (1.0 - _moor)
+
+
+## SPACE: dock inside the dock zone, cast off when moored.
+func _dock_request() -> void:
+	var r := _harbor.request(_pos.x, _pos.y, _sea.heading_deg)
+	match r:
+		"docking":
+			_say("Docking at %s: the crew brings her alongside." % _harbor.port_name)
+		"casting_off":
+			_say("Casting off from %s." % _harbor.port_name)
+		"not_in_zone":
+			_say("Too far from the berth: sail into the harbour mouth (between the buoys) first.")
+
+
+func _cycle_time_of_day() -> void:
+	_tod = (_tod + 1) % TOD_HOURS.size()
+	_state.set_clock(_state.day(), TOD_HOURS[_tod])
+	_say("time of day: %s (test only; the real clock keeps running)" % TOD_NAMES[_tod])
 
 
 func _steer_axis() -> float:
@@ -344,6 +418,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif k.keycode == KEY_W:
 		_lab = LAB_ORDER[(LAB_ORDER.find(_lab) + 1) % LAB_ORDER.size()]
 		_say("weather lab: %s (the sea builds up or dies away over about half a minute)" % _lab)
+	elif k.keycode == KEY_SPACE:
+		_dock_request()
+	elif k.keycode == KEY_N:
+		_cycle_time_of_day()
 	elif k.keycode == KEY_G:
 		_env.trigger_gust()
 		_say("gust")
@@ -477,6 +555,8 @@ func _helm_state(target_kn: float) -> Dictionary:
 ## One or two plain sentences that say what the ship is doing and why its speed is what it is.
 func _advice_for(st: Dictionary) -> String:
 	var eff := float(st["target_kn"]) / maxf(float(st["best_kn"]), 0.1)
+	if _harbor.state != Harbor.SAILING:
+		return _harbor.prompt(_pos.x, _pos.y)["text"]
 	if _grounded:
 		return "AGROUND on Anvil Cay. Turn away from the island with A or D (or press R to start again)."
 	if bool(st["in_irons"]):
@@ -521,11 +601,25 @@ func _build_helm_widgets(layer: CanvasLayer) -> void:
 	_alert_sub.add_theme_constant_override("outline_size", 5)
 	_alert_sub.visible = false
 	layer.add_child(_alert_sub)
+	_dock_label = Label.new()
+	_dock_label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	_dock_label.offset_top = -92.0
+	_dock_label.offset_bottom = -52.0
+	_dock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_dock_label.add_theme_font_size_override("font_size", 22)
+	_dock_label.add_theme_color_override("font_color", Color(1.0, 0.93, 0.7))
+	_dock_label.add_theme_color_override("font_outline_color", Color(0.05, 0.05, 0.08))
+	_dock_label.add_theme_constant_override("outline_size", 7)
+	_dock_label.visible = false
+	layer.add_child(_dock_label)
 
 
 ## The big IN IRONS / AGROUND banner. Pulses so it cannot be missed, and says which key to press.
 func _update_alert(st: Dictionary) -> void:
-	var alarm := _hud_on and (bool(st["in_irons"]) or _grounded)
+	var pr := _harbor.prompt(_pos.x, _pos.y)
+	_dock_label.visible = _hud_on and str(pr["text"]) != ""
+	_dock_label.text = str(pr["text"])
+	var alarm := _hud_on and _harbor.state == Harbor.SAILING and (bool(st["in_irons"]) or _grounded)
 	_alert.visible = alarm
 	_alert_sub.visible = alarm
 	_helm_hud.visible = _hud_on
@@ -543,7 +637,7 @@ func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 		return
 	var wind_from := float(_d["wind_from"])
 	var lines: Array[String] = []
-	lines.append("CROWN OF THE SEAS - H2D-0.2   [%s]   %.0f fps" % [_active.describe(), _fps])
+	lines.append("CROWN OF THE SEAS - H2D-1 Anvil Cay   [%s]   %.0f fps" % [_active.describe(), _fps])
 	lines.append(_renderer_line)
 	lines.append("%s   %02d:%02d   wind %.0f kn (gusting %.0f) from %s   waves %.1f m   visibility %.1f km" % [
 			_region_name(), int(_hour), int((_hour - floorf(_hour)) * 60.0), float(_d["wind_kn"]), _env.wind_inst_kn,
@@ -556,13 +650,19 @@ func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 	lines.append("rain %.2f  storm %.2f  fog %.2f  ice %.2f  swell warning %.2f" % [
 			float(_d["rain"]), float(_d["storm"]), float(_d["fog"]), float(_d["ice"]), float(_d["herald"])])
 	lines.append(_advice_for(st))
+	var pr := _harbor.prompt(_pos.x, _pos.y)
+	if bool(pr["near"]) and _harbor.state == Harbor.SAILING:
+		var zone_txt := "IN THE DOCK ZONE" if bool(pr["can_dock"]) else "outside the dock zone"
+		lines.append("%s berth: %d m, bearing %03d deg   harbour speed x%.2f   %s" % [_harbor.port_name,
+				int(roundf(float(pr["dist"]))), int(roundf(float(pr["bearing"]))) % 360,
+				_harbor.speed_scale(_pos.x, _pos.y), zone_txt])
 	if _state.clock.is_paused():
 		lines.append("PAUSED")
 	if _bench != null and (_bench as Bench).active:
 		lines.append("BENCHMARK " + (_bench as Bench).current_label())
 	if _real < _banner_until:
 		lines.append(_banner)
-	lines.append("A/D steer  Z/X turn  1-7 place  W weather lab  G gust  M motion  E effects  P pause  R reset  F1-F4")
+	lines.append("A/D steer  SPACE dock  N time  Z/X turn  W weather  G gust  M motion  E effects  P pause  R reset")
 	_hud.text = "\n".join(PackedStringArray(lines))
 
 

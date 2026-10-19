@@ -924,6 +924,20 @@ def build_struct_atlas() -> Image.Image:
     return atlas
 
 
+IMPORT_TEMPLATE = (Path(__file__).resolve().parent / "import_template.txt")
+
+
+def write_import_files(names):
+    """A .png.import next to each new PNG, same settings as the H2D-0.1 art (lossless, no mipmaps, no VRAM compression), so a
+    first launch does not need an editor import to find them. Godot's destination name is md5('res://<path>')."""
+    import hashlib
+    tpl = IMPORT_TEMPLATE.read_text()
+    for n in names:
+        res = f"res://h2d/art/{n}"
+        digest = hashlib.md5(res.encode()).hexdigest()
+        (ART / (n + ".import")).write_text(tpl.replace("@NAME@", n).replace("@HASH@", digest))
+
+
 def lamps_json(structs):
     return [{"name": s["name"], "x_m": s["x_m"], "z_m": s["z_m"], "y_m": round(s["y_m"] + 3.4, 2)} for s in structs if s["name"] in LAMP_NAMES]
 
@@ -1005,6 +1019,8 @@ def main() -> int:
     }
     (ART / "anvil_cay.json").write_text(json.dumps(meta, indent=1) + "\n")
     print(f"harbor island: land {meta['land_area_m2']} m2, peak {meta['peak_m']} m, vegetation {len(trees)}, structures {len(structs)}")
+    write_import_files(["anvil_cay_albedo.png", "anvil_cay_data.png", "anvil_cay_normal.png", "anvil_veg_atlas.png",
+                        "anvil_struct_atlas.png"])
     if args.preview:
         preview(ground, h, n, av, as_, trees, structs, ROOT / "art_bible/h2d1")
     return 0

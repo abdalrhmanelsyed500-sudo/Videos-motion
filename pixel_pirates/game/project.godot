@@ -108,6 +108,10 @@ h2d_rain_dens={
 "type": "float",
 "value": 0.5
 }
+h2d_night={
+"type": "float",
+"value": 0.0
+}
 
 [rendering]
 

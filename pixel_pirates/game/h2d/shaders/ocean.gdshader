@@ -1,4 +1,4 @@
-// H2D-0.2 ocean: four analytic waves with sea-state crest shaping (h2d_common.gdshaderinc = wave_model.gd), banded light,
+// H2D-0.2 / H2D-1 ocean: four analytic waves with sea-state crest shaping (h2d_common.gdshaderinc = wave_model.gd), banded light,
 // directional ripples, gust patches, whitecaps and wind-aligned foam lanes that grow with the sea state, shallows and shore
 // foam from the island's data texture, drifting cloud shadow, pack ice, rain rings (the landing of the falling drops,
 // see rain.gdshader), the ship's shadow, bow wave, wake, hull wash and slam foam.
@@ -20,7 +20,10 @@ uniform float posterize = 12.0;     // colour bands for the water body; 0 = off
 uniform float sun_k = 1.0;          // how strongly the sun casts the ship's shadow
 uniform sampler2D island_data : filter_linear, repeat_disable;
 uniform vec2 island_origin = vec2(0.0);
-uniform float island_size = 160.0;
+uniform float island_size = 240.0;
+uniform vec4 berth_rect = vec4(0.0, 0.0, 0.0, 0.0);  // H2D-1: x0, z0, x1, z1 of the painted berth outline (scene metres)
+uniform float berth_show = 0.0;     // 0..1: the outline fades in when the ship is near and out once it is moored
+uniform float shade_water = 1.0;    // 1 = the island, pier and houses throw shadows on the water
 uniform vec2 ship_pos = vec2(0.0);
 uniform vec2 ship_dir = vec2(0.0, -1.0);
 uniform float ship_speed = 0.0;     // scene metres per second
@@ -69,11 +72,29 @@ void fragment() {
 
 	float depth_m = 99.0;
 	float shore_m = 99.0;
+	float isl_shade = 0.0;
 	vec2 iuv = (w_pos.xz - island_origin) / island_size + 0.5;
 	if (iuv.x > 0.0 && iuv.x < 1.0 && iuv.y > 0.0 && iuv.y < 1.0) {
 		vec4 d = texture(island_data, iuv);
 		depth_m = max(-(d.r * 48.0 - 8.0), 0.0);
 		shore_m = d.b * 40.0;
+		// the island, the pier, the houses and the trees shade the water they stand beside: three taps towards the sun
+		// (the same height data that shades the land), only close to shore
+		vec2 shd = h2d_sun_dir.xz;
+		float shl = length(shd);
+		if (shade_water > 0.5 && shl > 0.01 && shore_m < 14.0) {
+			float sl = h2d_sun_dir.y / shl;
+			vec2 sdir = shd / shl;
+			for (int i = 0; i < 3; i++) {
+				float sm = 1.5 + 3.0 * float(i * i);
+				vec2 suv = iuv + sdir * sm / island_size;
+				float occ = texture(island_data, suv).g * 48.0 - 8.0;
+				if (occ > sl * sm + 0.3) {
+					isl_shade = 1.0;
+					break;
+				}
+			}
+		}
 	}
 	vec3 col = mix(deep_col, shallow_col, clamp(crest_h * 0.5 + fres * 0.3, 0.0, 1.0));
 	float shal = 1.0 - smoothstep(0.2, 6.0, depth_m);
@@ -83,6 +104,7 @@ void fragment() {
 	col *= lightc;
 	col *= h2d_cloud_shadow(w_pos.xz);
 	col *= 1.0 - 0.22 * gp;
+	col *= 1.0 - 0.30 * isl_shade * sun_k * (1.0 - h2d_overcast);
 	// the water greys under rain, fog and a gale; a calm sea mirrors the sky, more so towards the horizon
 	float grey_k = clamp(0.20 * h2d_rain + 0.30 * h2d_overcast + 0.15 * h2d_sea, 0.0, 0.7);
 	col = mix(col, vec3(dot(col, vec3(0.333))) * vec3(0.93, 0.98, 1.0), grey_k);
@@ -159,6 +181,16 @@ void fragment() {
 	}
 	col = mix(col, foam_col * clamp(lightc * 1.3, vec3(0.55), vec3(1.1)), clamp(foam, 0.0, 1.0));
 
+	// H2D-1: a faint painted outline of the berth on the water (dashes), so the player sees where the ship will lie
+	if (berth_show > 0.01) {
+		vec2 bc = (berth_rect.xy + berth_rect.zw) * 0.5;
+		vec2 bh = (berth_rect.zw - berth_rect.xy) * 0.5;
+		vec2 q = abs(w_pos.xz - bc) - bh;
+		float edge = 1.0 - smoothstep(0.0, 0.32, abs(max(q.x, q.y)));
+		float dashes = step(0.5, fract((w_pos.x + w_pos.z) * 0.55));
+		col = mix(col, foam_col * clamp(lightc * 1.2, vec3(0.5), vec3(1.0)), edge * dashes * 0.55 * berth_show);
+	}
+
 	// the ship's shadow slides away from the sun and lengthens as it sinks
 	vec2 sd = -h2d_sun_dir.xz / max(h2d_sun_dir.y, 0.25) * 3.0;
 	vec2 ps = w_pos.xz - ship_pos - sd;
@@ -200,6 +232,9 @@ void fragment() {
 	float spk = step(0.5, sp) * step(0.45, h2d_hash(floor(w_pos.xz * 1.6 + floor(h2d_time * mix(3.0, 1.2, glass)))));
 	col += h2d_sun_col * 2.0 * spk * (1.0 - h2d_cloud * 0.9) * (1.0 - h2d_overcast);   // no glints under an overcast sky
 
+	// night: the harbour lamps lay warm pools on the water that shimmer with the ripples
+	vec3 lamp = h2d_lamps(w_pos.xz);
+	col += lamp * (0.28 + 0.22 * h2d_noise(w_pos.xz * 1.3 + h2d_time * 0.8));
 	col = h2d_fog_mix(col, dist);
 	ALBEDO = h2d_out(col);
 }
