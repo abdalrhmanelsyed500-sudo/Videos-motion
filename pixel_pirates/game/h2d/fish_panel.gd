@@ -27,10 +27,22 @@ func _ready() -> void:
 	visible = false
 
 
+## Under a CanvasLayer nothing lays a Control out: the size follows the window by hand.
+func _process(_dt: float) -> void:
+	if not is_shown:
+		return
+	var vs := get_viewport_rect().size
+	if size != vs:
+		position = Vector2.ZERO
+		size = vs
+		queue_redraw()
+
+
 func open(m: Dictionary) -> void:
 	model = m
 	is_shown = true
 	visible = true
+	size = get_viewport_rect().size if is_inside_tree() else Vector2(1366.0, 876.0)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	queue_redraw()
 
@@ -47,22 +59,34 @@ func close() -> void:
 
 
 func _txt(text: String, pos: Vector2, fsize: int, col: Color, align: int = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0) -> void:
-	if font == null:
+	# `pos` is the anchor: the left edge, the centre or the right edge of the text, by `align`. `width` is the room there is: a text
+	# that is wider than that is drawn smaller instead of running off the screen.
+	if font == null or fsize < 1:
 		return
-	draw_string(font, pos + Vector2(2, 2), text, align, width, fsize, Color(0, 0, 0, 0.7))
-	draw_string(font, pos, text, align, width, fsize, col)
+	var fs := fsize
+	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, fs).x
+	if width > 0.0 and w > width:
+		fs = maxi(int(floorf(float(fs) * width / w)), 8)
+		w = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, fs).x
+	var x := pos.x
+	if align == HORIZONTAL_ALIGNMENT_CENTER:
+		x -= w * 0.5
+	elif align == HORIZONTAL_ALIGNMENT_RIGHT:
+		x -= w
+	draw_string(font, Vector2(x + 2.0, pos.y + 2.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, fs, Color(0, 0, 0, 0.75))
+	draw_string(font, Vector2(x, pos.y), text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, fs, col)
 
 
 func _draw() -> void:
 	if not is_shown:
 		return
-	var k := size.y / 876.0
+	var k := size.y / 780.0
 	var rows: Array = model["rows"]
 	var shown := mini(rows.size(), 8)
 	var rh := (60.0 if rows.size() <= 6 else 46.0) * k
 	var body := maxf(float(shown), 1.0) * rh
 	var w := 660.0 * k
-	var h := 250.0 * k + body
+	var h := 285.0 * k + body
 	var r := Rect2((size.x - w) * 0.5, maxf((size.y - h) * 0.5, 12.0 * k), w, h)
 	draw_rect(Rect2(0, 0, size.x, size.y), Color(0, 0, 0, 0.45))
 	draw_rect(Rect2(r.position + Vector2(5, 6), r.size), Color(0, 0, 0, 0.4))
@@ -107,4 +131,4 @@ func _draw() -> void:
 	draw_rect(Rect2(bar.position + Vector2(2, 2), Vector2((bar.size.x - 4.0) * frac, bar.size.y - 4.0)), bc)
 	draw_rect(bar, EDGE, false, 2.0)
 	_txt("Capacity %.0f kg   |   free %.1f kg" % [cap, float(model["remaining"])], Vector2(r.position.x + 28.0 * k, y + 108.0 * k), int(roundf(21.0 * k)), Color(0.88, 0.84, 0.72))
-	_txt(close_hint, Vector2(r.end.x - 28.0 * k, y + 108.0 * k), int(roundf(21.0 * k)), GOLD, HORIZONTAL_ALIGNMENT_RIGHT)
+	_txt(close_hint, Vector2(r.position.x + w * 0.5, y + 146.0 * k), int(roundf(21.0 * k)), GOLD, HORIZONTAL_ALIGNMENT_CENTER, w - 40.0 * k)

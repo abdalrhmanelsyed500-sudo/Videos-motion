@@ -408,7 +408,8 @@ func _port_pause(on: bool) -> void:
 func _port_ctx() -> Dictionary:
 	return {"ashore": _walker.is_ashore(), "wx": _walker.x, "wz": _walker.z, "sx": _pos.x, "sz": _pos.y, "sheading": _heading_disp,
 			"speed_kn": _helm.speed_kn, "hour": _hour, "now": float(_state.clock.t) / 86400.0, "sea": _env.sea,
-			"docked": _harbor.state == Harbor.DOCKED, "sailing": _harbor.state == Harbor.SAILING, "paused": _state.clock.is_paused()}
+			"docked": _harbor.state == Harbor.DOCKED, "sailing": _harbor.state == Harbor.SAILING, "paused": _state.clock.is_paused(),
+			"deck": _ship_mode != null and _ship_mode.is_deck()}
 
 
 ## One line that says at which stage a key press dies: raw (engine delivered it) -> game (nothing swallowed it) -> routed (the port
@@ -675,6 +676,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not ashore and ShipKeys.hit(k, "fish_winch") and _ship_mode.winch_ready() and not _ship_ui_blocked():
 		_fish_enter()
 		return
+	if not ashore and ShipKeys.hit(k, "fish_winch") and _ship_mode.is_deck() and not _ship_ui_blocked():
+		_ship_hud.toast("Fish from the winch: stand at the drum on the main deck and press %s. (At the helm, %s lowers the old drift nets.)" % [ShipKeys.label("fish_winch"), ShipKeys.label("fish_winch")], 6.0)
+		return
 	if not ashore and ShipKeys.hit(k, "autopilot_toggle"):
 		_ship_hud.toast(_ship_mode.toggle_autopilot(_ship_ctx()), 5.0)
 		return
@@ -878,7 +882,11 @@ func _build_fishing() -> void:
 	pl.add_child(_fish_panel)
 	if _map != null:
 		# the chart must not open behind the winch view (it would be hidden and the clock paused): say why instead
-		_map.set("can_open", func() -> String: return "Finish at the winch first (Esc lets go)." if _fish_on() else "")
+		var prev: Callable = _map.get("can_open")      # the port controller's own rule (no chart over a conversation) stays in force
+		_map.set("can_open", func() -> String:
+			if _fish_on():
+				return "Finish at the winch first (Esc lets go)."
+			return str(prev.call()) if prev.is_valid() else "")
 
 
 func _fish_ctx() -> Dictionary:

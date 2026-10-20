@@ -246,9 +246,12 @@ func _barrels_panel() -> void:
 	chk(absf(kg - float(ps().call("hold_kg"))) < 0.01 and absf(float(m["total_kg"]) - kg) < 0.01, "total kg equals the real hold (%.2f)" % kg)
 	chk(int(m["total_n"]) == n and n >= 1, "total quantity is the sum of the rows (%d)" % n)
 	chk(absf(float(m["capacity"]) - float(ps().call("capacity_kg"))) < 0.01 and absf(float(m["remaining"]) - (float(m["capacity"]) - kg)) < 0.01, "capacity and the space left are right")
+	var dv: Dictionary = scene.call("_deck_view_state")
+	chk(bool(dv.get("on", false)) and absf(float(dv["fish_frac"]) - float(ps().call("hold_frac"))) < 0.001 and float(dv["fish_frac"]) > 0.0, "the barrels on deck are filled to the real hold fraction (%.2f)" % float(dv.get("fish_frac", -1.0)))
 	# a sale empties the barrels: the open panel follows
 	ps().set("lots", [])
 	await frames(3)
+	chk(float((scene.call("_deck_view_state") as Dictionary)["fish_frac"]) == 0.0, "and the barrels on deck are empty")
 	chk(bool((panel.get("model") as Dictionary)["empty"]) and ((panel.get("model") as Dictionary)["rows"] as Array).is_empty(), "after a sale the panel lists nothing (no zero rows)")
 	await key(KEY_ESCAPE)
 	chk(not bool(panel.get("is_shown")), "Esc closes the panel")

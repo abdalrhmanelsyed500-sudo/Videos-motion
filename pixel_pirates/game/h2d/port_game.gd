@@ -250,8 +250,8 @@ func _update_hud(ctx: Dictionary) -> void:
 		pkey = "F"
 		if fishing.active:
 			prompt = ""
-		elif fishing.ground_at(float(ctx["sx"]), float(ctx["sz"])) != "":
-			prompt = "Lower the nets"
+		elif fishing.ground_at(float(ctx["sx"]), float(ctx["sz"])) != "" and not bool(ctx.get("deck", false)):
+			prompt = "Lower the nets"        # on deck the winch has its own prompt (F, manual fishing)
 	ui.hud.set_data({"purse": state.reales, "hold_kg": state.hold_kg(), "cap_kg": state.capacity_kg(), "fresh": state.avg_freshness(now),
 			"warn_frac": float(state.p["port.hold_warn_frac"]), "spoil_warn": float(state.p["fish.spoil_warn"]), "crew": crew_names,
 			"objective": objective(ctx), "fishing": f, "prompt": prompt if _mode == "none" else "", "prompt_key": pkey, "track": _track_strip(ctx)})

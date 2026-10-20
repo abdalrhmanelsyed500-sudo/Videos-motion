@@ -10,16 +10,16 @@ extends Node
 ## state, sailing) stop the nets. When it ends the view is hidden and `active` is false, and the host restores the world.
 ## There is no audio system in the project yet: `sfx` is emitted with a name for each moment so a sound can be attached later.
 ## NOT YET RUN ON THE USER'S PC.
+## name: "cast" | "splash" | "pull" | "bad_pull" | "warn" | "snap" | "raise" | "catch" | "unload" | "end"
+signal sfx(name: String)
+## info: {stored_kg, count, released_kg, text, cancelled, failed}
+signal ended(info: Dictionary)
+
 const Manual := preload("res://h2d/fish_manual.gd")
 const View := preload("res://h2d/fish_view.gd")
 const DataLoader := preload("res://core/data_loader.gd")
 const Fishing := preload("res://h2d/fishing.gd")
 const ShipKeys := preload("res://h2d/ship_keys.gd")
-
-## name: "cast" | "splash" | "pull" | "bad_pull" | "warn" | "snap" | "raise" | "catch" | "unload" | "end"
-signal sfx(name: String)
-## info: {stored_kg, count, released_kg, text, cancelled, failed}
-signal ended(info: Dictionary)
 
 const LAYER := 40
 const STOP_TEXT := {

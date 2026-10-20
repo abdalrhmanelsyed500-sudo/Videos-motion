@@ -69,9 +69,74 @@ func _deck_hook(n: int) -> void:
 			_give_test_provisions()
 `;
 
+
+// harness-only CP-2B hooks (in memory): Z steps through the winch story WITHOUT waiting for the real timers (the software renderer runs
+// far slower than real time): 1 = ship on a fishing ground + pirate at the winch (then the real F key enters), 2 = needle centred,
+// 3 = mid-haul, 4 = a surge warning, 5 = net coming up with the real catch, 6 = catch card, 7 = unloading, 8 = a lost haul, 9 = barrels panel.
+// The drawing, the layout, the keys and the hold are the real ones; only the clock of the stage machine is nudged.
+const fishHooks = (s) => s.replace('\t_key_raw += 1\n', '\tif k.keycode == KEY_Z:\n\t\t_fish_hook()\n\t\treturn\n\t_key_raw += 1\n') + `
+var _fh := 0
+func _fish_hook() -> void:
+	_fh += 1
+	var m = _fish.manual if _fish != null else null
+	match _fh:
+		1:
+			if not _ship_mode.is_deck():
+				_ship_mode.leave_helm(_ship_ctx())
+			var g: Dictionary = (_port as PortGame).fishing.grounds["gnd_gannet_bank"]
+			_pos = Vector2(float(g["x"]), float(g["z"]))
+			_helm.speed_kn = 0.3
+			_ship_mode.walker.call("place", 0, (_ship_mode.layout.call("interaction", 0, "winch") as Dictionary)["c"])
+		2:
+			m.stage_t = 0.40
+		3:
+			m.press("cast")
+			m.stage = 5
+			m.depth = 0.75
+			m.progress = 0.55
+			m.integrity = 0.82
+			m.tension = 0.58
+			m.strain = 0.25
+			m.streak = 9
+			m.best_streak = 9
+			m.pulls = 14
+			m.haul_t = 6.1
+			m.lever = 1.0
+			m.last_side = "right"
+			m.message = "Good rhythm: keep it up!"
+			m.message_kind = "ok"
+			m.winch_angle = 3.0
+		4:
+			m.message = "THE FISH IS ABOUT TO RUN! Ease off!"
+			m.message_kind = "warn"
+			m.tension = 0.78
+			m.strain = 0.55
+			m.lever = -1.0
+			_fish.view.call("on_events", [{"type": "surge_warn", "kind": 1}])
+		5:
+			m.progress = 1.0
+			m.haul_t = 9.4
+			m._finish_haul()
+			m.stage_t = 1.6
+		6:
+			m._set_stage(7)
+			m.depth = 0.0
+		7:
+			m.unload()
+			m.stage_t = 0.7
+		8:
+			m._fail("snap", "The rope snapped under the strain and the catch fell back into the sea. Ease off when the rope groans or the fish runs, and pull at a steady beat.")
+		9:
+			_fish.abort("harness")
+			(_port as PortGame).state.add_catch("spc_sardine", 3.0, 0.0)
+			(_port as PortGame).state.add_catch("spc_parrotfish", 4.2, 0.0)
+			(_port as PortGame).state.add_catch("spc_yellowfin_tuna", 12.0, 0.0)
+			_ship_mode.walker.call("place", 0, (_ship_mode.layout.call("interaction", 0, "fish_barrels") as Dictionary)["c"])
+`;
+
 const PATCHES = {
   // harness-only hook: F9 steps ashore at the pier without the docking manoeuvre (steering into the berth by script is not the point)
-  'h2d/h2d0.gd': (s) => deckHooks(s.replace('\tvar kc: int = KeyUtil.code(k)', '\tif k.keycode == KEY_F9:\n\t\t_walker.disembark((_v3 as View3D).land_world().meta["land"])\n\t\t(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))\n\t\treturn\n\tif k.keycode == KEY_F10 or k.keycode == KEY_F11:\n\t\t_walker.x = 27.5 if k.keycode == KEY_F10 else -75.0\n\t\t_walker.z = -0.5 if k.keycode == KEY_F10 else -10.6\n\t\t(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))\n\t\treturn\n\tvar kc: int = KeyUtil.code(k)')),
+  'h2d/h2d0.gd': (s) => fishHooks(deckHooks(s.replace('\tvar kc: int = KeyUtil.code(k)', '\tif k.keycode == KEY_F9:\n\t\t_walker.disembark((_v3 as View3D).land_world().meta["land"])\n\t\t(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))\n\t\treturn\n\tif k.keycode == KEY_F10 or k.keycode == KEY_F11:\n\t\t_walker.x = 27.5 if k.keycode == KEY_F10 else -75.0\n\t\t_walker.z = -0.5 if k.keycode == KEY_F10 else -10.6\n\t\t(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))\n\t\treturn\n\tvar kc: int = KeyUtil.code(k)'))),
   'h2d/sea_view_3d.gd': (s) => s.replace('\tif not ResourceLoader.exists(path):\n', '\tif false:\n').replace('\treturn load(path) as Texture2D\n',
     '\tvar raw := Image.load_from_file(path)\n\tif raw == null or raw.is_empty():\n\t\treturn null\n\treturn ImageTexture.create_from_image(raw)\n'),
 };

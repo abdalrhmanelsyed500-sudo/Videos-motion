@@ -53,6 +53,14 @@ func setup(manual: Manual) -> void:
 	m = manual
 
 
+## A Control under a CanvasLayer is not laid out by anything (its anchors have no parent to refer to): the size is set by hand, every frame.
+func _fit() -> void:
+	var vs := get_viewport_rect().size if is_inside_tree() else Vector2(1366.0, 876.0)
+	if size != vs:
+		position = Vector2.ZERO
+		size = vs
+
+
 func set_env(e: Dictionary) -> void:
 	for k in e.keys():
 		env[k] = e[k]
@@ -60,6 +68,7 @@ func set_env(e: Dictionary) -> void:
 
 ## Called every frame while the view is up.
 func tick(dt: float) -> void:
+	_fit()
 	_t += dt
 	_banner_t = maxf(_banner_t - dt, 0.0)
 	_shake = maxf(_shake - dt * 3.0, 0.0)
@@ -139,7 +148,7 @@ func _layout() -> void:
 
 
 func _k() -> float:
-	return size.y / 876.0
+	return size.y / 780.0
 
 
 func _v(x: float, y: float) -> Vector2:
@@ -322,8 +331,8 @@ func _draw_net_and_rope() -> void:
 	# the net
 	var under := np.y > _water_y()
 	var q := m.cast_q if m.stage >= Manual.Stage.SINK else 0.8
-	var rx := 20.0 * clampf(q, 0.55, 1.2) * (1.0 + (1.0 - clampf(m.depth, 0.0, 1.0)) * 0.1)
-	var bag := 26.0 * (0.8 + 0.4 * (1.0 - clampf(m.progress, 0.0, 1.0) * 0.0))
+	var rx := 26.0 * clampf(q, 0.55, 1.2) * (1.0 + (1.0 - clampf(m.depth, 0.0, 1.0)) * 0.1)
+	var bag := 34.0 * (0.8 + 0.4 * (1.0 - clampf(m.progress, 0.0, 1.0) * 0.0))
 	var col := rope
 	if under:
 		col = Color(rope.r * 0.55, rope.g * 0.72, rope.b * 0.85, 0.85)
@@ -553,10 +562,22 @@ func _draw_barrel_and_fly() -> void:
 
 # ---- the readable parts -------------------------------------------------------------------------------------------------
 func _txt(text: String, pos: Vector2, fsize: int, col: Color, align: int = HORIZONTAL_ALIGNMENT_LEFT, width: float = -1.0) -> void:
-	if font == null:
+	# `pos` is the anchor: the left edge, the centre or the right edge of the text, by `align`. `width` is the room there is: a text
+	# that is wider than that is drawn smaller instead of running off the screen.
+	if font == null or fsize < 1:
 		return
-	draw_string(font, pos + Vector2(2, 2), text, align, width, fsize, Color(0, 0, 0, 0.75))
-	draw_string(font, pos, text, align, width, fsize, col)
+	var fs := fsize
+	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, fs).x
+	if width > 0.0 and w > width:
+		fs = maxi(int(floorf(float(fs) * width / w)), 8)
+		w = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, fs).x
+	var x := pos.x
+	if align == HORIZONTAL_ALIGNMENT_CENTER:
+		x -= w * 0.5
+	elif align == HORIZONTAL_ALIGNMENT_RIGHT:
+		x -= w
+	draw_string(font, Vector2(x + 2.0, pos.y + 2.0), text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, fs, Color(0, 0, 0, 0.75))
+	draw_string(font, Vector2(x, pos.y), text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, fs, col)
 
 
 func _box(r: Rect2, col: Color = PANEL, edge: Color = PANEL_EDGE) -> void:
@@ -571,8 +592,8 @@ func _key_label(action: String) -> String:
 
 func _draw_hud() -> void:
 	var k := _k()
-	var W := size.x
-	var H := size.y
+	var vw := size.x
+	var vh := size.y
 	var fs := int(roundf(22.0 * k))
 	var st := m.stage
 	# the stage ribbon (top left) and the hold (top right)
@@ -588,17 +609,17 @@ func _draw_hud() -> void:
 		draw_rect(Rect2(bx, 56.0 * k, 164.0 * k, 28.0 * k), Color(0.28, 0.20, 0.08, 0.95) if on else Color(0.14, 0.11, 0.08, 0.9))
 		_txt(labels[i], Vector2(bx + 10.0 * k, 77.0 * k), fs, col)
 	var hold := "Hold  %.1f / %.0f kg" % [float(env["hold_kg"]), float(env["capacity"])]
-	_box(Rect2(W - 330.0 * k, 16.0 * k, 306.0 * k, 46.0 * k))
-	_txt(hold, Vector2(W - 316.0 * k, 48.0 * k), fs, CREAM)
+	_box(Rect2(vw - 330.0 * k, 16.0 * k, 306.0 * k, 46.0 * k))
+	_txt(hold, Vector2(vw - 316.0 * k, 48.0 * k), fs, CREAM)
 	# the hint line (bottom)
 	var hint := _hint_text()
 	if hint != "":
-		_txt(hint, Vector2(W * 0.5, H - 22.0 * k), int(roundf(20.0 * k)), Color(0.90, 0.86, 0.74), HORIZONTAL_ALIGNMENT_CENTER, W * 0.9)
+		_txt(hint, Vector2(vw * 0.5, vh - 22.0 * k), int(roundf(20.0 * k)), Color(0.90, 0.86, 0.74), HORIZONTAL_ALIGNMENT_CENTER, vw * 0.68)
 	# the banner
 	if _banner_t > 0.0 and _banner != "":
 		var a := clampf(_banner_t / 0.4, 0.0, 1.0)
 		var c := Color(_banner_col.r, _banner_col.g, _banner_col.b, a)
-		_txt(_banner, Vector2(W * 0.5, H * 0.20), int(roundf(46.0 * k)), c, HORIZONTAL_ALIGNMENT_CENTER, W)
+		_txt(_banner, Vector2(vw * 0.5, vh * 0.20), int(roundf(46.0 * k)), c, HORIZONTAL_ALIGNMENT_CENTER, vw)
 	match st:
 		Manual.Stage.HEAVE:
 			_panel_text("HEAVING TO", m.heave_note + "  (Esc: leave the winch)", k)
@@ -612,7 +633,7 @@ func _draw_hud() -> void:
 		Manual.Stage.HAUL:
 			_draw_haul(k)
 		Manual.Stage.RAISE:
-			_draw_bar(Rect2(W * 0.5 - 300.0 * k, H - 150.0 * k, 600.0 * k, 34.0 * k), clampf(1.0 - m.depth / maxf(m._raise_from, 0.01), 0.0, 1.0), GOLD, "RAISING THE NET", k)
+			_draw_bar(Rect2(vw * 0.5 - 240.0 * k, vh - 150.0 * k, 480.0 * k, 34.0 * k), clampf(1.0 - m.depth / maxf(m._raise_from, 0.01), 0.0, 1.0), GOLD, "RAISING THE NET", k)
 		Manual.Stage.SUMMARY:
 			_draw_summary(k)
 		Manual.Stage.UNLOAD:
@@ -639,12 +660,12 @@ func _hint_text() -> String:
 
 
 func _panel_text(title: String, sub: String, k: float) -> void:
-	var W := size.x
-	var H := size.y
-	var r := Rect2(W * 0.5 - 360.0 * k, H - 190.0 * k, 720.0 * k, 110.0 * k)
+	var vw := size.x
+	var vh := size.y
+	var r := Rect2(vw * 0.5 - 360.0 * k, vh - 190.0 * k, 720.0 * k, 110.0 * k)
 	_box(r)
-	_txt(title, Vector2(W * 0.5, r.position.y + 48.0 * k), int(roundf(32.0 * k)), GOLD, HORIZONTAL_ALIGNMENT_CENTER, r.size.x)
-	_txt(sub, Vector2(W * 0.5, r.position.y + 86.0 * k), int(roundf(22.0 * k)), CREAM, HORIZONTAL_ALIGNMENT_CENTER, r.size.x - 20.0 * k)
+	_txt(title, Vector2(vw * 0.5, r.position.y + 48.0 * k), int(roundf(32.0 * k)), GOLD, HORIZONTAL_ALIGNMENT_CENTER, r.size.x)
+	_txt(sub, Vector2(vw * 0.5, r.position.y + 86.0 * k), int(roundf(22.0 * k)), CREAM, HORIZONTAL_ALIGNMENT_CENTER, r.size.x - 20.0 * k)
 
 
 func _draw_bar(r: Rect2, frac: float, col: Color, label: String, k: float) -> void:
@@ -657,11 +678,11 @@ func _draw_bar(r: Rect2, frac: float, col: Color, label: String, k: float) -> vo
 
 # ---- stage 1: the casting needle ------------------------------------------------------------------------------------------
 func _draw_aim(k: float) -> void:
-	var W := size.x
-	var H := size.y
-	var r := Rect2(W * 0.5 - 330.0 * k, H - 220.0 * k, 660.0 * k, 130.0 * k)
+	var vw := size.x
+	var vh := size.y
+	var r := Rect2(vw * 0.5 - 330.0 * k, vh - 220.0 * k, 660.0 * k, 130.0 * k)
 	_box(r)
-	_txt("CAST THE NET", Vector2(W * 0.5, r.position.y + 38.0 * k), int(roundf(30.0 * k)), GOLD, HORIZONTAL_ALIGNMENT_CENTER, r.size.x)
+	_txt("CAST THE NET", Vector2(vw * 0.5, r.position.y + 38.0 * k), int(roundf(30.0 * k)), GOLD, HORIZONTAL_ALIGNMENT_CENTER, r.size.x)
 	var bar := Rect2(r.position.x + 30.0 * k, r.position.y + 58.0 * k, r.size.x - 60.0 * k, 32.0 * k)
 	draw_rect(bar, Color(0.10, 0.08, 0.06))
 	var half := float(m.p["aim_good_half"])
@@ -672,33 +693,33 @@ func _draw_aim(k: float) -> void:
 	draw_rect(bar, PANEL_EDGE, false, 3.0)
 	var nx := bar.position.x + bar.size.x * m.aim
 	draw_rect(Rect2(nx - 4.0 * k, bar.position.y - 10.0 * k, 8.0 * k, bar.size.y + 20.0 * k), Color(1.0, 0.95, 0.80))
-	_txt("%s" % _key_label("fish_cast"), Vector2(W * 0.5, r.position.y + 118.0 * k), int(roundf(22.0 * k)), CREAM, HORIZONTAL_ALIGNMENT_CENTER, r.size.x)
+	_txt("%s" % _key_label("fish_cast"), Vector2(vw * 0.5, r.position.y + 118.0 * k), int(roundf(22.0 * k)), CREAM, HORIZONTAL_ALIGNMENT_CENTER, r.size.x)
 
 
 # ---- stage 2: the haul ----------------------------------------------------------------------------------------------------
 func _draw_haul(k: float) -> void:
-	var W := size.x
-	var H := size.y
+	var vw := size.x
+	var vh := size.y
 	var fs := int(roundf(22.0 * k))
 	# progress
-	_draw_bar(Rect2(W * 0.5 - 300.0 * k, H - 150.0 * k, 600.0 * k, 36.0 * k), m.progress, GREEN if m.integrity > 0.5 else AMBER, "THE NET   %d%%" % int(roundf(m.progress * 100.0)), k)
+	_draw_bar(Rect2(vw * 0.5 - 240.0 * k, vh - 150.0 * k, 480.0 * k, 36.0 * k), m.progress, GREEN if m.integrity > 0.5 else AMBER, "THE NET   %d%%" % int(roundf(m.progress * 100.0)), k)
 	# the message
 	if m.message != "":
 		var mc := GREEN if m.message_kind == "ok" else (AMBER if m.message_kind == "warn" else RED)
-		_txt(m.message, Vector2(W * 0.5, H - 184.0 * k), int(roundf(28.0 * k)), mc, HORIZONTAL_ALIGNMENT_CENTER, W * 0.9)
+		_txt(m.message, Vector2(vw * 0.5, vh - 184.0 * k), int(roundf(28.0 * k)), mc, HORIZONTAL_ALIGNMENT_CENTER, vw * 0.68)
 	# the two levers: which one is next
 	var nextv := m.next_lever()
 	for i in 2:
 		var side := "left" if i == 0 else "right"
-		var cx := W * 0.5 + (-1.0 if i == 0 else 1.0) * 340.0 * k
-		var r := Rect2(cx - 52.0 * k, H - 170.0 * k, 104.0 * k, 104.0 * k)
+		var cx := vw * 0.5 + (-1.0 if i == 0 else 1.0) * 330.0 * k
+		var r := Rect2(cx - 48.0 * k, vh - 170.0 * k, 96.0 * k, 96.0 * k)
 		var on := nextv == side
 		draw_rect(Rect2(r.position + Vector2(3, 4), r.size), Color(0, 0, 0, 0.4))
 		draw_rect(r, Color(0.40, 0.28, 0.10, 0.96) if on else Color(0.14, 0.11, 0.08, 0.92))
 		draw_rect(r, GOLD if on else PANEL_EDGE, false, 4.0 if on else 3.0)
 		_txt(_key_label("fish_haul_left" if i == 0 else "fish_haul_right"), Vector2(r.position.x + r.size.x * 0.5, r.position.y + r.size.y * 0.64), int(roundf(52.0 * k)), GOLD if on else CREAM, HORIZONTAL_ALIGNMENT_CENTER, r.size.x)
 	# the rope tension meter (right edge): slack | band | strained, the needle, and the strain under it
-	var mx := W - 118.0 * k
+	var mx := vw - 118.0 * k
 	var my := 120.0 * k
 	var mh := 360.0 * k
 	var mw := 54.0 * k
@@ -751,14 +772,12 @@ func _mini_bar(r: Rect2, frac: float, col: Color, label: String, k: float) -> vo
 
 # ---- stage 3: the catch card ---------------------------------------------------------------------------------------------
 func _draw_summary(k: float) -> void:
-	var W := size.x
-	var H := size.y
 	var res := m.result
 	var fish: Array = res.get("fish", [])
 	var rows := maxi(fish.size(), 1)
 	var rh := 56.0 * k
-	var card := Rect2(W * 0.5 - 330.0 * k, H * 0.5 - (150.0 + rh * 0.5 * float(rows)) * 0.9, 660.0 * k, (230.0 + rh * float(rows)))
-	card.position.y = maxf(card.position.y, 70.0 * k)
+	# the card sits on the left so the net, with the real fish in it, stays in view on the right
+	var card := Rect2(24.0 * k, 150.0 * k, 560.0 * k, 230.0 * k + rh * float(rows))
 	_box(card)
 	var gcol := GREEN if str(res.get("grade", "")) in ["Excellent", "Good"] else (AMBER if str(res.get("grade", "")) == "Fair" else RED)
 	_txt("THE CATCH", Vector2(card.position.x + 28.0 * k, card.position.y + 46.0 * k), int(roundf(34.0 * k)), GOLD)
@@ -789,11 +808,11 @@ func _draw_summary(k: float) -> void:
 
 
 func _draw_fail(k: float) -> void:
-	var W := size.x
-	var H := size.y
-	var card := Rect2(W * 0.5 - 340.0 * k, H * 0.5 - 140.0 * k, 680.0 * k, 280.0 * k)
+	var vw := size.x
+	var vh := size.y
+	var card := Rect2(vw * 0.5 - 340.0 * k, vh * 0.5 - 140.0 * k, 680.0 * k, 280.0 * k)
 	_box(card, Color(0.16, 0.06, 0.05, 0.94), Color(0.75, 0.25, 0.20))
-	_txt("THE HAUL WAS LOST", Vector2(W * 0.5, card.position.y + 52.0 * k), int(roundf(36.0 * k)), RED, HORIZONTAL_ALIGNMENT_CENTER, card.size.x)
+	_txt("THE HAUL WAS LOST", Vector2(vw * 0.5, card.position.y + 52.0 * k), int(roundf(36.0 * k)), RED, HORIZONTAL_ALIGNMENT_CENTER, card.size.x)
 	if font != null:
 		draw_multiline_string(font, Vector2(card.position.x + 30.0 * k, card.position.y + 100.0 * k), m.fail_text, HORIZONTAL_ALIGNMENT_LEFT, card.size.x - 60.0 * k, int(roundf(23.0 * k)), 5, CREAM)
-	_txt("%s: back to the deck" % _key_label("ship_interact"), Vector2(W * 0.5, card.end.y - 22.0 * k), int(roundf(22.0 * k)), GOLD, HORIZONTAL_ALIGNMENT_CENTER, card.size.x)
+	_txt("%s: back to the deck" % _key_label("ship_interact"), Vector2(vw * 0.5, card.end.y - 22.0 * k), int(roundf(22.0 * k)), GOLD, HORIZONTAL_ALIGNMENT_CENTER, card.size.x)

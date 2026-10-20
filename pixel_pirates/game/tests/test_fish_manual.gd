@@ -277,7 +277,8 @@ func run(t: Object) -> void:
 			guard += 1
 			cm.step(DT, {"speed_kn": 0.0})
 			if cm.stage == Manual.Stage.AIM and stg in ["sink", "haul", "summary"]:
-				cm.press("cast") if absf(cm.aim - 0.5) < 0.05 else null
+				if absf(cm.aim - 0.5) < 0.05:
+					cm.press("cast")
 			if cm.stage == Manual.Stage.HAUL and stg == "summary":
 				var sd := "left"
 				for i in 400:
