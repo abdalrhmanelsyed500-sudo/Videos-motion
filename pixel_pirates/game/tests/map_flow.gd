@@ -135,7 +135,7 @@ func _controls() -> void:
 	await key(KEY_SPACE)
 	chk(int(scene.get("_harbor").get("state")) == hs0 and bool(mp.call("is_open")), "SPACE does nothing to the ship while the map is open")
 	await key(KEY_ESCAPE)
-	
+
 	await key(KEY_SPACE)
 	chk(str(scene.get("_banner")) != "" and not bool(mp.call("is_open")), "SPACE works again after closing (the helm answers: '%s')" % str(scene.get("_banner")).substr(0, 50))
 

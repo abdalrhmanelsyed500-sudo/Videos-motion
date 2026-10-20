@@ -109,7 +109,9 @@ func _play() -> void:
 	var spots: Dictionary = (((cay as Dictionary)["port"] as Dictionary)["recruit_spots"] as Dictionary)
 	for cid in spots.keys():
 		var sp: Dictionary = spots[cid]
-		places.append({"id": "recruit_" + str(cid), "kind": "recruit", "name": str(cid).replace("crew_", "").capitalize(), "detail": "recruit", "x": sp["x"], "z": sp["z"], "rank": 2, "views": ["city", "island"]})
+		places.append({
+			"id": "recruit_" + str(cid), "kind": "recruit", "name": str(cid).replace("crew_", "").capitalize(), "detail": "recruit",
+			"x": sp["x"], "z": sp["z"], "rank": 2, "views": ["city", "island"]})
 	places.append({"id": "ground_pilchard", "kind": "ground", "name": "Pilchard Shallows", "detail": "fishing ground", "x": -300.0, "z": 560.0, "rank": 2, "views": ["sea", "island"]})
 	await frames(2)
 	await _scene_basics()
@@ -132,7 +134,11 @@ func _scene_basics() -> void:
 	chk((s.get("views") as Array).size() == 3, "three views loaded")
 	var tabs := s.call("button_node", "tabs") as Control
 	chk(tabs.get_child_count() == 3, "three tab buttons: " + str(tabs.get_children().map(func(c: Node) -> String: return (c as Button).text)))
-	chk(str((tabs.get_child(0) as Button).text).contains("City") and str((tabs.get_child(1) as Button).text).contains("Island") and str((tabs.get_child(2) as Button).text).contains("Sea"), "the tabs read City, Island, Sea")
+	var tab_names := ["City", "Island", "Sea"]
+	var tab_ok := true
+	for ti in 3:
+		tab_ok = tab_ok and str((tabs.get_child(ti) as Button).text).contains(tab_names[ti])
+	chk(tab_ok, "the tabs read City, Island, Sea")
 	var ob := s.call("button_node", "open") as Button
 	chk(ob.visible and ob.focus_mode == Control.FOCUS_NONE, "the corner MAP button is visible and cannot take keyboard focus")
 	chk(ob.text.contains("MAP"), "the button reads: " + ob.text)
@@ -269,7 +275,8 @@ func _tabs_zoom_pan() -> void:
 		await frames(2)
 		var vd := views[i] as Dictionary
 		chk(int(s.get("tab")) == i, "key %d selects tab %d" % [i + 1, i])
-		chk(pic.texture != null and absf(pic.texture.get_width() - Model_px(vd).x) <= 1.0, "tab %d shows its own picture (%s, %d px wide)" % [i, str(vd["file"]), pic.texture.get_width() if pic.texture != null else 0])
+		var pw: int = pic.texture.get_width() if pic.texture != null else 0
+		chk(pic.texture != null and absf(pw - _view_px(vd).x) <= 1.0, "tab %d shows its own picture (%s, %d px wide)" % [i, str(vd["file"]), pw])
 		chk(str((s.get_node("%Title") as Label).text).contains(str(vd["title"])), "tab %d title shows '%s'" % [i, str(vd["title"])])
 		chk(((s.call("tab_button", i)) as Button).button_pressed, "tab %d button looks pressed" % i)
 		var snap := s.call("snapshot") as Dictionary
@@ -352,7 +359,7 @@ func _tabs_zoom_pan() -> void:
 	await frames(2)
 
 
-func Model_px(vd: Dictionary) -> Vector2:
+func _view_px(vd: Dictionary) -> Vector2:
 	return Vector2((float((vd["bounds"] as Array)[2]) - float((vd["bounds"] as Array)[0])) * float(vd["ppm"]), (float((vd["bounds"] as Array)[3]) - float((vd["bounds"] as Array)[1])) * float(vd["ppm"]))
 
 
@@ -550,7 +557,8 @@ func _layout_sizes() -> void:
 			var close_r := (s.call("button_node", "close") as Control).get_global_rect()
 			var tabs_r := (s.call("button_node", "tabs") as Control).get_global_rect()
 			var panel_r := (s.call("button_node", "panel") as Control).get_global_rect()
-			chk(not frame.intersects(close_r) and not frame.intersects(tabs_r), "%dx%d tab %d: the map frame %s does not cover the tabs %s or Close %s" % [sz.x, sz.y, ti, str(frame), str(tabs_r), str(close_r)])
+			chk(not frame.intersects(close_r) and not frame.intersects(tabs_r),
+				"%dx%d tab %d: the frame %s does not cover the tabs %s or Close %s" % [sz.x, sz.y, ti, str(frame), str(tabs_r), str(close_r)])
 			chk(Rect2(Vector2.ZERO, Vector2(sz)).encloses(panel_r), "%dx%d: the panel %s is inside the screen" % [sz.x, sz.y, str(panel_r)])
 			var pic := (s.get_node("%Picture") as Control).get_global_rect().intersection(frame)
 			chk(pic.size.x > 50.0 and pic.size.y > 50.0, "%dx%d tab %d: the picture is visible inside the frame (%s)" % [sz.x, sz.y, ti, str(pic.size)])

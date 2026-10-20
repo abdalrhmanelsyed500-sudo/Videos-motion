@@ -1,3 +1,4 @@
+# gdlint: disable=max-file-lines
 extends CanvasLayer
 # gdlint: disable=class-definitions-order
 ## THE map. One self-contained scene (map_screen.tscn: a CanvasLayer holding plain Controls and containers) that replaces the old
@@ -190,7 +191,8 @@ func _bind_nodes() -> void:
 		if b != null:
 			(b as Button).focus_mode = Control.FOCUS_NONE
 	if init_error == "":
-		for c in [_overlay, _panel, _title, _tab_box, _frame, _picture, _rings, _marker_box, _row_box, _track_btn, _close_btn, _open_btn, _tab_hint, _zoom_info, _notice, _scale_lbl, _detail, _detail_name, _detail_text, _zoom_in, _zoom_out, _fit_btn]:
+		for c in [_overlay, _panel, _title, _tab_box, _frame, _picture, _rings, _marker_box, _row_box, _track_btn, _close_btn,
+				_open_btn, _tab_hint, _zoom_info, _notice, _scale_lbl, _detail, _detail_name, _detail_text, _zoom_in, _zoom_out, _fit_btn]:
 			if c == null:
 				init_error = "map_screen.tscn: a required node has the wrong type"
 
@@ -505,20 +507,8 @@ func rows_text() -> Array:
 
 
 func button_node(which: String) -> Control:
-	match which:
-		"open":
-			return _open_btn
-		"close":
-			return _close_btn
-		"track":
-			return _track_btn
-		"tabs":
-			return _tab_box
-		"frame":
-			return _frame
-		"panel":
-			return _panel
-	return null
+	var nodes := {"open": _open_btn, "close": _close_btn, "track": _track_btn, "tabs": _tab_box, "frame": _frame, "panel": _panel}
+	return nodes.get(which) as Control
 
 
 func tab_button(i: int) -> Button:

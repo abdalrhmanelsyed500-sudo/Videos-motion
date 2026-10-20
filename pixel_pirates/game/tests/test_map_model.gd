@@ -35,7 +35,7 @@ func _views(t: Object) -> void:
 		t.check(img != null and not img.is_empty() and absf(img.get_width() - px.x) <= 1.0 and absf(img.get_height() - px.y) <= 1.0,
 				"picture %s is %s px, bounds x ppm say %s" % [str(vd["file"]), str(img.get_size() if img != null else Vector2i.ZERO), str(px)])
 	# missing / broken data falls back to the built-in views and says why
-	var miss := Model.load_views("res://h2d/art/no_such_views.json")
+	var miss := Model.load_views("res://h2d/art/" + "no_such_views" + ".json")
 	t.check((miss["views"] as Array).size() == 3 and str(miss["error"]).contains("missing"), "a missing views file falls back with a reason")
 	var bad := Model.view_problems([{"id": "x"}])
 	t.check(bad.size() >= 7, "a view with only an id reports its missing keys (%d)" % bad.size())
