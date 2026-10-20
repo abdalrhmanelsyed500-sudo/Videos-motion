@@ -27,7 +27,7 @@ Pier (your berth) / Fish Market (Fish Row) / Harbour notice board / Customs Hous
 ## Numbers (from the bake)
 515 buildings (256 wall posts and 27 wall sections + towers and gates, 224 houses, shops, warehouses, mansions, tavern and inn), 8 grand buildings (palace, town hall, customs house, guild hall (the Exchange), barracks, 2 counting houses, fort bastion), 8 civic monuments (2 fountains, 3 statues, the Anvil, 2 dock cranes), 321 street props (92 iron lamps, planters, tubs, crates, barrels, carts), 133 planted trees, 184 people. All art is original pixel art from the project palette (`tools/h2d/city_kit.py`, `city_art.py`, `city_props.py`), 14.4 px per metre like the rest of the port.
 
-## People (184, every one a man: project rule 1)
+## People (183 people baked; 184 were planned and one spot was rejected as blocked; every one a man: project rule 1)
 52 townsmen, 26 shopkeepers and stallholders (each shop has a named keeper with their own greeting, line and wares), 19 merchants, 18 guards (palace, barracks, gates, battery, patrols), 18 nobles, 17 fishers, 10 dockers, 10 sailors, 7 clerks (customs, exchange, counting house, palace steward, registrar, treasury), 2 innkeepers, and the 4 recruits. 43 have personal names.
 
 ## Checks that guard the plan

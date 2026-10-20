@@ -73,5 +73,13 @@ for gid, g in grounds.items():
         line = [ln for ln in DOC.splitlines() if ln.startswith("| " + g["name"] + " |")]
         need(line and "needs at least %d hand" % g["min_crew"] in line[0], f"doc does not say {g['name']} needs a hand")
 
+# the people count the docs state must be the baked count
+cay = json.loads((ROOT / "game/h2d/art/anvil_cay.json").read_text())
+npeople = len(cay["port"]["npcs"])
+for fn in ("docs/CP1_CAPITAL_PORT.md", "docs/CP1_REVISION_R3.md", "docs/CP1R_CITY_DISTRICT_PLAN.md", "docs/CANON_BIBLE.md"):
+    txt = (ROOT / fn).read_text(encoding="utf-8")
+    need(f"{npeople} people" in txt, f"{fn} does not state the baked people count ({npeople} people)")
+need(not re.search(r"\b184 people\b", DOC), "CP1_CAPITAL_PORT.md still says 184 people")
+
 print("docs vs data:", "ALL CONSISTENT" if not fails else f"{len(fails)} problem(s)")
 sys.exit(1 if fails else 0)

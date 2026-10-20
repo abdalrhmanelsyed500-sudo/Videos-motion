@@ -14,7 +14,7 @@ This is step 2. **It is one district of Anvil Harbor, not the whole capital.**
 | Fish market | counter + canopy + 6 stalls/racks/crates, a fishmonger (Barnaby Gull), a real sell interaction | a general market and commercial streets |
 | Bridges, waterfront passages | 2 bridges over The Cut, a wharf apron | more canals |
 | Residential streets, tavern, warehouses, squares | 5 cottages on the north side of the market yard, the H2D-1 tavern, warehouse and harbourmaster, the plaza, a market yard | the tavern is not enterable; no interiors |
-| NPC groups | 28 people: fishers, merchants, dock workers, sailors, shopkeepers, townsmen + 4 recruits | many more people, schedules |
+| NPC groups | 183 people since r3 (28 in the first Fish Row slice): fishers, merchants, dock workers, sailors, shopkeepers, townsmen + 4 recruits | many more people, schedules |
 | Recruits | 4, each at a distinct place with role, upfront cost and dialogue | dismissal, wages, crew stats in play |
 | Fishing grounds | 4 grounds, the nets, 5 species | fishing minigame, bait, gear |
 | Map with markers | district map + waters map, recruits, fish market, ship/harbour | a full city map, quest log |
@@ -45,7 +45,7 @@ Cost on the dev PC (estimates, not measured): one draw call each for props, big 
 
 ## 3. People
 
-28 people, each a sprite from `port_npc_atlas.png` (24 x 32 px, 4 directions x 4 frames per look, 10 looks).
+183 people (28 in the first slice, 183 since the r3 city), each a sprite from `port_npc_atlas.png` (24 x 32 px, 4 directions x 4 frames per look, 10 looks).
 
 | Group | Count | What they do |
 |---|---|---|
@@ -169,7 +169,7 @@ While a panel is open the game clock is paused (T1: planning screens pause) and 
 |---|---|---|
 | `tools/check_all.py` (all steps incl. the CP-1 ones below) | static, Python | ALL PASSED |
 | `economy_logic.py --check` (twin, fixture, tuning JSON, GDScript defaults, balance targets) | static | PASS |
-| `check_port.py` (28 people on walkable ground and reachable from the pier, 4 recruits >= 20 m apart, market and board reachable, decks vs hulls, grounds >= 100 m from land) | static, on the baked data | PASS (13 genuine layout errors were found and fixed this session: notice board unreachable, recruits 3 m apart, 4 people standing in blockers, hulls overlapping the wharf) |
+| `check_port.py` (every person on walkable ground and reachable from the pier, 4 recruits >= 20 m apart, market and board reachable, decks vs hulls, grounds >= 100 m from land) | static, on the baked data | PASS (13 genuine layout errors were found and fixed this session: notice board unreachable, recruits 3 m apart, 4 people standing in blockers, hulls overlapping the wharf) |
 | `check_land.py` (pier to all stops with the new blockers) | static | PASS |
 | `check_h2d_art.py` (colour caps: stalls 32, misc 12, big 32, ships 19, people 35; no clipped cell) | static | PASS (stall atlas was 36 colours: merged to 32) |
 | content-rule lint of the new data | static | PASS (it caught the word "her" for a ship, "she", and "religion"/"sexual" inside notes; reworded) |
@@ -184,6 +184,6 @@ Instead of a quest log, the world answers the same question, "what do I do next?
 
 ## 11. DONE / CANON UPDATE / NEXT
 
-- **DONE** (static only): P1 fix; Fish Row district; 28 people; 4 recruits with dialogue and costs; 4 grounds, 5 species, nets, selling with feedback, hiring; map with markers; documented, tunable economy; tests written.
+- **DONE** (static only): P1 fix; Fish Row district; 183 people (28 at CP-1, the city came in r3); 4 recruits with dialogue and costs; 4 grounds, 5 species, nets, selling with feedback, hiring; map with markers; documented, tunable economy; tests written.
 - **CANON UPDATE**: H2D-1.2.2 (hero cull) and CP-1 (this slice) bullets; the prologue purse conflict is in the Provisional Ledger.
 - **NEXT** (only after your manual test): (a) fix whatever the test finds; (b) then expand one step at a time: the general market street, a tavern interior with a second recruit source, more ships in the harbour, a save slot. I will not expand before you have tested this slice.

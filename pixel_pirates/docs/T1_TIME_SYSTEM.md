@@ -144,14 +144,14 @@ Prerequisite: Godot 4.7.2 and `tools\godot_path.txt` (or the `GODOT_EXE` variabl
 
 **Test 1: the automatic suite.** Run `tools\run_godot_tests.bat`. Pass = the last line reads `TESTS: N checks, 0 failed -> PASS` and there is no `SCRIPT ERROR` or `Parse Error` anywhere. In the output look for these sections with no `FAIL:` line under them: `== test_voyage_clock.gd`, `== test_world_clock.gd`, `== test_game_state.gd`, `== test_console.gd`, `== test_tuning.gd`. Send me the last 30 lines either way.
 
-**Test 2: the console, by hand** (run the game with F5, press F1 or the backtick key). Type each line and compare:
+**Test 2: the console, by hand** (run the game with F5, press the backtick key, left of 1). Type each line and compare:
 1. `time set 1 0` -> `[debug jump] Day 1, 00:00`
 2. `time watch` -> `Day 1, 00:00 - Middle watch, last bell 8 | band night, daylight 0.04` and a second line `1 day = 15 real min (1 game hour = 37.5 s) | next Morning Report in 300 real s | paused: no`
 3. `time tick 60` -> `60.0 real s -> 5760.0 game s (1.60 h) | Day 1, 01:36`
 4. `time pause report` -> `pause report: paused by report`, then `time tick 60` -> `... 0.0 game s (0.00 h) | Day 1, 01:36` (nothing moved), then `time resume report` -> `resume report: time runs`
 5. `time set 1 4.9`, then `time tick 7.5` -> `Day 1, 05:06`; `time watch` shows `band dawn` and a daylight between 0.04 and 0.55.
 
-**Test 3: the real-time stopwatch** (the only test of the actual feel). Type `time set 1 0`, then `time live on` and close the console (F1). A line appears at the top right (clock, band, daylight, place). Start a stopwatch when it reads `Day 1, 00:00`:
+**Test 3: the real-time stopwatch** (the only test of the actual feel). Type `time set 1 0`, then `time live on` and close the console (backtick or Esc). A line appears at the top right (clock, band, daylight, place). Start a stopwatch when it reads `Day 1, 00:00`:
 - it must read about `01:00` after **37.5 s**, `04:00` after **150 s**, `Day 2, 00:00` after **15 min** (there is no Morning Report screen yet, so only what you type pauses it);
 - open the console and type `time pause menu`: the line shows `PAUSED: menu` and stops; `time resume menu` restarts it;
 - type `tp island isl_901` and then `tp xy 100 100` while it runs: the place word changes between the island id and `sea` and **the clock does not jump or change speed**.

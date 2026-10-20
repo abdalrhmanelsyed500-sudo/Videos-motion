@@ -15,4 +15,8 @@ sends an Arabic-layout M: physical `KeyM`, character `ة`).
 **What it does not prove:** the Windows build on the Intel HD 3000 (no ANGLE/D3D11, no GPU, ~8 fps, so nothing about speed), audio, the
 editor's import step (files are served raw; PNGs go through the raw-image fallback; `sea_view_3d.gd` and `h2d0.gd` are patched IN MEMORY only:
 the texture loader, and an F9 "step ashore at the pier" hook).
-The project's own RegEx-based scripts (registry, schema, console) cannot compile in this template; the game does not need them to run.
+The project's own RegEx-based scripts (registry, schema, ids, console) cannot compile in this template (it has no RegEx module). With
+`RENDER_REGEX_SHIM=1` the harness injects `tools/godot_node/regex_shim.gd` (a polyfill, 28 self-checks) so the Data and DebugConsole
+autoloads compile too. The DebugConsole still removes itself here (release template); tests/audit_r6.gd builds one with `force_enabled`.
+Harness-only hooks (in memory): F9 ashore at the pier, F10 next to Pip Larkin, F11 at the fish counter. Scenarios: `map_*.mjs` (r5),
+`f1_then_m.mjs` (F1 then M), `flow_r6.mjs` (talk, hire, sell, F8, map: run it at several VIEW_W x VIEW_H).

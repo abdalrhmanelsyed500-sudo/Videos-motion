@@ -14,6 +14,6 @@ Open-world pirate-life simulation. Godot 4.7.2, Compatibility renderer, typed GD
 2. `Godot_v4.7.2-stable_win64_console.exe --headless --path game --script res://tests/run_all.gd`  -> last line `TESTS: N checks, 0 failed -> PASS`
 3. Open `game/` in the editor and press F5: the Placeholder Asset Viewer starts (pure 2D). Add `-- --quality=dev_lite` to the command line for the light profile.
 
-4. `tools\run_godot_tests.bat` does steps 1-2 in one go (set `GODOT_EXE` or fill `tools\godot_path.txt`). In the running game press **F1** for the debug console (`help`). Everything about tooling: `docs/A7_TOOLING.md`.
+4. `tools\run_godot_tests.bat` does steps 1-2 in one go (set `GODOT_EXE` or fill `tools\godot_path.txt`). In the running game press the **backtick** key (left of 1; NOT F1 since r6) for the debug console (`help`). Everything about tooling: `docs/A7_TOOLING.md`.
 
 Rules that bind every change: see `docs/A2_STRUCTURE_AND_CONVENTIONS.md` and the HARD CONTENT RULES in `docs/CANON_BIBLE.md`.
