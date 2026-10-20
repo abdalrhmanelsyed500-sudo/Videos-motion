@@ -652,8 +652,6 @@ func _hint_text() -> String:
 			return "%s and %s: pull the levers one after the other      %s: let go (the net comes back empty)" % [_key_label("fish_haul_left"), _key_label("fish_haul_right"), _key_label("fish_cancel")]
 		Manual.Stage.SUMMARY:
 			return "%s or %s: unload into the barrels" % [_key_label("ship_interact"), _key_label("fish_cast")]
-		Manual.Stage.FAIL:
-			return "%s: back to the deck" % _key_label("ship_interact")
 		Manual.Stage.HEAVE, Manual.Stage.SINK, Manual.Stage.SOAK:
 			return "%s: let go of the winch" % _key_label("fish_cancel")
 	return ""
@@ -777,7 +775,7 @@ func _draw_summary(k: float) -> void:
 	var rows := maxi(fish.size(), 1)
 	var rh := 56.0 * k
 	# the card sits on the left so the net, with the real fish in it, stays in view on the right
-	var card := Rect2(24.0 * k, 150.0 * k, 560.0 * k, 230.0 * k + rh * float(rows))
+	var card := Rect2(24.0 * k, 150.0 * k, 610.0 * k, 230.0 * k + rh * float(rows))
 	_box(card)
 	var gcol := GREEN if str(res.get("grade", "")) in ["Excellent", "Good"] else (AMBER if str(res.get("grade", "")) == "Fair" else RED)
 	_txt("THE CATCH", Vector2(card.position.x + 28.0 * k, card.position.y + 46.0 * k), int(roundf(34.0 * k)), GOLD)
