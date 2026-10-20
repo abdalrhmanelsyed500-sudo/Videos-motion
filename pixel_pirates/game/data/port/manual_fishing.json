@@ -1,0 +1,56 @@
+{
+ "note": "CP-2 Release B manual fishing. species: average weight of one fish (the hold stores kg; the number of fish shown is kg / avg_kg) and the icon asset id. profiles: how hard a ground is to haul (multipliers on the tension wobble, the surges and the fish slipping out). Provisional, owner E2.",
+ "species": {
+  "spc_sardine": {
+   "avg_kg": 0.12,
+   "icon": "ico_fish_sardine",
+   "note": "About 8 to a kilo."
+  },
+  "spc_mackerel": {
+   "avg_kg": 0.45,
+   "icon": "ico_fish_mackerel",
+   "note": "A pound-and-a-bit each."
+  },
+  "spc_parrotfish": {
+   "avg_kg": 1.4,
+   "icon": "ico_fish_parrotfish",
+   "note": "Reef fish, heavy for their size."
+  },
+  "spc_red_snapper": {
+   "avg_kg": 1.8,
+   "icon": "ico_fish_red_snapper",
+   "note": "The table fish."
+  },
+  "spc_yellowfin_tuna": {
+   "avg_kg": 6.0,
+   "icon": "ico_fish_yellowfin_tuna",
+   "note": "A single tuna fills a quarter of the hold."
+  }
+ },
+ "profiles": {
+  "gnd_pilchard_shallows": {
+   "pull": 0.75,
+   "surge": 0.6,
+   "shy": 0.8,
+   "label": "Calm shoal: gentle pulls, the place to learn."
+  },
+  "gnd_gannet_bank": {
+   "pull": 1.0,
+   "surge": 1.0,
+   "shy": 1.0,
+   "label": "Lively mackerel: steady pulls and a few runs."
+  },
+  "gnd_kelp_reef": {
+   "pull": 1.15,
+   "surge": 1.15,
+   "shy": 1.1,
+   "label": "Kelp tangles: the rope snags, surges come often."
+  },
+  "gnd_blue_drop": {
+   "pull": 1.35,
+   "surge": 1.4,
+   "shy": 1.2,
+   "label": "Deep water: heavy fish, strong runs, ease off in time."
+  }
+ }
+}
