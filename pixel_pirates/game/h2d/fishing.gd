@@ -18,6 +18,7 @@ var grounds: Dictionary = {}         # id -> record of fishing_grounds.json
 var ground_order: Array = []
 var seed_state := 1
 var active := false
+var manual := false                  # CP-2 Release B: the winch session (h2d/fish_manual.gd) holds the ground; no passive hauls
 var ground_id := ""
 var timer := 0.0
 var hauls := 0
@@ -40,6 +41,7 @@ func configure(tuning: Dictionary, grounds_doc: Dictionary, seed_value: int = 1)
 
 func reset() -> void:
 	active = false
+	manual = false
 	ground_id = ""
 	timer = 0.0
 	hauls = 0
@@ -133,6 +135,7 @@ func start(px: float, pz: float, crew_count: int, sea_index: float) -> Dictionar
 	var r := can_start(px, pz, crew_count, sea_index)
 	if bool(r["ok"]):
 		active = true
+		manual = false
 		ground_id = str(r["ground"])
 		timer = 0.0
 		hauls = 0
@@ -143,10 +146,19 @@ func start(px: float, pz: float, crew_count: int, sea_index: float) -> Dictionar
 	return r
 
 
+## CP-2 Release B: the same checks and the same drag on the ship as the passive nets, but the fish come from the winch session.
+func start_manual(px: float, pz: float, crew_count: int, sea_index: float) -> Dictionary:
+	var r := start(px, pz, crew_count, sea_index)
+	if bool(r["ok"]):
+		manual = true
+	return r
+
+
 func stop(reason: String = "") -> void:
 	if not active:
 		return
 	active = false
+	manual = false
 	status = "stopped"
 	stop_reason = reason
 
@@ -173,6 +185,9 @@ func step(dt: float, ship: Dictionary, hour: float, sea_index: float, port: RefC
 	if float(ship["speed_kn"]) > float(p["fish.max_speed_kn"]):
 		status = "drifting"      # the nets drag: the ship is still slowing down, nothing is caught yet
 		return events
+	if manual:
+		status = "working"
+		return events         # the winch session catches the fish; this only keeps the ground, the sea and the speed in check
 	status = "working"
 	timer += dt
 	var interval := float(p["fish.haul_interval_s"])
