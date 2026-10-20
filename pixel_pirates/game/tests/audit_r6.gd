@@ -148,7 +148,10 @@ func _pause_rules() -> void:
 	# between, because a live frame would stop them: the real ship is not on the ground)
 	fishing.call("stop", "test")
 	await key(KEY_M)
-	chk(bool(port.call("modal")), "test set-up: the map is open")
+	var mp0: Node = scene.get("_map")
+	chk(bool(mp0.call("is_open")), "test set-up: the map is open")
+	ctx["paused"] = bool((scene.call("_port_ctx") as Dictionary)["paused"])   # the real game's own ctx: the open map pauses the clock
+	chk(bool(ctx["paused"]), "an open map pauses the clock the port controller is stepped with")
 	fishing.call("start", float(g["x"]), float(g["z"]), 4, 0.0)
 	var hauls0: int = int(fishing.get("hauls"))
 	for i in 40:
@@ -156,6 +159,7 @@ func _pause_rules() -> void:
 	chk(int(fishing.get("hauls")) == hauls0 and int(fishing.get("hauls")) == 0, "MAP OPEN: 40 s bring no haul (hauls %d)" % int(fishing.get("hauls")))
 	fishing.call("stop", "test")
 	await key(KEY_ESCAPE)
+	ctx["paused"] = false
 	# people: stand the player among them, once with the clock paused and once running
 	var people: Array = npcs.get("people")
 	var centre := Vector2(-77.0, -10.6)   # the fish market: the busiest corner
@@ -226,6 +230,10 @@ func _setup_failures() -> void:
 	port.set("enabled", false)
 	await key(KEY_M)
 	chk(int(v3.get("motion_mode")) == mm, "controller OFF: plain M does not toggle the ship motion")
+	var mpo: Node = scene.get("_map")
+	chk(bool(mpo.call("is_open")), "controller OFF: the map still opens (it does not depend on the port controller)")
+	await key(KEY_ESCAPE)
+	chk(not bool(mpo.call("is_open")) and not (scene.get("_state").clock.pause_reasons() as Array).has("map"), "controller OFF: ...and closes cleanly")
 	port.set("enabled", true)
 
 
