@@ -68,7 +68,7 @@ the editor) pressing F1 opened the console, its text field took the keyboard foc
 
 ## Test results (all with the WASM template + RegEx polyfill; see above)
 `tools/godot_node/run_suite.sh` runs every `test_*.gd` one at a time (a single `run_all.gd` dies in the WASM runtime at `test_island_map`),
-then `selfplay`, `map_key`, `load_all`, `audit_r6`: **29 passed, 0 failed** (first complete run after all fixes; re-run at the end, see the final report).
+then `selfplay`, `map_key`, `load_all`, `audit_r6`: **29 passed, 0 failed** (run twice: once mid-way and once more on the final code; `check_all`, `check_port`, `check_land`, `check_docs` also re-run on the final tree).
 
 Test classification of the earlier failures:
 - **`load_all` RegEx failures: ENVIRONMENTAL.** Without the polyfill exactly 3 scripts fail (`core/ids.gd`, `core/schema.gd`,
