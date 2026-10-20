@@ -12,6 +12,8 @@ const ShipMotion := preload("res://h2d/ship_motion.gd")
 const EnvModel := preload("res://h2d/env_model.gd")
 const SailModel := preload("res://h2d/sail_model.gd")
 const CayWorld := preload("res://h2d/cay_world.gd")
+const DeckView := preload("res://h2d/ship_deck_view.gd")
+const DeckLayout := preload("res://h2d/ship_layout.gd")
 const WeatherLook := preload("res://h2d/weather_look.gd")
 const DataLoader := preload("res://core/data_loader.gd")
 const SHADER_DIR := "res://h2d/shaders/"
@@ -19,6 +21,7 @@ const ART_DIR := "res://h2d/art/"
 const FOV_DEG := 22.0
 const DEFAULT_PITCH_DEG := 48.0
 const PX_PER_M := 3.6
+const DECK_MOTION := 0.5   ## how much of the sea motion the walkable deck shows (the pirate must be able to walk and read prompts)
 const ART_H := 360.0
 const TARGET_LEAD_M := 9.0  ## the camera looks this far north of the ship, so the ship sits low in the picture
 const OCEAN_SIZE_M := 420.0
@@ -78,6 +81,14 @@ var _focus := Vector2.ZERO
 ## 1 at sea; the land view eases it to land.zoom (about 4): the pirate keeps one sprite pixel per screen pixel
 var _zoom := 1.0
 var _land: Dictionary = {"ashore": false}
+## CP-2: the walkable ship model (ship_deck_view.gd), drawn instead of the sprite while the pirate is on foot aboard.
+var _deck: DeckView
+var _deck_state: Dictionary = {}
+var _deck_s := 0.0           ## camera blend 0 (sailing view) .. 1 (deck view), from the zoom
+var _deck_show := false
+var _deck_trim := 0.0
+var _deck_alpha := 0.0
+var _deck_hero := Vector3.ZERO
 
 
 func setup(host: Node) -> void:
@@ -106,6 +117,9 @@ func setup(host: Node) -> void:
 	_build_ocean()
 	_build_island()
 	_build_ship()
+	_deck = DeckView.new()
+	_vp.add_child(_deck)
+	_deck.build(1.0 / (PX_PER_M * 4.0))
 	_build_weather_fx()
 	_post_mat = ShaderMaterial.new()
 	_post_mat.shader = load(SHADER_DIR + "post.gdshader")
@@ -216,6 +230,21 @@ func camera_focus() -> Vector2:
 	return _focus
 
 
+## CP-2 ship mode, set every frame by the controller: {on, level, u, v, height, row, frame, cabin_open, rudder, fish_frac, stores}.
+## `on` false = the sailing view. The model shows while `on` and while the camera is still easing back out.
+func set_deck(state: Dictionary) -> void:
+	_deck_state = state
+
+
+func deck_view() -> DeckView:
+	return _deck
+
+
+## What the deck view is doing now (tests and the HUD): {show, alpha, blend, hero_world}.
+func deck_info() -> Dictionary:
+	return {"show": _deck_show, "alpha": _deck_alpha, "blend": _deck_s, "hero_world": _deck_hero, "sprite_visible": _ship.visible}
+
+
 func update_view(v: Dictionary, ship: Dictionary, dt: float) -> void:
 	_time = float(v["time"])
 	var env: Dictionary = v["env"]
@@ -228,6 +257,7 @@ func update_view(v: Dictionary, ship: Dictionary, dt: float) -> void:
 	_update_weather_fx(v, ship)
 	_update_ship(v, ship, dt)
 	_update_camera(ship, dt)
+	_update_deck(v, ship, dt)
 	_update_post(v, lm)
 
 
@@ -605,17 +635,21 @@ func _update_weather_fx(v: Dictionary, ship: Dictionary) -> void:
 ## zoom (about 4: 14.4 px per metre, so a 28 px pirate is 1.9 m tall and one sprite pixel is one screen pixel).
 func _update_camera(ship: Dictionary, dt: float) -> void:
 	var ashore: bool = bool(_land.get("ashore", false))
-	var zt := float(_land.get("zoom", 4.0)) if ashore else 1.0
+	var zt := float(_land.get("zoom_to", _land.get("zoom", 4.0))) if ashore else 1.0
 	var tau := maxf(float(_land.get("zoom_s", 1.1)), 0.05) / 3.0
 	_zoom = zt if absf(_zoom - zt) < 0.002 else lerpf(_zoom, zt, 1.0 - exp(-minf(dt, 0.1) / tau))
 	var zmax := maxf(float(_land.get("zoom", 4.0)), 1.01)
-	var s := clampf((_zoom - 1.0) / (zmax - 1.0), 0.0, 1.0)
+	var zref := maxf(float(_land.get("zoom_ref", zmax)), 1.01)     # CP-2: the deck view reaches full follow at its own, lower zoom (the nest)
+	var s := clampf((_zoom - 1.0) / (zref - 1.0), 0.0, 1.0)
+	_deck_s = s
 	var ship_t := Vector2(float(ship["x"]), float(ship["z"]) - TARGET_LEAD_M)
 	var hero_t := Vector2(float(_land.get("x", ship_t.x)), float(_land.get("z", ship_t.y)) - 1.6)
 	_focus = ship_t.lerp(hero_t, s)
 	var gy := 0.0
 	if s > 0.001:
 		gy = _cay.height_smooth(_focus.x, _focus.y)
+		if _land.has("focus_y"):
+			gy = float(_land["focus_y"])       # CP-2: on a ship the camera looks at the deck, not the sea floor
 		gy = lerpf(0.0, maxf(gy, 0.0), s)
 	var dist := ART_H / (2.0 * tan(deg_to_rad(FOV_DEG) * 0.5) * PX_PER_M * _zoom)
 	var p := deg_to_rad(pitch_deg)
@@ -626,10 +660,51 @@ func _update_camera(ship: Dictionary, dt: float) -> void:
 	_ship_mat.set_shader_parameter("cam_cos", cos(p))
 	_ship_mat.set_shader_parameter("cam_tan", tan(p))
 	_cay.update(_focus, _zoom)
-	_cay.set_hero(ashore, float(_land.get("x", 0.0)), float(_land.get("z", 0.0)), int(_land.get("row", 0)),
-			int(_land.get("frame", 0)), zmax)     # CP-1: the on-foot sprites keep ONE world scale (see cay_world.set_sprite_zoom)
+	if not bool(_deck_state.get("on", false)):    # on a ship deck the pirate is placed by _update_deck at his rolled position
+		_cay.set_hero(ashore, float(_land.get("x", 0.0)), float(_land.get("z", 0.0)), int(_land.get("row", 0)),
+				int(_land.get("frame", 0)), zmax)     # CP-1: the on-foot sprites keep ONE world scale (see cay_world.set_sprite_zoom)
 	var os := clampf(1.6 / _zoom, 0.4, 1.0)
 	_ocean.scale = Vector3(os, 1.0, os)
+
+
+## CP-2: the walkable ship. Pose from the same ship motion as the sprite, boom and wheel follow the sails and the helm, the pirate is
+## drawn at his place ON the rolling deck, and the shader gets his screen position for the see-through hole.
+func _update_deck(v: Dictionary, ship: Dictionary, dt: float) -> void:
+	var st := _deck_state
+	var on := bool(st.get("on", false))
+	_deck_show = on or (_deck_show and _deck_s > 0.02)
+	var target_a := smoothstep(0.35, 0.8, _deck_s) if _deck_show else 0.0
+	_deck_alpha = target_a
+	_ship.visible = _deck_alpha < 0.55
+	_deck.set_alpha(_deck_alpha)
+	if not _deck_show:
+		return
+	var hd := float(ship["heading_deg"])
+	_deck.set_pose(Vector2(float(ship["x"]), float(ship["z"])), hd, float(_last_out["roll_deg"]), float(_last_out["pitch_deg"]),
+			float(_last_out["heave_m"]), DECK_MOTION)
+	_deck.set_level(int(st.get("level", 0)))
+	var trims: Array = [-80.0, -45.0, 0.0, 45.0, 80.0]
+	_deck_trim = move_toward(_deck_trim, float(trims[clampi(_trim_row, 0, 4)]), 140.0 * minf(dt, 0.1))
+	_deck.set_trim(_deck_trim)
+	_deck.set_rudder(float(st.get("rudder", 0.0)))
+	_deck.set_fish_fill(float(st.get("fish_frac", 0.0)))
+	_deck.set_cabin_open(bool(st.get("cabin_open", false)), minf(dt, 0.1))
+	_deck.set_aspect(float(_vp.size.x) / float(_vp.size.y))
+	_deck.set_wet(clampf(float(v.get("rain", 0.0)), 0.0, 1.0))
+	if st.has("stores"):
+		_deck.set_stores(st["stores"])
+		_deck_state.erase("stores")
+	if not on:
+		return
+	var level := int(st.get("level", 0))
+	var feet := DeckView.ShipMesh.p(float(st.get("u", 0.0)), float(st.get("v", 0.0)), DeckLayout.floor_y(level) + float(st.get("height", 0.0)))
+	var w := _deck.to_world(feet)
+	_deck_hero = w
+	_cay.set_hero(true, w.x, w.z, int(st.get("row", 0)), int(st.get("frame", 0)), float(_land.get("zoom", 4.0)), w.y)
+	var chest := w + Vector3(0.0, 1.0, 0.0)
+	var px := _cam.unproject_position(chest)
+	var in_nest := level == DeckLayout.L_NEST or (float(st.get("height", 0.0)) > 4.0)
+	_deck.set_hero_screen(Vector2(px.x / float(_vp.size.x), px.y / float(_vp.size.y)), (chest - _cam.global_position).length(), in_nest)
 
 
 ## Colour grade only. H2D-0.3 removed the screen-space haze and lightning flash that H2D-0.2 laid over the picture:

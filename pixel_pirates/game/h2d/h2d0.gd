@@ -28,9 +28,16 @@ const Helm := preload("res://h2d/helm.gd")
 const EnvModel := preload("res://h2d/env_model.gd")
 const HelmHud := preload("res://h2d/helm_hud.gd")
 const Harbor := preload("res://h2d/harbor.gd")
+const ShipMode := preload("res://h2d/ship_mode.gd")
+const ShipHud := preload("res://h2d/ship_hud.gd")
+const ShipKeys := preload("res://h2d/ship_keys.gd")
+const ShipStores := preload("res://h2d/ship_stores.gd")
+const ShipWalker := preload("res://h2d/ship_walker.gd")
+const ShipLayout := preload("res://h2d/ship_layout.gd")
 const LandWalker := preload("res://h2d/land_walker.gd")
 const KeyUtil := preload("res://h2d/key_util.gd")
 const PortGame := preload("res://h2d/port_game.gd")
+const PortState := preload("res://h2d/port_state.gd")
 const MAP_SCENE := "res://ui/map/map_screen.tscn"
 const MAX_STEP_S := 0.25
 const SMOOTH_S := 2.0
@@ -83,6 +90,11 @@ var _raw_last := "(none yet)"
 var _port: Node = null  ## CP-1: the Fish Row loop (economy, nets, people, dialogue)
 var _map: Node = null   ## the map screen (ui/map): its own scene, its own input; the pause is attached below, nothing else is
 var _edge_said := -100.0
+var _ship_mode: ShipMode = ShipMode.new()   ## CP-2: helm / deck mode, the course hold and the walker on the moving ship
+var _ship_hud: ShipHud
+var _items: Dictionary = {}
+var _stores_sig := ""
+var _stores_dirty := true
 var _tp_next := 0
 var _tod := 0
 var _dock_label: Label
@@ -139,6 +151,12 @@ func _ready() -> void:
 	_hud.add_theme_constant_override("outline_size", 5)
 	layer.add_child(_hud)
 	_build_helm_widgets(layer)
+	ShipKeys.ensure_actions()
+	_ship_hud = ShipHud.new()
+	layer.add_child(_ship_hud)
+	_ship_hud.attach_fade(self)
+	_items = ShipStores.index_items(DataLoader.load_dict("res://data/items/items.json").get("records", []))
+	_ship_mode.configure(_oc.tuning())
 	_helm.configure(_oc.tuning())
 	_env.configure(_oc.tuning())
 	(_v3 as View3D).configure_env(_oc.tuning())
@@ -190,6 +208,8 @@ func _reset_ship() -> void:
 	_harbor.reset()
 	_moor = 0.0
 	_walker.board()
+	_ship_mode.reset()
+	_ship_close_panels()
 
 
 func _set_path(which: String) -> void:
@@ -223,6 +243,7 @@ func _process(delta: float) -> void:
 	_apply_lab()
 	_step_env(dt)
 	_land_step(dt, gs)
+	_deck_step(dt, gs)
 	if _map != null and not _map_is_open() and _state.clock.pause_reasons().has("map"):
 		_state.clock.resume("map")      # watchdog: a map that is closed never keeps the game paused
 		push_warning("MAP: the clock was still paused by the map after it closed; released")
@@ -242,12 +263,14 @@ func _process(delta: float) -> void:
 	_curve = clampf(deg_to_rad(_helm.yaw_rate) / maxf(speed_scene, 3.0), -0.04, 0.04)
 	_update_light(float(_state.clock.t) / 86400.0)
 	_update_region()
+	(_v3 as View3D).set_deck(_deck_view_state())
 	(_v3 as View3D).set_land(_land_view_state())
 	_active.update_view(_view(), {"x": _pos.x, "z": _pos.y, "heading_deg": _heading_disp,
 			"speed_kn": float(_d["speed_kn"]), "scene_speed": speed_scene, "curve": _curve, "moor": _moor}, delta)
 	var advice := _helm_state(target_kn)
 	_helm_hud.set_state(advice)
 	_update_alert(advice)
+	_update_ship_ui(dt, advice)
 	_hud_t -= delta
 	if _hud_t <= 0.0:
 		_hud_t = 0.2
@@ -261,7 +284,7 @@ func _sail_step(dt: float, gs: float, t0: float, target_kn: float) -> float:
 		_helm.speed_kn = target_kn
 		_helm_snap = false
 	if gs > 0.0:
-		_helm.step(dt, _steer_axis(), target_kn)
+		_helm.step(dt, _ship_mode.steer(dt, _steer_axis(), _ship_ctx()), target_kn)   # the course hold steers when nobody is at the wheel
 		_sea.heading_deg = _helm.heading_deg
 	_heading_disp = _helm.heading_deg
 	_turn = _helm.yaw_rate * 0.5
@@ -318,8 +341,10 @@ func _dock_request() -> void:
 	var r := _harbor.request(_pos.x, _pos.y, _sea.heading_deg)
 	match r:
 		"docking":
+			_ship_mode.ap.call("release")
 			_say("Docking at %s: the crew brings her alongside." % _harbor.port_name)
 		"casting_off":
+			_ship_mode.ap.call("release")
 			_say("Casting off from %s." % _harbor.port_name)
 		"not_in_zone":
 			_say("Too far from the berth: sail into the harbour mouth (between the buoys) first.")
@@ -401,13 +426,15 @@ func _key_diag_line() -> String:
 
 # ---- H2D-1.2: on foot -------------------------------------------------------------------------------------------
 func _land_view_state() -> Dictionary:
+	if _ship_mode.is_deck() and not _walker.is_ashore():
+		return _deck_land_state()
 	return {"ashore": _walker.is_ashore(), "x": _walker.x, "z": _walker.z, "row": _walker.row, "frame": _walker.frame,
 			"zoom": _walker.param("zoom"), "zoom_s": _walker.param("zoom_s")}
 
 
 func _walk_axis() -> Vector2:
 	var a := Vector2.ZERO
-	if _map_is_open() or (_port != null and (_port as PortGame).modal()):
+	if _map_is_open() or (_port != null and (_port as PortGame).modal()) or (_ship_hud != null and _ship_hud.is_info_open()):
 		return a
 	if KeyUtil.held(KEY_A) or KeyUtil.held(KEY_LEFT):
 		a.x -= 1.0
@@ -449,6 +476,12 @@ func _land_toggle() -> void:
 	if _harbor.state != Harbor.DOCKED:
 		_say("Dock first: sail into the harbour mouth and press SPACE. Then F goes ashore.")
 		return
+	if not _ship_mode.can_go_ashore():
+		_ship_hud.toast("Go up to the main deck first: F goes ashore from the deck, not from below or the nest.")
+		return
+	if _ship_mode.is_deck():
+		_ship_mode.take_helm()
+	_ship_close_panels()
 	_walker.disembark((_v3 as View3D).land_world().meta["land"])
 	(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))
 	_say("Ashore. WASD or arrows walk, Shift runs. Follow the route: %s" % _walker.hint_text())
@@ -611,6 +644,18 @@ func _unhandled_input(event: InputEvent) -> void:
 	var kc: int = KeyUtil.code(k)     # layout-proof key (an Arabic layout would otherwise break every letter key)
 	var v3 := _v3 as View3D
 	var ashore := _walker.is_ashore()
+	if kc == KEY_F6 and k.shift_pressed:
+		_give_test_provisions()
+		return
+	if _ship_hud != null and _ship_hud.is_info_open() and (ShipKeys.hit(k, "ship_interact") or kc == KEY_ESCAPE or kc == KEY_SPACE or kc == KEY_ENTER):
+		_ship_hud.close_info()
+		return
+	if not ashore and ShipKeys.hit(k, "ship_interact") and not (_port != null and (_port as PortGame).modal()):
+		_ship_interact()
+		return
+	if not ashore and ShipKeys.hit(k, "autopilot_toggle"):
+		_ship_hud.toast(_ship_mode.toggle_autopilot(_ship_ctx()), 5.0)
+		return
 	if _port != null and (_port as PortGame).handle_key(k, _port_ctx()):
 		return  # CP-1 keys: E interact, F nets (at sea), M map, Y/N, Enter, Tab and Esc inside a panel, F6/F7 test helpers
 	if kc == KEY_F:
@@ -632,7 +677,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif kc == KEY_R:
 		_reset_ship()
 	elif kc == KEY_W:
-		if not ashore:
+		if not ashore and not _ship_mode.is_deck():      # on deck W walks (and climbs); the weather lab stays on Tab
 			_cycle_lab()
 	elif kc == KEY_SPACE:
 		_dock_request()
@@ -648,7 +693,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif kc == KEY_M:
 		v3.motion_mode = (v3.motion_mode + 1) % 3
 		_say("ship motion: " + MOTION_NAMES[v3.motion_mode])
-	elif kc == KEY_E:
+	elif kc == KEY_E and k.shift_pressed:       # plain E is the ship's interact key (ship_interact); the effects budget moved to Shift+E
 		var lv: String = EFFECT_LEVELS[(EFFECT_LEVELS.find(v3.effects) + 1) % EFFECT_LEVELS.size()]
 		v3.set_effects(lv)
 		_say("effects budget: " + lv)
@@ -689,6 +734,165 @@ func _unhandled_input(event: InputEvent) -> void:
 		_speed_mul = minf(_speed_mul * 2.0, 8.0)
 	elif kc == KEY_B and (_bench == null or not (_bench as Bench).active):
 		_start_bench()
+
+
+# ---- CP-2 Release A: the ship you can walk on --------------------------------------------------------------------
+## What the ship mode needs from the sea and the helm this frame (a plain dictionary: ship_mode.gd knows nothing of this scene).
+func _ship_ctx() -> Dictionary:
+	return {"heading": _helm.heading_deg, "yaw_rate": _helm.yaw_rate, "wind_from": float(_d.get("wind_from", 0.0)),
+			"wind_kn": float(_d.get("wind_kn", 0.0)), "no_go": float(_oc.tuning_value("ship.no_go_deg")),
+			"sailing": _harbor.state == Harbor.SAILING and not _walker.is_ashore(), "docked": _harbor.state == Harbor.DOCKED}
+
+
+func _ship_ui_blocked() -> bool:
+	return _map_is_open() or (_port != null and (_port as PortGame).modal()) or (_ship_hud != null and _ship_hud.is_info_open())
+
+
+func _ship_close_panels() -> void:
+	if _ship_hud != null:
+		_ship_hud.close_info()
+		_ship_hud.set_fade(0.0)
+
+
+func _port_state() -> PortState:
+	return (_port as PortGame).state if _port != null else null
+
+
+## One frame of walking on the moving ship. The ship itself is driven by _sail_step (the course hold steers); nothing here moves it.
+func _deck_step(dt: float, gs: float) -> void:
+	if _walker.is_ashore() or not _ship_mode.is_deck():
+		return
+	var msg := _ship_mode.ensure_hold(_ship_ctx())
+	if msg != "":
+		_ship_hud.toast(msg, 5.0)
+	var climb := 0.0
+	if not _ship_ui_blocked():
+		if KeyUtil.held(KEY_W) or KeyUtil.held(KEY_UP):
+			climb += 1.0
+		if KeyUtil.held(KEY_S) or KeyUtil.held(KEY_DOWN):
+			climb -= 1.0
+	_ship_mode.step(dt if gs > 0.0 else 0.0, _walk_axis(), KeyUtil.held(KEY_SHIFT), _heading_disp, climb)
+
+
+## E. At the wheel it leaves the helm; on deck it does what the place under the pirate offers (the prompt on screen says what).
+func _ship_interact() -> void:
+	if _ship_ui_blocked():
+		return
+	var c := _ship_ctx()
+	if not _ship_mode.is_deck():
+		_ship_hud.toast(_ship_mode.leave_helm(c), 5.0)
+		return
+	var ev: Dictionary = _ship_mode.interact(c)
+	match str(ev["kind"]):
+		"helm":
+			_ship_hud.toast(str(ev.get("text", "")), 4.0)
+		"map":
+			if _map != null:
+				_map.call("request_open", -1)
+			else:
+				_ship_hud.toast("The chart table: the map screen is not available.")
+		"stores":
+			_open_provisions()
+		"fish_barrels":
+			_open_fish_barrels()
+		"chest":
+			var ps := _port_state()
+			_ship_hud.toast("The sea chest: %d reales in the purse. The rest of the strongbox stays locked until the crew is paid." % (ps.reales if ps != null else 0), 5.0)
+		"winch":
+			_ship_hud.toast("The fishing winch: a heavy oak drum, rope, a pulley on the davit and the net. Manual fishing arrives in the next release.", 6.0)
+		"berths":
+			var ps2 := _port_state()
+			var n := ps2.crew_count() if ps2 != null else 0
+			_ship_hud.toast("The berths: you and %d hand%s sleep here." % [n, "" if n == 1 else "s"] if n > 0 else "The berths: only your own hammock is slung. Hire hands in port.", 5.0)
+
+
+func _open_provisions() -> void:
+	var rows := ShipStores.provision_rows(_state.inventory, _items)
+	var foot := "E / Esc: close"
+	if rows.is_empty():
+		rows = [["The racks are bare.", "", ""], ["", "", ""], ["Nothing is stored yet. (Shift+F6 adds a test pack.)", "", ""]]
+	else:
+		foot = "Total %.1f kg   |   E / Esc: close" % ShipStores.total_kg(_state.inventory, _items)
+	_ship_hud.open_info("PROVISIONING HOLD", rows, foot)
+
+
+func _open_fish_barrels() -> void:
+	var ps := _port_state()
+	if ps == null:
+		_ship_hud.toast("The fish barrels are not available.")
+		return
+	var now := float(_state.clock.t) / 86400.0
+	var rows: Array = [["Hold", "%.1f kg" % ps.hold_kg(), "of %.0f kg (%d%%)" % [ps.capacity_kg(), int(roundf(ps.hold_frac() * 100.0))]], ["", "", ""]]
+	var fr := ShipStores.fish_rows(ps.lots, ps.fish, now, ps.freshness_of)
+	if fr.is_empty():
+		rows.append(["The barrels are empty.", "", ""])
+	else:
+		rows.append_array(fr)
+	_ship_hud.open_info("FISH BARRELS", rows, "Sell at the fish market   |   E / Esc: close")
+
+
+## Shift+F6 (test): fills the racks with a pack of provisions, because nothing sells provisions yet.
+func _give_test_provisions() -> void:
+	for id in ShipStores.TEST_PACK.keys():
+		_state.add_item(str(id), int(ShipStores.TEST_PACK[id]))
+	_stores_sig = ""
+	_say("TEST: a pack of provisions is in the hold (look at the racks on the lowest deck).")
+	if _ship_hud != null:
+		_ship_hud.toast("TEST: provisions added to the hold.")
+
+
+## The camera's view of the pirate on deck: ONE yaw-only position (no roll), the zoom easing from the deck value to the nest value while climbing.
+func _deck_land_state() -> Dictionary:
+	var h := _ship_mode.hero()
+	var wp := _pos + ShipWalker.to_world(Vector2(float(h["u"]), float(h["v"])), _heading_disp)
+	var ly := float(h["height"]) + ShipLayout.floor_y(int(h["level"]))
+	var k := clampf((ly - ShipLayout.FLOOR_Y) / ShipLayout.LADDER_RISE, 0.0, 1.0)
+	var z_deck := _ship_mode.param("deck.zoom", 4.0)
+	var z_nest := _ship_mode.param("deck.nest_zoom", 2.2)
+	return {"ashore": true, "x": wp.x, "z": wp.y, "row": int(h["row"]), "frame": int(h["frame"]), "zoom": z_deck,
+			"zoom_s": _ship_mode.param("deck.zoom_s", 1.0), "zoom_to": lerpf(z_deck, z_nest, k), "zoom_ref": z_nest, "focus_y": ly}
+
+
+## What the 3D ship model shows this frame.
+func _deck_view_state() -> Dictionary:
+	if _walker.is_ashore() or not _ship_mode.is_deck():
+		return {"on": false}
+	var h := _ship_mode.hero()
+	var st := {"on": true, "level": int(h["level"]), "u": float(h["u"]), "v": float(h["v"]), "height": float(h["height"]),
+			"row": int(h["row"]), "frame": int(h["frame"]), "rudder": _helm.rudder,
+			"cabin_open": ShipLayout.cabin_open(float(h["u"]), float(h["v"])) and int(h["level"]) == ShipLayout.L_DECK and float(h["height"]) < 0.5}
+	var ps := _port_state()
+	st["fish_frac"] = ps.hold_frac() if ps != null else 0.0
+	var sig := str(_state.inventory)
+	if sig != _stores_sig:
+		_stores_sig = sig
+		st["stores"] = ShipStores.zone_units(_state.inventory, _items)
+	return st
+
+
+const PLACE_NAMES := ["MAIN DECK", "SLEEPING DECK", "PROVISIONING HOLD", "CROW'S NEST"]
+
+
+## The status chip, the prompt, the toast and the hatch fade.
+func _update_ship_ui(dt: float, _advice: Dictionary) -> void:
+	_ship_hud.tick(dt)
+	var ashore := _walker.is_ashore()
+	var deck := _ship_mode.is_deck() and not ashore
+	var c := _ship_ctx()
+	var blocked := _ship_ui_blocked()
+	var show := _hud_on and not ashore and not _map_is_open()
+	var place := ""
+	if deck:
+		place = PLACE_NAMES[clampi(_ship_mode.level(), 0, 3)]
+	_ship_hud.set_status(_ship_mode.status(c), place, show)
+	var prompt := ""
+	if not ashore and not blocked:
+		if deck:
+			prompt = str(_ship_mode.prompt()["text"])
+		else:
+			prompt = "E  Leave the helm and walk the ship"
+	_ship_hud.set_prompt(prompt, show and not (deck and float(_ship_mode.hero()["fade"]) > 0.05))
+	_ship_hud.set_fade(float(_ship_mode.hero()["fade"]) if deck else 0.0)
 
 
 # ---- benchmark ---------------------------------------------------------------------------------------------------
@@ -779,6 +983,8 @@ func _advice_for(st: Dictionary) -> String:
 		return _walker.hint_text() if _walker.is_ashore() else _dock_prompt()
 	if _grounded:
 		return "AGROUND on Anvil Cay. Turn away from the island with A or D (or press R to start again)."
+	if bool(st["in_irons"]) and _ship_mode.is_deck():
+		return "IN IRONS: the bow is within %d deg of the wind and the ship is losing speed. Take the helm (E at the wheel) and turn away from the wind." % int(st["no_go"])
 	if bool(st["in_irons"]):
 		var msg := "IN IRONS: the bow is within %d deg of the wind, so the sails cannot draw and the ship is losing speed."
 		msg += " Turn away from the red wedge: press %s."
@@ -843,7 +1049,7 @@ func _update_alert(st: Dictionary) -> void:
 	var alarm := _hud_on and sailing and (bool(st["in_irons"]) or _grounded)
 	_alert.visible = alarm
 	_alert_sub.visible = alarm
-	_helm_hud.visible = _hud_on and not _walker.is_ashore()
+	_helm_hud.visible = _hud_on and not _walker.is_ashore() and not _ship_mode.is_deck()
 	if not alarm:
 		return
 	_alert.text = "AGROUND" if _grounded else "IN IRONS"
@@ -892,7 +1098,10 @@ func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 	if _walker.is_ashore():
 		lines.append("WASD walk  Shift run  E talk / sell / read  M map  F board (at pier)  T next stop  N time  P pause   F6/F7 test money/fish")
 	else:
-		lines.append("A/D steer  F nets (on a fishing ground)  M map  SPACE dock/cast off  F ashore (moored)  Z/X turn  Shift+M motion  W/Tab weather  R reset")
+		if _ship_mode.is_deck():
+			lines.append("WASD walk  Shift run  E use / climb / take the helm  C course hold  M map  SPACE dock/cast off  F ashore (moored, main deck)  Tab weather  Shift+F6 test provisions  F7 test fish  R reset")
+		else:
+			lines.append("A/D steer  C hold course  E leave the helm and walk the ship  M map  SPACE dock/cast off  F ashore (moored)  Z/X turn  Shift+M motion  Shift+E effects  Tab weather  R reset")
 	_hud.text = "\n".join(PackedStringArray(lines))
 
 

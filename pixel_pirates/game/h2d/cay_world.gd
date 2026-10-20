@@ -485,12 +485,13 @@ func chunk_stats() -> String:
 
 # ---- the pirate ------------------------------------------------------------------------------------------------
 ## row: 0 south, 1 north, 2 west, 3 east; frame 0..3. `zoom` keeps one sprite pixel on one screen pixel.
-func set_hero(on: bool, x: float, z: float, row: int, frame: int, zoom: float) -> void:
+## `y_override` (CP-2): the pirate stands on a ship deck, not on the ground: the caller gives the feet height.
+func set_hero(on: bool, x: float, z: float, row: int, frame: int, zoom: float, y_override: float = NAN) -> void:
 	_hero.visible = on
 	_blob.visible = on
 	if not on:
 		return
-	var y := ground_y(x, z)
+	var y := ground_y(x, z) if is_nan(y_override) else y_override
 	_hero.position = Vector3(x, y, z)  # the node carries the position, so the culling box follows the sprite
 	_hero.multimesh.set_instance_custom_data(0, Color(float(row * 4 + frame), 1.0, 0.0, 0.0))
 	_hero_mat.set_shader_parameter("m_per_px", 1.0 / (PX_PER_M * zoom))
