@@ -65,6 +65,7 @@ func run(t: Object) -> void:
 	_drive(t, w, audit, tuning, land)
 	_island(t, w, land, r)
 	_sea_routes(t, w, tuning)
+	_npc_spots(t, w, port)
 	holder.queue_free()
 
 
@@ -258,7 +259,7 @@ func _sea_routes(t: Object, w: CayWorld, tuning: Dictionary) -> void:
 	seen[sj * nx + si] = 1
 	var head := 0
 	while head < queue.size():
-		var c := queue[head]
+		var c: int = queue[head]
 		head += 1
 		var ci := c % nx
 		var cj := c / nx
@@ -288,3 +289,13 @@ func _sea_routes(t: Object, w: CayWorld, tuning: Dictionary) -> void:
 			if i2 >= 0 and j2 >= 0 and i2 < nx and j2 < nz and seen[j2 * nx + i2] == 1:
 				reached += 1
 		t.check(reached == pts.size(), "%s: the middle and 8 points inside its rim can be sailed to from the start (%d of %d)" % [str(g["name"]), reached, pts.size()])
+
+
+## The in-game F8 check found "npc_sailor_1 stands on walkable ground" failing while every offline check passed: the baked NPC spot
+## itself must pass the exact rule the people use to move (PortNpcs.BODY_R) on the real ground.
+func _npc_spots(t: Object, w: CayWorld, port: Dictionary) -> void:
+	var bad: Array = []
+	for n in port["npcs"]:
+		if not w.walkable(float(n["x"]), float(n["z"]), 0.4):
+			bad.append("%s (%.1f, %.1f)" % [str(n["id"]), float(n["x"]), float(n["z"])])
+	t.check(bad.is_empty(), "every baked person stands on walkable ground (%d do not: %s)" % [bad.size(), str(bad)])

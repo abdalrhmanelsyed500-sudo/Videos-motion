@@ -547,7 +547,7 @@ func _open_dialogue(i: int, ctx: Dictionary) -> void:
 	if i < 0 or i >= npcs.people.size():
 		# never fail silently: the player pressed E and must hear why nothing opened
 		ui.toast("Nobody answers: the person you wanted to talk to is not here.", PortUi.AMBER, 4.0)
-		push_warning("CP-1: _open_dialogue(%d) has no person (people: %d)" % [i, npcs.people.size()])
+		push_warning("CP-1: talk request %d has no person (people: %d)" % [i, npcs.people.size()])
 		return
 	_spk = _speaker_for(i)
 	npcs.set_talking(i, true, float(ctx["wx"]), float(ctx["wz"]))
@@ -920,6 +920,12 @@ func _resolve_target(arg: String) -> String:
 
 
 func _set_track(id: String, announce: bool = true) -> void:
+	if id != "" and _entry(id).is_empty():
+		# an unknown target must never be tracked: the arrow would point nowhere and the objective would stay "tracking" forever
+		_track = ""
+		ui.toast("I cannot find that place on the chart.", PortUi.AMBER, 3.5)
+		push_warning("CP-1: _set_track('%s'): no such map entry" % id)
+		return
 	_track = id
 	if id == "":
 		if announce:

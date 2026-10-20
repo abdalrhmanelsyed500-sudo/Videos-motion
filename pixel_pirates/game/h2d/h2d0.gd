@@ -336,6 +336,10 @@ func _port_ctx() -> Dictionary:
 ## controller saw it) -> map opens / failures. Also shows the focused control and whether the debug console is open.
 func _key_diag_line() -> String:
 	var out := "keys: engine got %d, game got %d" % [_key_raw, _key_game]
+	if _key_raw == 0:
+		out += " (none yet: click once inside the game window, an embedded or unfocused window gets no keys)"
+	elif not get_window().has_focus():
+		out += "   WINDOW NOT FOCUSED (click inside the game)"
 	var foc := get_viewport().gui_get_focus_owner()
 	if foc != null:
 		out += "   FOCUSED CONTROL: %s (it swallows keys; click the game or press Esc)" % foc.name

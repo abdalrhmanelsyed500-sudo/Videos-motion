@@ -84,7 +84,7 @@ NPCS = [
     ("npc_merchant_1", "merchant", -80.0, -6.5, "wander", 11.0, 0), ("npc_merchant_2", "merchant", -62.0, -24.0, "wander", 6.0, 0),
     ("npc_docker_1", "docker", -33.0, 4.5, "patrol", 5.0, 3), ("npc_docker_2", "docker", -17.0, 10.5, "wander", 3.0, 0),
     ("npc_docker_3", "docker", -104.0, 4.6, "patrol", 6.0, 3), ("npc_docker_4", "docker", -56.0, 11.5, "stand", 0, 2),
-    ("npc_sailor_1", "sailor", 29.0, 0.2, "stand", 0, 2), ("npc_sailor_2", "sailor", 20.5, -5.5, "wander", 4.5, 0),
+    ("npc_sailor_1", "sailor", 31.8, 0.2, "stand", 0, 2), ("npc_sailor_2", "sailor", 20.5, -5.5, "wander", 4.5, 0),
     ("npc_sailor_3", "sailor", 3.0, -6.0, "wander", 2.5, 3),
     ("npc_town_1", "townsman", -110.0, 0.0, "wander", 7.0, 3), ("npc_town_2", "townsman", -60.0, 0.4, "wander", 12.0, 3),
     ("npc_town_3", "townsman", -30.0, -1.0, "wander", 8.0, 2), ("npc_town_4", "townsman", -14.0, 0.0, "wander", 6.0, 0),

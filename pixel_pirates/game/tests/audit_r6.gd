@@ -57,6 +57,7 @@ func _play() -> void:
 	await _setup_failures()
 	await _money_rules()
 	await _dialogue_audit()
+	await _bad_map_data()
 	print("AUDIT6 %d checks, %d failed -> %s" % [checks, fails, "PASS" if fails == 0 else "FAIL"])
 	quit(0 if fails == 0 else 1)
 
@@ -72,7 +73,9 @@ func _console_and_keys() -> void:
 	chk(con.has_method("is_open") and not bool(con.call("is_open")), "the console starts closed")
 	await key(KEY_F1)
 	chk(not bool(con.call("is_open")), "F1 does NOT open the debug console (that was the dead-keys trap)")
-	chk(int(scene.get("_key_raw")) > 0 and int(scene.get("_key_game")) == int(scene.get("_key_raw")), "every key so far reached the game: engine %d, game %d" % [int(scene.get("_key_raw")), int(scene.get("_key_game"))])
+	var raw: int = int(scene.get("_key_raw"))
+	var gm: int = int(scene.get("_key_game"))
+	chk(raw > 0 and gm == raw, "every key so far reached the game: engine %d, game %d" % [raw, gm])
 	var mp: Control = (port.get("ui") as Node).get("map")
 	await key(KEY_M)
 	chk(mp.visible and bool(mp.call("is_shown")), "after F1, M opens the map")
@@ -310,3 +313,51 @@ func _dialogue_audit() -> void:
 	chk(uniq.is_empty(), "no unresolved placeholder, empty option or dead end in any node (%d: %s)" % [uniq.size(), str(uniq.keys().slice(0, 6))])
 	chk(trees_seen.size() >= 12, "the audit covered %d tree/recruit combinations (>= 12)" % trees_seen.size())
 	state.call("reset")
+
+
+## Malformed or missing map data and invalid targets: the game must report, stay playable and never be left modal.
+func _bad_map_data() -> void:
+	var mp: Control = (port.get("ui") as Node).get("map")
+	var good_views: Array = (mp.get("views") as Array).duplicate(true)
+	# 1. an invalid tracking target is refused
+	port.call("_set_track", "no_such_place_at_all")
+	chk(str(port.get("_track")) == "", "tracking an unknown id is refused (track = '%s')" % str(port.get("_track")))
+	chk(str(port.call("_resolve_target", "bogus_target")) == "", "an unknown dialogue target resolves to nothing")
+	port.call("_on_track_requested", "pier")
+	chk(str(port.get("_track")) == "pier", "tracking a real place works")
+	port.call("_set_track", "")
+	# 2. a view that lacks keys: reported by name, no exception, nothing left modal
+	var broken: Array = good_views.duplicate(true)
+	(broken[0] as Dictionary).erase("title")
+	(broken[1] as Dictionary).erase("bounds")
+	mp.call("set_views", broken)
+	chk((mp.get("schema_errors") as Array).size() >= 2, "two missing view keys are reported (%s)" % str(mp.get("schema_errors")))
+	await key(KEY_M)
+	await frames(2)
+	chk(bool(port.call("modal")) == bool(mp.call("is_shown")), "modal state always equals the map's real state with a broken view")
+	if mp.visible:
+		await key(KEY_ESCAPE)
+	chk(not bool(port.call("modal")) and not mp.visible, "the broken map can be closed (Esc), the game is not left modal")
+	# 3. a view whose picture is missing
+	var nofile: Array = good_views.duplicate(true)
+	for v in nofile:
+		(v as Dictionary)["file"] = "does_not_exist.png"
+	mp.call("set_views", nofile)
+	await key(KEY_M)
+	await frames(2)
+	chk(bool(port.call("modal")) == bool(mp.call("is_shown")), "a missing map picture: modal state equals the real state")
+	if mp.visible:
+		await key(KEY_ESCAPE)
+	chk(not bool(port.call("modal")), "...and the game is not left modal")
+	# 4. an entry without coordinates
+	mp.call("set_views", good_views)
+	var errs: Array = mp.get_script().call("schema_problems", good_views, [{"id": "x", "kind": "place", "name": "n", "detail": "d"}])
+	chk(errs.size() == 2, "an entry without x and z gives two named problems (%s)" % str(errs))
+	# 5. all views empty
+	mp.call("set_views", [])
+	await key(KEY_M)
+	chk(not bool(port.call("modal")), "no views at all: M opens nothing and leaves nothing modal")
+	mp.call("set_views", good_views)
+	await key(KEY_M)
+	chk(mp.visible and bool(mp.call("is_shown")), "views restored: the map opens again")
+	await key(KEY_ESCAPE)
