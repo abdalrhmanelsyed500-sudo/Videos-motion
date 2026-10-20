@@ -7,13 +7,13 @@ const ACTIONS := {"ship_interact": KEY_E, "autopilot_toggle": KEY_C}
 
 static func ensure_actions() -> void:
 	for a in ACTIONS.keys():
-		var name := str(a)
+		var action_name := str(a)
 		var key: int = ACTIONS[a]
-		if not InputMap.has_action(name):
-			InputMap.add_action(name)
+		if not InputMap.has_action(action_name):
+			InputMap.add_action(action_name)
 		var has_phys := false
 		var has_label := false
-		for e in InputMap.action_get_events(name):
+		for e in InputMap.action_get_events(action_name):
 			var ke := e as InputEventKey
 			if ke == null or ke.shift_pressed or ke.ctrl_pressed or ke.alt_pressed or ke.meta_pressed:
 				continue
@@ -24,11 +24,11 @@ static func ensure_actions() -> void:
 		if not has_phys:
 			var p := InputEventKey.new()
 			p.physical_keycode = key as Key
-			InputMap.action_add_event(name, p)
+			InputMap.action_add_event(action_name, p)
 		if not has_label:
 			var l := InputEventKey.new()
 			l.keycode = key as Key
-			InputMap.action_add_event(name, l)
+			InputMap.action_add_event(action_name, l)
 
 
 ## Does this key event trigger the action (no modifiers)?

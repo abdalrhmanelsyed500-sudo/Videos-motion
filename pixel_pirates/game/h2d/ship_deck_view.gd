@@ -10,6 +10,7 @@ extends Node3D
 ## Dynamic parts: the whole ship pose (heading, roll, pitch, heave), the boom and mainsail trim, the wheel, the fish in the barrels
 ## (from the real hold), the pieces on the provision racks (from the real inventory), the cabin roof dissolve, the hole around the pirate.
 ## Model space: x starboard, y up, -z toward the bow; ship-local (u, v) becomes (v, -u) (ShipMesh.p). NOT YET RUN ON THE USER'S PC.
+const CRATE_COL := Color(0.56, 0.40, 0.22)
 const Layout := preload("res://h2d/ship_layout.gd")
 const ShipMesh := preload("res://h2d/ship_mesh.gd")
 const SHADER := "res://h2d/shaders/ship_deck.gdshader"
@@ -140,13 +141,13 @@ func _coil(b: ShipMesh, u: float, v: float, y: float, r: float, turns: int, col:
 			b.ring(ShipMesh.p(u, v, y + 0.04 + float(k) * 0.035), Vector3.RIGHT, Vector3.BACK, rr, 10, 0.07, col, ShipMesh.M_ROPE)
 
 
-func _hull_strip(b: ShipMesh, level: int, y0: float, y1: float, inner_only: bool, col: Color, mat: int, step := 0.5) -> void:
-	var rg := Layout.hull_range(level)
+func _hull_strip(b: ShipMesh, lv: int, y0: float, y1: float, inner_only: bool, col: Color, mat: int, step_m := 0.5) -> void:
+	var rg := Layout.hull_range(lv)
 	var u := rg.x
 	while u < rg.y - 0.001:
-		var u2 := minf(u + step, rg.y)
-		var h0 := Layout.hull_half(level, u)
-		var h1 := Layout.hull_half(level, u2)
+		var u2 := minf(u + step_m, rg.y)
+		var h0 := Layout.hull_half(lv, u)
+		var h1 := Layout.hull_half(lv, u2)
 		for s in [-1.0, 1.0]:
 			var sd := float(s)
 			if not inner_only:
@@ -158,13 +159,13 @@ func _hull_strip(b: ShipMesh, level: int, y0: float, y1: float, inner_only: bool
 		u = u2
 
 
-func _floor(b: ShipMesh, level: int, y: float, col: Color) -> void:
-	var rg := Layout.hull_range(level)
+func _floor(b: ShipMesh, lv: int, y: float, col: Color) -> void:
+	var rg := Layout.hull_range(lv)
 	var u := rg.x
 	while u < rg.y - 0.001:
 		var u2 := minf(u + 0.5, rg.y)
-		var h0 := Layout.hull_half(level, u)
-		var h1 := Layout.hull_half(level, u2)
+		var h0 := Layout.hull_half(lv, u)
+		var h1 := Layout.hull_half(lv, u2)
 		b.quad(ShipMesh.p(u, -h0, y), ShipMesh.p(u2, -h1, y), ShipMesh.p(u2, h1, y), ShipMesh.p(u, h0, y), col, ShipMesh.M_DECK, Vector3.UP)
 		u = u2
 
@@ -210,7 +211,7 @@ func _barrel(b: ShipMesh, c: Vector2, r: float, y: float, h: float, open: bool, 
 		b.cyl(ShipMesh.p(c.x, c.y, y + h - 0.02), r * 0.9, 0.04, 10, col.lightened(0.2), ShipMesh.M_TIMBER, r * 0.88, false, false)
 
 
-func _crate(b: ShipMesh, c: Vector2, half: Vector2, y: float, h: float, col: Color = Color(0.56, 0.40, 0.22), yaw := 0.0) -> void:
+func _crate(b: ShipMesh, c: Vector2, half: Vector2, y: float, h: float, col: Color = CRATE_COL, yaw := 0.0) -> void:
 	b.box(ShipMesh.p(c.x, c.y, y + h * 0.5), Vector3(half.y, h * 0.5, half.x), col, ShipMesh.M_CRATE, yaw)
 
 
@@ -730,12 +731,12 @@ func set_stores(units: Dictionary) -> void:
 
 
 # ---- per frame control -----------------------------------------------------------------------------------------------------------
-func set_level(level: int) -> void:
-	_level = level
-	_g_open.visible = level == Layout.L_DECK or level == Layout.L_NEST
+func set_level(lv: int) -> void:
+	_level = lv
+	_g_open.visible = lv == Layout.L_DECK or lv == Layout.L_NEST
 	_cabin_up.visible = _g_open.visible and _cabin_fade > 0.02
-	_g_sleep.visible = level == Layout.L_SLEEP
-	_g_hold.visible = level == Layout.L_HOLD
+	_g_sleep.visible = lv == Layout.L_SLEEP
+	_g_hold.visible = lv == Layout.L_HOLD
 	_apply_fades()
 
 

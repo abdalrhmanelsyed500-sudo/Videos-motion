@@ -288,9 +288,9 @@ static func pieces_for(zone_id: String, units: int) -> int:
 
 # ---- test help ------------------------------------------------------------------------------------------------------
 ## Flood fill of the standable ground from `start` on a grid of `step` metres. Returns {cells, reached: Dictionary key -> true}.
-func flood(level: int, start: Vector2, r: float, step: float) -> Dictionary:
+func flood(level: int, start: Vector2, r: float, step_m: float) -> Dictionary:
 	var reached: Dictionary = {}
-	var key0 := _key(start, step)
+	var key0 := _key(start, step_m)
 	if not walkable(level, start.x, start.y, r):
 		return {"cells": 0, "reached": reached, "start_ok": false}
 	var queue: Array = [key0]
@@ -303,24 +303,24 @@ func flood(level: int, start: Vector2, r: float, step: float) -> Dictionary:
 			var n: Vector2i = k + (dv as Vector2i)
 			if reached.has(n):
 				continue
-			var p := Vector2(float(n.x) * step, float(n.y) * step)
+			var p := Vector2(float(n.x) * step_m, float(n.y) * step_m)
 			if walkable(level, p.x, p.y, r):
 				reached[n] = true
 				queue.append(n)
 	return {"cells": reached.size(), "reached": reached, "start_ok": true}
 
 
-static func _key(p: Vector2, step: float) -> Vector2i:
-	return Vector2i(int(roundf(p.x / step)), int(roundf(p.y / step)))
+static func _key(p: Vector2, step_m: float) -> Vector2i:
+	return Vector2i(int(roundf(p.x / step_m)), int(roundf(p.y / step_m)))
 
 
 ## True if some standable cell within `reach` of `target` was reached by a flood.
-static func near_reached(res: Dictionary, target: Vector2, reach: float, step: float) -> bool:
+static func near_reached(res: Dictionary, target: Vector2, reach: float, step_m: float) -> bool:
 	var reached: Dictionary = res["reached"]
-	var n := int(ceilf(reach / step))
-	var c := _key(target, step)
+	var n := int(ceilf(reach / step_m))
+	var c := _key(target, step_m)
 	for i in range(-n, n + 1):
 		for j in range(-n, n + 1):
-			if reached.has(Vector2i(c.x + i, c.y + j)) and Vector2(float(i), float(j)).length() * step <= reach:
+			if reached.has(Vector2i(c.x + i, c.y + j)) and Vector2(float(i), float(j)).length() * step_m <= reach:
 				return true
 	return false

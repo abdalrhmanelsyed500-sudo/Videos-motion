@@ -875,7 +875,7 @@ const PLACE_NAMES := ["MAIN DECK", "SLEEPING DECK", "PROVISIONING HOLD", "CROW'S
 
 
 ## The status chip, the prompt, the toast and the hatch fade.
-func _update_ship_ui(dt: float, _advice: Dictionary) -> void:
+func _update_ship_ui(dt: float, _st: Dictionary) -> void:
 	_ship_hud.tick(dt)
 	var ashore := _walker.is_ashore()
 	var deck := _ship_mode.is_deck() and not ashore
