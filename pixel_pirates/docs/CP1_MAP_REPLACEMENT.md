@@ -54,7 +54,7 @@ to see its details. Shift+M is still the ship-motion toggle.
 | `tests/map_sandbox_test.gd` (sandbox scene alone) | 1 / PASS |
 | `tests/map_flow.gd` (inside the real game scene: M at sea, ashore, at the notice board, with a focused Button, Arabic layout, Close button, 30 open/close cycles, pause reasons identical before and after, ship and walker held keys, dialogue blocks the map and works afterwards, nets timer frozen while open and running after, recruiting then the map, P pause preserved, watchdog) | 54 / 0 |
 | `tests/audit_r6.gd`, `selfplay.gd`, `test_port.gd` updated to the new map | pass |
-| Full suite (`tools/godot_node/run_suite.sh`) | before the last small edits: 30 of 31 with one audit failure; I fixed the audit test (it assumed the old modal map) and re-ran those scripts: all pass. A complete suite re-run after the very last lint edits was run per file (map tests above) not as one batch. |
+| Full suite (`tools/godot_node/run_suite.sh`) on the final code | **32 passed, 0 failed** (includes `load_all`: 92 scripts parse and load) |
 | `tools/check_all.py` (check_project, docs, gdlint, gdparse) | ALL PASSED (Godot step SKIP) |
 | Real-renderer run at **1366x876** (`tools/godot_browser/scenarios/map_screen.mjs`): corner button click opens it, 3 tabs, zoom, drag pan, Esc, ashore M, Arabic M, walking after close | screenshots in `docs/map_shots/`: tabs and Close fully visible, picture inside its frame |
 
