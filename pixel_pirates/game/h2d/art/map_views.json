@@ -1,0 +1,49 @@
+{
+ "views": [
+  {
+   "id": "city",
+   "tab": "City",
+   "title": "Anvil Harbor",
+   "hint": "The walled city: streets, terraces, shops and people",
+   "file": "map_city.png",
+   "bounds": [
+    -212.0,
+    -282.0,
+    212.0,
+    42.0
+   ],
+   "ppm": 2.5,
+   "zoom": 0.9
+  },
+  {
+   "id": "island",
+   "tab": "Island",
+   "title": "Anvil Cay",
+   "hint": "The whole island: hills, tracks and the harbour",
+   "file": "map_island.png",
+   "bounds": [
+    -1300.0,
+    -3500.0,
+    1500.0,
+    140.0
+   ],
+   "ppm": 0.25,
+   "zoom": 1.0
+  },
+  {
+   "id": "sea",
+   "tab": "Sea",
+   "title": "Fishing waters",
+   "hint": "Open water south of the harbour: the four fishing grounds",
+   "file": "map_sea.png",
+   "bounds": [
+    -900.0,
+    -420.0,
+    800.0,
+    1950.0
+   ],
+   "ppm": 0.2,
+   "zoom": 1.0
+  }
+ ]
+}

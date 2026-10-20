@@ -403,6 +403,8 @@ def main() -> int:
     CM.island_map(w2, ART)
     CM.sea_map(w2, ART)
     port["map"]["views"] = [CM.CITY_VIEW, CM.ISLAND_VIEW, CM.SEA_VIEW]
+    # the map screen (game/ui/map) reads its three views from this small file, not from the big island json
+    (ART / "map_views.json").write_text(json.dumps({"views": port["map"]["views"]}, indent=1) + "\n", encoding="utf-8")
     meta = {
         "id": "h2d1_2_anvil_cay", "name": "Anvil Cay (H2D-1.2 prototype, medium island, not a registry island)", "harbor": BH.HARBOR_NAME,
         "version": 3, "scale_note": "1 scene unit = 1 m = 1 geographic metre",

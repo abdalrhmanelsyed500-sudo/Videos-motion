@@ -42,8 +42,8 @@ func _initialize() -> void:
 	_play()
 
 
-func _paused() -> bool:
-	return (scene.get("_state").clock.pause_reasons() as Array).has("port")
+func _paused(reason: String = "port") -> bool:
+	return (scene.get("_state").clock.pause_reasons() as Array).has(reason)
 
 
 func _play() -> void:
@@ -68,19 +68,18 @@ func _play() -> void:
 		chk(bad == 0, "every person starts on walkable ground (%d do not)" % bad)
 	else:
 		print("NOTE: no ground textures in this runtime (headless WASM), so walkability is checked by tools/h2d/check_land.py instead")
-	# ---- the map (nodes) ------------------------------------------------------------------------------------------------
+	# ---- the map (its own scene: ui/map/map_screen.tscn) ------------------------------------------------------------------
+	var mp: Node = scene.get("_map")
+	chk(mp != null and str(mp.get("init_error")) == "", "the map screen exists and its scene is intact")
+	chk(not bool(mp.call("is_open")), "the map starts closed")
+	var clock_before: Array = Array(scene.get("_state").clock.pause_reasons())
 	await key(KEY_M)
-	chk(bool(port.call("modal")), "M opens a modal panel")
-	chk(str(port.get("_mode")) == "map", "the panel is the map")
-	chk(_paused(), "the clock is paused while the map is open")
+	chk(bool(mp.call("is_open")), "M opens the map")
+	chk(not bool(port.call("modal")), "the map is not a port mode (the port controller keeps working)")
+	chk(_paused("map"), "the clock is paused (reason 'map') while the map is open")
 	await frames(4)
-	var mp: Control = ui.get("map")
-	chk(mp.is_visible_in_tree(), "the map control is visible")
 	chk((mp.get("views") as Array).size() == 3, "the map has three views (city, island, sea)")
-	chk((mp.get("entries") as Array).size() >= 12, "the map lists %d places" % (mp.get("entries") as Array).size())
-	chk((mp.get("_markers") as Dictionary).size() >= 3, "the map shows %d markers on this view" % (mp.get("_markers") as Dictionary).size())
-	var tex: TextureRect = mp.get("_tex")
-	print("MAP texture ", tex.texture, " rows ", (mp.get("_row_btns") as Dictionary).size(), " tab ", mp.get("tab"))
+	chk(int((mp.call("snapshot") as Dictionary)["markers"]) >= 3, "the map shows %d markers on this view" % int((mp.call("snapshot") as Dictionary)["markers"]))
 	var t_first := int(mp.get("tab"))
 	await key(KEY_TAB)
 	chk(int(mp.get("tab")) == (t_first + 1) % 3, "Tab switches the map view")
@@ -89,8 +88,9 @@ func _play() -> void:
 	chk(int(mp.get("tab")) == t_first, "Tab cycles through all three views")
 	await _map_walk(mp)
 	await key(KEY_M)
-	chk(not bool(port.call("modal")), "M closes the map")
-	chk(not _paused(), "the clock runs again after the map closes")
+	chk(not bool(mp.call("is_open")), "M closes the map")
+	chk(not _paused("map"), "the clock runs again after the map closes")
+	chk(Array(scene.get("_state").clock.pause_reasons()) == clock_before, "the pause reasons are exactly what they were before the map (%s)" % str(clock_before))
 	# ---- a conversation: walk up to Pip Larkin ------------------------------------------------------------------------------
 	var walker: RefCounted = scene.get("_walker")
 	var land: Dictionary = (scene.get("_v3") as Object).call("land_world").meta["land"]
@@ -167,40 +167,36 @@ func _play() -> void:
 ## asserts what is on the controls afterwards. Release engine builds return null for a missing dictionary key without any error
 ## (the field error "set_views: Invalid access ... 'name'" was invisible here), so this checks the RESULT: tab buttons exist and
 ## carry text, no control shows "<null>", the schema list is empty.
-func _map_walk(mp: Control) -> void:
-	chk((mp.get("schema_errors") as Array).is_empty(), "map schema: no missing keys (%s)" % str(mp.get("schema_errors")))
+func _map_walk(mp: Node) -> void:
 	var views: Array = mp.get("views")
-	var btns: Array = mp.get("_tab_btns")
-	chk(btns.size() == views.size(), "map: one tab button per view (%d of %d)" % [btns.size(), views.size()])
-	for i in btns.size():
-		var txt := (btns[i] as Button).text
+	var tabs := mp.call("button_node", "tabs") as Control
+	chk(tabs.get_child_count() == views.size(), "map: one tab button per view (%d of %d)" % [tabs.get_child_count(), views.size()])
+	for i in tabs.get_child_count():
+		var txt := (tabs.get_child(i) as Button).text
 		chk(txt.length() >= 3 and not txt.contains("null"), "map: tab button %d reads '%s'" % [i + 1, txt])
-	var entries: Array = mp.get("entries")
 	var seen_markers := 0
 	for i in views.size():
 		await key(KEY_1 + i)
 		await frames(2)
 		var vd := views[i] as Dictionary
 		chk(int(mp.get("tab")) == i, "map: key %d opens the %s view" % [i + 1, str(vd["id"])])
-		var title := (mp.get("_title") as Label).text
-		chk(title.contains(str(vd["title"])), "map (%s): the title reads '%s'" % [str(vd["id"]), title])
-		var info := (mp.get("_info") as Label).text
-		chk(info.contains(str(vd["hint"])) and not info.contains("null"), "map (%s): the hint line reads '%s'" % [str(vd["id"]), info])
-		var mk: Dictionary = mp.get("_markers")
-		chk(mk.size() >= 2, "map (%s): %d markers" % [str(vd["id"]), mk.size()])
-		seen_markers += mk.size()
-		# select every entry in this view, one by one, and track the first
-		var steps := 0
-		for k in entries.size() + 1:
+		chk(((mp.get_node("%Title") as Label).text).contains(str(vd["title"])), "map (%s): the title reads '%s'" % [str(vd["id"]), (mp.get_node("%Title") as Label).text])
+		var snap := mp.call("snapshot") as Dictionary
+		chk(int(snap["markers"]) >= 2 and bool(snap["picture"]), "map (%s): %d markers, picture loaded" % [str(vd["id"]), int(snap["markers"])])
+		seen_markers += int(snap["markers"])
+		# walk the list with the arrow keys, then track the selected place and clear it again
+		for k in int(snap["rows"]) + 1:
 			await key(KEY_DOWN)
-			steps += 1
-		chk(str(mp.get("_sel_id")) != "" or entries.is_empty(), "map (%s): arrow keys select entries (%s)" % [str(vd["id"]), str(mp.get("_sel_id"))])
-		var bad: Array = []
-		for r in mp.call("dump_rects"):
-			var rd := r as Dictionary
-			if str(rd.get("text", "")).contains("null"):
-				bad.append(str(rd.get("name", "?")))
-		chk(bad.is_empty(), "map (%s): no control shows 'null' (%s)" % [str(vd["id"]), str(bad)])
+		chk(str((mp.call("snapshot") as Dictionary)["selected"]) != "" or int(snap["rows"]) == 0, "map (%s): arrow keys select entries" % str(vd["id"]))
+		if int(snap["rows"]) > 0:
+			await key(KEY_ENTER)
+			await frames(2)
+			chk(str(port.get("_track")) != "", "map (%s): Enter tracks the selected place (%s)" % [str(vd["id"]), str(port.get("_track"))])
+			await key(KEY_C)
+			await frames(2)
+			chk(str(port.get("_track")) == "", "map (%s): C clears tracking" % str(vd["id"]))
+		for rt in mp.call("rows_text"):
+			chk(not str(rt).contains("null"), "map (%s): no row shows 'null'" % str(vd["id"]))
 	chk(seen_markers >= 8, "map: %d markers over the three views" % seen_markers)
 	await key(KEY_1)
 	await frames(1)

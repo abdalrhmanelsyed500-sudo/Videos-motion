@@ -235,14 +235,17 @@ func _objectives(t: Object, tuning: Dictionary) -> void:
 ## keys (`name`, `hint`) that the baked views never had (they had `title`). Release engine builds return null for a missing key, so
 ## only an explicit key check can see this headless.
 func _map_schema(t: Object, port: Dictionary) -> void:
-	var map_script := load("res://h2d/map_ui.gd") as GDScript
+	var model := load("res://ui/map/map_model.gd") as GDScript
 	var views: Array = (port["map"] as Dictionary)["views"]
 	t.check(views.size() == 3, "the baked map has three views (city, island, sea)")
 	var ids: Array = []
 	for v in views:
 		var vd := v as Dictionary
 		ids.append(str(vd.get("id", "?")))
-		var missing: Array = map_script.call("missing_keys", vd, map_script.get("VIEW_KEYS"))
+		var missing: Array = []
+		for k in model.get("VIEW_KEYS"):
+			if not vd.has(k):
+				missing.append(k)
 		t.check(missing.is_empty(), "map view '%s' has every key the window reads (missing: %s)" % [str(vd.get("id", "?")), str(missing)])
 		t.check(str(vd.get("tab", "")) != "" and str(vd.get("hint", "")) != "", "map view '%s' has a tab label and a hint text" % str(vd.get("id", "?")))
 		var b: Array = vd.get("bounds", [])
@@ -256,6 +259,6 @@ func _map_schema(t: Object, port: Dictionary) -> void:
 			t.check(pd.has(k), "place '%s' has key %s" % [str(pd.get("id", "?")), k])
 	# the checker itself: the shape that failed in the field (`title` but no `tab` / `hint`) must be reported, by name
 	var old_shape := [{"id": "city", "title": "Anvil Harbor", "file": "map_city.png", "bounds": [0, 0, 1, 1], "ppm": 1.0, "zoom": 1.0}]
-	var problems: Array = map_script.call("schema_problems", old_shape, [])
+	var problems: Array = model.call("view_problems", old_shape)
 	t.check(problems.size() == 2, "the old view shape is reported (tab + hint missing): %s" % str(problems))
-	t.check(map_script.call("schema_problems", views, []).is_empty(), "the real views pass the schema check")
+	t.check(model.call("view_problems", views).is_empty(), "the real views pass the schema check")

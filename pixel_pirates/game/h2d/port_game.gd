@@ -3,9 +3,10 @@ extends Node
 ## the conversations (dialogue.gd + data/port/dialogue.json) and the interface (port_ui.gd, built from standard nodes). It reads
 ## what the scene tells it each frame (a context dictionary) and tells the scene back only two things: whether the nets are
 ## down (the ship must stop) and whether a panel is open (the world waits).
-## Keys it owns: E talk / use (ashore) | F nets down / up (at sea) | M map (Shift+M stays the ship-motion toggle) |
+## Keys it owns: E talk / use (ashore) | F nets down / up (at sea) |
+##   (the MAP is not here any more: ui/map/map_screen.gd owns M and the MAP button; this class only feeds it places and tracks) |
 ##   in a conversation: W S / Up Down / 1-9 choose, Enter E Space confirm, Esc leave | at the fish counter: Enter / E sell all,
-##   1-5 one species | on the map: Tab 1-3 view, +/- zoom, WASD pan, Up/Down pick, Enter track, C clear, Home centre |
+##   1-5 one species |
 ##   F6 test +25 reales | F7 test +10 kg mackerel | F8 self-check (runs tests/test_port.gd in the game).
 ## Objectives, dialogue and markers come from real state: the purse, the hold, the crew, where the ship and the player are.
 ## NO SAVE TO DISK in this slice: the state lives until the game is closed (docs/CP1_CAPITAL_PORT.md).
@@ -40,16 +41,14 @@ var last_key := "(none yet)"
 var setup_stage := "not started"      ## the last stage setup() reached: if it stopped early, this names where
 var setup_error := ""                 ## why setup() stopped (empty when it finished)
 var keys_routed := 0
-var map_opens := 0
-var map_fails := 0
+var map: Node = null                  ## the map screen (ui/map/map_screen.gd), bound by bind_map(); the port never builds or routes it
 var _tuning: Dictionary = {}
 var _pause_fn: Callable
-var _mode := "none"                  # none | dialogue | market | map
+var _mode := "none"                  # none | dialogue | market
 var _spk: Dictionary = {}            # the person we are talking to
 var _node := ""
 var _spk_flags: Dictionary = {}      # speaker id -> {flag: true}
 var _track := ""                     # the tracked target id ("" = none)
-var _map_state_t := 0.0
 var _market_result: Dictionary = {}
 var _near := {"kind": "", "index": -1, "text": ""}
 var _marker_sig := ""
@@ -93,8 +92,8 @@ func setup(layer: CanvasLayer, view_world: Object, tuning: Dictionary, pause_fn:
 	if not bad.is_empty():
 		_fail_setup("data/port/*.json is missing or malformed: " + "; ".join(PackedStringArray(bad)))
 		return
-	if not port.has("npcs") or not port.has("map") or not port.has("recruit_spots") or not port.has("interactions"):
-		_fail_setup("the port section of anvil_cay.json lacks npcs/map/recruit_spots/interactions (run tools/h2d/bake_cay.py)")
+	if not port.has("npcs") or not port.has("recruit_spots") or not port.has("interactions"):
+		_fail_setup("the port section of anvil_cay.json lacks npcs/recruit_spots/interactions (run tools/h2d/bake_cay.py)")
 		return
 	setup_stage = "economy (state.configure)"
 	state.configure(tuning, fish_doc, rec_doc)
@@ -110,10 +109,6 @@ func setup(layer: CanvasLayer, view_world: Object, tuning: Dictionary, pause_fn:
 	ui.dialogue.chosen.connect(_on_choice)
 	ui.dialogue.closed.connect(_close)
 	ui.dialogue.trade_action.connect(_on_trade_action)
-	ui.map.closed.connect(_close)
-	ui.map.track_requested.connect(_on_track_requested)
-	setup_stage = "map views (set_views)"
-	ui.map.set_views((port["map"] as Dictionary)["views"] as Array)
 	enabled = true
 	setup_stage = "markers and cues"
 	_update_markers(true)
@@ -177,12 +172,7 @@ func step(dt: float, ctx: Dictionary) -> void:
 	_update_markers(false)
 	_check_arrival(ctx)
 	_update_hud(ctx)
-	if _mode == "map":
-		_map_state_t -= dt
-		if _map_state_t <= 0.0:
-			_map_state_t = 0.25
-			ui.map.set_state(_map_state(ctx))
-	elif _mode == "market" and _market_result.is_empty():
+	if _mode == "market" and _market_result.is_empty():
 		ui.dialogue.show_trade(_spk, _market_panel(float(ctx["now"])))
 
 
@@ -338,9 +328,7 @@ func handle_key(k: InputEventKey, ctx: Dictionary) -> bool:
 	if _mode != "none":
 		return _modal_key(key, ctx)
 	var used := true
-	if key == KEY_M and not k.shift_pressed:
-		_open_map(0 if bool(ctx["ashore"]) else (2 if not bool(ctx["docked"]) else 0), ctx)
-	elif key == KEY_E and bool(ctx["ashore"]):
+	if key == KEY_E and bool(ctx["ashore"]):
 		_interact(ctx)
 	elif key == KEY_F and bool(ctx["sailing"]) and not bool(ctx["ashore"]):
 		_toggle_nets(ctx)
@@ -392,7 +380,7 @@ func _self_check() -> void:
 		ui.toast(sc.fails[i], PortUi.RED, 9.0)
 
 
-## F8, part 2: the interface itself. Opens the dialogue window and the map for two frames, then measures what the player would see:
+## F8, part 2: the interface itself. Opens the dialogue window and the map (ui/map) for two frames, then measures what the player would see:
 ## the window size, the font, the portrait, the text, the box and map rectangles (inside the screen? non-empty?), the map picture
 ## and the marker count. A failure here names the exact control, which is what a "nothing appears" report needs.
 func _ui_diag(sc: SelfCheck) -> void:
@@ -416,20 +404,21 @@ func _ui_diag(sc: SelfCheck) -> void:
 	sc.check(str((ui.dialogue.get("_name") as Label).text) == "Pip Larkin", "UI: the speaker name label holds 'Pip Larkin'")
 	sc.check(str(ui.dialogue.call("shown_text")).length() > 40, "UI: the dialogue text label holds %d characters" % str(ui.dialogue.call("shown_text")).length())
 	ui.dialogue.close()
-	ui.map.open(0, _map_state(_last_ctx))
-	await ui.get_tree().process_frame
-	await ui.get_tree().process_frame
-	var mr := (ui.map.get("_panel") as Control).get_global_rect()
-	sc.check(mr.size.x > 300.0 and mr.size.y > 200.0, "UI: the map panel is %d x %d px" % [int(mr.size.x), int(mr.size.y)])
-	var tr := ui.map.get("_tex") as TextureRect
-	sc.check(tr.texture != null and tr.get_global_rect().size.x > 100.0, "UI: the map picture is loaded and %d px wide" % int(tr.get_global_rect().size.x))
-	sc.check((ui.map.get("schema_errors") as Array).is_empty(), "UI: the map data has every key the window reads (%s)" % str(ui.map.get("schema_errors")))
-	var tab_texts: Array = []
-	for b in ui.map.get("_tab_btns") as Array:
-		tab_texts.append((b as Button).text)
-	sc.check(tab_texts.size() == (ui.map.get("views") as Array).size() and not str(tab_texts).contains("null"), "UI: the map tab buttons read %s" % str(tab_texts))
-	sc.check((ui.map.get("_markers") as Dictionary).size() >= 3, "UI: the map shows %d markers on this view" % (ui.map.get("_markers") as Dictionary).size())
-	ui.map.close()
+	sc.check(map != null and is_instance_valid(map), "UI: the map screen is bound")
+	if map != null and is_instance_valid(map):
+		var was_open := bool(map.call("is_open"))
+		if not was_open:
+			map.call("open_map", 0)
+		await ui.get_tree().process_frame
+		await ui.get_tree().process_frame
+		var lay: Dictionary = map.call("verify_layout")
+		sc.check(bool(lay["ok"]), "UI: the map window is on screen and laid out (%s)" % str(lay["why"]))
+		var snap: Dictionary = map.call("snapshot")
+		sc.check(bool(snap["picture"]), "UI: the map picture is loaded")
+		sc.check(int(snap["markers"]) >= 3, "UI: the map shows %d markers on this view" % int(snap["markers"]))
+		sc.check(str(map.call("diagnostics")).find("SCENE DAMAGED") < 0, "UI: the map scene is intact (%s)" % str(map.call("diagnostics")))
+		if not was_open:
+			map.call("close_map")
 	_close()
 
 
@@ -452,8 +441,6 @@ func _modal_key(key: int, ctx: Dictionary) -> bool:
 			ui.dialogue.handle_key(key)
 		"market":
 			_market_key(key, ctx)
-		"map":
-			ui.map.handle_key(key)
 	return true
 
 
@@ -464,7 +451,6 @@ func _close() -> void:
 	_spk = {}
 	_market_result = {}
 	ui.dialogue.close()
-	ui.map.close()
 	_pause_fn.call(false)
 
 
@@ -501,7 +487,7 @@ func _interact(ctx: Dictionary) -> void:
 		"talk":
 			_open_dialogue(int(_near["index"]), ctx)
 		"notice":
-			_open_map(0, ctx)
+			_open_map(0)
 		_:
 			ui.toast("Nothing to use here. Walk up to a person, a stall or the notice board.", PortUi.DIM, 3.5)
 
@@ -649,7 +635,7 @@ func _on_choice(i: int) -> void:
 			return
 		"map":
 			_close()
-			_open_map(0, _last_ctx)
+			_open_map(0)
 			return
 		"hire":
 			var cid := str(_spk.get("cid", ""))
@@ -809,19 +795,34 @@ func _sell(key: int, ctx: Dictionary) -> void:
 
 
 # ---- the map and tracking ----------------------------------------------------------------------------------------------------
-func _open_map(tab: int, ctx: Dictionary) -> void:
-	_open("map")
-	_map_state_t = 0.25
-	var ok: bool = ui.map.open(tab, _map_state(ctx))
-	if ok:
-		map_opens += 1
-	if not ok:
-		map_fails += 1
-		# never leave the game paused in a map mode with nothing on screen: undo the open and say why
-		var why := "visible=%s panel=%s tab=%d views=%d" % [ui.map.visible, ui.map.get_node("MapPanel").size, ui.map.tab, ui.map.views.size()]
-		push_error("MAP: failed to open (%s)" % why)
-		_close()
-		ui.toast("The map could not open (%s). Please report this line." % why, PortUi.RED, 9.0)
+## The notice board and the "show me the map" dialogue option: ask the map screen (it owns the opening, the pause and the errors).
+func _open_map(tab: int) -> void:
+	if map == null or not is_instance_valid(map):
+		ui.toast("The map is not available (the map screen was not bound).", PortUi.RED, 6.0)
+		return
+	map.call("request_open", tab)
+
+
+## Hands the map screen its live data and tells it how to reach the player. The map works without this (pictures and positions only).
+func bind_map(m: Node) -> void:
+	map = m
+	m.set("provider", _map_provider)
+	m.set("can_open", _map_can_open)
+	m.set("notify", func(text: String) -> void: ui.toast(text, PortUi.AMBER, 5.0))
+	m.connect("track_requested", _on_track_requested)
+
+
+func _map_provider() -> Dictionary:
+	if _last_ctx.is_empty():
+		return {}
+	return _map_state(_last_ctx)
+
+
+## A conversation or the fish counter is modal: the map must not open under it (it would be hidden by, and fight with, the window).
+func _map_can_open() -> String:
+	if _mode != "none":
+		return "Finish talking first (Esc), then open the map."
+	return ""
 
 
 func _origin_point(ctx: Dictionary) -> Vector2:
@@ -903,8 +904,9 @@ func _map_state(ctx: Dictionary) -> Dictionary:
 	for gid in fishing.ground_order:
 		var g: Dictionary = fishing.grounds[gid]
 		rings.append({"x": g["x"], "z": g["z"], "r": g["r"], "open": int(g["min_crew"]) <= state.crew_count(), "views": ["sea", "island"]})
-	return {"entries": _entries(ctx), "tracked": _track, "player": Vector2(float(ctx["wx"]), float(ctx["wz"])), "player_heading": 0.0,
-			"ship": Vector2(float(ctx["sx"]), float(ctx["sz"])), "ship_heading": deg_to_rad(float(ctx.get("sheading", 0.0))), "ashore": bool(ctx["ashore"]), "rings": rings}
+	return {"entries": _entries(ctx), "tracked": _track, "player": Vector2(float(ctx["wx"]), float(ctx["wz"])),
+			"ship": Vector2(float(ctx["sx"]), float(ctx["sz"])), "ship_heading": deg_to_rad(float(ctx.get("sheading", 0.0))), "ashore": bool(ctx["ashore"]),
+			"docked": bool(ctx.get("docked", false)), "rings": rings}
 
 
 func _resolve_target(arg: String) -> String:
@@ -941,8 +943,6 @@ func _on_track_requested(id: String) -> void:
 		_set_track("")
 	else:
 		_set_track(id)
-	if _mode == "map":
-		ui.map.set_state(_map_state(_last_ctx))
 
 
 func _track_strip(ctx: Dictionary) -> Dictionary:
@@ -957,7 +957,7 @@ func _track_strip(ctx: Dictionary) -> Dictionary:
 
 
 func _check_arrival(ctx: Dictionary) -> void:
-	if _track == "" or _mode != "none":
+	if _track == "" or _mode != "none" or (map != null and bool(map.call("is_open"))):
 		return
 	var e := _entry(_track)
 	if e.is_empty():

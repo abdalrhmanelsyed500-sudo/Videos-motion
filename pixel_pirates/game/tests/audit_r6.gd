@@ -76,11 +76,11 @@ func _console_and_keys() -> void:
 	var raw: int = int(scene.get("_key_raw"))
 	var gm: int = int(scene.get("_key_game"))
 	chk(raw > 0 and gm == raw, "every key so far reached the game: engine %d, game %d" % [raw, gm])
-	var mp: Control = (port.get("ui") as Node).get("map")
+	var mp: Node = scene.get("_map")
 	await key(KEY_M)
-	chk(mp.visible and bool(mp.call("is_shown")), "after F1, M opens the map")
+	chk(bool(mp.call("is_open")), "after F1, M opens the map")
 	await key(KEY_M)
-	chk(not mp.visible, "M closes it again")
+	chk(not bool(mp.call("is_open")), "M closes it again")
 	# the backtick opens the console, on a Latin and on an Arabic layout (physical key)
 	await key(KEY_QUOTELEFT)
 	chk(bool(con.call("is_open")), "the backtick opens the console")
@@ -94,10 +94,10 @@ func _console_and_keys() -> void:
 	chk(not bool(con.call("is_open")), "Esc closes it")
 	# with the console closed, the map works again
 	await key(KEY_M)
-	chk(mp.visible, "console closed: M opens the map")
-	chk(int(port.get("map_opens")) >= 2, "map_opens counts every successful open (%d)" % int(port.get("map_opens")))
+	chk(bool(mp.call("is_open")), "console closed: M opens the map")
+	chk(int(mp.get("open_count")) >= 2, "open_count counts every successful open (%d)" % int(mp.get("open_count")))
 	await key(KEY_ESCAPE)
-	chk(not mp.visible, "Esc closes the map")
+	chk(not bool(mp.call("is_open")), "Esc closes the map")
 	con.queue_free()
 	await frames(2)
 	# a key that something swallows is counted by the engine tap but not by the game: that is how the stage is located
@@ -110,13 +110,13 @@ func _console_and_keys() -> void:
 	await key(KEY_M, -1, false, 109)
 	chk(int(scene.get("_key_raw")) == raw1 + 1, "a key typed into a focused text field is still seen by the engine tap")
 	chk(int(scene.get("_key_game")) == game1, "...but never reaches the game (so the diagnostic points at the focus owner)")
-	chk(not mp.visible, "...and the map stays closed while a text field holds the focus")
+	chk(not bool(mp.call("is_open")), "...and the map stays closed while a text field holds the focus")
 	chk((scene.call("_key_diag_line") as String).contains("FOCUSED CONTROL"), "the HUD names the focused control")
 	le.release_focus()
 	le.queue_free()
 	await frames(2)
 	await key(KEY_M, -1, false, 109)
-	chk(mp.visible, "focus released: M works again")
+	chk(bool(mp.call("is_open")), "focus released: M works again")
 	await key(KEY_ESCAPE)
 
 
@@ -315,10 +315,11 @@ func _dialogue_audit() -> void:
 	state.call("reset")
 
 
-## Malformed or missing map data and invalid targets: the game must report, stay playable and never be left modal.
+## Malformed or missing map data and invalid targets: the game must report, stay playable and never be left paused or modal.
 func _bad_map_data() -> void:
-	var mp: Control = (port.get("ui") as Node).get("map")
+	var mp: Node = scene.get("_map")
 	var good_views: Array = (mp.get("views") as Array).duplicate(true)
+	var clock: RefCounted = scene.get("_state").clock
 	# 1. an invalid tracking target is refused
 	port.call("_set_track", "no_such_place_at_all")
 	chk(str(port.get("_track")) == "", "tracking an unknown id is refused (track = '%s')" % str(port.get("_track")))
@@ -326,38 +327,42 @@ func _bad_map_data() -> void:
 	port.call("_on_track_requested", "pier")
 	chk(str(port.get("_track")) == "pier", "tracking a real place works")
 	port.call("_set_track", "")
-	# 2. a view that lacks keys: reported by name, no exception, nothing left modal
+	# 2. a view that lacks keys: the map reports it and uses the built-in views, instead of opening half-built
 	var broken: Array = good_views.duplicate(true)
 	(broken[0] as Dictionary).erase("title")
-	(broken[1] as Dictionary).erase("bounds")
-	mp.call("set_views", broken)
-	chk((mp.get("schema_errors") as Array).size() >= 2, "two missing view keys are reported (%s)" % str(mp.get("schema_errors")))
+	mp.set("views", broken)
 	await key(KEY_M)
 	await frames(2)
-	chk(bool(port.call("modal")) == bool(mp.call("is_shown")), "modal state always equals the map's real state with a broken view")
-	if mp.visible:
-		await key(KEY_ESCAPE)
-	chk(not bool(port.call("modal")) and not mp.visible, "the broken map can be closed (Esc), the game is not left modal")
-	# 3. a view whose picture is missing
+	chk(bool(mp.call("is_open")), "a view without a title: the map still opens (built-in views)")
+	chk(str(mp.call("diagnostics")).contains("damaged"), "...and says the views are damaged (%s)" % str(mp.call("diagnostics")).substr(0, 140))
+	chk(bool(mp.call("is_open")) == (clock.pause_reasons() as Array).has("map"), "the map's open state always equals its pause")
+	await key(KEY_ESCAPE)
+	chk(not bool(mp.call("is_open")) and not (clock.pause_reasons() as Array).has("map"), "the map can be closed (Esc): the game is not left paused")
+	# 3. a view whose picture is missing: opens, says so, closes
 	var nofile: Array = good_views.duplicate(true)
 	for v in nofile:
 		(v as Dictionary)["file"] = "does_not_exist.png"
-	mp.call("set_views", nofile)
+	mp.set("views", nofile)
 	await key(KEY_M)
 	await frames(2)
-	chk(bool(port.call("modal")) == bool(mp.call("is_shown")), "a missing map picture: modal state equals the real state")
-	if mp.visible:
-		await key(KEY_ESCAPE)
-	chk(not bool(port.call("modal")), "...and the game is not left modal")
-	# 4. an entry without coordinates
-	mp.call("set_views", good_views)
-	var errs: Array = mp.get_script().call("schema_problems", good_views, [{"id": "x", "kind": "place", "name": "n", "detail": "d"}])
-	chk(errs.size() == 2, "an entry without x and z gives two named problems (%s)" % str(errs))
-	# 5. all views empty
-	mp.call("set_views", [])
+	chk(bool(mp.call("is_open")), "a missing map picture: the map still opens")
+	chk(str(mp.call("diagnostics")).contains("could not be loaded"), "...and says which picture is missing (%s)" % str(mp.call("diagnostics")).substr(0, 140))
+	await key(KEY_ESCAPE)
+	chk(not bool(mp.call("is_open")) and not (clock.pause_reasons() as Array).has("map"), "...and the game is not left paused")
+	# 4. an entry without coordinates is dropped, not fatal
+	mp.set("views", good_views)
+	var r: Dictionary = (load("res://ui/map/map_model.gd") as GDScript).call("normalize_state", {"entries": [{"id": "x", "kind": "place", "name": "n", "detail": "d"}]})
+	chk(((r["state"] as Dictionary)["entries"] as Array).is_empty() and (r["problems"] as Array).size() == 1, "an entry without x and z is dropped and reported (%s)" % str(r["problems"]))
+	# 5. no views at all: built-in views take over; and a forced failure is recorded, shown and leaves nothing paused
+	mp.set("views", [])
 	await key(KEY_M)
-	chk(not bool(port.call("modal")), "no views at all: M opens nothing and leaves nothing modal")
-	mp.call("set_views", good_views)
+	chk(bool(mp.call("is_open")) and (mp.get("views") as Array).size() == 3, "no views at all: the map opens on the built-in three")
+	await key(KEY_ESCAPE)
+	var f0: int = int(mp.get("fail_count"))
+	mp.call("_fail", "forced test failure")
+	chk(int(mp.get("fail_count")) == f0 + 1 and str(mp.get("last_error")) == "forced test failure" and not bool(mp.call("is_open")), "a failure is recorded and leaves the map closed")
+	chk(not (clock.pause_reasons() as Array).has("map"), "...and the clock is not paused")
+	mp.set("views", good_views)
 	await key(KEY_M)
-	chk(mp.visible and bool(mp.call("is_shown")), "views restored: the map opens again")
+	chk(bool(mp.call("is_open")), "views restored: the map opens again")
 	await key(KEY_ESCAPE)

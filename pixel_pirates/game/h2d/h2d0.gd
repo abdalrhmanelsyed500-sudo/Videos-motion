@@ -31,6 +31,7 @@ const Harbor := preload("res://h2d/harbor.gd")
 const LandWalker := preload("res://h2d/land_walker.gd")
 const KeyUtil := preload("res://h2d/key_util.gd")
 const PortGame := preload("res://h2d/port_game.gd")
+const MAP_SCENE := "res://ui/map/map_screen.tscn"
 const MAX_STEP_S := 0.25
 const SMOOTH_S := 2.0
 const START_POS := Vector2(-100.0, 140.0)  ## keep in step with START in tools/h2d/check_harbor.py
@@ -79,7 +80,8 @@ var _walker: LandWalker = LandWalker.new()
 var _key_raw := 0          ## key presses seen by _input (before any control or autoload that may swallow them)
 var _key_game := 0         ## key presses that reached _unhandled_input (i.e. nothing swallowed them)
 var _raw_last := "(none yet)"
-var _port: Node = null  ## CP-1: the Fish Row loop (economy, nets, people, map, dialogue)
+var _port: Node = null  ## CP-1: the Fish Row loop (economy, nets, people, dialogue)
+var _map: Node = null   ## the map screen (ui/map): its own scene, its own input; the pause is attached below, nothing else is
 var _edge_said := -100.0
 var _tp_next := 0
 var _tod := 0
@@ -144,9 +146,12 @@ func _ready() -> void:
 	_walker.configure((_v3 as View3D).land_world().meta["land"], _oc.tuning())
 	(_v3 as View3D).land_world().walk_min_h = _walker.param("min_h")
 	(_v3 as View3D).land_world().walk_max_slope = _walker.param("max_slope")
+	_build_map()
 	_port = PortGame.new()
 	add_child(_port)
 	(_port as PortGame).setup(layer, (_v3 as View3D).land_world(), _oc.tuning(), _port_pause)
+	if _map != null and (_port as PortGame).enabled:
+		(_port as PortGame).bind_map(_map)
 	_jump(2)
 	_reset_ship()
 	_set_path("3d")
@@ -218,6 +223,9 @@ func _process(delta: float) -> void:
 	_apply_lab()
 	_step_env(dt)
 	_land_step(dt, gs)
+	if _map != null and not _map_is_open() and _state.clock.pause_reasons().has("map"):
+		_state.clock.resume("map")      # watchdog: a map that is closed never keeps the game paused
+		push_warning("MAP: the clock was still paused by the map after it closed; released")
 	var target_kn: float = _sea.speed_kn() * (1.0 + _env.gust_surge())
 	if _port != null:
 		(_port as PortGame).step(dt, _port_ctx())
@@ -317,6 +325,42 @@ func _dock_request() -> void:
 			_say("Too far from the berth: sail into the harbour mouth (between the buoys) first.")
 
 
+# ---- the map screen (ui/map) --------------------------------------------------------------------------------------
+## The map is a scene of its own. This is all the game does for it: create it, give it a way to show messages, pause the clock while
+## it is open (by the reason "map", so it cannot undo or be undone by any other pause), and a plain provider for when the port
+## controller is not running. M, the MAP button, Esc and the Close button are handled INSIDE the scene.
+func _build_map() -> void:
+	var ps := load(MAP_SCENE) as PackedScene
+	if ps == null:
+		push_error("MAP: cannot load %s" % MAP_SCENE)
+		return
+	_map = ps.instantiate()
+	add_child(_map)
+	_map.set("notify", func(text: String) -> void: _say(text))
+	_map.set("provider", _map_state_basic)
+	_map.connect("opened", func(_t: int) -> void: _state.clock.pause("map"))
+	_map.connect("closed", func() -> void: _state.clock.resume("map"))
+
+
+func _map_is_open() -> bool:
+	return _map != null and bool(_map.call("is_open"))
+
+
+## What the map shows when the port controller is off: the ship, the player and the named places of the baked island.
+func _map_state_basic() -> Dictionary:
+	var entries: Array = []
+	var lw: Object = (_v3 as View3D).land_world()
+	var meta: Variant = lw.get("meta") if lw != null else null
+	if meta is Dictionary and (meta as Dictionary).has("port"):
+		for pl in (((meta as Dictionary)["port"] as Dictionary).get("places", []) as Array):
+			var d: Dictionary = (pl as Dictionary).duplicate()
+			d["detail"] = str(d.get("what", ""))
+			entries.append(d)
+	entries.append({"id": "ship", "kind": "ship", "name": "Your sloop", "detail": "", "x": _pos.x, "z": _pos.y, "rank": 3, "views": ["city", "island", "sea"]})
+	return {"entries": entries, "tracked": "", "player": Vector2(_walker.x, _walker.z), "ship": _pos, "ship_heading": deg_to_rad(_heading_disp),
+			"ashore": _walker.is_ashore(), "docked": _harbor.state == Harbor.DOCKED, "rings": []}
+
+
 # ---- CP-1: the Fish Row loop -----------------------------------------------------------------------------------
 func _port_pause(on: bool) -> void:
 	if on:
@@ -346,12 +390,13 @@ func _key_diag_line() -> String:
 	var con := get_node_or_null("/root/DebugConsole")
 	if con != null and con.has_method("is_open") and bool(con.call("is_open")):
 		out += "   DEBUG CONSOLE IS OPEN: typing goes to it, press ` or Esc to close it"
+	var mp := "   | " + (str(_map.call("diagnostics")) if _map != null else "MAP SCENE MISSING (could not load %s)" % MAP_SCENE)
 	if _port == null:
-		return out + "   | port controller: MISSING"
+		return out + mp + "   | port controller: MISSING"
 	var pg := _port as PortGame
 	if not pg.enabled:
-		return out + "   | PORT CONTROLLER OFF (setup stopped at: %s) %s" % [pg.setup_stage, pg.setup_error]
-	return out + "   | routed %d, map opened %d, failed %d | last key: %s" % [pg.keys_routed, pg.map_opens, pg.map_fails, pg.last_key]
+		return out + mp + "   | PORT CONTROLLER OFF (setup stopped at: %s) %s" % [pg.setup_stage, pg.setup_error]
+	return out + mp + "   | port keys routed %d, last: %s" % [pg.keys_routed, pg.last_key]
 
 
 # ---- H2D-1.2: on foot -------------------------------------------------------------------------------------------
@@ -362,7 +407,7 @@ func _land_view_state() -> Dictionary:
 
 func _walk_axis() -> Vector2:
 	var a := Vector2.ZERO
-	if _port != null and (_port as PortGame).modal():
+	if _map_is_open() or (_port != null and (_port as PortGame).modal()):
 		return a
 	if KeyUtil.held(KEY_A) or KeyUtil.held(KEY_LEFT):
 		a.x -= 1.0
@@ -445,7 +490,7 @@ func _steer_axis() -> float:
 	if _bench != null and (_bench as Bench).active:
 		return 0.55 * sin(_real * 0.9)
 	var axis := 0.0
-	if _port != null and (_port as PortGame).modal():
+	if _map_is_open() or (_port != null and (_port as PortGame).modal()):
 		return axis
 	if KeyUtil.held(KEY_A) or KeyUtil.held(KEY_LEFT):
 		axis -= 1.0
@@ -596,9 +641,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif kc == KEY_G:
 		_env.trigger_gust()
 		_say("gust")
-	elif kc == KEY_M and _port != null and not (_port as PortGame).enabled and not k.shift_pressed:
-		# the map lives in the port controller: say so, instead of silently doing something else (the old fall-through toggled the motion mode)
-		_say("MAP UNAVAILABLE: the Fish Row controller did not start (stopped at '%s'). %s" % [(_port as PortGame).setup_stage, (_port as PortGame).setup_error])
+	elif kc == KEY_M and not k.shift_pressed:
+		# plain M belongs to the map screen (it takes the key in its own _input). Reaching here means the screen is missing: say so.
+		if _map == null:
+			_say("MAP UNAVAILABLE: res://ui/map/map_screen.tscn could not be loaded.")
 	elif kc == KEY_M:
 		v3.motion_mode = (v3.motion_mode + 1) % 3
 		_say("ship motion: " + MOTION_NAMES[v3.motion_mode])
