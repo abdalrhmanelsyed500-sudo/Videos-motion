@@ -1,3 +1,4 @@
+# gdlint: disable=max-line-length,unused-argument
 extends RefCounted
 ## CP-2 Release A: the course hold steers the REAL helm model (helm.gd) with the real tuning. Checks: it holds a heading with
 ## no input (a ship left alone keeps its course and speed), it turns to a new heading without overshoot, it never holds a

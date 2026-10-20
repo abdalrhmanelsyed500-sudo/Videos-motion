@@ -1,3 +1,4 @@
+# gdlint: disable=class-definitions-order
 extends RefCounted
 ## CP-2 Release A: the pirate walking aboard the moving ship. Pure logic (tests/test_ship_walker.gd runs it headless).
 ## The position is SHIP-LOCAL (u along the ship, v to starboard, see ship_layout.gd), so the ship's motion can never push the

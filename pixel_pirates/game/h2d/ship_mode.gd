@@ -1,3 +1,4 @@
+# gdlint: disable=max-returns,class-definitions-order
 extends RefCounted
 ## CP-2 Release A: the ship controller. Two modes, one ship:
 ##   NAV  = at the helm. A / D steer (or the course hold does), nothing else changes. The classic sailing view.
@@ -164,7 +165,7 @@ func prompt() -> Dictionary:
 
 
 ## E. Does the thing at the pirate's feet. The host handles the returned event (the map, the panels, the toasts).
-func interact(c: Dictionary) -> Dictionary:
+func interact(_c: Dictionary) -> Dictionary:
 	if mode != DECK:
 		return {"kind": "helm_leave", "id": "helm"}
 	if bool(walker.call("is_busy")):

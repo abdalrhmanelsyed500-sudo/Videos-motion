@@ -1,3 +1,4 @@
+# gdlint: disable=max-public-methods
 extends "res://h2d/sea_view.gd"
 ## HD-2D sailing view in the Compatibility renderer (decisions D1 to D3). A real 3D scene seen by a fixed north-up
 ## perspective camera (FOV 22 deg, pitch 48 deg), drawn into a SubViewport at the art grid and shown with nearest

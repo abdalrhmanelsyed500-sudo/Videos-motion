@@ -1,3 +1,4 @@
+# gdlint: disable=max-line-length
 extends RefCounted
 ## CP-2 Release A: the 3D ship model builds, stays small (a few meshes, bounded vertices), follows the layout, and maps ship-local
 ## positions to the world correctly at any heading (the pirate is drawn there). Headless: no pixels are checked here (the

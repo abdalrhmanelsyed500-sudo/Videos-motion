@@ -1,3 +1,4 @@
+# gdlint: disable=max-line-length
 extends Node3D
 ## CP-2 Release A: the 3D model of the ship you can walk on: the main deck with the captain's cabin, the helm wheel, the fishing winch,
 ## the fish barrels, the mast, rigging and the crow's nest; the sleeping deck; the provisioning hold. It lives in the sea view's
@@ -24,7 +25,7 @@ const WOOD_M := Color(0.427, 0.251, 0.1255)
 const WOOD_L := Color(0.58, 0.404, 0.18)
 const DECK_C := Color(0.70, 0.55, 0.33)
 const HULL_C := Color(0.36, 0.22, 0.13)
-const TRIM_R := Color(0.55, 0.16, 0.12)
+const TRIM_R := Color(0.40, 0.15, 0.11)
 const CABIN_C := Color(0.50, 0.33, 0.20)
 const ROOF_C := Color(0.33, 0.20, 0.13)
 const CANVAS_C := Color(0.93, 0.87, 0.70)
@@ -57,7 +58,7 @@ var _stats := {"meshes": 0, "vertices": 0}
 var _store_units: Dictionary = {}
 
 
-static func C(c: Color, see := false) -> Color:
+static func tc(c: Color, see := false) -> Color:
 	return Color(c.r, c.g, c.b, SEE if see else 1.0)
 
 
@@ -170,14 +171,14 @@ func _floor(b: ShipMesh, level: int, y: float, col: Color) -> void:
 
 ## A rope ladder from the foot (u, v, y0) to the top (u, v, y1), rails 0.8 m apart along u.
 func _ladder(b: ShipMesh, u: float, v0: float, y0: float, v1: float, y1: float, rungs: int, see: bool) -> void:
-	var rope := C(ROPE_C, see)
+	var rope := tc(ROPE_C, see)
 	for du in [-0.4, 0.4]:
 		b.beam(ShipMesh.p(u + float(du), v0, y0), ShipMesh.p(u + float(du), v1, y1), 0.07, rope, ShipMesh.M_ROPE)
 	for k in range(1, rungs + 1):
 		var t := float(k) / float(rungs + 1)
 		var vv := lerpf(v0, v1, t)
 		var yy := lerpf(y0, y1, t)
-		b.beam(ShipMesh.p(u - 0.4, vv, yy), ShipMesh.p(u + 0.4, vv, yy), 0.06, C(WOOD_L, see), ShipMesh.M_TIMBER)
+		b.beam(ShipMesh.p(u - 0.4, vv, yy), ShipMesh.p(u + 0.4, vv, yy), 0.06, tc(WOOD_L, see), ShipMesh.M_TIMBER)
 
 
 ## A wooden ladder in a hatch: two rails and rungs, leaning from (u0, y0) at the foot to (u1, y1) at the top, v = +-0.3.
@@ -253,7 +254,7 @@ func _build_open() -> void:
 		b.cyl(ShipMesh.p(Layout.MAST.x, Layout.MAST.y, float(yy)), 0.3, 0.1, 8, IRON_C, ShipMesh.M_IRON, -1.0, false, false)
 	b.box(ShipMesh.p(Layout.MAST.x, Layout.MAST.y, MAST_TOP + 0.1), Vector3(0.09, 0.14, 0.09), LAMP_C, ShipMesh.M_LAMP)
 	# a black pennant at the masthead (flat, pointing aft)
-	b.quad(ShipMesh.p(Layout.MAST.x - 0.1, 0.0, MAST_TOP - 0.1), ShipMesh.p(Layout.MAST.x - 1.6, 0.0, MAST_TOP - 0.25), ShipMesh.p(Layout.MAST.x - 0.1, 0.0, MAST_TOP - 0.6), ShipMesh.p(Layout.MAST.x - 0.1, 0.0, MAST_TOP - 0.1), C(Color(0.07, 0.07, 0.09), true), ShipMesh.M_CLOTH)
+	b.quad(ShipMesh.p(Layout.MAST.x - 0.1, 0.0, MAST_TOP - 0.1), ShipMesh.p(Layout.MAST.x - 1.6, 0.0, MAST_TOP - 0.25), ShipMesh.p(Layout.MAST.x - 0.1, 0.0, MAST_TOP - 0.6), ShipMesh.p(Layout.MAST.x - 0.1, 0.0, MAST_TOP - 0.1), tc(Color(0.07, 0.07, 0.09), true), ShipMesh.M_CLOTH)
 	# the helm pedestal; the wheel is a separate node (it turns)
 	_bx(b, Layout.HELM.x, Layout.HELM.y, F, 0.22, 0.22, 0.78, WOOD_M, ShipMesh.M_TIMBER)
 	_bx(b, Layout.HELM.x, Layout.HELM.y, F + 0.78, 0.26, 0.26, 0.06, WOOD_L, ShipMesh.M_TIMBER)
@@ -338,7 +339,7 @@ func _build_open() -> void:
 func _build_rigging() -> void:
 	var b := ShipMesh.new()
 	var m := Layout.MAST
-	var rope := C(ROPE_C.darkened(0.08), true)
+	var rope := tc(ROPE_C.darkened(0.08), true)
 	# shrouds and ratline ladders on both sides; the starboard ladder at LADDER_BASE is the one you climb
 	for s in [-1.0, 1.0]:
 		var sd := float(s)
@@ -351,7 +352,7 @@ func _build_rigging() -> void:
 	b.beam(ShipMesh.p(m.x, 0.0, MAST_TOP - 0.2), ShipMesh.p(14.6, 0.0, F + 2.15), 0.05, rope, ShipMesh.M_ROPE)
 	b.beam(ShipMesh.p(m.x, 0.0, MAST_TOP - 0.2), ShipMesh.p(-10.8, 0.0, F + 1.9), 0.045, rope, ShipMesh.M_ROPE)
 	# the jib: a triangle from the masthead to the bowsprit
-	var cream := C(CANVAS_C, true)
+	var cream := tc(CANVAS_C, true)
 	b.tri(ShipMesh.p(m.x + 0.3, 0.0, MAST_TOP - 0.9), ShipMesh.p(13.6, 0.0, F + 2.3), ShipMesh.p(9.2, 0.0, F + 2.9), cream, ShipMesh.M_CANVAS, Vector3(1.0, 0.0, 0.0))
 	b.tri(ShipMesh.p(m.x + 0.3, 0.0, MAST_TOP - 0.9), ShipMesh.p(13.6, 0.0, F + 2.3), ShipMesh.p(9.2, 0.0, F + 2.9), cream, ShipMesh.M_CANVAS, Vector3(-1.0, 0.0, 0.0))
 	_mesh_node(b, _m_open, _g_open)
@@ -363,11 +364,11 @@ func _build_nest() -> void:
 	var b := ShipMesh.new()
 	var nf := ShipMesh.new()
 	# the floor (own material: it dissolves only while you are NOT in the nest)
-	nf.box(ShipMesh.p(m.x, m.y, NEST_Y - 0.09), Vector3(h, 0.09, h), C(DECK_C, true), ShipMesh.M_DECK)
+	nf.box(ShipMesh.p(m.x, m.y, NEST_Y - 0.09), Vector3(h, 0.09, h), tc(DECK_C, true), ShipMesh.M_DECK)
 	for s in [-1.0, 1.0]:
-		b.beam(ShipMesh.p(m.x - h, float(s) * 0.5, NEST_Y - 0.25), ShipMesh.p(m.x + h, float(s) * 0.5, NEST_Y - 0.25), 0.14, C(WOOD_D, true), ShipMesh.M_TIMBER)
-	var col := C(WOOD_M, true)
-	var panel := C(Color(0.46, 0.30, 0.17), true)
+		b.beam(ShipMesh.p(m.x - h, float(s) * 0.5, NEST_Y - 0.25), ShipMesh.p(m.x + h, float(s) * 0.5, NEST_Y - 0.25), 0.14, tc(WOOD_D, true), ShipMesh.M_TIMBER)
+	var col := tc(WOOD_M, true)
+	var panel := tc(Color(0.46, 0.30, 0.17), true)
 	# rails: three sides closed with half panels, the starboard side open where the ladder arrives
 	for e in [-1.0, 1.0]:
 		var ed := float(e)
@@ -383,9 +384,9 @@ func _build_nest() -> void:
 	b.beam(ShipMesh.p(m.x + h, -h, NEST_Y + 1.0), ShipMesh.p(m.x + h, h, NEST_Y + 1.0), 0.07, col, ShipMesh.M_TIMBER)
 	b.beam(ShipMesh.p(m.x - h, h, NEST_Y + 1.0), ShipMesh.p(m.x - 0.55, h, NEST_Y + 1.0), 0.07, col, ShipMesh.M_TIMBER)
 	b.beam(ShipMesh.p(m.x + h, h, NEST_Y + 1.0), ShipMesh.p(m.x + 0.55, h, NEST_Y + 1.0), 0.07, col, ShipMesh.M_TIMBER)
-	b.beam(ShipMesh.p(m.x - 0.5, h, NEST_Y + 0.9), ShipMesh.p(m.x + 0.5, h + 0.1, NEST_Y + 0.9), 0.05, C(ROPE_C, true), ShipMesh.M_ROPE)
+	b.beam(ShipMesh.p(m.x - 0.5, h, NEST_Y + 0.9), ShipMesh.p(m.x + 0.5, h + 0.1, NEST_Y + 0.9), 0.05, tc(ROPE_C, true), ShipMesh.M_ROPE)
 	# a brass telescope on the floor and a small lantern
-	b.tube(ShipMesh.p(m.x - 0.6, -0.9, NEST_Y + 0.07), ShipMesh.p(m.x + 0.1, -0.7, NEST_Y + 0.07), 0.05, 6, C(Color(0.72, 0.55, 0.2), true), ShipMesh.M_IRON)
+	b.tube(ShipMesh.p(m.x - 0.6, -0.9, NEST_Y + 0.07), ShipMesh.p(m.x + 0.1, -0.7, NEST_Y + 0.07), 0.05, 6, tc(Color(0.72, 0.55, 0.2), true), ShipMesh.M_IRON)
 	b.box(ShipMesh.p(m.x + 0.9, -0.9, NEST_Y + 0.15), Vector3(0.1, 0.14, 0.1), LAMP_C, ShipMesh.M_LAMP)
 	_mesh_node(b, _m_open, _g_open)
 	_mesh_node(nf, _m_nest, _g_open)
@@ -400,7 +401,7 @@ func _build_dynamic() -> void:
 	bm.beam(Vector3(0.0, 0.0, BOOM_LEN), Vector3(0.0, 0.08, BOOM_LEN + 0.2), 0.12, IRON_C, ShipMesh.M_IRON)
 	var rows := 6
 	var cols := 6
-	var cream := C(CANVAS_C, true)
+	var cream := tc(CANVAS_C, true)
 	for r in rows:
 		var t0 := float(r) / float(rows)
 		var t1 := float(r + 1) / float(rows)
@@ -543,10 +544,10 @@ func _build_sleep() -> void:
 		if h > 0.4:
 			for s in [-1.0, 1.0]:
 				_bx(b, u, float(s) * (h - 0.06), F, 0.08, 0.07, 2.1, WOOD_M, ShipMesh.M_TIMBER)
-			b.beam(ShipMesh.p(u, -h, F + 2.12), ShipMesh.p(u, h, F + 2.12), 0.16, C(WOOD_D, true), ShipMesh.M_TIMBER)
+			b.beam(ShipMesh.p(u, -h, F + 2.12), ShipMesh.p(u, h, F + 2.12), 0.16, tc(WOOD_D, true), ShipMesh.M_TIMBER)
 		u += 1.5
 	for s in [-1.0, 1.0]:
-		b.beam(ShipMesh.p(-8.0, float(s) * 1.45, F + 2.0), ShipMesh.p(7.5, float(s) * 1.45, F + 2.0), 0.13, C(WOOD_M, true), ShipMesh.M_TIMBER)
+		b.beam(ShipMesh.p(-8.0, float(s) * 1.45, F + 2.0), ShipMesh.p(7.5, float(s) * 1.45, F + 2.0), 0.13, tc(WOOD_M, true), ShipMesh.M_TIMBER)
 	# the mast comes down through the deck
 	b.cyl(ShipMesh.p(Layout.MAST.x, Layout.MAST.y, F), 0.3, 2.2, 8, WOOD_M, ShipMesh.M_TIMBER, 0.3, false, false)
 	for o in lay.call("obstacles", Layout.L_SLEEP):
@@ -631,7 +632,7 @@ func _build_hold() -> void:
 		if h > 0.4:
 			for s in [-1.0, 1.0]:
 				_bx(b, u, float(s) * (h - 0.06), F, 0.09, 0.08, 2.2, WOOD_M, ShipMesh.M_TIMBER)
-			b.beam(ShipMesh.p(u, -h, F + 2.2), ShipMesh.p(u, h, F + 2.2), 0.18, C(WOOD_D, true), ShipMesh.M_TIMBER)
+			b.beam(ShipMesh.p(u, -h, F + 2.2), ShipMesh.p(u, h, F + 2.2), 0.18, tc(WOOD_D, true), ShipMesh.M_TIMBER)
 		u += 1.6
 	# a keelson down the middle, dunnage boards, the mast step
 	_bx(b, 0.2, 0.0, F, 6.6, 0.1, 0.05, WOOD_D, ShipMesh.M_TIMBER)

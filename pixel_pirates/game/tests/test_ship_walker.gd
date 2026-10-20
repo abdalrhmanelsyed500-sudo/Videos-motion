@@ -1,3 +1,4 @@
+# gdlint: disable=max-line-length
 extends RefCounted
 ## CP-2 Release A: the on-ship walker. It lives in ship-local coordinates, so the ship's heading and motion cannot push it
 ## through anything. Checks speeds, screen-relative input at several headings, collision and sliding, the hatch transit

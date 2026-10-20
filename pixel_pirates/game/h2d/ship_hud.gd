@@ -5,7 +5,7 @@ extends Control
 ##   toast        one short message that fades (the chest, the barrels, the berths, "course hold ON")
 ##   info panel   a small modal list (the provisions hold, the fish barrels) that E, Esc or Space close; the game never waits on it
 ##   fade         a black layer the hatch transitions use
-## Layout at 1366x876 (bottom up): the existing dock label (-92..-52), prompt (-136..-98), status chip (-212..-146), toast (-268..-222).
+## Layout at 1366x876 (bottom up): the existing dock label (-92..-52), prompt (-136..-98), status chip (-232..-144), toast (-292..-240).
 ## Nothing here reads keys: the host (h2d0.gd) decides, so there is ONE input path. NOT YET RUN ON THE USER'S PC.
 const UiKit := preload("res://h2d/ui_kit.gd")
 const KIND_COLOR := {
@@ -47,8 +47,8 @@ func _build() -> void:
 	_status.anchor_bottom = 1.0
 	_status.offset_left = -330.0
 	_status.offset_right = 330.0
-	_status.offset_top = -212.0
-	_status.offset_bottom = -146.0
+	_status.offset_top = -232.0
+	_status.offset_bottom = -144.0
 	var col := UiKit.box(true, 0)
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
 	_status.add_child(col)
@@ -87,8 +87,8 @@ func _build() -> void:
 	# toast
 	_toast = UiKit.label("", 18, UiKit.CREAM, 6)
 	_toast.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	_toast.offset_top = -268.0
-	_toast.offset_bottom = -222.0
+	_toast.offset_top = -292.0
+	_toast.offset_bottom = -240.0
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_toast.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	_toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

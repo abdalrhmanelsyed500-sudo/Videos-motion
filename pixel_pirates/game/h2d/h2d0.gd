@@ -1,3 +1,4 @@
+# gdlint: disable=max-returns,max-line-length,max-file-lines,class-definitions-order
 extends Node
 ## H2D-0: one playable HD-2D ocean scene. The simulation is the validated E1 one (Ocean, SeaState, world clock, weather
 ## smoothing); only the PICTURE changed, behind the single SeaView interface (3D Compatibility path or 2D fallback).

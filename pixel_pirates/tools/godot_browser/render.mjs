@@ -37,9 +37,41 @@ if (SHIM) files.push('core/regex_shim.gd');
 const shimSrc = () => fs.readFileSync(path.join(here, '../godot_node/regex_shim.gd'), 'utf8');
 
 // the one change the raw (never imported) project needs: the view's texture loader returns the raw PNG as a texture
+// harness-only CP-2 hooks (in memory): Q sleeping deck, U hold, I crow's nest, O captain's cabin, J winch, K fish barrels,
+// L half way up the rope ladder, H hold racks, V test fish + provisions (letters that the game never binds in these scenarios). They only PLACE the pirate; the transitions are real keys.
+const deckHooks = (s) => s.replace('\tvar kc: int = KeyUtil.code(k)', '\tvar dh: int = [KEY_Q, KEY_U, KEY_I, KEY_O, KEY_J, KEY_K, KEY_L, KEY_H, KEY_V].find(int(k.keycode)) + 1\n\tif dh > 0:\n\t\t_deck_hook(dh)\n\t\treturn\n\tvar kc: int = KeyUtil.code(k)') + `
+func _deck_hook(n: int) -> void:
+	if not _ship_mode.is_deck():
+		_ship_mode.leave_helm(_ship_ctx())
+	var w: RefCounted = _ship_mode.walker
+	var lay: RefCounted = _ship_mode.layout
+	match n:
+		1:
+			w.call("place", 1, Vector2(-4.0, 0.0))
+		2:
+			w.call("place", 2, Vector2(-1.0, 0.0))
+		3:
+			w.call("place", 3, ShipLayout.NEST_ARRIVE)
+		4:
+			w.call("place", 0, Vector2(-7.7, 0.9))
+		5:
+			w.call("place", 0, (lay.call("interaction", 0, "winch") as Dictionary)["c"])
+		6:
+			w.call("place", 0, (lay.call("interaction", 0, "fish_barrels") as Dictionary)["c"])
+		7:
+			w.call("place", 0, ShipLayout.LADDER_BASE)
+			w.call("start_climb", 1)
+			w.set("climb_t", 0.5)
+		8:
+			w.call("place", 2, Vector2(-0.4, 0.0))
+		9:
+			(_port as PortGame).state.add_catch("spc_mackerel", 28.0, 0.0)
+			_give_test_provisions()
+`;
+
 const PATCHES = {
   // harness-only hook: F9 steps ashore at the pier without the docking manoeuvre (steering into the berth by script is not the point)
-  'h2d/h2d0.gd': (s) => s.replace('\tvar kc: int = KeyUtil.code(k)', '\tif k.keycode == KEY_F9:\n\t\t_walker.disembark((_v3 as View3D).land_world().meta["land"])\n\t\t(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))\n\t\treturn\n\tif k.keycode == KEY_F10 or k.keycode == KEY_F11:\n\t\t_walker.x = 27.5 if k.keycode == KEY_F10 else -75.0\n\t\t_walker.z = -0.5 if k.keycode == KEY_F10 else -10.6\n\t\t(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))\n\t\treturn\n\tvar kc: int = KeyUtil.code(k)'),
+  'h2d/h2d0.gd': (s) => deckHooks(s.replace('\tvar kc: int = KeyUtil.code(k)', '\tif k.keycode == KEY_F9:\n\t\t_walker.disembark((_v3 as View3D).land_world().meta["land"])\n\t\t(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))\n\t\treturn\n\tif k.keycode == KEY_F10 or k.keycode == KEY_F11:\n\t\t_walker.x = 27.5 if k.keycode == KEY_F10 else -75.0\n\t\t_walker.z = -0.5 if k.keycode == KEY_F10 else -10.6\n\t\t(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))\n\t\treturn\n\tvar kc: int = KeyUtil.code(k)')),
   'h2d/sea_view_3d.gd': (s) => s.replace('\tif not ResourceLoader.exists(path):\n', '\tif false:\n').replace('\treturn load(path) as Texture2D\n',
     '\tvar raw := Image.load_from_file(path)\n\tif raw == null or raw.is_empty():\n\t\treturn null\n\treturn ImageTexture.create_from_image(raw)\n'),
 };

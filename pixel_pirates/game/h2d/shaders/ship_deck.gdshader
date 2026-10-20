@@ -178,7 +178,7 @@ void fragment() {
 	col *= 1.0 - 0.2 * h2d_rain * (1.0 - interior);
 	float lamp = lamp_term(lampA, l_pos) + lamp_term(lampB, l_pos) + lamp_term(lampC, l_pos) + lamp_term(lampD, l_pos);
 	float lamp_on = max(lamp_day, h2d_night);
-	col += pal * lamp_col * lamp * lamp_on * (0.5 + 0.5 * clamp(ndl + 0.5, 0.0, 1.0)) * 1.5;
+	col += pal * lamp_col * lamp * lamp_on * (0.5 + 0.5 * clamp(ndl + 0.5, 0.0, 1.0)) * 0.6;
 	if (m == 12) {
 		col = pal;
 	}

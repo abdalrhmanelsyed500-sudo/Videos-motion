@@ -1,3 +1,4 @@
+# gdlint: disable=max-line-length
 extends SceneTree
 ## CP-2 Release A inside the REAL game scene (res://h2d/h2d0.tscn), with real key events:
 ##   godot --headless --fixed-fps 60 --path game --script res://tests/deck_flow.gd        (prints DECKFLOW n checks, m failed)
@@ -140,7 +141,7 @@ func _walk_keeps_sailing() -> void:
 	hold(KEY_W, false)
 	var hd1 := float(scene.get("_heading_disp"))
 	var p1: Vector2 = scene.get("_pos")
-	chk(absf(Layout_wrap(hd1 - hd0)) < 3.0, "walking does not turn the ship (%.1f -> %.1f)" % [hd0, hd1])
+	chk(absf(wrap_deg(hd1 - hd0)) < 3.0, "walking does not turn the ship (%.1f -> %.1f)" % [hd0, hd1])
 	chk(p0.distance_to(p1) > 5.0, "the ship keeps sailing while the pirate walks (%.1f m)" % p0.distance_to(p1))
 	chk(str(scene.get("_lab")) == "real", "W on deck does not cycle the weather lab")
 	var info: Dictionary = v3().call("deck_info")
@@ -160,7 +161,7 @@ func _walk_keeps_sailing() -> void:
 	chk(not bool(ap.get("engaged")), "C releases the hold at the helm")
 
 
-func Layout_wrap(a: float) -> float:
+func wrap_deg(a: float) -> float:
 	return fposmod(a + 180.0, 360.0) - 180.0
 
 
