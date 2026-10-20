@@ -1,0 +1,193 @@
+{
+ "schema": 1,
+ "kind": "tuning",
+ "records": [
+  {
+   "key": "deck.walk_ms",
+   "value": 3.4,
+   "unit": "metres per second",
+   "min": 1,
+   "max": 8,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Walking speed aboard (a little slower than ashore: a crowded deck)."
+  },
+  {
+   "key": "deck.run_ms",
+   "value": 6.0,
+   "unit": "metres per second",
+   "min": 2,
+   "max": 12,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Running speed aboard (Shift)."
+  },
+  {
+   "key": "deck.speedup_s",
+   "value": 0.1,
+   "unit": "seconds",
+   "min": 0.02,
+   "max": 0.5,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Time to reach full walking speed."
+  },
+  {
+   "key": "deck.body_r_m",
+   "value": 0.38,
+   "unit": "metres",
+   "min": 0.2,
+   "max": 0.6,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Body radius against furniture and walls aboard. Every aisle is at least 1.0 m clear."
+  },
+  {
+   "key": "deck.stride_m",
+   "value": 0.8,
+   "unit": "metres",
+   "min": 0.3,
+   "max": 1.5,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Distance per walk-cycle frame step."
+  },
+  {
+   "key": "deck.climb_s",
+   "value": 3.2,
+   "unit": "seconds",
+   "min": 1,
+   "max": 10,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Time to climb the rope ladder to the crow's nest (or down)."
+  },
+  {
+   "key": "deck.transit_s",
+   "value": 0.8,
+   "unit": "seconds",
+   "min": 0.3,
+   "max": 3,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Time of a hatch or ladder transition between decks, including the fade."
+  },
+  {
+   "key": "deck.zoom",
+   "value": 4.0,
+   "unit": "zoom",
+   "min": 2,
+   "max": 6,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Camera zoom on the decks; 4 is the land zoom, so the pirate keeps the same pixel scale and the 22 m ship fits the screen."
+  },
+  {
+   "key": "deck.nest_zoom",
+   "value": 2.2,
+   "unit": "zoom",
+   "min": 1.2,
+   "max": 4,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Camera zoom in the crow's nest: a wider lookout view."
+  },
+  {
+   "key": "deck.zoom_s",
+   "value": 1.0,
+   "unit": "seconds",
+   "min": 0.3,
+   "max": 3,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Camera zoom easing time when leaving or taking the helm."
+  },
+  {
+   "key": "deck.motion_scale",
+   "value": 0.5,
+   "unit": "factor",
+   "min": 0,
+   "max": 1,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "How much of the sea motion (roll, pitch, heave) the deck model shows; 1 is the full hull motion."
+  },
+  {
+   "key": "autopilot.kp",
+   "value": 0.12,
+   "unit": "axis per degree",
+   "min": 0.02,
+   "max": 0.4,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Course hold: steer gain on the heading error (8 degrees off = full rudder)."
+  },
+  {
+   "key": "autopilot.kd",
+   "value": 0.04,
+   "unit": "axis per deg/s",
+   "min": 0,
+   "max": 0.2,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Course hold: damping on the turn rate, stops overshoot."
+  },
+  {
+   "key": "autopilot.deadband_deg",
+   "value": 0.5,
+   "unit": "degrees",
+   "min": 0,
+   "max": 3,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Course hold: no steering inside this error."
+  },
+  {
+   "key": "autopilot.settle_s",
+   "value": 0.6,
+   "unit": "seconds",
+   "min": 0.1,
+   "max": 3,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "After a manual correction the hold waits this long, then takes the new heading once the ship has stopped turning."
+  },
+  {
+   "key": "autopilot.irons_margin_deg",
+   "value": 6.0,
+   "unit": "degrees",
+   "min": 0,
+   "max": 20,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Course hold never holds a heading closer to the wind than no-go + this margin."
+  },
+  {
+   "key": "autopilot.relatch_yaw_deg_s",
+   "value": 2.0,
+   "unit": "degrees per second",
+   "min": 0.2,
+   "max": 10,
+   "provisional": true,
+   "owner": "CP2",
+   "source": "CP-2 Release A ship exploration; first values chosen by design, confirm by hand",
+   "note": "Course hold re-latches once the turn rate is below this."
+  }
+ ]
+}
