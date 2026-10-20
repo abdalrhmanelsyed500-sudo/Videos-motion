@@ -164,6 +164,14 @@ func prompt() -> Dictionary:
 	return {"id": str(it["id"]), "text": str(it["prompt"])}
 
 
+## F: is the pirate at the fishing winch right now (main deck, not climbing, not in a transition)?
+func winch_ready() -> bool:
+	if mode != DECK or bool(walker.call("is_busy")):
+		return false
+	var it := layout.call("nearest_interaction", int(walker.get("level")), float(walker.get("u")), float(walker.get("v"))) as Dictionary
+	return not it.is_empty() and str(it["id"]) == "winch"
+
+
 ## E. Does the thing at the pirate's feet. The host handles the returned event (the map, the panels, the toasts).
 func interact(_c: Dictionary) -> Dictionary:
 	if mode != DECK:

@@ -39,6 +39,9 @@ const LandWalker := preload("res://h2d/land_walker.gd")
 const KeyUtil := preload("res://h2d/key_util.gd")
 const PortGame := preload("res://h2d/port_game.gd")
 const PortState := preload("res://h2d/port_state.gd")
+const FishSession := preload("res://h2d/fish_session.gd")
+const FishPanel := preload("res://h2d/fish_panel.gd")
+const FishStorage := preload("res://h2d/fish_storage.gd")
 const MAP_SCENE := "res://ui/map/map_screen.tscn"
 const MAX_STEP_S := 0.25
 const SMOOTH_S := 2.0
@@ -89,6 +92,9 @@ var _key_raw := 0          ## key presses seen by _input (before any control or 
 var _key_game := 0         ## key presses that reached _unhandled_input (i.e. nothing swallowed them)
 var _raw_last := "(none yet)"
 var _port: Node = null  ## CP-1: the Fish Row loop (economy, nets, people, dialogue)
+var _fish: FishSession = null  ## CP-2 Release B: manual first-person fishing at the winch (F), see h2d/fish_session.gd
+var _fish_panel: FishPanel = null  ## the fish-storage panel (E at the barrels)
+var _fish_view_was := false  ## the 3D world was rendering when the winch view took over
 var _map: Node = null   ## the map screen (ui/map): its own scene, its own input; the pause is attached below, nothing else is
 var _edge_said := -100.0
 var _ship_mode: ShipMode = ShipMode.new()   ## CP-2: helm / deck mode, the course hold and the walker on the moving ship
@@ -171,6 +177,7 @@ func _ready() -> void:
 	(_port as PortGame).setup(layer, (_v3 as View3D).land_world(), _oc.tuning(), _port_pause)
 	if _map != null and (_port as PortGame).enabled:
 		(_port as PortGame).bind_map(_map)
+	_build_fishing()
 	_jump(2)
 	_reset_ship()
 	_set_path("3d")
@@ -198,6 +205,7 @@ func _jump(number: int) -> void:
 
 
 func _reset_ship() -> void:
+	_fish_abort("The ship was reset.")
 	_pos = START_POS
 	_sea.heading_deg = START_HEADING
 	_helm.reset(START_HEADING, 0.0)
@@ -268,6 +276,7 @@ func _process(delta: float) -> void:
 	(_v3 as View3D).set_land(_land_view_state())
 	_active.update_view(_view(), {"x": _pos.x, "z": _pos.y, "heading_deg": _heading_disp,
 			"speed_kn": float(_d["speed_kn"]), "scene_speed": speed_scene, "curve": _curve, "moor": _moor}, delta)
+	_fish_tick(dt)
 	var advice := _helm_state(target_kn)
 	_helm_hud.set_state(advice)
 	_update_alert(advice)
@@ -435,7 +444,7 @@ func _land_view_state() -> Dictionary:
 
 func _walk_axis() -> Vector2:
 	var a := Vector2.ZERO
-	if _map_is_open() or (_port != null and (_port as PortGame).modal()) or (_ship_hud != null and _ship_hud.is_info_open()):
+	if _ship_ui_blocked():
 		return a
 	if KeyUtil.held(KEY_A) or KeyUtil.held(KEY_LEFT):
 		a.x -= 1.0
@@ -524,7 +533,7 @@ func _steer_axis() -> float:
 	if _bench != null and (_bench as Bench).active:
 		return 0.55 * sin(_real * 0.9)
 	var axis := 0.0
-	if _map_is_open() or (_port != null and (_port as PortGame).modal()):
+	if _map_is_open() or (_port != null and (_port as PortGame).modal()) or _fish_on():
 		return axis
 	if KeyUtil.held(KEY_A) or KeyUtil.held(KEY_LEFT):
 		axis -= 1.0
@@ -633,6 +642,9 @@ func _input(event: InputEvent) -> void:
 	var k := event as InputEventKey
 	if k == null or not k.pressed or k.echo:
 		return
+	if _fish_on() and _fish.key_event(k):
+		get_viewport().set_input_as_handled()      # only the winch's own keys are taken; the view is the only thing that wants them now
+		return
 	_key_raw += 1
 	_raw_last = "%s (keycode %d physical %d)" % [OS.get_keycode_string(k.keycode if k.keycode != 0 else k.physical_keycode), int(k.keycode), int(k.physical_keycode)]
 
@@ -642,6 +654,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if k == null or not k.pressed or k.echo:
 		return
 	_key_game += 1
+	if _fish_on():
+		return     # the winch view is up: no other key may steer, walk, change the weather or jump the route behind it
+	if _fish_panel != null and _fish_panel.is_shown:
+		if ShipKeys.hit(k, "ship_interact") or k.keycode == KEY_ESCAPE or k.keycode == KEY_SPACE or k.keycode == KEY_ENTER:
+			_fish_panel.close()
+		return
 	var kc: int = KeyUtil.code(k)     # layout-proof key (an Arabic layout would otherwise break every letter key)
 	var v3 := _v3 as View3D
 	var ashore := _walker.is_ashore()
@@ -653,6 +671,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if not ashore and ShipKeys.hit(k, "ship_interact") and not (_port != null and (_port as PortGame).modal()):
 		_ship_interact()
+		return
+	if not ashore and ShipKeys.hit(k, "fish_winch") and _ship_mode.winch_ready() and not _ship_ui_blocked():
+		_fish_enter()
 		return
 	if not ashore and ShipKeys.hit(k, "autopilot_toggle"):
 		_ship_hud.toast(_ship_mode.toggle_autopilot(_ship_ctx()), 5.0)
@@ -745,8 +766,12 @@ func _ship_ctx() -> Dictionary:
 			"sailing": _harbor.state == Harbor.SAILING and not _walker.is_ashore(), "docked": _harbor.state == Harbor.DOCKED}
 
 
+func _fish_on() -> bool:
+	return _fish != null and _fish.active
+
+
 func _ship_ui_blocked() -> bool:
-	return _map_is_open() or (_port != null and (_port as PortGame).modal()) or (_ship_hud != null and _ship_hud.is_info_open())
+	return _fish_on() or (_fish_panel != null and _fish_panel.is_shown) or _map_is_open() or (_port != null and (_port as PortGame).modal()) or (_ship_hud != null and _ship_hud.is_info_open())
 
 
 func _ship_close_panels() -> void:
@@ -800,7 +825,7 @@ func _ship_interact() -> void:
 			var ps := _port_state()
 			_ship_hud.toast("The sea chest: %d reales in the purse. The rest of the strongbox stays locked until the crew is paid." % (ps.reales if ps != null else 0), 5.0)
 		"winch":
-			_ship_hud.toast("The fishing winch: a heavy oak drum, rope, a pulley on the davit and the net. Manual fishing arrives in the next release.", 6.0)
+			_ship_hud.toast("The fishing winch: a heavy oak drum, rope, a pulley on the davit and the net. Press %s here to fish by hand." % ShipKeys.label("fish_winch"), 6.0)
 		"berths":
 			var ps2 := _port_state()
 			var n := ps2.crew_count() if ps2 != null else 0
@@ -819,17 +844,83 @@ func _open_provisions() -> void:
 
 func _open_fish_barrels() -> void:
 	var ps := _port_state()
-	if ps == null:
+	if ps == null or _fish_panel == null:
 		_ship_hud.toast("The fish barrels are not available.")
 		return
-	var now := float(_state.clock.t) / 86400.0
-	var rows: Array = [["Hold", "%.1f kg" % ps.hold_kg(), "of %.0f kg (%d%%)" % [ps.capacity_kg(), int(roundf(ps.hold_frac() * 100.0))]], ["", "", ""]]
-	var fr := ShipStores.fish_rows(ps.lots, ps.fish, now, ps.freshness_of)
-	if fr.is_empty():
-		rows.append(["The barrels are empty.", "", ""])
+	_fish_panel.open(_fish_model())
+	_fish_panel.close_hint = "Sell at the fish market   |   E / Esc: close"
+
+
+## The storage panel's data, from the real hold.
+func _fish_model() -> Dictionary:
+	var ps := _port_state()
+	if ps == null:
+		return FishStorage.model([], {}, {}, 0.0, Callable(), 40.0)
+	var species: Dictionary = (_fish.manual.species if _fish != null else {})
+	return FishStorage.model(ps.lots, ps.fish, species, float(_state.clock.t) / 86400.0, ps.freshness_of, ps.capacity_kg())
+
+
+# ---- CP-2 Release B: manual fishing ------------------------------------------------------------------------------
+func _build_fishing() -> void:
+	if _port == null or not (_port as PortGame).enabled:
+		return
+	_fish = FishSession.new()
+	add_child(_fish)
+	if not _fish.setup(self, _oc.tuning(), _port):
+		push_warning("FISHING: %s" % _fish.problem)
+		_fish = null
 	else:
-		rows.append_array(fr)
-	_ship_hud.open_info("FISH BARRELS", rows, "Sell at the fish market   |   E / Esc: close")
+		_fish.ended.connect(_fish_ended)
+	var pl := CanvasLayer.new()
+	pl.layer = 26
+	add_child(pl)
+	_fish_panel = FishPanel.new()
+	pl.add_child(_fish_panel)
+	if _map != null:
+		# the chart must not open behind the winch view (it would be hidden and the clock paused): say why instead
+		_map.set("can_open", func() -> String: return "Finish at the winch first (Esc lets go)." if _fish_on() else "")
+
+
+func _fish_ctx() -> Dictionary:
+	var c := _port_ctx()
+	c["light"] = _light
+	c["roll"] = 0.0
+	return c
+
+
+func _fish_enter() -> void:
+	if _fish == null:
+		_ship_hud.toast("The winch is not ready: manual fishing is unavailable (see the Output panel).", 6.0)
+		return
+	var r := _fish.begin(_fish_ctx())
+	if not bool(r["ok"]):
+		_ship_hud.toast(str(r["reason"]), 6.5)
+		return
+	_ship_close_panels()
+	_fish_view_was = true
+	_active.set_active(false)       # nothing of the 3D world is drawn or rendered while the winch fills the screen
+	_ship_hud.set_prompt("", false)
+
+
+func _fish_tick(dt: float) -> void:
+	if _fish_on():
+		var c := _fish_ctx()
+		_fish.tick(dt, c)
+	if _fish_panel != null and _fish_panel.is_shown:
+		_fish_panel.refresh(_fish_model())
+
+
+func _fish_abort(reason: String) -> void:
+	if _fish_on():
+		_fish.abort(reason)
+
+
+func _fish_ended(info: Dictionary) -> void:
+	if _fish_view_was:
+		_fish_view_was = false
+		_active.set_active(true)    # the world comes back (also when the session ended by itself)
+	_ship_hud.toast(str(info["text"]), 7.0)
+	_stores_sig = ""
 
 
 ## Shift+F6 (test): fills the racks with a pack of provisions, because nothing sells provisions yet.

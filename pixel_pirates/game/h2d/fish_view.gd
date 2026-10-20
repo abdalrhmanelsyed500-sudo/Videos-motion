@@ -328,7 +328,7 @@ func _draw_net_and_rope() -> void:
 	if under:
 		col = Color(rope.r * 0.55, rope.g * 0.72, rope.b * 0.85, 0.85)
 	var ring_y := np.y
-	var sw := sin(_t * 2.1) * (m.stage == Manual.Stage.RAISE and 3.0 or 0.8)
+	var sw: float = sin(_t * 2.1) * (3.0 if m.stage == Manual.Stage.RAISE else 0.8)
 	var pts := 9
 	var bottom := Vector2(np.x + sw, ring_y + bag)
 	# meridians

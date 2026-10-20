@@ -170,7 +170,7 @@ func _build_interactions() -> void:
 		_i("chest", CHEST, 1.5, "E  Open the sea chest"),
 		_i("hatch_down", HATCH, 1.7, "E  Climb down to the sleeping deck"),
 		_i("rope_ladder", LADDER_BASE, 1.5, "E  Climb the rope ladder to the crow's nest"),
-		_i("winch", Vector2(WINCH.x, WINCH.y + 0.9), 1.6, "E  Inspect the fishing winch"),
+		_i("winch", Vector2(WINCH.x, WINCH.y + 0.9), 1.6, "F  Work the fishing winch"),
 		_i("fish_barrels", Vector2(5.65, -1.15), 1.9, "E  Look into the fish barrels"),
 	]
 	_inter[L_SLEEP] = [

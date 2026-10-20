@@ -1,8 +1,9 @@
 extends RefCounted
-## CP-2 Release A: the ship mode's two Input Map actions (project.godot declares them; ensure_actions() repairs a project file that
+## CP-2 Release A: the ship mode's Input Map actions (Release B added the five fishing ones) (project.godot declares them; ensure_actions() repairs a project file that
 ## lost them), and the one place that asks "is this event that action". Same pattern as the map's open_map: the physical key AND the
 ## key labelled with the letter, so any keyboard layout works. Matching is EXACT: Shift+E stays the effects-budget key.
-const ACTIONS := {"ship_interact": KEY_E, "autopilot_toggle": KEY_C}
+const ACTIONS := {"ship_interact": KEY_E, "autopilot_toggle": KEY_C,
+	"fish_winch": KEY_F, "fish_haul_left": KEY_A, "fish_haul_right": KEY_D, "fish_cast": KEY_SPACE, "fish_cancel": KEY_ESCAPE}
 
 
 static func ensure_actions() -> void:
