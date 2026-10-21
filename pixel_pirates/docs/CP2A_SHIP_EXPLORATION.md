@@ -1,5 +1,7 @@
 # CP-2 Release A: Ship Exploration & Sailing Autopilot
 
+> **CP-2B.1 (2026-10-21): the automatic net and the F7 test-fish key described in this document were removed. Fish now come only from the winch (CP2B_MANUAL_FISHING.md, CP2B1_MANUAL_ONLY.md).**
+
 Build tag: see the title line in the game. Release B (manual first-person fishing) is **not** in this release: the winch is built and
 approachable, and says so when you use it.
 

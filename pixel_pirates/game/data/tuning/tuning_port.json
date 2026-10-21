@@ -44,7 +44,7 @@
    "provisional": true,
    "owner": "B4",
    "source": "CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC",
-   "note": "Real seconds between hauls while the nets are down and the ship is slow enough."
+   "note": "INCOME MODEL ONLY (CP-2B.1: the game has no timed hauls; fishing is manual at the winch). Real seconds between hauls while the nets are down and the ship is slow enough."
   },
   {
    "key": "fish.haul_kg",
@@ -55,7 +55,7 @@
    "provisional": true,
    "owner": "B4",
    "source": "CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC",
-   "note": "Average kg of one haul on a ground of richness 1.0 at midday, before crew bonuses."
+   "note": "INCOME MODEL ONLY (CP-2B.1: the game has no timed hauls; fishing is manual at the winch). Average kg of one haul on a ground of richness 1.0 at midday, before crew bonuses."
   },
   {
    "key": "fish.haul_spread",
@@ -66,7 +66,7 @@
    "provisional": true,
    "owner": "B4",
    "source": "CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC",
-   "note": "A haul varies by plus or minus this fraction (uniform) around its average."
+   "note": "INCOME MODEL ONLY (CP-2B.1: the game has no timed hauls; fishing is manual at the winch). A haul varies by plus or minus this fraction (uniform) around its average."
   },
   {
    "key": "fish.max_speed_kn",
@@ -99,7 +99,7 @@
    "provisional": true,
    "owner": "B4",
    "source": "CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC",
-   "note": "Fish bite better in the thin light of dawn (05:00-07:00) and dusk (17:00-19:00), the T1 bands."
+   "note": "INCOME MODEL ONLY (CP-2B.1: the game has no timed hauls; fishing is manual at the winch). Fish bite better in the thin light of dawn (05:00-07:00) and dusk (17:00-19:00), the T1 bands."
   },
   {
    "key": "fish.mult_day",
@@ -110,7 +110,7 @@
    "provisional": true,
    "owner": "B4",
    "source": "CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC",
-   "note": "Bite rate in daylight and in the evening."
+   "note": "INCOME MODEL ONLY (CP-2B.1: the game has no timed hauls; fishing is manual at the winch). Bite rate in daylight and in the evening."
   },
   {
    "key": "fish.mult_night",
@@ -121,7 +121,7 @@
    "provisional": true,
    "owner": "B4",
    "source": "CP-1 Fish Row slice; first values chosen by simulation (economy_logic.py), confirm by hand on the dev PC",
-   "note": "Bite rate at night (20:00-05:00): fishing is possible but slower."
+   "note": "INCOME MODEL ONLY (CP-2B.1: the game has no timed hauls; fishing is manual at the winch). Bite rate at night (20:00-05:00): fishing is possible but slower."
   },
   {
    "key": "fish.spoil_per_day",

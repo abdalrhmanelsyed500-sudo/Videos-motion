@@ -1,5 +1,7 @@
 # CP-2 Release B: Manual First-Person Fishing and Fish Inventory
 
+> **CP-2B.1 (2026-10-21): the automatic net and the F7 test-fish key described in this document were removed. Fish now come only from the winch (CP2B_MANUAL_FISHING.md, CP2B1_MANUAL_ONLY.md).**
+
 Working title "Crown of the Seas". Baseline: Release A (`0709dc0`, tested by the user on Windows). Release A's ship exploration,
 sailing and the r7 map are not rewritten; Release B adds to them.
 
@@ -25,8 +27,7 @@ Keys are Input Map actions (Project Settings > Input Map): `fish_winch` F, `fish
 `fish_cancel` Esc. Each has a physical-key event and a key-label event (layout-proof, like `open_map`); `ShipKeys.ensure_actions()` repairs
 a project file that lost them. The on-screen labels are read from the Input Map, so a remap shows on screen.
 
-At the helm F still lowers the old passive drift nets (unchanged). On deck, away from the winch, F shows a one-line hint instead of
-silently toggling the passive nets, and the old "Lower the nets" chip no longer collides with the winch prompt.
+~~At the helm F still lowers the old passive drift nets~~ **(changed in CP-2B.1: F at the helm never fishes; it shows where the winch is. There is no passive net and no F7 test fish.)**
 
 ## 2. Failure and quality (nothing is a silent loss)
 
@@ -68,7 +69,7 @@ in `art/manifest/sprites.json` (that file ties every entry to the placeholder pa
 | First-person view | `h2d/fish_view.gd` | Draws the state machine; one `_draw` (a few hundred primitives), no 3D, no shaders, no extra viewport |
 | Storage model | `h2d/fish_storage.gd`, `fish_panel.gd` | The model is plain data from `PortState.lots`; the panel draws it and is refreshed every frame while open |
 | Host | `h2d/h2d0.gd` (about 90 lines added) | F at the winch, blocking, restoring the world |
-| Passive nets | `h2d/fishing.gd` | `start_manual` keeps the ground, sea and drag rules, makes no passive hauls |
+| Grounds and rules | `h2d/fishing.gd` | the ground, sea and drag rules; since CP-2B.1 it has no timed catch at all |
 
 * **No temporary inventory.** The catch is added to `PortState` (the same call the passive nets and the market use) when the unload
   starts, so barrels, the storage panel, the HUD hold bar and the fish market all see it at once.

@@ -5,7 +5,9 @@ extends RefCounted
 ## It does NOT catch anything: the old timed "nets down, a haul every 12 s" path (CP-1) was removed in CP-2B.1. Fish enter the hold only
 ## through the winch session (h2d/fish_session.gd + h2d/fish_manual.gd). It also holds the tiny deterministic generator
 ## (a = 1103515245, c = 12345, m = 2^31) that the winch session uses to choose species. Pure logic.
-const DEFAULTS := {"fish.max_speed_kn": 1.5, "fish.max_sea": 0.6}
+const DEFAULTS := {
+	"fish.max_speed_kn": 1.5, "fish.max_sea": 0.6,
+}
 const LCG_A := 1103515245
 const LCG_C := 12345
 const LCG_M := 2147483648

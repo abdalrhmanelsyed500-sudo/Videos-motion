@@ -40,14 +40,14 @@ TABLE = [
     ("port.start_reales", 5, "reales", 0, 600, "B4", "Prologue purse: five reales, the price of a loaf and a bed. B4's 600 is the campaign purse after the first prize; the prologue is meant to be poor."),
     ("port.hold_kg", 40, "kg", 10, 200, "B4", "Fish hold of the bare sloop. One haul is about 1.2 kg, so a full hold is about 33 hauls = 6.7 minutes of nets."),
     ("port.hold_warn_frac", 0.85, "fraction", 0.5, 1, "B4", "The HUD turns the hold amber at this fill."),
-    ("fish.haul_interval_s", 12, "seconds", 4, 60, "B4", "Real seconds between hauls while the nets are down and the ship is slow enough."),
-    ("fish.haul_kg", 1.2, "kg", 0.2, 10, "B4", "Average kg of one haul on a ground of richness 1.0 at midday, before crew bonuses."),
-    ("fish.haul_spread", 0.4, "fraction", 0, 0.9, "B4", "A haul varies by plus or minus this fraction (uniform) around its average."),
+    ("fish.haul_interval_s", 12, "seconds", 4, 60, "B4", "INCOME MODEL ONLY (CP-2B.1: the game has no timed hauls; fishing is manual at the winch). Real seconds between hauls while the nets are down and the ship is slow enough."),
+    ("fish.haul_kg", 1.2, "kg", 0.2, 10, "B4", "INCOME MODEL ONLY (CP-2B.1: the game has no timed hauls; fishing is manual at the winch). Average kg of one haul on a ground of richness 1.0 at midday, before crew bonuses."),
+    ("fish.haul_spread", 0.4, "fraction", 0, 0.9, "B4", "INCOME MODEL ONLY (CP-2B.1: the game has no timed hauls; fishing is manual at the winch). A haul varies by plus or minus this fraction (uniform) around its average."),
     ("fish.max_speed_kn", 1.5, "knots", 0.2, 5, "B4", "The nets only work while the ship is slower than this; the ship drifts to a stop once the nets are down."),
     ("fish.max_sea", 0.6, "sea index 0..1", 0.2, 1, "B4", "In a rougher sea the nets are hauled in and fishing stops."),
-    ("fish.mult_dawn", 1.3, "factor", 0.5, 3, "B4", "Fish bite better in the thin light of dawn (05:00-07:00) and dusk (17:00-19:00), the T1 bands."),
-    ("fish.mult_day", 1.0, "factor", 0.5, 3, "B4", "Bite rate in daylight and in the evening."),
-    ("fish.mult_night", 0.7, "factor", 0.2, 3, "B4", "Bite rate at night (20:00-05:00): fishing is possible but slower."),
+    ("fish.mult_dawn", 1.3, "factor", 0.5, 3, "B4", "INCOME MODEL ONLY (CP-2B.1: the game has no timed hauls; fishing is manual at the winch). Fish bite better in the thin light of dawn (05:00-07:00) and dusk (17:00-19:00), the T1 bands."),
+    ("fish.mult_day", 1.0, "factor", 0.5, 3, "B4", "INCOME MODEL ONLY (CP-2B.1: the game has no timed hauls; fishing is manual at the winch). Bite rate in daylight and in the evening."),
+    ("fish.mult_night", 0.7, "factor", 0.2, 3, "B4", "INCOME MODEL ONLY (CP-2B.1: the game has no timed hauls; fishing is manual at the winch). Bite rate at night (20:00-05:00): fishing is possible but slower."),
     ("fish.spoil_per_day", 0.35, "freshness per game day", 0.05, 2, "B4", "Fresh fish loses this fraction of its value per game day (15 real minutes); a catch is worth about 95% after a 4-minute trip."),
     ("fish.spoil_floor", 0.25, "fraction", 0, 1, "B4", "Spoiled fish still sells for this fraction (fish meal and bait): it is never worthless, but it hurts."),
     ("fish.spoil_warn", 0.7, "fraction", 0.2, 1, "B4", "The HUD warns when the average freshness of the hold falls below this."),
@@ -410,7 +410,7 @@ def check() -> int:
         if gd is GD_STATE:
             want = {k: float(v) for k, v in P.items() if k.startswith(("port.", "market.", "fish.spoil"))}
         else:
-            want = {k: float(v) for k, v in P.items() if k.startswith("fish.") and not k.startswith("fish.spoil")}
+            want = {k: float(v) for k, v in P.items() if k in ("fish.max_speed_kn", "fish.max_sea")}   # CP-2B.1: the only fishing.gd defaults
         if got != want:
             errs.append(f"DEFAULTS in {name} differ from the table in economy_logic.py: {sorted(set(got.items()) ^ set(want.items()))[:4]}")
         if "LCG" in src or gd is GD_FISH:

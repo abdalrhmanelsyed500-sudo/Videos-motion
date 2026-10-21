@@ -235,7 +235,8 @@ func _fishing_and_ship() -> void:
 	await frames(120)
 	await key(KEY_M)
 	await frames(60)
-	chk(float((port.get("state") as RefCounted).call("hold_kg")) == 0.0, "FISHING: nothing came aboard while the map was open or closed (hold %.2f kg)" % float((port.get("state") as RefCounted).call("hold_kg")))
+	var hold_now := float((port.get("state") as RefCounted).call("hold_kg"))
+	chk(hold_now == 0.0, "FISHING: nothing came aboard while the map was open or closed (hold %.2f kg)" % hold_now)
 
 
 func _recruiting() -> void:

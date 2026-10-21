@@ -251,7 +251,8 @@ func objective(ctx: Dictionary) -> String:
 		return "You can afford %s, the %s (%d reales). Find him at %s. Press M for the map." % [str(rec["name"]), str(rec["role"]), int(rec["cost"]), str(rec["place"])]
 	var need := state.cost_of(cheap) - state.reales
 	if state.kg_total <= 0.0:
-		return "You have %d reales and need a crew. Sail to the Pilchard Shallows (0.6 km south-west; chart on M) and fish by hand: press E at the helm to leave it, walk to the winch on the main deck and press F." % state.reales
+		return ("You have %d reales and need a crew. Sail to the Pilchard Shallows (0.6 km south-west; chart on M) and fish by hand: "
+				+ "press E at the helm to leave it, walk to the winch on the main deck and press F.") % state.reales
 	if bool(ctx["ashore"]):
 		return "Earn %d more reales for %s (%d). Board the ship (F at the pier), sail to a fishing ground and work the winch." % [need, str(rec["name"]), int(rec["cost"])]
 	return "Earn %d more reales for %s, the %s (%d). Fish a ground (M for the chart), return and sell." % [need, str(rec["name"]), str(rec["role"]), int(rec["cost"])]

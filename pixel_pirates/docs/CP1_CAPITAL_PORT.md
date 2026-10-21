@@ -1,5 +1,7 @@
 # CP-1 "Fish Row": the first slice of the capital port and the starting economy
 
+> **CP-2B.1 (2026-10-21): the automatic net and the F7 test-fish key described in this document were removed. Fish now come only from the winch (CP2B_MANUAL_FISHING.md, CP2B1_MANUAL_ONLY.md).**
+
 Status 2026-10-19. **Nothing in this document has run in Godot.** Everything is checked statically only (Python twin of the economy, layout and reachability checks on the baked data, GDScript syntax and a heuristic type scan). Section 9 says exactly which is which. Section 8 is the manual test checklist.
 
 ## 0. What was asked and what this slice is
@@ -74,9 +76,9 @@ Total 143 reales. Each has 3 dialogue pages the first time you talk, then goes s
 
 You start at sea (-100, 140), heading to the harbour, with a **purse of 5 reales**, an empty 40 kg hold and no crew. The objective card (top right) always tells you the next step from the real state.
 
-1. Sail to the **Pilchard Shallows** (-300, 560), 0.6 km away (about 25 s of sailing). Press **F** inside a ground: the nets go down, the ship slows below 1.5 kn.
-2. Every **12 s** a haul comes up: about **1.2 kg x richness x time-of-day x (1 + crew bonus) x (1 +/- 40%)**. A toast shows the species, kg and the hold.
-3. Press F again (or fill the hold) to haul in. Sail home, press SPACE in the dock zone to moor, F to go ashore.
+1. Sail to the **Pilchard Shallows** (-300, 560), 0.6 km away (about 25 s of sailing). Press **E** at the helm, walk to the winch on the main deck and press **F** there (CP-2B.1: **fishing is only manual**, see `CP2B_MANUAL_FISHING.md` and `CP2B1_MANUAL_ONLY.md`). F at the helm no longer lowers a net: it only tells you where the winch is.
+2. The old timed haul (a haul every **12 s**, about **1.2 kg x richness x time-of-day x (1 + crew bonus) x (1 +/- 40%)**) was **removed from the game in CP-2B.1**. The economy model `tools/h2d/economy_logic.py` keeps those numbers as an income-pace model only: the manual winch pays about the same (7 to 8 kg a minute against the model's 6).
+3. Fill the hold at the winch (the card says what was stored). Sail home, press SPACE in the dock zone to moor, F to go ashore.
 4. Walk west to the fish market (about 120 m, 30 s), press E at the counter. The panel shows each species in the hold, freshness, the price per kg, the estimate and the whole-hold total. **Enter / E sells everything**, 1-5 sells one species. A big gold "+N reales" banner shows the payout and "Purse A -> B".
 5. Talk to a recruit you can afford, press **Y**.
 
@@ -129,7 +131,7 @@ The design target (written in the script) is the first hire in 5-10 minutes and 
 
 | Key | Where | Action |
 |---|---|---|
-| **F** | at sea, inside a fishing ground | nets down / up (outside a ground: tells you the nearest ground and how far) |
+| **F** | at sea, at the helm | CP-2B.1: a hint only (where the winch is, or the nearest ground and how far); it never fishes. At the winch on the main deck F starts manual fishing |
 | **E** | ashore | talk / sell / read the board (at sea E still toggles the effects budget) |
 | **M** | anywhere | the map. **Shift+M** is now the ship-motion toggle |
 | **Tab** | map open | switch Fish Row / the waters south |
@@ -137,15 +139,15 @@ The design target (written in the script) is the first hire in 5-10 minutes and 
 | **1-5** | the market | sell one species |
 | **Y / N** | a recruit's offer | hire / not now |
 | **Esc** | any panel | close |
-| F6 / F7 | any time | TEST: +25 reales / +10 kg mackerel in the hold |
+| F6 | any time | TEST: +25 reales (the F7 test-fish key was removed in CP-2B.1: fish come only from the winch) |
 | **F8** | any time, no panel open | SELF-CHECK: runs `tests/test_port.gd` inside the running game plus live checks (every person and interaction point on walkable ground, grounds in open water) and prints `SELF-CHECK CP-1: N checks, M failed` on screen and in the Output panel |
 
 While a panel is open the game clock is paused (T1: planning screens pause) and WASD/A-D do nothing. Everything else is as in H2D-1.2 (A/D steer, SPACE dock/cast off, F ashore when moored, F board at the pier, T next stop).
 
 ## 7. How it works (for the next person)
 
-- `h2d/port_state.gd` purse, hold lots with freshness, market (via `core/market.gd`), hiring. `h2d/fishing.gd` the nets and the deterministic haul generator. `h2d/port_npcs.gd` walkers. Pure logic, no scene.
-- `h2d/port_game.gd` the controller: owns the above plus `port_ui.gd` (everything is drawn on one Control, from dictionaries). `h2d0.gd` calls `step(dt, ctx)` each frame and `handle_key` first in `_unhandled_input`; the controller tells it only whether the nets are down (`target_kn = 0`) and whether a panel is open.
+- `h2d/port_state.gd` purse, hold lots with freshness, market (via `core/market.gd`), hiring. `h2d/fishing.gd` the fishing grounds, the winch rules and the deterministic generator (no timed catch since CP-2B.1). `h2d/port_npcs.gd` walkers. Pure logic, no scene.
+- `h2d/port_game.gd` the controller: owns the above plus `port_ui.gd` (everything is drawn on one Control, from dictionaries). `h2d0.gd` calls `step(dt, ctx)` each frame and `handle_key` first in `_unhandled_input`; the controller tells it only whether a winch session holds the ground (`target_kn = 0`) and whether a panel is open.
 - Every rule has a Python twin (`tools/h2d/economy_logic.py`) and a fixture (`tests/fixtures/economy_cases.json`) replayed by `tests/test_port.gd`; that test also checks the baked district, the walkers and that the objective text follows the state.
 
 ## 8. HOW TO TEST (about 15 minutes; Godot 4.7.2, open `pixel_pirates/game`, F5)
@@ -154,8 +156,8 @@ While a panel is open the game clock is paused (T1: planning screens pause) and 
 
 1. **P1**: leave the harbour by ship, moor, F ashore, press T four times. Is the pirate visible at every stop? (Yes/No per stop.)
 2. At the start press **M**: the waters map shows your ship, the harbour and the four grounds. Press Tab: the district map shows Fish Row, the market, the notice board and the four recruits (gold diamonds).
-3. Sail to the Pilchard Shallows (follow the objective card), press F. Does the ship slow to a stop? Do hauls come every 12 s with toasts? Does the hold bar grow?
-4. Press F7 once (test fish) if you do not want to wait. Moor (SPACE in the dock zone), F ashore. Are the stalls, boats, people and the fish market visible and in the right size? Do people walk?
+3. Sail to the Pilchard Shallows (follow the objective card), walk to the winch and press F. Does the ship slow to a stop? Does the hold bar grow after the unload? (Pressing F at the helm must NOT catch anything.)
+4. Fish at the winch until you have some. Moor (SPACE in the dock zone), F ashore. Are the stalls, boats, people and the fish market visible and in the right size? Do people walk?
 5. Walk to the notice board (5 m from the landing) and press E: map opens. Close with Esc.
 6. Walk west on Quay Street to the fish market (about 120 m). Press E at the counter. Check the table, sell with Enter. Is the "+N reales" feedback clear? Does the purse change by exactly that amount?
 7. Press F6 until you have 18 reales, find Pip near the tavern (the map marks him; he has a floating marker). Read his dialogue, press Y. Does the purse drop by 18, does the marker disappear, does the HUD list him in the crew?
