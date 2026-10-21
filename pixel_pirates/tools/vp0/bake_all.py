@@ -67,6 +67,23 @@ if __name__ == "__main__":
             import models_ship as M
             man = bake_group("ship", M.MODELS)
             sheet("ship", man, Path("/tmp/sheet_ship.png"))
+        if g == "hull":
+            import models_hull as H
+            OUTG = OUT / "hull"
+            man = {}
+            for ppm, k_, nm in ((8.0, 1.1, "sloop_sea"),):
+                vox = H.sloop(ppm)
+                frames = []
+                for k in range(16):
+                    res = V.crop(V.render(vox.rotate(90 - k * 22.5), shear=k_, shadow=True))
+                    fn = f"{nm}_h{k:02d}.png"
+                    V.save(res, OUTG / fn)
+                    frames.append({"file": fn, "w": int(res["img"].shape[1]), "h": int(res["img"].shape[0]),
+                                   "pivot": [round(float(res["pivot"][0]), 1), round(float(res["pivot"][1]), 1)], "colours": V.count_colours(res["img"])})
+                man[nm] = {"facings": 16, "ppm": ppm, "shear": k_, "frames": frames}
+                print(nm, frames[0]["w"], frames[0]["h"], max(f["colours"] for f in frames))
+            (OUTG / "hull_manifest.json").write_text(json.dumps(man, indent=1))
+            sheet("hull", man, Path("/tmp/sheet_hull.png"), scale=2)
         if g == "island":
             import models_island as I
             man = bake_group("island", I.MODELS)

@@ -1,4 +1,89 @@
 {
+ "pirate": {
+  "facings": 8,
+  "frames": [
+   {
+    "file": "pirate_f0.png",
+    "w": 23,
+    "h": 53,
+    "pivot": [
+     11.5,
+     49.1
+    ],
+    "colours": 23
+   },
+   {
+    "file": "pirate_f1.png",
+    "w": 20,
+    "h": 56,
+    "pivot": [
+     9.5,
+     50.1
+    ],
+    "colours": 21
+   },
+   {
+    "file": "pirate_f2.png",
+    "w": 19,
+    "h": 56,
+    "pivot": [
+     8.5,
+     50.1
+    ],
+    "colours": 21
+   },
+   {
+    "file": "pirate_f3.png",
+    "w": 20,
+    "h": 56,
+    "pivot": [
+     9.5,
+     51.1
+    ],
+    "colours": 19
+   },
+   {
+    "file": "pirate_f4.png",
+    "w": 23,
+    "h": 54,
+    "pivot": [
+     11.5,
+     51.1
+    ],
+    "colours": 18
+   },
+   {
+    "file": "pirate_f5.png",
+    "w": 20,
+    "h": 56,
+    "pivot": [
+     10.5,
+     51.1
+    ],
+    "colours": 21
+   },
+   {
+    "file": "pirate_f6.png",
+    "w": 19,
+    "h": 56,
+    "pivot": [
+     10.5,
+     51.1
+    ],
+    "colours": 21
+   },
+   {
+    "file": "pirate_f7.png",
+    "w": 20,
+    "h": 56,
+    "pivot": [
+     10.5,
+     50.1
+    ],
+    "colours": 21
+   }
+  ]
+ },
  "barrel": {
   "facings": 1,
   "frames": [

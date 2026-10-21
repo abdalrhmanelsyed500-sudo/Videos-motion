@@ -1,0 +1,169 @@
+{
+ "sloop_sea": {
+  "facings": 16,
+  "ppm": 8.0,
+  "shear": 1.1,
+  "frames": [
+   {
+    "file": "sloop_sea_h00.png",
+    "w": 52,
+    "h": 240,
+    "pivot": [
+     26.0,
+     141.6
+    ],
+    "colours": 33
+   },
+   {
+    "file": "sloop_sea_h01.png",
+    "w": 96,
+    "h": 226,
+    "pivot": [
+     51.0,
+     130.6
+    ],
+    "colours": 33
+   },
+   {
+    "file": "sloop_sea_h02.png",
+    "w": 148,
+    "h": 201,
+    "pivot": [
+     74.0,
+     122.6
+    ],
+    "colours": 34
+   },
+   {
+    "file": "sloop_sea_h03.png",
+    "w": 181,
+    "h": 170,
+    "pivot": [
+     88.0,
+     119.6
+    ],
+    "colours": 33
+   },
+   {
+    "file": "sloop_sea_h04.png",
+    "w": 188,
+    "h": 137,
+    "pivot": [
+     91.0,
+     116.6
+    ],
+    "colours": 35
+   },
+   {
+    "file": "sloop_sea_h05.png",
+    "w": 178,
+    "h": 160,
+    "pivot": [
+     88.0,
+     119.6
+    ],
+    "colours": 35
+   },
+   {
+    "file": "sloop_sea_h06.png",
+    "w": 144,
+    "h": 193,
+    "pivot": [
+     74.0,
+     122.6
+    ],
+    "colours": 35
+   },
+   {
+    "file": "sloop_sea_h07.png",
+    "w": 90,
+    "h": 215,
+    "pivot": [
+     51.0,
+     124.6
+    ],
+    "colours": 34
+   },
+   {
+    "file": "sloop_sea_h08.png",
+    "w": 52,
+    "h": 226,
+    "pivot": [
+     26.0,
+     127.6
+    ],
+    "colours": 34
+   },
+   {
+    "file": "sloop_sea_h09.png",
+    "w": 96,
+    "h": 214,
+    "pivot": [
+     45.0,
+     123.6
+    ],
+    "colours": 34
+   },
+   {
+    "file": "sloop_sea_h10.png",
+    "w": 148,
+    "h": 191,
+    "pivot": [
+     74.0,
+     120.6
+    ],
+    "colours": 35
+   },
+   {
+    "file": "sloop_sea_h11.png",
+    "w": 181,
+    "h": 159,
+    "pivot": [
+     93.0,
+     118.6
+    ],
+    "colours": 35
+   },
+   {
+    "file": "sloop_sea_h12.png",
+    "w": 188,
+    "h": 136,
+    "pivot": [
+     97.0,
+     115.6
+    ],
+    "colours": 35
+   },
+   {
+    "file": "sloop_sea_h13.png",
+    "w": 178,
+    "h": 169,
+    "pivot": [
+     90.0,
+     118.6
+    ],
+    "colours": 34
+   },
+   {
+    "file": "sloop_sea_h14.png",
+    "w": 144,
+    "h": 199,
+    "pivot": [
+     70.0,
+     120.6
+    ],
+    "colours": 33
+   },
+   {
+    "file": "sloop_sea_h15.png",
+    "w": 90,
+    "h": 232,
+    "pivot": [
+     39.0,
+     136.6
+    ],
+    "colours": 33
+   }
+  ]
+ }
+}

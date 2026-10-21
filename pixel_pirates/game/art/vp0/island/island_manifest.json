@@ -179,6 +179,21 @@
    }
   ]
  },
+ "pier_y_6": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "pier_y_6.png",
+    "w": 60,
+    "h": 214,
+    "pivot": [
+     27.0,
+     130.0
+    ],
+    "colours": 18
+   }
+  ]
+ },
  "lamp_post": {
   "facings": 1,
   "frames": [

@@ -1,0 +1,15 @@
+{
+ "tile_px": 48,
+ "px_per_m": 24,
+ "rows": [
+  "sand_dry",
+  "sand_wet",
+  "grass",
+  "dirt",
+  "cobble",
+  "slab",
+  "shallow_bed",
+  "rock_floor"
+ ],
+ "variants": 4
+}

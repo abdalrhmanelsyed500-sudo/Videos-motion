@@ -347,6 +347,7 @@ MODELS = {
     "house_b": (house_b, 1),
     "warehouse": (warehouse, 1),
     "pier_4": (lambda: pier(4), 1),
+    "pier_y_6": (lambda: pier(6).rotz(1), 1),
     "lamp_post": (lamp_post, 1),
     "signpost": (signpost, 1),
 }

@@ -257,7 +257,37 @@ def mast() -> Vox:
     return v
 
 
+def pirate() -> Vox:
+    """Scale-reference mannequin (1.8 m = 43 voxels). NOT the final character art: production characters are hand-painted frames at the
+    same 24 px/m (see VP0_ART_BIBLE). Shares the voxel light so it sits in the scene while the prototype is judged."""
+    v = _new(30, 20, 52)
+    v.define(13, "skin_tan", 2)
+    v.define(14, "cloth_blue", 2)
+    v.define(15, "cloth_red", 2)
+    c = 15
+    for sx in (-1, 1):
+        v.box(c + sx * 3 - 2, 7, 0, c + sx * 3 + 2, 12, 5, TAR)                         # boots
+        v.box(c + sx * 3 - 2, 7, 5, c + sx * 3 + 2, 12, 19, 14, tone=tone_noise(3, 0.1))   # trousers
+    v.box(c - 7, 6, 19, c + 7, 13, 32, 15, tone=tone_noise(2, 0.08))                    # red coat
+    v.box(c - 7, 6, 18, c + 7, 13, 21, TAR)                                              # belt
+    v.box(c - 1, 5, 20, c + 1, 6, 21, BRASS)
+    v.box(c - 7, 6, 28, c + 7, 13, 32, 15)
+    for sx in (-1, 1):
+        v.box(c + sx * 8 - 2 + (1 if sx > 0 else 0), 7, 16, c + sx * 8 + 2 + (1 if sx > 0 else 0), 12, 31, 15)    # arms
+        v.box(c + sx * 8 - 2 + (1 if sx > 0 else 0), 7, 14, c + sx * 8 + 2 + (1 if sx > 0 else 0), 12, 17, 13)     # hands
+    v.ell(c, 9.5, 36, 5.2, 5, 5.5, 13)                                                    # head
+    v.box(c - 1, 4, 34, c + 2, 6, 36, 13)                                                 # nose
+    v.cyl(c, 9.5, 39, 41, 8.5, TAR)                                                       # hat brim
+    v.cyl(c, 9.5, 41, 47, 5.6, TAR, r1=4.6)                                               # crown
+    v.box(c - 8, 8, 40, c - 5, 11, 43, TAR)
+    v.box(c + 5, 8, 40, c + 8, 11, 43, TAR)
+    v.box(c - 6, 5, 31, c + 6, 7, 33, CLOTH)                                              # neckerchief
+    v.box(c - 4, 5, 33, c, 6, 35, 13)
+    return v
+
+
 MODELS = {
+    "pirate": (pirate, 8),
     "barrel": (lambda: barrel(False), 1),
     "barrel_fish": (lambda: barrel(True, 3), 1),
     "crate": (crate, 8),
