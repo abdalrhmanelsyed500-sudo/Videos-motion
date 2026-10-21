@@ -1,0 +1,82 @@
+{
+ "palm_a": {
+  "facings": 1,
+  "ppm": 8,
+  "frames": [
+   {
+    "file": "palm_a.png",
+    "w": 42,
+    "h": 69,
+    "pivot": [
+     16.0,
+     66.5
+    ],
+    "colours": 12
+   }
+  ]
+ },
+ "palm_c": {
+  "facings": 1,
+  "ppm": 8,
+  "frames": [
+   {
+    "file": "palm_c.png",
+    "w": 39,
+    "h": 48,
+    "pivot": [
+     19.0,
+     44.5
+    ],
+    "colours": 10
+   }
+  ]
+ },
+ "rock_a": {
+  "facings": 1,
+  "ppm": 8,
+  "frames": [
+   {
+    "file": "rock_a.png",
+    "w": 27,
+    "h": 31,
+    "pivot": [
+     12.5,
+     21.9
+    ],
+    "colours": 8
+   }
+  ]
+ },
+ "rock_c": {
+  "facings": 1,
+  "ppm": 8,
+  "frames": [
+   {
+    "file": "rock_c.png",
+    "w": 44,
+    "h": 45,
+    "pivot": [
+     22.0,
+     31.5
+    ],
+    "colours": 9
+   }
+  ]
+ },
+ "bush_a": {
+  "facings": 1,
+  "ppm": 8,
+  "frames": [
+   {
+    "file": "bush_a.png",
+    "w": 18,
+    "h": 15,
+    "pivot": [
+     10.0,
+     10.0
+    ],
+    "colours": 5
+   }
+  ]
+ }
+}

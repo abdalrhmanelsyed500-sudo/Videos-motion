@@ -188,6 +188,22 @@ class Vox:
         v.mat, v.tone = m, t
         return v
 
+    def downscale(self, f: int) -> "Vox":
+        """LOD bake source: block-reduce the voxel grid by an integer factor (1 voxel -> f^3 voxels). A block is solid if >= 40 percent of it is;
+        its material is the most common one, its tone the block mean (rounded). Used to bake the 8 and 12 px/m sprites from the 24 px/m models."""
+        X, Y, Z = (self.X // f) * f, (self.Y // f) * f, (self.Z // f) * f
+        m = self.mat[:X, :Y, :Z].reshape(X // f, f, Y // f, f, Z // f, f).transpose(0, 2, 4, 1, 3, 5).reshape(X // f, Y // f, Z // f, f ** 3)
+        t = self.tone[:X, :Y, :Z].reshape(X // f, f, Y // f, f, Z // f, f).transpose(0, 2, 4, 1, 3, 5).reshape(X // f, Y // f, Z // f, f ** 3)
+        solid = (m > 0).mean(axis=3) >= 0.4
+        ids = sorted(self.mats)
+        counts = np.stack([(m == i).sum(axis=3) for i in ids], axis=-1)
+        best = np.array(ids, np.uint8)[counts.argmax(axis=-1)]
+        v = Vox(X // f, Y // f, Z // f)
+        v.mats = self.mats
+        v.mat = np.where(solid, best, 0).astype(np.uint8)
+        v.tone = np.where(solid, np.round((t * (m > 0)).sum(axis=3) / np.maximum((m > 0).sum(axis=3), 1)), 0).astype(np.int8)
+        return v
+
     def merge(self, other: "Vox", ox: int, oy: int, oz: int) -> None:
         """Stamp `other` into self at an integer offset (non-empty voxels only)."""
         for k, v in other.mats.items():

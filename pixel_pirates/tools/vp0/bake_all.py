@@ -84,6 +84,19 @@ if __name__ == "__main__":
                 print(nm, frames[0]["w"], frames[0]["h"], max(f["colours"] for f in frames))
             (OUTG / "hull_manifest.json").write_text(json.dumps(man, indent=1))
             sheet("hull", man, Path("/tmp/sheet_hull.png"), scale=2)
+        if g == "lod8":
+            import models_island as I
+            OUTG = OUT / "lod8"
+            man = {}
+            for nm in ("palm_a", "palm_c", "rock_a", "rock_c", "bush_a"):
+                vox = I.MODELS[nm][0]().downscale(3)
+                res = V.crop(V.render(vox, shear=1.1))
+                V.save(res, OUTG / f"{nm}.png")
+                man[nm] = {"facings": 1, "ppm": 8, "frames": [{"file": f"{nm}.png", "w": int(res["img"].shape[1]), "h": int(res["img"].shape[0]),
+                           "pivot": [round(float(res["pivot"][0]), 1), round(float(res["pivot"][1]), 1)], "colours": V.count_colours(res["img"])}]}
+                print("lod8", nm, man[nm]["frames"][0]["w"], man[nm]["frames"][0]["h"])
+            (OUTG / "lod8_manifest.json").write_text(json.dumps(man, indent=1))
+            sheet("lod8", man, Path("/tmp/sheet_lod8.png"), scale=4)
         if g == "island":
             import models_island as I
             man = bake_group("island", I.MODELS)

@@ -243,17 +243,30 @@ def bollard() -> Vox:
 
 
 def mast() -> Vox:
-    """Mast, 11 m of a 22-voxel round (reused as a billboard in prototypes; rotation-symmetric)."""
+    """Mast with its crow's nest (11.25 m; rotation-symmetric so it is one billboard frame). The nest platform is 2.8 m square at 8.4 m above the
+    deck (ship_layout NEST_HALF 1.4, NEST_Y - FLOOR_Y)."""
     H = 270
-    v = _new(26, 26, H + 8)
+    C = 36
+    v = _new(72, 72, H + 8)
     for z in range(H):
         r = 11.0 - 3.6 * (z / H)
-        v.cyl(13, 13, z, z + 1, r, WOOD, tone=lambda x, y, zz: np.where(np.floor(np.arctan2(y - 13, x - 13) * 4 + zz * 0.0) % 2 == 0, 0, -1) + np.where(hash3(x, 0, zz // 7, 4) < 0.1, 1, 0))
-    for z0 in (6, 70, 140, 205):
+        v.cyl(C, C, z, z + 1, r, WOOD, tone=lambda x, y, zz: np.where(np.floor(np.arctan2(y - C, x - C) * 4 + zz * 0.0) % 2 == 0, 0, -1) + np.where(hash3(x, 0, zz // 7, 4) < 0.1, 1, 0))
+    for z0 in (6, 70, 140, 235):
         r = 11.0 - 3.6 * (z0 / H) + 0.9
-        v.cyl(13, 13, z0, z0 + 3, r, IRON)
-    v.cyl(13, 13, H, H + 3, 5.0, BRASS)
-    v.cyl(13, 13, 0, 8, 11.8, WOOD)
+        v.cyl(C, C, z0, z0 + 3, r, IRON)
+    v.cyl(C, C, H, H + 3, 5.0, BRASS)
+    v.cyl(C, C, 0, 8, 11.8, WOOD)
+    # crow's nest
+    z0 = 202
+    v.box(2, 2, z0, 70, 70, z0 + 4, PALE, tone=tone_planks(3, 0.1) if False else tone_noise(2, 0.1))
+    v.box(2, 2, z0 - 3, 70, 70, z0, WOOD)
+    for (x0, y0, x1, y1) in ((2, 2, 70, 5), (2, 67, 70, 70), (2, 2, 5, 70), (67, 2, 70, 70)):
+        v.box(x0, y0, z0 + 4, x1, y1, z0 + 15, WOOD, tone=tone_noise(5, 0.12))        # planked wall
+        v.box(x0 - (1 if x0 < 3 else 0), y0 - (1 if y0 < 3 else 0), z0 + 15, x1 + (1 if x1 > 69 else 0), y1 + (1 if y1 > 69 else 0), z0 + 18, PALE)   # rail cap
+    for (px, py) in ((2, 2), (67, 2), (2, 67), (67, 67), (34, 2), (34, 67), (2, 34), (67, 34)):
+        v.box(px, py, z0 + 4, px + 3, py + 3, z0 + 26, WOOD)                             # posts
+    for (x0, y0, x1, y1) in ((2, 2, 70, 4), (2, 68, 70, 70), (2, 2, 4, 70), (68, 2, 70, 70)):
+        v.box(x0, y0, z0 + 24, x1, y1, z0 + 26, ROPE)                                    # top line
     return v
 
 

@@ -58,7 +58,7 @@ def cay():
         s = 21.0 + 2.0 * np.sin(x * 0.19 + 0.4) + 1.1 * np.sin(x * 0.07 + 2.0) + rng.uniform(-0.25, 0.25)
         return s
     sh = np.array([shore(x) for x in xs])
-    quay = (xs >= 4) & (xs <= 22)
+    quay = (xs >= 25) & (xs <= 43)
     sh[quay] = 18.0
     for x in xs:
         for r in range(H):
@@ -78,16 +78,15 @@ def cay():
                 c[r, x] = SAND
     # roads and plaza
     c[11:14, :] = np.where(c[11:14, :] == WATER, WATER, COBBLE)
-    c[11:18, 3:18] = COBBLE
-    c[11:18, 3:18] = np.where(np.arange(W)[None, 3:18] < 0, c[11:18, 3:18], c[11:18, 3:18])
-    c[18, 4:23] = SLAB
-    c[14:18, 9:12] = COBBLE                             # lane to the pier
+    c[11:18, 24:43] = COBBLE
+    c[18, 25:44] = SLAB
+    c[14:18, 37:40] = COBBLE                            # lane to the pier
     # dirt track down to the beach and around the west cottage
     for r in range(14, 21):
-        for x in (31, 32):
+        for x in (51, 52):
             if c[r, x] in (GRASS, SAND):
                 c[r, x] = DIRT
-    c[8:11, 4:34] = np.where(c[8:11, 4:34] == GRASS, DIRT, c[8:11, 4:34])
+    c[8:11, 4:54] = np.where(c[8:11, 4:54] == GRASS, DIRT, c[8:11, 4:54])
     c[7:11, :4] = np.where(c[7:11, :4] == GRASS, DIRT, c[7:11, :4])
     # rocky west corner
     c[16:21, 0:5] = np.where(c[16:21, 0:5] == WATER, WATER, ROCKF)
