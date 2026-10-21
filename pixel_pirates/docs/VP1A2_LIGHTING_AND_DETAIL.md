@@ -1,6 +1,6 @@
 # VP-1A.2 — Cinematic HD-2D: lighting first, pixel-art detail first (ship + ocean)
 
-Status: **delivered in the playable game** (commit see below). Everything in this document was rendered by the REAL game
+Status: **delivered in the playable game** (exact commit in the delivery report and `git log`: the VP-1A.2 commits). Everything in this document was rendered by the REAL game
 (`game/h2d/sea_view_3d.gd` → SubViewport → post), never by a prototype. The software renderer of the test harness stands in
 for the user's GPU, so colours here are close but not identical to a real Windows run; **no frame rate is claimed anywhere:
 nothing in this release has been measured on the Intel HD 3000.**
@@ -90,6 +90,9 @@ No new render pass, no shadow map, no transparency, no new texture, no bigger te
 loop in one fragment shader. **Frame rate on the Intel HD 3000: UNMEASURED — press B in game for the bench and report it.**
 
 ## 6. Evidence (docs/vp1a2_shots/, real game, software renderer, 1366x876 window)
+
+The H pairs keep the HUD on (same in before and after) so the frame is unmistakably the live game; the L series and the
+sea series are captured with the HUD hidden.
 
 * `before_H0_day.png` / `after_H0_day.png` — same camera, mid-deck, Standard profile, day (baseline = CP-2B.1 commit 0465780).
 * `before_H1_sunset.png` / `after_H1_sunset.png`, `before_H2_night.png` / `after_H2_night.png` — the same two moments.

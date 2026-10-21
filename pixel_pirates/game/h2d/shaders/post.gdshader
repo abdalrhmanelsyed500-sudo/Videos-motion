@@ -61,5 +61,8 @@ void fragment() {
 	c *= tint;
 	float v = smoothstep(vign_in, vign_out, length((uv - 0.5) * vec2(1.0, 0.75) * 1.6));
 	c *= 1.0 - v * vign_str * 0.55;
+	// VP-1A.2: final-output dither: kills 8-bit banding lines in smooth sky and water gradients without touching detail
+	float bd = fract(sin(dot(floor(FRAGCOORD.xy), vec2(12.9898, 78.233))) * 43758.5453);
+	c += (bd - 0.5) * (1.0 / 255.0);
 	COLOR = vec4(clamp(c, vec3(0.0), vec3(1.0)), 1.0);
 }

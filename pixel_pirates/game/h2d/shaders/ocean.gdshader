@@ -305,5 +305,7 @@ void fragment() {
 	vec3 lamp = h2d_lamps(w_pos.xz);
 	col += lamp * (0.28 + 0.22 * h2d_noise(w_pos.xz * 1.3 + h2d_time * 0.8));
 	col = h2d_fog_mix(col, dist);
+	// VP-1A.2: output dither (+-0.5/255): the open sea is a very smooth gradient, and without it the RGBA8 target draws banding iso-lines
+	col += (bayer4(FRAGCOORD.xy + vec2(3.0, 6.0)) - 0.5) * (1.5 / 255.0);
 	ALBEDO = h2d_out(col);
 }
