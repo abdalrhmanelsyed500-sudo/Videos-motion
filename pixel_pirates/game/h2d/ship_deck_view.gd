@@ -15,7 +15,6 @@ const Layout := preload("res://h2d/ship_layout.gd")
 const ShipMesh := preload("res://h2d/ship_mesh.gd")
 const SHADER := "res://h2d/shaders/ship_deck.gdshader"
 const MATS_PATH := "res://art/vp1/ship_mats.png"
-static var _mats_cache: Texture2D = null
 const F := Layout.FLOOR_Y
 const NEST_Y := Layout.NEST_Y
 const MAST_TOP := F + 11.6
@@ -38,6 +37,8 @@ const NET_C := Color(0.66, 0.58, 0.40)
 const LAMP_C := Color(1.0, 0.80, 0.42)
 const VOID_C := Color(0.035, 0.03, 0.04)
 const SEE := 0.5
+
+static var _mats_cache: Texture2D = null
 
 var lay: RefCounted = Layout.new()
 var root: Node3D = Node3D.new()
