@@ -143,7 +143,8 @@ void fragment() {
 		}
 		float cf = h2d_noise(w_pos.xz * 0.30 + vec2(h2d_time * 0.20, 0.0)) * 0.6 + h2d_noise(w_pos.xz * 0.75 - vec2(0.0, h2d_time * 0.15)) * 0.4;
 		float cl = 1.0 - smoothstep(0.0, 0.035, abs(fract(cf * 6.0) - 0.5) - 0.46 + 0.035);
-		col += lightc * cl * 0.05 * ndl * (1.0 - h2d_overcast) * (1.0 - smoothstep(60.0, 200.0, dist));
+		// VP-1A.2: contour lines belong to SHALLOW water (reefs, sand banks); the open sea keeps only the caustic-free swell shading
+		col += lightc * cl * 0.045 * ndl * (1.0 - h2d_overcast) * (1.0 - smoothstep(60.0, 200.0, dist)) * (1.0 - smoothstep(4.0, 14.0, depth_m));
 	}
 
 	// pack ice: floes where a slow noise field rises above a threshold that falls as the cover grows

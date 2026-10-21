@@ -199,9 +199,12 @@ void fragment() {
 	if (fade < 0.999 && ign(FRAGCOORD.xy + vec2(1.7, 4.1)) > fade) {
 		discard;
 	}
+	int m = int(v_mat + 0.5);
 	if (v_col.a < 0.9 && hero_uv.x >= 0.0) {
 		float dist = length(CAMERA_POSITION_WORLD - w_pos);
-		if (dist < hero_dist - 0.4 && w_pos.y < hero_y) {
+		// cloth and rope above the pirate's head never dissolve (no more speckle on the sails); roofs, rails and the nest still open around him
+		bool height_ok = (m == 4 || m == 5) ? w_pos.y < hero_y : true;
+		if (dist < hero_dist - 0.4 && height_ok) {
 			vec2 d = (SCREEN_UV - hero_uv) * vec2(aspect, 1.0);
 			float k = smoothstep(see_r * 0.55, see_r, length(d));
 			if (ign(FRAGCOORD.xy) > k) {
@@ -223,7 +226,6 @@ void fragment() {
 	float h = q_hash(q);
 	vec3 tint = v_col.rgb;
 	vec3 pal = tint;
-	int m = int(v_mat + 0.5);
 	if (m == 0) {                                    // deck planks, run fore and aft (z)
 		float pw = 0.34;
 		float pidx = floor(l_pos.x / pw);
