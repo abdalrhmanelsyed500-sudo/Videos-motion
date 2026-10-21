@@ -28,8 +28,8 @@ const TARGET_LEAD_M := 9.0  ## the camera looks this far north of the ship, so t
 const OCEAN_SIZE_M := 420.0
 const PROFILES := {
 	"dev_lite": {"size": Vector2i(640, 360), "ocean_div": 64, "detail": 0.0, "shadow_steps": 6.0, "posterize": 12.0},
-	"standard": {"size": Vector2i(1280, 720), "ocean_div": 128, "detail": 1.0, "shadow_steps": 10.0, "posterize": 16.0},
-	"ultra": {"size": Vector2i(1920, 1080), "ocean_div": 192, "detail": 1.0, "shadow_steps": 12.0, "posterize": 24.0},
+	"standard": {"size": Vector2i(1280, 720), "ocean_div": 128, "detail": 1.0, "shadow_steps": 10.0, "posterize": 0.0},   # VP-1A.2: no colour banding at 720p (it reads as contour lines); the pixel feel comes from the dithered depth ramp and foam
+	"ultra": {"size": Vector2i(1920, 1080), "ocean_div": 192, "detail": 1.0, "shadow_steps": 12.0, "posterize": 0.0},
 }
 ## Effects budget (key E): how many real raindrops, ring slots and spray droplets are simulated. The look is the same
 ## at every level, only the density and the cost change. Dev-Lite defaults to "medium"; measure before raising it.
