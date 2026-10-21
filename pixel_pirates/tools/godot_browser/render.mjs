@@ -39,7 +39,7 @@ const shimSrc = () => fs.readFileSync(path.join(here, '../godot_node/regex_shim.
 // the one change the raw (never imported) project needs: the view's texture loader returns the raw PNG as a texture
 // harness-only CP-2 hooks (in memory): Q sleeping deck, U hold, I crow's nest, O captain's cabin, J winch, K fish barrels,
 // L half way up the rope ladder, H hold racks, V test fish + provisions (letters that the game never binds in these scenarios). They only PLACE the pirate; the transitions are real keys.
-const deckHooks = (s) => s.replace('\tvar kc: int = KeyUtil.code(k)', '\tvar dh: int = [KEY_Q, KEY_U, KEY_I, KEY_O, KEY_J, KEY_K, KEY_L, KEY_H, KEY_V].find(int(k.keycode)) + 1\n\tif dh > 0:\n\t\t_deck_hook(dh)\n\t\treturn\n\tvar kc: int = KeyUtil.code(k)') + `
+const deckHooks = (s) => s.replace('\tvar kc: int = KeyUtil.code(k)', '\tvar dh: int = [KEY_Q, KEY_U, KEY_I, KEY_O, KEY_J, KEY_K, KEY_L, KEY_H, KEY_V, KEY_BACKSLASH].find(int(k.keycode)) + 1\n\tif dh > 0:\n\t\t_deck_hook(dh)\n\t\treturn\n\tvar kc: int = KeyUtil.code(k)') + `
 func _deck_hook(n: int) -> void:
 	if not _ship_mode.is_deck():
 		_ship_mode.leave_helm(_ship_ctx())
@@ -64,6 +64,8 @@ func _deck_hook(n: int) -> void:
 			w.set("climb_t", 0.5)
 		8:
 			w.call("place", 2, Vector2(-0.4, 0.0))
+		10:
+			w.call(\"place\", 0, Vector2(-0.3, 0.9))
 		9:
 			(_port as PortGame).state.add_catch("spc_mackerel", 28.0, 0.0)
 			_give_test_provisions()

@@ -269,6 +269,37 @@ void fragment() {
 	float spk = step(0.5, sp) * step(0.45, h2d_hash(floor(w_pos.xz * 1.6 + floor(h2d_time * mix(3.0, 1.2, glass)))));
 	col += h2d_sun_col * 2.0 * spk * (1.0 - h2d_cloud * 0.9) * (1.0 - h2d_overcast);   // no glints under an overcast sky
 
+	// VP-1A.2 water lighting. (1) sun sheen: a broad warm path towards the sun on the SMOOTH swell (no ripples), three dithered steps, so it reads
+	// as light on water and not as sparkle; (2) light through the crests: the sun-facing side of a wave glows turquoise (sub-surface); (3) the sky:
+	// at grazing angles the sea takes the colour of the fog / horizon, which is warm at sunset and cold at dusk and night.
+	{
+		vec3 ns = normalize(vec3(-g.y * normal_gain, 1.0, -g.z * normal_gain));
+		vec3 rs = reflect(-h2d_sun_dir, ns);
+		float sh_a = pow(max(dot(rs, vdir), 0.0), 6.0 + 18.0 * glass);
+		float sh_q = floor(sh_a * 3.0 + bayer4(FRAGCOORD.xy + vec2(5.0, 2.0))) / 3.0;
+		col += h2d_sun_col * 0.30 * clamp(sh_q, 0.0, 1.0) * (1.0 - h2d_overcast) * (1.0 - 0.7 * gp) * (0.6 + 0.4 * detail);
+		float sss = pow(crest_h, 3.0) * clamp(dot(normalize(vec3(h2d_sun_dir.x, 0.0, h2d_sun_dir.z) + 0.0001), -normalize(vec3(vdir.x, 0.0, vdir.z) + 0.0001)) * 0.5 + 0.5, 0.0, 1.0);
+		col += shallow_col * h2d_sun_col * sss * 0.55 * (1.0 - h2d_overcast) * (0.5 + 0.5 * detail);
+		col = mix(col, h2d_fog_col * mix(0.9, 1.0, h2d_night), fres * 0.28 * (1.0 - smoothstep(0.3, 0.8, h2d_sea)));
+		// atmospheric glow: at grazing angles towards the sun's bearing the sea takes the warm colour of the sky (sunset / dawn), three dithered steps
+		vec2 vv = normalize(vec2(vdir.x, vdir.z) + vec2(0.0001));
+		vec2 ss = normalize(vec2(h2d_sun_dir.x, h2d_sun_dir.z) + vec2(0.0001));
+		float hgr = pow(1.0 - clamp(vdir.y, 0.0, 1.0), 5.0);
+		float glow = hgr * pow(clamp(dot(vv, ss), 0.0, 1.0), 3.0) * (1.0 - h2d_overcast) * (1.0 - 0.5 * h2d_night);
+		float gq = clamp(floor(glow * 3.0 + bayer4(FRAGCOORD.xy + vec2(7.0, 4.0))) / 3.0, 0.0, 1.0);
+		col = mix(col, h2d_fog_col * (0.85 + 0.75 * h2d_sun_col), gq * 0.55);
+	}
+	// VP-1A.2 hull contact: the water is dark right at the hull, a thin bright line of foam rides on the waterline, and the hull throws a small
+	// reflection shimmer (a darker, wobbling strip) on the sun-away side
+	{
+		float hl_e = (hl_a * hl_a) / (ship_len * ship_len * 0.25) + (hl_s * hl_s) / (ship_beam * ship_beam * 0.25);
+		float hr = sqrt(max(hl_e, 0.0001));
+		float ring = (1.0 - smoothstep(1.0, 1.16, hr)) * smoothstep(0.86, 1.0, hr);
+		col *= 1.0 - 0.28 * (1.0 - smoothstep(0.95, 1.35, hr)) * sun_k * step(0.5, ship_len);
+		float wob = step(0.35, h2d_noise(vec2(hl_a * 1.1 + h2d_time * 1.4, hl_s * 1.3)));
+		col = mix(col, foam_col * clamp(lightc * 1.2, vec3(0.5), vec3(1.0)), ring * wob * 0.8 * clamp(0.35 + ship_speed * 0.15, 0.0, 1.0) * step(0.5, ship_len));
+	}
+
 	// night: the harbour lamps lay warm pools on the water that shimmer with the ripples
 	vec3 lamp = h2d_lamps(w_pos.xz);
 	col += lamp * (0.28 + 0.22 * h2d_noise(w_pos.xz * 1.3 + h2d_time * 0.8));

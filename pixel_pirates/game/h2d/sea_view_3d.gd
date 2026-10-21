@@ -170,6 +170,8 @@ func set_quality(q: String) -> void:
 	plane.subdivide_depth = int(p["ocean_div"])
 	_ocean_mat.set_shader_parameter("detail", float(p["detail"]))
 	_ocean_mat.set_shader_parameter("posterize", float(p["posterize"]))
+	if _deck != null:
+		_deck.set_lighting_quality(q == "dev_lite")
 	_cay.set_quality(float(p["shadow_steps"]), 1.0 if q != "dev_lite" else 0.0)
 	var prof: Dictionary = (_look_profiles["profiles"] as Dictionary)["dev_lite" if q == "dev_lite" else "standard"]
 	var ts: Dictionary = prof["tilt_shift"]
@@ -702,10 +704,11 @@ func _update_deck(v: Dictionary, ship: Dictionary, dt: float) -> void:
 	var w := _deck.to_world(feet)
 	_deck_hero = w
 	_cay.set_hero(true, w.x, w.z, int(st.get("row", 0)), int(st.get("frame", 0)), float(_land.get("zoom", 4.0)), w.y)
+	_deck.set_hero_model(feet, level == DeckLayout.L_DECK and float(st.get("height", 0.0)) < 0.3)
 	var chest := w + Vector3(0.0, 1.0, 0.0)
 	var px := _cam.unproject_position(chest)
 	var in_nest := level == DeckLayout.L_NEST or (float(st.get("height", 0.0)) > 4.0)
-	_deck.set_hero_screen(Vector2(px.x / float(_vp.size.x), px.y / float(_vp.size.y)), (chest - _cam.global_position).length(), in_nest)
+	_deck.set_hero_screen(Vector2(px.x / float(_vp.size.x), px.y / float(_vp.size.y)), (chest - _cam.global_position).length(), in_nest, feet.y + 1.45)
 
 
 ## Colour grade only. H2D-0.3 removed the screen-space haze and lightning flash that H2D-0.2 laid over the picture:

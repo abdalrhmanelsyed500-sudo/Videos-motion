@@ -223,3 +223,57 @@ func surface(pt: Callable, rows: int, cols: int, col: Color, mat: int) -> void:
 			var i2 := i0 + cols + 2
 			var i3 := i0 + cols + 1
 			_i.append_array(PackedInt32Array([i0, i1, i2, i0, i2, i3]))
+
+
+## VP-1A.2: a quad with a colour per corner (a, b, c, d in order): soft ambient-occlusion gradients on floors and wall bases.
+func quad_c(a: Vector3, b: Vector3, c: Vector3, d: Vector3, ca: Color, cb: Color, cc: Color, cd: Color, mat: int, outward := Vector3.ZERO) -> void:
+	var n := (b - a).cross(d - a)
+	if n.length() < 0.000001:
+		n = (c - a).cross(d - a)
+	n = n.normalized()
+	if outward != Vector3.ZERO and n.dot(outward) < 0.0:
+		n = -n
+	var base := _v.size()
+	var k := 0
+	for pt in [a, b, c, d]:
+		_v.append(pt)
+		_n.append(n)
+		_c.append([ca, cb, cc, cd][k])
+		_uv.append(Vector2(float(mat), 0.5))
+		k += 1
+	_i.append_array(PackedInt32Array([base, base + 1, base + 2, base, base + 2, base + 3]))
+
+
+## VP-1A.2: a smooth surface of revolution round `axis` starting at `base`. prof = Array of Vector2(radius, distance along the axis), base to
+## tip. Smooth normals, so barrels, cannon tubes, lantern bodies and blocks shade as round things. UV.x = material + 0.4 * (angle / TAU), which
+## the shader reads back as the angle round the axis (barrel staves); UV.y = distance along the axis / total (hoops).
+func lathe(base: Vector3, prof: Array, segs: int, col: Color, mat: int, axis := Vector3.UP) -> void:
+	var rows := prof.size()
+	if rows < 2:
+		return
+	var f := axis.normalized()
+	var up := Vector3.UP if absf(f.y) < 0.95 else Vector3.RIGHT
+	var s := f.cross(up).normalized()
+	var t := f.cross(s).normalized()
+	var hmax := maxf(absf((prof[rows - 1] as Vector2).y - (prof[0] as Vector2).y), 0.0001)
+	var h0 := (prof[0] as Vector2).y
+	var base_i := _v.size()
+	for r in rows:
+		var pr: Vector2 = prof[r]
+		var prv: Vector2 = prof[maxi(r - 1, 0)]
+		var nxt: Vector2 = prof[mini(r + 1, rows - 1)]
+		var nr := Vector2(nxt.y - prv.y, -(nxt.x - prv.x))
+		if nr.length() < 0.00001:
+			nr = Vector2(1.0, 0.0)
+		nr = nr.normalized()
+		for k in segs + 1:
+			var a := TAU * float(k) / float(segs)
+			var d := s * cos(a) + t * sin(a)
+			_v.append(base + d * pr.x + f * pr.y)
+			_n.append((d * nr.x + f * nr.y).normalized())
+			_c.append(col)
+			_uv.append(Vector2(float(mat) + 0.4 * float(k) / float(segs), (pr.y - h0) / hmax))
+	for r in rows - 1:
+		for k in segs:
+			var i0 := base_i + r * (segs + 1) + k
+			_i.append_array(PackedInt32Array([i0, i0 + 1, i0 + segs + 2, i0, i0 + segs + 2, i0 + segs + 1]))

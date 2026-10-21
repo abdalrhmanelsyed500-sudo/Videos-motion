@@ -46,6 +46,9 @@ const WINCH := Vector2(3.2, -2.2)
 const WINCH_HALF := Vector2(0.95, 0.55)
 const FISH_BARRELS: Array[Vector2] = [Vector2(5.2, -1.75), Vector2(6.1, -1.45), Vector2(5.2, -0.85), Vector2(6.1, -0.6)]
 const FISH_BARREL_R := 0.45
+## VP-1A.2: where the four deck cannons stand (u), per side: index 0 = port (v < 0), 1 = starboard. Each is a small solid box against the bulwark,
+## placed where the deck has nothing else (checked by tests/test_ship_layout.gd: every interaction stays reachable).
+const CANNON_U: Array = [[-4.6, -0.6], [-4.6, 6.2]]
 const DESK := Vector2(-9.2, -0.7)
 const DESK_HALF := Vector2(0.55, 1.0)
 const CHEST := Vector2(-6.1, 1.5)
@@ -135,6 +138,11 @@ func _build() -> void:
 	d0.append(_box("crate_a", Vector2(3.0, 2.2), Vector2(0.5, 0.5), 1.0, "crate"))
 	d0.append(_box("crate_b", Vector2(4.1, 2.15), Vector2(0.45, 0.45), 0.9, "crate"))
 	d0.append(_box("windlass", Vector2(8.0, 0.0), Vector2(0.35, 0.7), 0.9, "windlass"))
+	for si in 2:
+		var sg := -1.0 if si == 0 else 1.0
+		for cu in CANNON_U[si]:
+			var cuf := float(cu)
+			d0.append(_box("cannon_%d_%d" % [si, int(cuf * 10.0)], Vector2(cuf, sg * (hull_half(L_DECK, cuf) - 0.75)), Vector2(0.36, 0.5), 0.5, "cannon"))
 	_obs[L_DECK] = d0
 	var d1: Array[Dictionary] = []
 	d1.append(_circle("mast", MAST, MAST_R, 10.0, "mast"))

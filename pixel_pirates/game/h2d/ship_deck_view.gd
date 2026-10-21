@@ -1,4 +1,4 @@
-# gdlint: disable=max-line-length
+# gdlint: disable=max-line-length,max-file-lines
 extends Node3D
 ## CP-2 Release A: the 3D model of the ship you can walk on: the main deck with the captain's cabin, the helm wheel, the fishing winch,
 ## the fish barrels, the mast, rigging and the crow's nest; the sleeping deck; the provisioning hold. It lives in the sea view's
@@ -13,6 +13,7 @@ extends Node3D
 const CRATE_COL := Color(0.56, 0.40, 0.22)
 const Layout := preload("res://h2d/ship_layout.gd")
 const ShipMesh := preload("res://h2d/ship_mesh.gd")
+const Props := preload("res://h2d/ship_props.gd")
 const SHADER := "res://h2d/shaders/ship_deck.gdshader"
 const MATS_PATH := "res://art/vp1/ship_mats.png"
 const F := Layout.FLOOR_Y
@@ -61,6 +62,11 @@ var _alpha := 1.0
 var _cabin_fade := 1.0
 var _stats := {"meshes": 0, "vertices": 0}
 var _store_units: Dictionary = {}
+var _sh_c: Array = []                    ## VP-1A.2 shadow boxes: centre / half extents (Vector4), model space
+var _sh_h: Array = []
+var _sh_lite := 12                       ## how many boxes the Low-End profile keeps (the biggest ones come first)
+var _lite := false
+var _jib_pts: Array = []
 
 
 static func tc(c: Color, see := false) -> Color:
@@ -84,7 +90,7 @@ func build(texel: float = 0.0694) -> void:
 	_m_sleep = _material(texel, 1.0, 1.0)
 	_m_hold = _material(texel, 1.0, 1.0)
 	# lantern positions in MODEL space (x = v, y, z = -u)
-	_set_lamps(_m_open, [Vector4(0.0, F + 2.0, 10.8, 0.8), Vector4(Layout.HELM.y + 0.4, F + 1.2, -Layout.HELM.x, 0.7), Vector4(0.0, F + 1.7, -9.0, 0.8), Vector4(0.0, F + 3.4, -1.0, 0.7)])
+	_set_lamps(_m_open, [Vector4(0.0, F + 2.0, 10.8, 0.8), Vector4(Layout.HELM.y + 0.4, F + 1.2, -Layout.HELM.x, 0.7), Vector4(0.0, F + 1.7, -9.0, 0.8), Vector4(0.0, F + 3.2, -1.62, 0.8)])
 	_set_lamps(_m_cabin, [Vector4(0.0, F + 1.7, 7.7, 1.0), Vector4(-0.9, F + 1.2, 9.5, 0.6)])
 	_set_lamps(_m_sleep, [Vector4(0.0, F + 1.65, -5.5, 0.9), Vector4(0.0, F + 1.65, 0.6, 0.8), Vector4(0.0, F + 1.65, 5.8, 0.8)])
 	_set_lamps(_m_hold, [Vector4(0.0, F + 1.75, 3.0, 0.9), Vector4(0.0, F + 1.75, -3.4, 0.9), Vector4(0.0, F + 1.75, -6.0, 0.8)])
@@ -93,6 +99,8 @@ func build(texel: float = 0.0694) -> void:
 	_build_sleep()
 	_build_hold()
 	_build_dynamic()
+	_shadow_setup()
+	set_trim(0.0)
 	set_level(Layout.L_DECK)
 
 
@@ -152,9 +160,7 @@ func _bx(b: ShipMesh, u: float, v: float, y0: float, hu: float, hv: float, h: fl
 
 
 func _lantern(b: ShipMesh, u: float, v: float, y: float) -> void:
-	b.box(ShipMesh.p(u, v, y), Vector3(0.1, 0.14, 0.1), LAMP_C, ShipMesh.M_LAMP)
-	b.box(ShipMesh.p(u, v, y + 0.2), Vector3(0.13, 0.04, 0.13), IRON_C, ShipMesh.M_IRON)
-	b.box(ShipMesh.p(u, v, y - 0.17), Vector3(0.12, 0.03, 0.12), IRON_C, ShipMesh.M_IRON)
+	Props.lantern(b, u, v, y)
 
 
 func _coil(b: ShipMesh, u: float, v: float, y: float, r: float, turns: int, col: Color = ROPE_C) -> void:
@@ -177,7 +183,7 @@ func _hull_strip(b: ShipMesh, lv: int, y0: float, y1: float, inner_only: bool, c
 				b.quad(ShipMesh.p(u, sd * h0, y0), ShipMesh.p(u2, sd * h1, y0), ShipMesh.p(u2, sd * h1, y1), ShipMesh.p(u, sd * h0, y1), col, mat, Vector3(sd, 0.0, 0.0))
 			var i0 := h0 - Layout.WALL_MARGIN
 			var i1 := h1 - Layout.WALL_MARGIN
-			b.quad(ShipMesh.p(u, sd * i0, F), ShipMesh.p(u2, sd * i1, F), ShipMesh.p(u2, sd * i1, y1), ShipMesh.p(u, sd * i0, y1), col.lightened(0.12), mat, Vector3(-sd, 0.0, 0.0))
+			b.quad_c(ShipMesh.p(u, sd * i0, F), ShipMesh.p(u2, sd * i1, F), ShipMesh.p(u2, sd * i1, y1), ShipMesh.p(u, sd * i0, y1), col.darkened(0.45), col.darkened(0.45), col.lightened(0.12), col.lightened(0.12), mat, Vector3(-sd, 0.0, 0.0))
 			b.quad(ShipMesh.p(u, sd * h0, y1), ShipMesh.p(u2, sd * h1, y1), ShipMesh.p(u2, sd * i1, y1), ShipMesh.p(u, sd * i0, y1), WOOD_L, ShipMesh.M_TIMBER, Vector3.UP)
 		u = u2
 
@@ -185,11 +191,19 @@ func _hull_strip(b: ShipMesh, lv: int, y0: float, y1: float, inner_only: bool, c
 func _floor(b: ShipMesh, lv: int, y: float, col: Color) -> void:
 	var rg := Layout.hull_range(lv)
 	var u := rg.x
+	var dark := col.darkened(0.38)
+	var mid := col.darkened(0.12)
 	while u < rg.y - 0.001:
 		var u2 := minf(u + 0.5, rg.y)
 		var h0 := Layout.hull_half(lv, u)
 		var h1 := Layout.hull_half(lv, u2)
-		b.quad(ShipMesh.p(u, -h0, y), ShipMesh.p(u2, -h1, y), ShipMesh.p(u2, h1, y), ShipMesh.p(u, h0, y), col, ShipMesh.M_DECK, Vector3.UP)
+		# VP-1A.2: the floor darkens towards the bulwark (contact darkening, no extra pass): outer 0.7 m ramps to the wall
+		var e0 := minf(0.7, h0 * 0.5)
+		var e1 := minf(0.7, h1 * 0.5)
+		for sd in [-1.0, 1.0]:
+			var sg := float(sd)
+			b.quad_c(ShipMesh.p(u, sg * h0, y), ShipMesh.p(u2, sg * h1, y), ShipMesh.p(u2, sg * (h1 - e1), y), ShipMesh.p(u, sg * (h0 - e0), y), dark, dark, mid, mid, ShipMesh.M_DECK, Vector3.UP)
+		b.quad_c(ShipMesh.p(u, -(h0 - e0), y), ShipMesh.p(u2, -(h1 - e1), y), ShipMesh.p(u2, h1 - e1, y), ShipMesh.p(u, h0 - e0, y), mid, mid, col, col, ShipMesh.M_DECK, Vector3.UP)
 		u = u2
 
 
@@ -224,35 +238,29 @@ func _coaming(b: ShipMesh, c: Vector2, half: Vector2, y: float, h: float) -> voi
 			ShipMesh.p(c.x + half.x - t, c.y + half.y - t, y + 0.02), ShipMesh.p(c.x - half.x + t, c.y + half.y - t, y + 0.02), VOID_C, ShipMesh.M_VOID, Vector3.UP)
 
 
-## An upright barrel. `open` leaves the top off (the fish barrels: the fish disk sits inside).
+## An upright barrel. `open` leaves the top off (the fish barrels: the fish disk sits inside). VP-1A.2: ship_props.gd (bulging staves, hoops).
 func _barrel(b: ShipMesh, c: Vector2, r: float, y: float, h: float, open: bool, col: Color = WOOD_M) -> void:
-	b.cyl(ShipMesh.p(c.x, c.y, y), r, h, 10, col, ShipMesh.M_BARREL, r * 0.9, open, false)
+	Props.barrel(b, c, r, y, h, open, col, float(int(absf(c.x * 7.0 + c.y * 3.0)) % 4) * 0.25)
 	if open:
 		b.quad(ShipMesh.p(c.x - r * 0.8, c.y - r * 0.8, y + 0.08), ShipMesh.p(c.x + r * 0.8, c.y - r * 0.8, y + 0.08),
 				ShipMesh.p(c.x + r * 0.8, c.y + r * 0.8, y + 0.08), ShipMesh.p(c.x - r * 0.8, c.y + r * 0.8, y + 0.08), VOID_C, ShipMesh.M_VOID, Vector3.UP)
-	else:
-		b.cyl(ShipMesh.p(c.x, c.y, y + h - 0.02), r * 0.9, 0.04, 10, col.lightened(0.2), ShipMesh.M_TIMBER, r * 0.88, false, false)
 
 
 func _crate(b: ShipMesh, c: Vector2, half: Vector2, y: float, h: float, col: Color = CRATE_COL, yaw := 0.0) -> void:
-	b.box(ShipMesh.p(c.x, c.y, y + h * 0.5), Vector3(half.y, h * 0.5, half.x), col, ShipMesh.M_CRATE, yaw)
+	Props.crate(b, c, half, y, h, col, yaw, 1.0 if int(absf(c.x * 5.0 + c.y)) % 2 == 0 else -1.0)
 
 
 ## VP-1A: a gun port on the outside of the hull at u: a timber frame, the dark opening, the cannon muzzle run out (tube + muzzle ring + a lashing).
 func _gun_port(b: ShipMesh, u: float, side: float) -> void:
 	var h := Layout.hull_half(0, u) + 0.05
 	var y0 := F + 0.08
-	var y1 := F + 0.56
+	var y1 := F + 0.66
 	var hu := 0.32
 	b.quad(ShipMesh.p(u - hu, side * h, y0), ShipMesh.p(u + hu, side * h, y0), ShipMesh.p(u + hu, side * h, y1), ShipMesh.p(u - hu, side * h, y1), VOID_C, ShipMesh.M_VOID, Vector3(side, 0.0, 0.0))
 	for e in [-1.0, 1.0]:
 		_bx(b, u + float(e) * (hu + 0.04), side * (h + 0.01), y0 - 0.04, 0.04, 0.03, y1 - y0 + 0.08, WOOD_D, ShipMesh.M_TIMBER)
 	_bx(b, u, side * (h + 0.01), y1, hu + 0.08, 0.03, 0.05, WOOD_D, ShipMesh.M_TIMBER)
 	_bx(b, u, side * (h + 0.01), y0 - 0.05, hu + 0.08, 0.03, 0.05, WOOD_D, ShipMesh.M_TIMBER)
-	var ym := (y0 + y1) * 0.5
-	b.tube(ShipMesh.p(u, side * (h - 0.1), ym), ShipMesh.p(u, side * (h + 0.52), ym), 0.14, 8, IRON_C, ShipMesh.M_IRON)
-	b.tube(ShipMesh.p(u, side * (h + 0.44), ym), ShipMesh.p(u, side * (h + 0.54), ym), 0.18, 8, IRON_C.darkened(0.2), ShipMesh.M_IRON)
-	b.tube(ShipMesh.p(u, side * (h + 0.1), ym), ShipMesh.p(u, side * (h + 0.16), ym), 0.17, 8, Color(0.55, 0.42, 0.18), ShipMesh.M_IRON)
 
 
 # ---- the open air: hull, main deck, mast, rigging, winch, barrels, helm, nest ---------------------------------------
@@ -283,8 +291,21 @@ func _build_open() -> void:
 			b.quad(ShipMesh.p(u3, float(s) * g0, F + 0.62), ShipMesh.p(u4, float(s) * g1, F + 0.62), ShipMesh.p(u4, float(s) * g1, F + 0.72), ShipMesh.p(u3, float(s) * g0, F + 0.72),
 					WOOD_D, ShipMesh.M_TIMBER, Vector3(float(s), 0.0, 0.0))
 			u3 = u4
-		for pu in [-4.6, -1.6, 4.4, 6.8]:
+		for pu in Layout.CANNON_U[0 if float(s) < 0.0 else 1]:
 			_gun_port(b, float(pu), float(s))
+		# VP-1A.2: two rubbing strakes standing proud of the hull planking, each a lit top lip over a dark face (layered planking)
+		for wy in [0.52, 0.86]:
+			var uw := -10.6
+			while uw < 10.4:
+				var uw2 := minf(uw + 0.5, 10.8)
+				var w0 := Layout.hull_half(0, uw) + 0.075
+				var w1 := Layout.hull_half(0, uw2) + 0.075
+				var w0b := Layout.hull_half(0, uw) + 0.01
+				var w1b := Layout.hull_half(0, uw2) + 0.01
+				var sg := float(s)
+				b.quad(ShipMesh.p(uw, sg * w0, wy - 0.07), ShipMesh.p(uw2, sg * w1, wy - 0.07), ShipMesh.p(uw2, sg * w1, wy + 0.07), ShipMesh.p(uw, sg * w0, wy + 0.07), WOOD_D, ShipMesh.M_TIMBER, Vector3(sg, 0.0, 0.0))
+				b.quad(ShipMesh.p(uw, sg * w0, wy + 0.07), ShipMesh.p(uw2, sg * w1, wy + 0.07), ShipMesh.p(uw2, sg * w1b, wy + 0.07), ShipMesh.p(uw, sg * w0b, wy + 0.07), WOOD_L, ShipMesh.M_TIMBER, Vector3.UP)
+				uw = uw2
 	_floor(b, 0, F, DECK_C)
 	# transom (stern wall), the stem post and the bowsprit
 	b.quad(ShipMesh.p(-11.0, -1.9, -0.5), ShipMesh.p(-11.0, 1.9, -0.5), ShipMesh.p(-11.0, 1.9, rail_top + 0.1), ShipMesh.p(-11.0, -1.9, rail_top + 0.1), HULL_C, ShipMesh.M_HULL, Vector3(0.0, 0.0, 1.0))
@@ -368,6 +389,8 @@ func _build_open() -> void:
 				_crate(b, c, hf, F, float(od["ht"]))
 				if str(od["id"]) == "crate_a":
 					_crate(b, c + Vector2(0.05, -0.05), hf * 0.85, F + float(od["ht"]), 0.8, Color(0.50, 0.36, 0.2), 14.0)
+			"cannon":
+				Props.cannon(b, c.x, signf(c.y))
 			"windlass":
 				b.tube(ShipMesh.p(c.x, c.y - 0.62, F + 0.5), ShipMesh.p(c.x, c.y + 0.62, F + 0.5), 0.2, 8, WOOD_L, ShipMesh.M_BARREL)
 				for s in [-1.0, 1.0]:
@@ -375,19 +398,32 @@ func _build_open() -> void:
 				b.ring(ShipMesh.p(c.x + 0.4, c.y, F + 0.5), Vector3.RIGHT, Vector3.UP, 0.26, 6, 0.05, IRON_C, ShipMesh.M_IRON)
 				b.beam(ShipMesh.p(c.x, c.y + 0.7, F + 0.5), ShipMesh.p(c.x - 0.3, c.y + 0.7, F + 0.9), 0.06, IRON_C, ShipMesh.M_IRON)
 	# rope coils, planks, a boat hook: low things on the deck (nothing blocks)
-	_coil(b, -0.2, -2.35, F, 0.34, 4)
+	_coil(b, 1.1, -2.45, F, 0.34, 4)
 	_coil(b, 2.55, 2.4, F, 0.3, 4)
 	_coil(b, 7.3, 1.0, F, 0.28, 3)
 	_coil(b, -6.6, 2.6, F, 0.3, 4)
 	for k in 4:
 		_bx(b, -0.7, 2.62 + float(k % 2) * 0.01, F + 0.02 + float(k) * 0.05, 1.5, 0.12, 0.05, WOOD_L if k % 2 == 0 else WOOD_M, ShipMesh.M_TIMBER)
-	b.beam(ShipMesh.p(-2.0, -2.7, F + 0.08), ShipMesh.p(0.8, -2.65, F + 0.08), 0.07, WOOD_L, ShipMesh.M_TIMBER)
-	# the anchor, hung on the outside of the port bow
-	b.beam(ShipMesh.p(8.2, -1.55, F + 1.1), ShipMesh.p(8.2, -1.55, F - 0.1), 0.08, IRON_C, ShipMesh.M_IRON)
-	b.beam(ShipMesh.p(8.2, -1.9, F + 0.95), ShipMesh.p(8.2, -1.2, F + 0.95), 0.07, IRON_C, ShipMesh.M_IRON)
-	b.beam(ShipMesh.p(8.2, -1.9, F - 0.1), ShipMesh.p(8.2, -1.2, F - 0.1), 0.07, IRON_C, ShipMesh.M_IRON)
+	b.beam(ShipMesh.p(0.2, -2.78, F + 0.08), ShipMesh.p(2.0, -2.74, F + 0.08), 0.07, WOOD_L, ShipMesh.M_TIMBER)
+	# the anchor, hung on the outside of the port bow on a cat-head timber
+	b.beam(ShipMesh.p(8.2, -1.25, F + 0.95), ShipMesh.p(8.2, -1.95, F + 0.88), 0.13, WOOD_M, ShipMesh.M_TIMBER)
+	Props.anchor(b, 8.2, -1.78, F + 0.78)
+	b.beam(ShipMesh.p(8.2, -1.78, F + 0.9), ShipMesh.p(8.2, -1.3, F + 0.82), 0.035, ROPE_C, ShipMesh.M_ROPE)
 	_lantern(b, 9.0, 0.0, F + 1.6)
 	_bx(b, 9.0, 0.0, F, 0.05, 0.05, 1.4, WOOD_M, ShipMesh.M_TIMBER)
+	# VP-1A.2: deadeyes and chain plates where the shrouds meet the rail, belaying-pin rails, a lantern on the mast, pulley blocks
+	for sd in [-1.0, 1.0]:
+		var sg := float(sd)
+		for du in [-1.3, 1.5, -0.8, 2.2]:
+			var uu: float = Layout.MAST.x + float(du)
+			Props.deadeye(b, uu, sg * (Layout.hull_half(0, uu) - 0.17), F + 0.97)
+		Props.pin_rail(b, Layout.MAST.x - 1.0, Layout.MAST.x + 1.0, sg * (Layout.hull_half(0, Layout.MAST.x) - 0.2), F + 0.82, -sg)
+	b.beam(ShipMesh.p(1.0, 0.0, F + 3.4), ShipMesh.p(1.55, 0.0, F + 3.4), 0.05, IRON_C, ShipMesh.M_IRON)
+	_lantern(b, 1.62, 0.0, F + 3.2)
+	b.beam(ShipMesh.p(1.0, 0.0, F + 3.0), ShipMesh.p(1.55, 0.0, F + 3.4), 0.035, IRON_C, ShipMesh.M_IRON)
+	Props.block(b, ShipMesh.p(Layout.WINCH.x, -4.35, F + 1.8))
+	Props.block(b, ShipMesh.p(Layout.MAST.x, 0.0, MAST_TOP - 0.55), Vector3.RIGHT, 1.2)
+	Props.block(b, ShipMesh.p(13.5, 0.0, F + 2.0), Vector3.RIGHT, 0.9)
 	_mesh_node(b, _m_open, _g_open)
 	_build_rigging()
 	_build_nest()
@@ -413,6 +449,7 @@ func _build_rigging() -> void:
 	var ja := ShipMesh.p(m.x + 0.3, 0.0, MAST_TOP - 0.9)
 	var jb := ShipMesh.p(13.6, 0.0, F + 2.3)
 	var jc := ShipMesh.p(9.2, 0.0, F + 2.9)
+	_jib_pts = [ja, jb, jc]
 	var jib := func(t: float, s: float) -> Vector3:
 		var pnt := ja + ((jb - ja) * (1.0 - s) + (jc - ja) * s) * t
 		var belly := 0.42 * sin(PI * s) * sin(PI * minf(t * 1.1, 1.0)) * t
@@ -782,6 +819,98 @@ func set_stores(units: Dictionary) -> void:
 	_stats["stores"] = int(_stats.get("stores", 0)) + 1
 
 
+# ---- VP-1A.2 lighting data -------------------------------------------------------------------------------------------------------
+func _sbox(u: float, v: float, y0: float, hu: float, hv: float, h: float) -> void:
+	_sh_c.append(Vector4(v, y0 + h * 0.5, -u, 1.0))
+	_sh_h.append(Vector4(hv, h * 0.5, hu, 0.0))
+
+
+## The things that throw shadows on the open deck, biggest first (Low-End keeps the first `_sh_lite`). Same numbers as ship_layout.gd.
+func _shadow_setup() -> void:
+	_sh_c.clear()
+	_sh_h.clear()
+	_sbox(Layout.MAST.x, Layout.MAST.y, F, 0.27, 0.27, MAST_TOP - F)
+	_sbox((Layout.CABIN_U0 + Layout.CABIN_U1) * 0.5, 0.0, F, (Layout.CABIN_U1 - Layout.CABIN_U0) * 0.5 + 0.1, Layout.CABIN_V + 0.1, 2.55)
+	_sbox(Layout.MAST.x, Layout.MAST.y, NEST_Y - 0.25, Layout.NEST_HALF, Layout.NEST_HALF, 1.4)
+	_sbox(Layout.WINCH.x, Layout.WINCH.y, F, Layout.WINCH_HALF.x, Layout.WINCH_HALF.y, 1.4)
+	for o in lay.call("obstacles", Layout.L_DECK):
+		var od: Dictionary = o
+		if str(od["style"]) == "cannon":
+			var hf: Vector2 = od["half"]
+			var cc: Vector2 = od["c"]
+			_sbox(cc.x, cc.y, F, hf.x, hf.y, 0.55)
+	for k in Layout.FISH_BARRELS.size():
+		var fc: Vector2 = Layout.FISH_BARRELS[k]
+		_sbox(fc.x, fc.y, F, Layout.FISH_BARREL_R * 0.9, Layout.FISH_BARREL_R * 0.9, 1.0)
+	_sh_lite = _sh_c.size()
+	for o in lay.call("obstacles", Layout.L_DECK):
+		var od2: Dictionary = o
+		var c2: Vector2 = od2["c"]
+		match str(od2["style"]):
+			"barrel":
+				_sbox(c2.x, c2.y, F, float(od2["r"]) * 0.9, float(od2["r"]) * 0.9, float(od2["ht"]))
+			"crate":
+				var h2: Vector2 = od2["half"]
+				_sbox(c2.x, c2.y, F, h2.x, h2.y, float(od2["ht"]) + (0.8 if str(od2["id"]) == "crate_a" else 0.0))
+			"windlass":
+				var h3: Vector2 = od2["half"]
+				_sbox(c2.x, c2.y, F, h3.x, h3.y, 0.9)
+			"hatch":
+				var h4: Vector2 = od2["half"]
+				_sbox(c2.x, c2.y, F, h4.x, h4.y, 0.35)
+	_sbox(Layout.HELM.x, Layout.HELM.y, F, 0.28, 0.28, 1.0)
+	_sbox(Layout.WINCH.x, -2.7, F, 0.1, 0.1, 2.5)
+	_sbox(10.8, 0.0, F, 0.18, 0.12, 1.1)
+	var cs := PackedVector4Array()
+	var hs := PackedVector4Array()
+	for k in 40:
+		cs.append(_sh_c[k] if k < _sh_c.size() else Vector4.ZERO)
+		hs.append(_sh_h[k] if k < _sh_h.size() else Vector4.ZERO)
+	for m in [_m_open, _m_nest, _m_cabin_up]:
+		var sm: ShaderMaterial = m
+		sm.set_shader_parameter("sh_c", cs)
+		sm.set_shader_parameter("sh_h", hs)
+		sm.set_shader_parameter("bulwark_y", F + 0.95)
+	set_lighting_quality(_lite)
+
+
+## Standard / Ultra: every shadow box and a soft dithered penumbra. Low-End (Dev-Lite): only the biggest boxes, a narrower penumbra.
+func set_lighting_quality(low: bool) -> void:
+	_lite = low
+	var n := _sh_lite if low else _sh_c.size()
+	for m in [_m_open, _m_nest, _m_cabin_up]:
+		var sm: ShaderMaterial = m
+		if sm == null:
+			continue
+		sm.set_shader_parameter("sh_n", n)
+		sm.set_shader_parameter("shadow_soft", 0.02 if low else 0.035)
+
+
+## The pirate's feet in model space (a shadow caster); on = false hides it (stairs, nest, other decks).
+func set_hero_model(feet: Vector3, on: bool) -> void:
+	for m in [_m_open, _m_cabin_up]:
+		(m as ShaderMaterial).set_shader_parameter("hero_m", Vector4(feet.x, feet.y, feet.z, 1.0 if on else 0.0))
+
+
+func _sail_tris() -> void:
+	var xf := _boom.transform
+	var a := xf * _sail_pt(0.0, 0.0)
+	var b := xf * _sail_pt(0.0, 1.0)
+	var c := xf * _sail_pt(1.0, 0.0)
+	for m in [_m_open, _m_nest, _m_cabin_up]:
+		var sm: ShaderMaterial = m
+		sm.set_shader_parameter("sailA", Vector4(a.x, a.y, a.z, 0.5))
+		sm.set_shader_parameter("sailB", Vector4(b.x, b.y, b.z, 0.0))
+		sm.set_shader_parameter("sailC", Vector4(c.x, c.y, c.z, 0.0))
+		if _jib_pts.size() == 3:
+			var ja: Vector3 = _jib_pts[0]
+			var jb: Vector3 = _jib_pts[1]
+			var jc: Vector3 = _jib_pts[2]
+			sm.set_shader_parameter("jibA", Vector4(ja.x, ja.y, ja.z, 0.45))
+			sm.set_shader_parameter("jibB", Vector4(jb.x, jb.y, jb.z, 0.0))
+			sm.set_shader_parameter("jibC", Vector4(jc.x, jc.y, jc.z, 0.0))
+
+
 # ---- per frame control -----------------------------------------------------------------------------------------------------------
 func set_level(lv: int) -> void:
 	_level = lv
@@ -811,6 +940,7 @@ func to_world(p: Vector3) -> Vector3:
 func set_trim(deg: float) -> void:
 	_boom.rotation = Vector3(0.0, deg_to_rad(deg), 0.0)
 	_boom.scale = Vector3(1.0 if deg >= 0.0 else -1.0, 1.0, 1.0)
+	_sail_tris()
 
 
 func set_rudder(r: float) -> void:
@@ -837,11 +967,12 @@ func fish_visible_count() -> int:
 
 
 ## The pirate's place on the screen (0..1) and his distance from the camera: geometry nearer than this dissolves around him.
-func set_hero_screen(uv: Vector2, dist: float, in_nest: bool) -> void:
+func set_hero_screen(uv: Vector2, dist: float, in_nest: bool, hero_top := 99.0) -> void:
 	for m in [_m_open, _m_cabin_up, _m_sleep, _m_hold]:
 		var sm: ShaderMaterial = m
 		sm.set_shader_parameter("hero_uv", uv)
 		sm.set_shader_parameter("hero_dist", dist)
+		sm.set_shader_parameter("hero_y", hero_top)
 	_m_nest.set_shader_parameter("hero_uv", Vector2(-1.0, -1.0) if in_nest else uv)
 	_m_nest.set_shader_parameter("hero_dist", dist)
 
