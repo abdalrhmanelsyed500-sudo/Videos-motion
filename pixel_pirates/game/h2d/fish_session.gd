@@ -3,10 +3,10 @@ extends Node
 ## (fish_view.gd) and the REAL fish hold (PortState, owned by the port controller). It owns nothing the other pieces own:
 ##   - the ship controller and the walker are not touched (the host blocks walking and steering while `active`);
 ##   - the state machine knows nothing about nodes, input or the hold except through `commit`;
-##   - the hold is PortState.add_catch, the same call the passive nets and the market use. There is no temporary inventory.
+##   - the hold is PortState.add_catch, the same call every sale and test seed uses; it is the ONLY runtime caller. There is no temporary inventory.
 ## Input: the host forwards key events with key_event(); only the five fishing actions (and E in the two card stages) are consumed, so
 ## nothing here is a global input hook. Interruptions: abort() leaves safely from any stage (the net comes up empty before the
-## cast is finished; a catch that already exists is kept); the session also ends itself when the passive-net rules (ground, sea
+## cast is finished; a catch that already exists is kept); the session also ends itself when the ground rules (ground, sea
 ## state, sailing) stop the nets. When it ends the view is hidden and `active` is false, and the host restores the world.
 ## There is no audio system in the project yet: `sfx` is emitted with a name for each moment so a sound can be attached later.
 ## NOT YET RUN ON THE USER'S PC.
@@ -75,7 +75,7 @@ func _state() -> RefCounted:
 	return _pg.get("state") as RefCounted
 
 
-## May the net go out here? {ok, reason}. The same rules as the passive nets plus a hold that has room.
+## May the net go out here? {ok, reason}. Ground, crew, sea state, plus a hold that has room.
 func can_begin(ctx: Dictionary) -> Dictionary:
 	if not is_ready():
 		return {"ok": false, "reason": "The winch is not ready (%s)." % problem}
@@ -85,11 +85,10 @@ func can_begin(ctx: Dictionary) -> Dictionary:
 	if bool(ps.call("is_full")):
 		return {"ok": false, "reason": "The hold is full (%.0f kg). Sail home and sell the catch first." % float(ps.call("capacity_kg"))}
 	var f := _fishing()
-	var was_active := f.active
 	var r := f.can_start(float(ctx["sx"]), float(ctx["sz"]), int(ps.call("crew_count")), float(ctx["sea"]))
 	if not bool(r["ok"]):
 		return r
-	return {"ok": true, "reason": "", "passive_was_on": was_active}
+	return {"ok": true, "reason": ""}
 
 
 ## Start a session (the host has checked that the pirate stands at the winch). Returns {ok, reason}.
@@ -99,8 +98,6 @@ func begin(ctx: Dictionary) -> Dictionary:
 		return c
 	var f := _fishing()
 	var ps := _state()
-	if f.active:
-		f.stop("manual")             # the passive nets give way to the winch
 	var r := f.start_manual(float(ctx["sx"]), float(ctx["sz"]), int(ps.call("crew_count")), float(ctx["sea"]))
 	if not bool(r["ok"]):
 		return r
@@ -235,7 +232,7 @@ func _finish(was_abort: bool, reason: String = "") -> void:
 		return
 	_commit()
 	var f := _fishing()
-	if f.active and f.manual:
+	if f.active:
 		f.stop("manual_done")
 	active = false
 	var failed := bool(manual.result.get("failed", false))

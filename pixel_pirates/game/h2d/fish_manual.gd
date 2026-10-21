@@ -3,7 +3,7 @@ extends RefCounted
 ## CP-2 Release B: the manual fishing state machine. Pure logic (no scene, no input, no drawing): the host gives it presses and
 ## time, it gives back events and the numbers the first-person view draws. tests/test_fish_manual.gd drives it with simulated players.
 ##
-##   HEAVE   the ship slows below the fishing speed (the nets' drag, as with the passive nets)
+##   HEAVE   the ship slows below the fishing speed (the net drags)
 ##   AIM     stage 1: a needle sweeps a bar, one press casts: the green zone gives a wide, deep net (cast quality)
 ##   SINK    the net goes down on the rope        SOAK  the shoal gathers over it
 ##   HAUL    stage 2: pull the two levers ALTERNATELY at the right pace (A, D by default: actions fish_haul_left / _right)
@@ -164,7 +164,7 @@ func begin(gid: String, ground_rec: Dictionary, ctx: Dictionary) -> Array:
 	return _set_stage(Stage.HEAVE)
 
 
-## Time-of-day factor with the passive nets' own tuning keys (dawn and dusk good, night poor).
+## Time-of-day factor (dawn and dusk good, night poor; the same bands as the T1 clock).
 func _time_mult() -> float:
 	var h := _hour
 	if (h >= 5.0 and h < 7.0) or (h >= 17.0 and h < 19.0):

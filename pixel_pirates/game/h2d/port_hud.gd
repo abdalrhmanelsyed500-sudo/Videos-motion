@@ -1,10 +1,10 @@
 extends Control
 # gdlint: disable=class-definitions-order
-## CP-1 HUD built from standard nodes: purse + hold + crew + objective card (top right), the fishing panel under it, the tracking
+## CP-1 HUD built from standard nodes: purse + hold + crew + objective card (top right), the tracking
 ## strip (top centre), the interaction prompt (bottom centre), toasts and the big banner. It only SHOWS what port_game.gd hands
 ## it in `set_data()`; it holds no rules.
 ## Printed in the corner of the screen so a tester can tell which build is running.
-const BUILD_TAG := "CP-2 Release B test build (2026-10-20)   |   M map   E talk   F nets / winch   C hold course   F8 self-check"
+const BUILD_TAG := "CP-2B.1 test build (2026-10-21)   |   M map   E talk   F winch (main deck)   C hold course   F8 self-check"
 const K := preload("res://h2d/ui_kit.gd")
 
 var _card: PanelContainer
@@ -17,12 +17,6 @@ var _hold_lbl: Label
 var _fresh_lbl: Label
 var _crew_lbl: Label
 var _obj_lbl: Label
-var _fish: PanelContainer
-var _fish_title: Label
-var _fish_status: Label
-var _fish_bar: ProgressBar
-var _fish_list: Label
-var _fish_hint: Label
 var _track: PanelContainer
 var _track_lbl: Label
 var _track_arrow: Control
@@ -43,7 +37,6 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build_card()
-	_build_fishing()
 	_build_tracking()
 	_build_prompt()
 	_build_toasts()
@@ -98,34 +91,6 @@ func _build_card() -> void:
 	_obj_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_obj_lbl.custom_minimum_size = Vector2(280, 0)
 	v.add_child(_obj_lbl)
-
-
-func _build_fishing() -> void:
-	var col := get_node("RightColumn") as Control
-	_fish = K.panel(Color(0.06, 0.16, 0.22, 0.95), Color(0.30, 0.62, 0.78), 3, 6)
-	_fish.name = "FishingPanel"
-	_fish.visible = false
-	col.add_child(_fish)
-	var v := K.box(true, 5)
-	_fish.add_child(v)
-	_fish_title = K.label("NETS DOWN", 24, Color(0.62, 0.90, 1.0), 5, true)
-	v.add_child(_fish_title)
-	_fish_status = K.label("", 14, K.CREAM, 3)
-	_fish_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_fish_status.custom_minimum_size = Vector2(280, 0)
-	v.add_child(_fish_status)
-	_fish_bar = ProgressBar.new()
-	_fish_bar.custom_minimum_size = Vector2(280, 14)
-	_fish_bar.show_percentage = false
-	_fish_bar.max_value = 1.0
-	_fish_bar.add_theme_stylebox_override("background", K.style(Color(0.03, 0.08, 0.12), Color(0.2, 0.4, 0.5), 1, 2))
-	_fish_bar.add_theme_stylebox_override("fill", K.style(K.GOLD, K.GOLD, 0, 2))
-	_fish_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(_fish_bar)
-	_fish_list = K.label("", 14, K.CREAM, 3)
-	v.add_child(_fish_list)
-	_fish_hint = K.label("F: haul the nets in", 13, K.DIM, 3)
-	v.add_child(_fish_hint)
 
 
 func _build_tracking() -> void:
@@ -227,7 +192,7 @@ func banner_text() -> String:
 	return _banner_big.text if _banner.visible else ""
 
 
-## d: {purse, hold_kg, cap_kg, fresh, warn_frac, spoil_warn, crew:[String], objective, fishing:{}, prompt, prompt_key, track:{name,text,angle}}
+## d: {purse, hold_kg, cap_kg, fresh, warn_frac, spoil_warn, crew:[String], objective, prompt, prompt_key, track:{name,text,angle}}
 func set_data(d: Dictionary) -> void:
 	if d.is_empty():
 		return
@@ -247,14 +212,6 @@ func set_data(d: Dictionary) -> void:
 	var crew: Array = d["crew"]
 	_crew_lbl.text = "Crew: none yet" if crew.is_empty() else "Crew (%d): %s" % [crew.size(), ", ".join(PackedStringArray(crew))]
 	_obj_lbl.text = str(d["objective"])
-	var f: Dictionary = d.get("fishing", {})
-	_fish.visible = not f.is_empty()
-	if not f.is_empty():
-		_fish_title.text = "NETS DOWN"
-		_fish_status.text = "%s\n%s" % [str(f["ground"]), str(f["status"])]
-		_fish_bar.value = 1.0 - clampf(float(f["next_s"]) / maxf(float(f["interval"]), 1.0), 0.0, 1.0)
-		_fish_list.text = str(f["list"])
-		_fish_hint.text = "Next haul in %d s     F: haul the nets in" % int(ceilf(float(f["next_s"])))
 	var tk: Dictionary = d.get("track", {})
 	_track.visible = not tk.is_empty()
 	if not tk.is_empty():

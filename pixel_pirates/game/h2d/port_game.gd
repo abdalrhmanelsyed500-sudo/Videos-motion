@@ -1,13 +1,14 @@
 extends Node
-## CP-1 starting loop as one controller: it owns the economy (port_state.gd), the nets (fishing.gd), the people (port_npcs.gd),
+## CP-1 starting loop as one controller: it owns the economy (port_state.gd), the fishing grounds (fishing.gd), the people (port_npcs.gd),
 ## the conversations (dialogue.gd + data/port/dialogue.json) and the interface (port_ui.gd, built from standard nodes). It reads
 ## what the scene tells it each frame (a context dictionary) and tells the scene back only two things: whether the nets are
-## down (the ship must stop) and whether a panel is open (the world waits).
-## Keys it owns: E talk / use (ashore) | F nets down / up (at sea) |
+## held by a winch session (the ship must stop) and whether a panel is open (the world waits).
+## CP-2B.1: this class catches NO fish. Fish enter the hold only through the winch session (h2d/fish_session.gd); F at the helm only explains that.
+## Keys it owns: E talk / use (ashore) | F at sea: a hint where the winch is (no catch) |
 ##   (the MAP is not here any more: ui/map/map_screen.gd owns M and the MAP button; this class only feeds it places and tracks) |
 ##   in a conversation: W S / Up Down / 1-9 choose, Enter E Space confirm, Esc leave | at the fish counter: Enter / E sell all,
 ##   1-5 one species |
-##   F6 test +25 reales | F7 test +10 kg mackerel | F8 self-check (runs tests/test_port.gd in the game).
+##   F6 test +25 reales | F8 self-check (runs tests/test_port.gd in the game).
 ## Objectives, dialogue and markers come from real state: the purse, the hold, the crew, where the ship and the player are.
 ## NO SAVE TO DISK in this slice: the state lives until the game is closed (docs/CP1_CAPITAL_PORT.md).
 const PortState := preload("res://h2d/port_state.gd")
@@ -164,8 +165,7 @@ func step(dt: float, ctx: Dictionary) -> void:
 		if not bool(ctx["sailing"]):
 			fishing.stop("moored")
 		else:
-			var evs := fishing.step(wdt, {"x": ctx["sx"], "z": ctx["sz"], "speed_kn": ctx["speed_kn"]}, float(ctx["hour"]), float(ctx["sea"]), state, float(ctx["now"]))
-			for e in evs:
+			for e in fishing.step({"x": ctx["sx"], "z": ctx["sz"], "speed_kn": ctx["speed_kn"]}, float(ctx["sea"])):
 				_on_fishing_event(e as Dictionary)
 	_check_warnings()
 	_near = _find_near(ctx)
@@ -176,17 +176,9 @@ func step(dt: float, ctx: Dictionary) -> void:
 		ui.dialogue.show_trade(_spk, _market_panel(float(ctx["now"])))
 
 
+## The winch session lost its ground (drifted out, rough sea): the session ends itself next frame; this only tells the player why.
 func _on_fishing_event(e: Dictionary) -> void:
-	if str(e["type"]) == "haul":
-		var nm := str((state.fish[str(e["species"])] as Dictionary)["name"])
-		var stored := float(e["stored"])
-		var lost := float(e["kg"]) - stored
-		var txt := "Haul: +%.1f kg %s   (hold %.1f / %.0f kg)" % [stored, nm, state.hold_kg(), state.capacity_kg()]
-		if lost > 0.05:
-			txt += "   %.1f kg thrown back: hold full" % lost
-		ui.toast(txt, PortUi.GREEN, 5.5)
-	else:
-		ui.toast(str(e["text"]), PortUi.GOLD, 7.0)
+	ui.toast(str(e.get("text", "The net was hauled in.")), PortUi.GOLD, 7.0)
 
 
 func _check_warnings() -> void:
@@ -230,31 +222,12 @@ func _update_hud(ctx: Dictionary) -> void:
 	for c in state.crew:
 		var r: Dictionary = state.recruits[c]
 		crew_names.append("%s (%s)" % [str(r["name"]), str(r["role"])])
-	var f: Dictionary = {}
-	if fishing.active:
-		var g: Dictionary = fishing.grounds[fishing.ground_id]
-		var st := "Nets working: fish are coming aboard."
-		if fishing.status == "drifting":
-			st = "The ship is slowing down. The nets work under %.1f knots (now %.1f)." % [float(fishing.p["fish.max_speed_kn"]), float(ctx["speed_kn"])]
-		var lines: Array = []
-		for sp in fishing.session_by.keys():
-			lines.append("%s  %.1f kg" % [str((state.fish[str(sp)] as Dictionary)["name"]), float(fishing.session_by[sp])])
-		var lst := "This ground so far: %.1f kg in %d haul%s" % [fishing.session_kg, fishing.hauls, "" if fishing.hauls == 1 else "s"]
-		if not lines.is_empty():
-			lst += "\n" + "\n".join(PackedStringArray(lines))
-		f = {"ground": str(g["name"]), "status": st, "next_s": fishing.seconds_to_haul(), "interval": float(fishing.p["fish.haul_interval_s"]), "list": lst}
 	var now := float(ctx["now"])
 	var prompt := str(_near["text"])
 	var pkey := "E"
-	if prompt == "" and not bool(ctx["ashore"]) and bool(ctx["sailing"]) and _mode == "none":
-		pkey = "F"
-		if fishing.active:
-			prompt = ""
-		elif fishing.ground_at(float(ctx["sx"]), float(ctx["sz"])) != "" and not bool(ctx.get("deck", false)):
-			prompt = "Lower the nets"        # on deck the winch has its own prompt (F, manual fishing)
 	ui.hud.set_data({"purse": state.reales, "hold_kg": state.hold_kg(), "cap_kg": state.capacity_kg(), "fresh": state.avg_freshness(now),
 			"warn_frac": float(state.p["port.hold_warn_frac"]), "spoil_warn": float(state.p["fish.spoil_warn"]), "crew": crew_names,
-			"objective": objective(ctx), "fishing": f, "prompt": prompt if _mode == "none" else "", "prompt_key": pkey, "track": _track_strip(ctx)})
+			"objective": objective(ctx), "prompt": prompt if _mode == "none" else "", "prompt_key": pkey, "track": _track_strip(ctx)})
 
 
 # ---- objective ---------------------------------------------------------------------------------------------------------
@@ -269,7 +242,7 @@ func objective(ctx: Dictionary) -> String:
 	var kg := state.hold_kg()
 	if fishing.active:
 		var g: Dictionary = fishing.grounds[fishing.ground_id]
-		return "Nets down at %s: %.1f of %.0f kg. Press F to haul in and sail home when you have enough." % [str(g["name"]), kg, state.capacity_kg()]
+		return "Fishing at %s: %.1f of %.0f kg in the hold. Finish the haul at the winch (Esc lets go), then sail home when you have enough." % [str(g["name"]), kg, state.capacity_kg()]
 	if kg > 0.05:
 		if bool(ctx["ashore"]) or bool(ctx["docked"]):
 			return "Sell your %.0f kg of fish at the Fish Market: west along Quay Street, under the red canopy. Press E at the counter (about %d reales)." % [kg, state.estimate_all(now)]
@@ -278,9 +251,9 @@ func objective(ctx: Dictionary) -> String:
 		return "You can afford %s, the %s (%d reales). Find him at %s. Press M for the map." % [str(rec["name"]), str(rec["role"]), int(rec["cost"]), str(rec["place"])]
 	var need := state.cost_of(cheap) - state.reales
 	if state.kg_total <= 0.0:
-		return "You have %d reales and need a crew. Sail to the Pilchard Shallows (0.6 km south-west; chart on M) and press F to lower the nets." % state.reales
+		return "You have %d reales and need a crew. Sail to the Pilchard Shallows (0.6 km south-west; chart on M) and fish by hand: press E at the helm to leave it, walk to the winch on the main deck and press F." % state.reales
 	if bool(ctx["ashore"]):
-		return "Earn %d more reales for %s (%d). Board the ship (F at the pier), sail to a fishing ground and cast the nets." % [need, str(rec["name"]), int(rec["cost"])]
+		return "Earn %d more reales for %s (%d). Board the ship (F at the pier), sail to a fishing ground and work the winch." % [need, str(rec["name"]), int(rec["cost"])]
 	return "Earn %d more reales for %s, the %s (%d). Fish a ground (M for the chart), return and sell." % [need, str(rec["name"]), str(rec["role"]), int(rec["cost"])]
 # gdlint: enable=max-returns
 
@@ -319,7 +292,7 @@ func handle_key(k: InputEventKey, ctx: Dictionary) -> bool:
 	var key := KeyUtil.code(k)
 	keys_routed += 1
 	last_key = "keycode %d  physical %d  -> %d (%s)  mode %s" % [int(k.keycode), int(k.physical_keycode), key, OS.get_keycode_string(key), _mode]
-	if key == KEY_F6 or key == KEY_F7:
+	if key == KEY_F6:
 		_test_key(key, ctx)
 		return true
 	if key == KEY_F8 and _mode == "none":
@@ -331,20 +304,17 @@ func handle_key(k: InputEventKey, ctx: Dictionary) -> bool:
 	if key == KEY_E and bool(ctx["ashore"]):
 		_interact(ctx)
 	elif key == KEY_F and bool(ctx["sailing"]) and not bool(ctx["ashore"]):
-		_toggle_nets(ctx)
+		_winch_hint(ctx)
 	else:
 		used = false
 	return used
 
 
-## F6 / F7: test helpers so the selling and hiring can be tried without an hour of fishing.
-func _test_key(key: int, ctx: Dictionary) -> void:
-	if key == KEY_F6:
-		state.reales += 25
-		ui.toast("TEST: +25 reales (purse %d)" % state.reales, Color(1.0, 0.6, 1.0))
-	else:
-		var put := state.add_catch("spc_mackerel", 10.0, float(ctx["now"]))
-		ui.toast("TEST: +%.1f kg mackerel in the hold" % put, Color(1.0, 0.6, 1.0))
+## F6: a test helper so the hiring can be tried without an hour of fishing. (There is NO test key that adds fish: the only way
+## fish enter the hold is the winch.)
+func _test_key(_key: int, _ctx: Dictionary) -> void:
+	state.reales += 25
+	ui.toast("TEST: +25 reales (purse %d)" % state.reales, Color(1.0, 0.6, 1.0))
 
 
 ## F8: runs tests/test_port.gd INSIDE the running game plus checks against the live world, and reports the result on screen and
@@ -460,23 +430,16 @@ func _open(kind: String) -> void:
 
 
 # ---- fishing ---------------------------------------------------------------------------------------------------------------
-func _toggle_nets(ctx: Dictionary) -> void:
-	if fishing.active:
-		fishing.stop("player")
-		ui.toast("Nets up. %.1f kg of fish in the hold." % state.hold_kg(), PortUi.CREAM)
-		return
-	if state.is_full():
-		ui.toast("The hold is full (%.0f kg). Sail home and sell the catch first." % state.capacity_kg(), Color(1.0, 0.72, 0.25))
-		return
-	var r := fishing.start(float(ctx["sx"]), float(ctx["sz"]), state.crew_count(), float(ctx["sea"]))
+## F pressed while sailing (at the helm or elsewhere): this NEVER lowers a net or catches anything. It only says where the winch is.
+func _winch_hint(ctx: Dictionary) -> void:
+	var r := fishing.can_start(float(ctx["sx"]), float(ctx["sz"]), state.crew_count(), float(ctx["sea"]))
 	if bool(r["ok"]):
-		var g: Dictionary = fishing.grounds[fishing.ground_id]
-		ui.toast("Nets down at %s. The ship slows to a stop; a haul comes up every %d s." % [str(g["name"]), int(fishing.p["fish.haul_interval_s"])], PortUi.GOLD, 6.0)
+		ui.toast("Fish here by hand: press E to leave the helm, walk to the winch on the main deck and press F there.", PortUi.GOLD, 6.5)
 	else:
 		ui.toast(str(r["reason"]), Color(1.0, 0.72, 0.25), 6.5)
 
 
-## True while the nets are down: the helm target speed is zero.
+## True while a winch session holds the ground: the helm target speed is zero.
 func nets_down() -> bool:
 	return enabled and fishing.active
 

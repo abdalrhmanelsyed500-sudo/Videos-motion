@@ -1,14 +1,11 @@
 extends RefCounted
-## CP-1 fishing: the nets go down inside a fishing ground (F), the ship drifts to a stop, and every fish.haul_interval_s
-## real seconds the nets come up with one haul: a species drawn by the ground's weights and kg = fish.haul_kg x ground
-## richness x time-of-day factor x (1 + crew bonus) x (1 +/- fish.haul_spread). Fishing stops by itself when the hold is
-## full, the sea gets rough (fish.max_sea) or the ship leaves the ground. The draw uses a tiny deterministic generator
-## (a = 1103515245, c = 12345, m = 2^31) shared with the Python twin tools/h2d/economy_logic.py, so a given seed gives the same
-## fish in both (tests/fixtures/economy_cases.json). Pure logic; NOT YET RUN IN GODOT.
-const DEFAULTS := {
-	"fish.haul_interval_s": 12.0, "fish.haul_kg": 1.2, "fish.haul_spread": 0.4, "fish.max_speed_kn": 1.5, "fish.max_sea": 0.6,
-	"fish.mult_dawn": 1.3, "fish.mult_day": 1.0, "fish.mult_night": 0.7,
-}
+## The fishing grounds and the rules of the winch (CP-2B.1: manual fishing is the ONLY way to catch fish).
+## This class knows WHERE fish are (the grounds of data/port/fishing_grounds.json), whether the net may go out here (ground, crew,
+## sea state, ship speed) and keeps hold of the ground while a winch session runs (the ship must stay slow and inside the disc).
+## It does NOT catch anything: the old timed "nets down, a haul every 12 s" path (CP-1) was removed in CP-2B.1. Fish enter the hold only
+## through the winch session (h2d/fish_session.gd + h2d/fish_manual.gd). It also holds the tiny deterministic generator
+## (a = 1103515245, c = 12345, m = 2^31) that the winch session uses to choose species. Pure logic.
+const DEFAULTS := {"fish.max_speed_kn": 1.5, "fish.max_sea": 0.6}
 const LCG_A := 1103515245
 const LCG_C := 12345
 const LCG_M := 2147483648
@@ -18,13 +15,8 @@ var grounds: Dictionary = {}         # id -> record of fishing_grounds.json
 var ground_order: Array = []
 var seed_state := 1
 var active := false
-var manual := false                  # CP-2 Release B: the winch session (h2d/fish_manual.gd) holds the ground; no passive hauls
 var ground_id := ""
-var timer := 0.0
-var hauls := 0
-var session_kg := 0.0
-var session_by: Dictionary = {}       # species id -> kg stored this session (the HUD list)
-var status := "idle"                 # idle | working | drifting | stopped
+var status := "idle"                 # idle | working | drifting | stopped (active = a winch session holds the ground)
 var stop_reason := ""
 
 
@@ -41,12 +33,7 @@ func configure(tuning: Dictionary, grounds_doc: Dictionary, seed_value: int = 1)
 
 func reset() -> void:
 	active = false
-	manual = false
 	ground_id = ""
-	timer = 0.0
-	hauls = 0
-	session_kg = 0.0
-	session_by = {}
 	status = "idle"
 	stop_reason = ""
 
@@ -56,37 +43,6 @@ func reset() -> void:
 static func next_rand(state: int) -> Array:
 	var s := (LCG_A * state + LCG_C) % LCG_M
 	return [s, float(s) / float(LCG_M)]
-
-
-static func time_mult(hour: float, tuning: Dictionary) -> float:
-	if (hour >= 5.0 and hour < 7.0) or (hour >= 17.0 and hour < 19.0):
-		return float(tuning["fish.mult_dawn"])
-	if hour >= 20.0 or hour < 5.0:
-		return float(tuning["fish.mult_night"])
-	return float(tuning["fish.mult_day"])
-
-
-## One haul from `ground` (record) with the stored generator state. Returns {species, kg}.
-func roll(ground: Dictionary, mult: float, bonus: float) -> Dictionary:
-	var a := next_rand(seed_state)
-	var b := next_rand(int(a[0]))
-	seed_state = int(b[0])
-	var r1 := float(a[1])
-	var r2 := float(b[1])
-	var total := 0.0
-	for sw in ground["species"]:
-		total += float((sw as Array)[1])
-	var acc := 0.0
-	var list: Array = ground["species"]
-	var species := str((list[list.size() - 1] as Array)[0])
-	for sw in list:
-		acc += float((sw as Array)[1]) / total
-		if r1 < acc:
-			species = str((sw as Array)[0])
-			break
-	var kg := float(p["fish.haul_kg"]) * float(ground["richness"]) * mult * (1.0 + bonus) * (1.0 + float(p["fish.haul_spread"]) * (2.0 * r2 - 1.0))
-	kg = floorf(kg * 100.0 + 0.5) / 100.0
-	return {"species": species, "kg": kg}
 
 
 # ---- grounds ---------------------------------------------------------------------------------------------------------
@@ -116,7 +72,7 @@ func nearest_ground(px: float, pz: float, crew_count: int = 99) -> Dictionary:
 	return best
 
 
-## F pressed at sea: may the nets go down here? {ok, reason (a sentence for the player)}.
+## May the net go out here (the winch asks)? {ok, reason (a sentence for the player)}.
 func can_start(px: float, pz: float, crew_count: int, sea_index: float) -> Dictionary:
 	var id := ground_at(px, pz)
 	if id == "":
@@ -131,26 +87,14 @@ func can_start(px: float, pz: float, crew_count: int, sea_index: float) -> Dicti
 	return {"ok": true, "reason": "", "ground": id}
 
 
-func start(px: float, pz: float, crew_count: int, sea_index: float) -> Dictionary:
+## The winch session asks for the ground. Same checks as can_start; on success the ship is held (slow, inside the ground).
+func start_manual(px: float, pz: float, crew_count: int, sea_index: float) -> Dictionary:
 	var r := can_start(px, pz, crew_count, sea_index)
 	if bool(r["ok"]):
 		active = true
-		manual = false
 		ground_id = str(r["ground"])
-		timer = 0.0
-		hauls = 0
-		session_kg = 0.0
-		session_by = {}
 		status = "drifting"
 		stop_reason = ""
-	return r
-
-
-## CP-2 Release B: the same checks and the same drag on the ship as the passive nets, but the fish come from the winch session.
-func start_manual(px: float, pz: float, crew_count: int, sea_index: float) -> Dictionary:
-	var r := start(px, pz, crew_count, sea_index)
-	if bool(r["ok"]):
-		manual = true
 	return r
 
 
@@ -158,52 +102,22 @@ func stop(reason: String = "") -> void:
 	if not active:
 		return
 	active = false
-	manual = false
 	status = "stopped"
 	stop_reason = reason
 
 
-## Seconds until the next haul (0 when idle).
-func seconds_to_haul() -> float:
-	return maxf(float(p["fish.haul_interval_s"]) - timer, 0.0) if active else 0.0
-
-
-## Advance the nets. `ship` = {x, z, speed_kn}; `hour` 0..24; `sea_index` 0..1; `port` = the PortState; `now` = game days.
-## Returns a list of events: {type: "haul", species, kg, stored, full} or {type: "stop", reason, text}.
-func step(dt: float, ship: Dictionary, hour: float, sea_index: float, port: RefCounted, now: float) -> Array:
+## Keeps the winch session honest. `ship` = {x, z, speed_kn}; `sea_index` 0..1. Returns [{type: "stop", reason, text}] when the ground
+## is lost or the sea is too rough (the session then lets go). It never catches or stores anything.
+func step(ship: Dictionary, sea_index: float) -> Array:
 	var events: Array = []
 	if not active:
 		return events
 	if ground_at(float(ship["x"]), float(ship["z"])) != ground_id:
 		stop("left")
-		events.append({"type": "stop", "reason": "left", "text": "The ship drifted out of the fishing ground: nets up."})
-		return events
-	if sea_index > float(p["fish.max_sea"]):
+		events.append({"type": "stop", "reason": "left", "text": "The ship drifted out of the fishing ground: the net was hauled in."})
+	elif sea_index > float(p["fish.max_sea"]):
 		stop("rough")
-		events.append({"type": "stop", "reason": "rough", "text": "The sea is too rough: nets hauled in."})
-		return events
-	if float(ship["speed_kn"]) > float(p["fish.max_speed_kn"]):
-		status = "drifting"      # the nets drag: the ship is still slowing down, nothing is caught yet
-		return events
-	if manual:
-		status = "working"
-		return events         # the winch session catches the fish; this only keeps the ground, the sea and the speed in check
-	status = "working"
-	timer += dt
-	var interval := float(p["fish.haul_interval_s"])
-	while timer >= interval:
-		timer -= interval
-		var g: Dictionary = grounds[ground_id]
-		var bonus := float(port.call("effect", "catch_bonus"))
-		var h := roll(g, time_mult(hour, p), bonus)
-		var stored := float(port.call("add_catch", str(h["species"]), float(h["kg"]), now))
-		hauls += 1
-		session_kg += stored
-		session_by[str(h["species"])] = float(session_by.get(str(h["species"]), 0.0)) + stored
-		var full := bool(port.call("is_full"))
-		events.append({"type": "haul", "species": str(h["species"]), "kg": float(h["kg"]), "stored": stored, "full": full})
-		if full:
-			stop("full")
-			events.append({"type": "stop", "reason": "full", "text": "The hold is full: nets up. Sail home and sell the catch."})
-			break
+		events.append({"type": "stop", "reason": "rough", "text": "The sea is too rough: the net was hauled in."})
+	else:
+		status = "drifting" if float(ship["speed_kn"]) > float(p["fish.max_speed_kn"]) else "working"
 	return events

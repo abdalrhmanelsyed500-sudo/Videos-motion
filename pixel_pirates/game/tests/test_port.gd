@@ -49,18 +49,6 @@ func run(t: Object) -> void:
 			var r := Fishing.next_rand(s)
 			s = int(r[0])
 			t.check(absf(float(r[1]) - float(v)) < 0.000001, "LCG seed %s value %s" % [c["seed"], v])
-	# hauls
-	for c in fx["haul"]:
-		var f := _fishing(tuning, int(c["seed"]))
-		var g: Dictionary = f.grounds[str(c["ground"])]
-		for h in c["hauls"]:
-			var got := f.roll(g, Fishing.time_mult(float(c["hour"]), f.p), float(c["bonus"]))
-			t.check(str(got["species"]) == str(h["species"]) and absf(float(got["kg"]) - float(h["kg"])) < 0.0001,
-					"haul at %s hour %s: %s %.2f kg" % [c["ground"], c["hour"], h["species"], float(h["kg"])])
-		t.check(f.seed_state == int(c["state_after"]), "generator state after the hauls at %s" % c["ground"])
-	for c in fx["time_mult"]:
-		var f2 := _fishing(tuning)
-		t.check(absf(Fishing.time_mult(float(c["hour"]), f2.p) - float(c["mult"])) < 0.0001, "time multiplier at %s h" % c["hour"])
 	# freshness
 	for c in fx["freshness"]:
 		var s2 := _state(tuning)
@@ -220,8 +208,8 @@ func _objectives(t: Object, tuning: Dictionary) -> void:
 		g.state.hire(cid)
 	t.check(g.objective(ashore).contains("Crew complete"), "all hired: the loop is complete")
 	# nets
-	g.fishing.start(-300.0, 560.0, 0, 0.1)
-	t.check(g.fishing.active, "nets go down inside the Pilchard Shallows")
+	g.fishing.start_manual(-300.0, 560.0, 0, 0.1)
+	t.check(g.fishing.active, "the winch session holds the ground inside the Pilchard Shallows")
 	var no := g.fishing.can_start(0.0, 0.0, 0, 0.1)
 	t.check(not bool(no["ok"]) and str(no["reason"]).contains("Pilchard"), "no nets near the harbour; the answer names the nearest ground")
 	var rough := _fishing(tuning).can_start(-300.0, 560.0, 0, 0.9)

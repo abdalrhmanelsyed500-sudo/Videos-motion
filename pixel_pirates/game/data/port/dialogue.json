@@ -18,7 +18,7 @@
      ]},
     "skills": {"text": "{effect}  He asks {cost} reales once, and your purse holds {reales}.", "options": [{"label": "Back", "next": "hub"}]},
     "about": {"text": "{backstory}", "options": [{"label": "Back", "next": "hub"}]},
-    "earn": {"text": "Fish pays. Sail to a ground, lower the nets, come home and sell at the Fish Market. The nearest ground is {nearest_ground}.", "options": [
+    "earn": {"text": "Fish pays. Sail to a ground, work the winch by hand, come home and sell at the Fish Market. The nearest ground is {nearest_ground}.", "options": [
       {"label": "Mark the fishing ground on my map", "action": "track", "arg": "ground_nearest", "next": "tracked"},
       {"label": "Mark the Fish Market on my map", "action": "track", "arg": "market", "next": "tracked"},
       {"label": "Back", "next": "hub"}]},
@@ -59,7 +59,7 @@
       {"label": "Buy his secret spot   (3 reales)", "action": "pay", "arg": 3, "next": "tip", "fail": "broke", "if": ["!tip_bought"]},
       {"label": "Just talking.", "next": "chat"},
       {"label": "Leave", "action": "leave"}]},
-    "fishing": {"text": "Mackerel thick at Gannet Bank this morning; sardines everywhere in the Shallows. Under one knot and a quiet sea, the nets work. Go faster and they only drag.", "options": [{"label": "Back", "next": "hub"}]},
+    "fishing": {"text": "Mackerel thick at Gannet Bank this morning; sardines everywhere in the Shallows. Under one knot and a quiet sea, the net goes down true. Go faster and it only drags.", "options": [{"label": "Back", "next": "hub"}]},
     "grounds": {"text": "Pilchard Shallows south-west, an easy sail. Gannet Bank south-east, follow the birds. Kelp Reef and Blue Drop are far; you will want a hand or two.", "options": [
       {"label": "Mark Pilchard Shallows on my map", "action": "track", "arg": "ground_pilchard_shallows", "next": "tracked"},
       {"label": "Mark Gannet Bank on my map", "action": "track", "arg": "ground_gannet_bank", "next": "tracked"},

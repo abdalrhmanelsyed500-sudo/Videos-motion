@@ -677,13 +677,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		_fish_enter()
 		return
 	if not ashore and ShipKeys.hit(k, "fish_winch") and _ship_mode.is_deck() and not _ship_ui_blocked():
-		_ship_hud.toast("Fish from the winch: stand at the drum on the main deck and press %s. (At the helm, %s lowers the old drift nets.)" % [ShipKeys.label("fish_winch"), ShipKeys.label("fish_winch")], 6.0)
+		_ship_hud.toast("Fish from the winch: stand at the drum on the main deck and press %s." % [ShipKeys.label("fish_winch")], 6.0)
 		return
 	if not ashore and ShipKeys.hit(k, "autopilot_toggle"):
 		_ship_hud.toast(_ship_mode.toggle_autopilot(_ship_ctx()), 5.0)
 		return
 	if _port != null and (_port as PortGame).handle_key(k, _port_ctx()):
-		return  # CP-1 keys: E interact, F nets (at sea), M map, Y/N, Enter, Tab and Esc inside a panel, F6/F7 test helpers
+		return  # CP-1 keys: E interact, F at sea (a hint: fishing is only at the winch), M map, Y/N, Enter, Tab and Esc inside a panel, F6 test helper
 	if kc == KEY_F:
 		_land_toggle()
 	elif kc == KEY_T:
@@ -1196,10 +1196,10 @@ func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 	if _real < _banner_until:
 		lines.append(_banner)
 	if _walker.is_ashore():
-		lines.append("WASD walk  Shift run  E talk / sell / read  M map  F board (at pier)  T next stop  N time  P pause   F6/F7 test money/fish")
+		lines.append("WASD walk  Shift run  E talk / sell / read  M map  F board (at pier)  T next stop  N time  P pause   F6 test money")
 	else:
 		if _ship_mode.is_deck():
-			lines.append("WASD walk  Shift run  E use / climb / take the helm  C course hold  M map  SPACE dock/cast off  F ashore (moored, main deck)  Tab weather  Shift+F6 test provisions  F7 test fish  R reset")
+			lines.append("WASD walk  Shift run  E use / climb / take the helm  C course hold  M map  SPACE dock/cast off  F ashore (moored, main deck)  Tab weather  Shift+F6 test provisions  R reset")
 		else:
 			lines.append("A/D steer  C hold course  E leave the helm and walk the ship  M map  SPACE dock/cast off  F ashore (moored)  Z/X turn  Shift+M motion  Shift+E effects  Tab weather  R reset")
 	_hud.text = "\n".join(PackedStringArray(lines))

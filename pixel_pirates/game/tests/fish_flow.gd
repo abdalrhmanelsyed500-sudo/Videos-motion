@@ -107,6 +107,7 @@ func _play() -> void:
 		chk(false, "the game scene has the winch session")
 		quit(1)
 		return
+	await _no_auto_fish()
 	await _enter_and_refuse()
 	await _full_haul()
 	await _barrels_panel()
@@ -114,6 +115,40 @@ func _play() -> void:
 	await _interruptions()
 	print("FISHFLOW %d checks, %d failed -> %s" % [checks, fails, "PASS" if fails == 0 else "FAIL"])
 	quit(0 if fails == 0 else 1)
+
+
+## CP-2B.1: the old automatic catch is gone. Sitting on a ground, pressing F at the helm (several times, at different moments) and
+## waiting for minutes of game time must never put one gram in the hold, start a net, or open the winch view.
+func _no_auto_fish() -> void:
+	on_ground()
+	await frames(10)
+	chk(not bool(mode().call("is_deck")), "set-up: the pirate is still at the helm")
+	chk(float(ps().call("hold_kg")) == 0.0 and (ps().get("lots") as Array).is_empty(), "set-up: the hold is empty")
+	var fishing: RefCounted = port().get("fishing")
+	chk(str(fishing.call("ground_at", scene.get("_pos").x, scene.get("_pos").y)) == "gnd_pilchard_shallows", "set-up: the ship is inside the Pilchard Shallows")
+	var phud: Control = port().get("ui").get("hud")
+	await frames(60 * 20)                    # 20 s on the ground, no key at all
+	on_ground()
+	chk(float(ps().call("hold_kg")) == 0.0, "20 s waiting on a fishing ground bring no fish (hold %.2f kg)" % float(ps().call("hold_kg")))
+	chk(not bool(fishing.get("active")), "waiting does not start a net")
+	for i in 3:
+		var t0 := int(phud.get("shown_toasts"))
+		await key(KEY_F)
+		chk(int(phud.get("shown_toasts")) > t0, "F at the helm explains where the winch is (a message, no catch)")
+		chk(not bool(fishing.get("active")), "F at the helm on a ground does not start a net (press %d)" % (i + 1))
+		chk(not bool(fs().get("active")), "F at the helm does not open the winch view")
+		chk(world_on(), "F at the helm leaves the 3D world on")
+		await frames(60 * 6)
+		on_ground()
+	chk(float(ps().call("hold_kg")) == 0.0 and (ps().get("lots") as Array).is_empty(), "F at the helm plus 18 s more: still no fish (hold %.2f kg)" % float(ps().call("hold_kg")))
+	chk(not bool(fishing.get("active")) and str(fishing.get("status")) == "idle", "the legacy net never became active (status %s)" % str(fishing.get("status")))
+	var prompt_on: bool = bool((phud.get("_prompt") as Control).visible)
+	var prompt := str((phud.get("_prompt_lbl") as Label).text) if prompt_on else ""
+	chk(not prompt.to_lower().contains("lower the nets"), "no 'Lower the nets' prompt is offered (%s)" % prompt)
+	# a rough sea and a slow ship change nothing either
+	slow()
+	await frames(60 * 5)
+	chk(float(ps().call("hold_kg")) == 0.0, "still nothing after more waiting")
 
 
 func _enter_and_refuse() -> void:
@@ -226,6 +261,21 @@ func _full_haul() -> void:
 	chk(not bool(scene.call("_ship_ui_blocked")), "walking works again")
 	chk(str(hud().call("toast_text")).contains("Stored"), "the report says what was stored: %s" % str(hud().call("toast_text")))
 	chk(not bool(port().get("fishing").get("active")), "the nets are up (the ship is free to sail)")
+	# exactly once: the hold equals the catch card, and waiting on the ground afterwards adds nothing (no legacy system on top)
+	var lot_sum := 0.0
+	for lot in (ps().get("lots") as Array):
+		lot_sum += float((lot as Array)[1])
+	chk(absf(lot_sum - float(ps().call("hold_kg"))) < 0.005, "the lots add up to the hold (%.2f)" % lot_sum)
+	chk(absf(float(ps().call("hold_kg")) - float(res["kg"])) < 0.2, "the hold holds the catch ONCE (hold %.2f, card %.2f kg)" % [float(ps().call("hold_kg")), float(res["kg"])])
+	var kept := float(ps().call("hold_kg"))
+	var lots_n := (ps().get("lots") as Array).size()
+	on_ground("gnd_gannet_bank")
+	await frames(60 * 15)
+	on_ground("gnd_gannet_bank")
+	await key(KEY_F)                 # the pirate stands at the winch: this opens a NEW session, which we leave at once
+	await key(KEY_ESCAPE)
+	await frames(30)
+	chk(absf(float(ps().call("hold_kg")) - kept) < 0.0001 and (ps().get("lots") as Array).size() == lots_n, "15 s later and after opening and closing the winch the hold is unchanged (%.2f kg, %d lots)" % [float(ps().call("hold_kg")), (ps().get("lots") as Array).size()])
 
 
 func _barrels_panel() -> void:
@@ -249,7 +299,13 @@ func _barrels_panel() -> void:
 	var dv: Dictionary = scene.call("_deck_view_state")
 	chk(bool(dv.get("on", false)) and absf(float(dv["fish_frac"]) - float(ps().call("hold_frac"))) < 0.001 and float(dv["fish_frac"]) > 0.0, "the barrels on deck are filled to the real hold fraction (%.2f)" % float(dv.get("fish_frac", -1.0)))
 	# a sale empties the barrels: the open panel follows
-	ps().set("lots", [])
+	var purse0 := int(ps().get("reales"))
+	var worth := int(ps().call("estimate_all", float(scene.get("_state").get("clock").get("t")) / 86400.0))
+	var sale: Dictionary = ps().call("sell_all", float(scene.get("_state").get("clock").get("t")) / 86400.0)
+	chk(int(sale["reales"]) > 0 and int(ps().get("reales")) == purse0 + int(sale["reales"]), "SELLING still works: the market paid %d reales (estimate %d)" % [int(sale["reales"]), worth])
+	chk(float(ps().call("hold_kg")) == 0.0 and (ps().get("lots") as Array).is_empty(), "the sale emptied the hold")
+	var again: Dictionary = ps().call("sell_all", float(scene.get("_state").get("clock").get("t")) / 86400.0)
+	chk(int(again["reales"]) == 0 and int(ps().get("reales")) == purse0 + int(sale["reales"]), "selling twice pays once")
 	await frames(3)
 	chk(float((scene.call("_deck_view_state") as Dictionary)["fish_frac"]) == 0.0, "and the barrels on deck are empty")
 	chk(bool((panel.get("model") as Dictionary)["empty"]) and ((panel.get("model") as Dictionary)["rows"] as Array).is_empty(), "after a sale the panel lists nothing (no zero rows)")

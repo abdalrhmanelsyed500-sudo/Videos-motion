@@ -227,19 +227,15 @@ func _fishing_and_ship() -> void:
 	scene.set("_pos", Vector2(-300.0, 560.0))
 	await frames(5)
 	await key(KEY_F)
-	chk(bool(fi.get("active")), "FISHING: F lowers the nets in the Pilchard Shallows")
+	chk(not bool(fi.get("active")), "FISHING: F at the helm in the Pilchard Shallows does NOT lower a net (CP-2B.1: fishing is only at the winch)")
 	await frames(120)
-	var timer0 := float(fi.get("timer"))
 	await key(KEY_M)
-	chk(bool(mp.call("is_open")), "FISHING: M opens the map with the nets down")
+	chk(bool(mp.call("is_open")), "FISHING: M opens the map on a ground")
 	chk(int(mp.get("tab")) == 2, "FISHING: it opens on the Sea tab")
 	await frames(120)
-	chk(is_equal_approx(float(fi.get("timer")), timer0) and bool(fi.get("active")), "FISHING: the net timer stands still while the map is open (%.2f -> %.2f)" % [timer0, float(fi.get("timer"))])
 	await key(KEY_M)
-	await frames(120)
-	chk(float(fi.get("timer")) != timer0 and bool(fi.get("active")), "FISHING: after closing, the nets keep working (timer %.2f)" % float(fi.get("timer")))
-	await key(KEY_F)
-	chk(not bool(fi.get("active")), "FISHING: F lifts the nets again")
+	await frames(60)
+	chk(float((port.get("state") as RefCounted).call("hold_kg")) == 0.0, "FISHING: nothing came aboard while the map was open or closed (hold %.2f kg)" % float((port.get("state") as RefCounted).call("hold_kg")))
 
 
 func _recruiting() -> void:

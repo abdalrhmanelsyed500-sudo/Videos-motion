@@ -132,31 +132,29 @@ func _pause_rules() -> void:
 	ctx["sailing"] = true
 	ctx["ashore"] = false
 	ctx["sea"] = 0.0
-	var r: Dictionary = fishing.call("start", float(g["x"]), float(g["z"]), 4, 0.0)
-	chk(bool(r["ok"]), "test set-up: the nets go down on %s" % gid)
-	# paused clock: nothing is hauled however long we wait
+	var r: Dictionary = fishing.call("start_manual", float(g["x"]), float(g["z"]), 4, 0.0)
+	chk(bool(r["ok"]), "test set-up: the winch holds %s" % gid)
+	var hold0: float = float((port.get("state") as RefCounted).call("hold_kg"))
+	# CP-2B.1: a held ground produces no fish by itself, paused or running
 	ctx["paused"] = true
-	var t0: float = float(fishing.get("timer"))
 	for i in 40:
 		port.call("step", 1.0, ctx)
-	chk(is_equal_approx(float(fishing.get("timer")), t0) and int(fishing.get("hauls")) == 0, "PAUSED: 40 s under a paused clock bring no haul (timer %.1f)" % float(fishing.get("timer")))
+	chk(float((port.get("state") as RefCounted).call("hold_kg")) == hold0, "PAUSED: 40 s under a paused clock bring no fish")
 	ctx["paused"] = false
-	for i in 14:
+	for i in 40:
 		port.call("step", 1.0, ctx)
-	chk(int(fishing.get("hauls")) >= 1, "RUNNING: the same 14 s do bring a haul (hauls %d)" % int(fishing.get("hauls")))
-	# an open map is modal: the nets wait, the people stand still (the nets are started AFTER the map opens and with no frame in
-	# between, because a live frame would stop them: the real ship is not on the ground)
+	chk(float((port.get("state") as RefCounted).call("hold_kg")) == hold0, "RUNNING: 40 s on a held ground still bring no fish (only the winch catches)")
+	# an open map is modal: the people stand still (the ground is held AFTER the map opens)
 	fishing.call("stop", "test")
 	await key(KEY_M)
 	var mp0: Node = scene.get("_map")
 	chk(bool(mp0.call("is_open")), "test set-up: the map is open")
 	ctx["paused"] = bool((scene.call("_port_ctx") as Dictionary)["paused"])   # the real game's own ctx: the open map pauses the clock
 	chk(bool(ctx["paused"]), "an open map pauses the clock the port controller is stepped with")
-	fishing.call("start", float(g["x"]), float(g["z"]), 4, 0.0)
-	var hauls0: int = int(fishing.get("hauls"))
+	fishing.call("start_manual", float(g["x"]), float(g["z"]), 4, 0.0)
 	for i in 40:
 		port.call("step", 1.0, ctx)
-	chk(int(fishing.get("hauls")) == hauls0 and int(fishing.get("hauls")) == 0, "MAP OPEN: 40 s bring no haul (hauls %d)" % int(fishing.get("hauls")))
+	chk(float((port.get("state") as RefCounted).call("hold_kg")) == hold0, "MAP OPEN: 40 s bring no fish")
 	fishing.call("stop", "test")
 	await key(KEY_ESCAPE)
 	ctx["paused"] = false
