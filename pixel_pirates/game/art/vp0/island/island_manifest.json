@@ -1,0 +1,212 @@
+{
+ "palm_a": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "palm_a.png",
+    "w": 126,
+    "h": 192,
+    "pivot": [
+     50.0,
+     187.8
+    ],
+    "colours": 11
+   }
+  ]
+ },
+ "palm_b": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "palm_b.png",
+    "w": 127,
+    "h": 167,
+    "pivot": [
+     74.0,
+     162.8
+    ],
+    "colours": 11
+   }
+  ]
+ },
+ "palm_c": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "palm_c.png",
+    "w": 127,
+    "h": 131,
+    "pivot": [
+     60.0,
+     124.8
+    ],
+    "colours": 11
+   }
+  ]
+ },
+ "rock_a": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "rock_a.png",
+    "w": 77,
+    "h": 82,
+    "pivot": [
+     35.0,
+     63.5
+    ],
+    "colours": 10
+   }
+  ]
+ },
+ "rock_b": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "rock_b.png",
+    "w": 42,
+    "h": 52,
+    "pivot": [
+     26.0,
+     36.0
+    ],
+    "colours": 9
+   }
+  ]
+ },
+ "rock_c": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "rock_c.png",
+    "w": 130,
+    "h": 117,
+    "pivot": [
+     65.0,
+     90.5
+    ],
+    "colours": 10
+   }
+  ]
+ },
+ "bush_a": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "bush_a.png",
+    "w": 51,
+    "h": 35,
+    "pivot": [
+     29.0,
+     25.8
+    ],
+    "colours": 9
+   }
+  ]
+ },
+ "bush_b": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "bush_b.png",
+    "w": 38,
+    "h": 33,
+    "pivot": [
+     20.0,
+     25.8
+    ],
+    "colours": 7
+   }
+  ]
+ },
+ "house_a": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "house_a.png",
+    "w": 156,
+    "h": 185,
+    "pivot": [
+     78.0,
+     140.0
+    ],
+    "colours": 36
+   }
+  ]
+ },
+ "house_b": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "house_b.png",
+    "w": 130,
+    "h": 235,
+    "pivot": [
+     65.0,
+     190.8
+    ],
+    "colours": 28
+   }
+  ]
+ },
+ "warehouse": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "warehouse.png",
+    "w": 206,
+    "h": 154,
+    "pivot": [
+     103.0,
+     104.0
+    ],
+    "colours": 22
+   }
+  ]
+ },
+ "pier_4": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "pier_4.png",
+    "w": 152,
+    "h": 88,
+    "pivot": [
+     75.0,
+     64.2
+    ],
+    "colours": 19
+   }
+  ]
+ },
+ "lamp_post": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "lamp_post.png",
+    "w": 19,
+    "h": 116,
+    "pivot": [
+     6.0,
+     110.2
+    ],
+    "colours": 6
+   }
+  ]
+ },
+ "signpost": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "signpost.png",
+    "w": 50,
+    "h": 89,
+    "pivot": [
+     23.0,
+     85.5
+    ],
+    "colours": 7
+   }
+  ]
+ }
+}

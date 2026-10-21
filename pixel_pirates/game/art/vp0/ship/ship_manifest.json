@@ -1,0 +1,687 @@
+{
+ "barrel": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "barrel.png",
+    "w": 20,
+    "h": 37,
+    "pivot": [
+     10.0,
+     30.0
+    ],
+    "colours": 14
+   }
+  ]
+ },
+ "barrel_fish": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "barrel_fish.png",
+    "w": 20,
+    "h": 37,
+    "pivot": [
+     10.0,
+     30.0
+    ],
+    "colours": 16
+   }
+  ]
+ },
+ "crate": {
+  "facings": 8,
+  "frames": [
+   {
+    "file": "crate_f0.png",
+    "w": 26,
+    "h": 41,
+    "pivot": [
+     13.5,
+     30.1
+    ],
+    "colours": 12
+   },
+   {
+    "file": "crate_f1.png",
+    "w": 35,
+    "h": 48,
+    "pivot": [
+     17.5,
+     34.1
+    ],
+    "colours": 13
+   },
+   {
+    "file": "crate_f2.png",
+    "w": 27,
+    "h": 41,
+    "pivot": [
+     12.5,
+     30.1
+    ],
+    "colours": 11
+   },
+   {
+    "file": "crate_f3.png",
+    "w": 36,
+    "h": 48,
+    "pivot": [
+     17.5,
+     34.1
+    ],
+    "colours": 10
+   },
+   {
+    "file": "crate_f4.png",
+    "w": 26,
+    "h": 41,
+    "pivot": [
+     12.5,
+     31.1
+    ],
+    "colours": 10
+   },
+   {
+    "file": "crate_f5.png",
+    "w": 35,
+    "h": 48,
+    "pivot": [
+     17.5,
+     34.1
+    ],
+    "colours": 10
+   },
+   {
+    "file": "crate_f6.png",
+    "w": 28,
+    "h": 41,
+    "pivot": [
+     15.5,
+     31.1
+    ],
+    "colours": 11
+   },
+   {
+    "file": "crate_f7.png",
+    "w": 36,
+    "h": 48,
+    "pivot": [
+     18.5,
+     34.1
+    ],
+    "colours": 13
+   }
+  ]
+ },
+ "cannon": {
+  "facings": 8,
+  "frames": [
+   {
+    "file": "cannon_f0.png",
+    "w": 58,
+    "h": 40,
+    "pivot": [
+     29.5,
+     31.6
+    ],
+    "colours": 16
+   },
+   {
+    "file": "cannon_f1.png",
+    "w": 45,
+    "h": 55,
+    "pivot": [
+     22.5,
+     38.6
+    ],
+    "colours": 15
+   },
+   {
+    "file": "cannon_f2.png",
+    "w": 22,
+    "h": 61,
+    "pivot": [
+     10.5,
+     44.6
+    ],
+    "colours": 17
+   },
+   {
+    "file": "cannon_f3.png",
+    "w": 45,
+    "h": 55,
+    "pivot": [
+     22.5,
+     38.6
+    ],
+    "colours": 17
+   },
+   {
+    "file": "cannon_f4.png",
+    "w": 58,
+    "h": 41,
+    "pivot": [
+     28.5,
+     32.6
+    ],
+    "colours": 17
+   },
+   {
+    "file": "cannon_f5.png",
+    "w": 45,
+    "h": 48,
+    "pivot": [
+     22.5,
+     36.6
+    ],
+    "colours": 15
+   },
+   {
+    "file": "cannon_f6.png",
+    "w": 22,
+    "h": 50,
+    "pivot": [
+     11.5,
+     41.6
+    ],
+    "colours": 16
+   },
+   {
+    "file": "cannon_f7.png",
+    "w": 45,
+    "h": 48,
+    "pivot": [
+     22.5,
+     36.6
+    ],
+    "colours": 15
+   }
+  ]
+ },
+ "rope_coil": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "rope_coil.png",
+    "w": 22,
+    "h": 21,
+    "pivot": [
+     10.0,
+     12.8
+    ],
+    "colours": 5
+   }
+  ]
+ },
+ "winch": {
+  "facings": 8,
+  "frames": [
+   {
+    "file": "winch_f0.png",
+    "w": 51,
+    "h": 50,
+    "pivot": [
+     25.0,
+     40.2
+    ],
+    "colours": 19
+   },
+   {
+    "file": "winch_f1.png",
+    "w": 50,
+    "h": 70,
+    "pivot": [
+     25.0,
+     50.2
+    ],
+    "colours": 20
+   },
+   {
+    "file": "winch_f2.png",
+    "w": 26,
+    "h": 70,
+    "pivot": [
+     14.0,
+     51.2
+    ],
+    "colours": 20
+   },
+   {
+    "file": "winch_f3.png",
+    "w": 51,
+    "h": 67,
+    "pivot": [
+     26.0,
+     47.2
+    ],
+    "colours": 20
+   },
+   {
+    "file": "winch_f4.png",
+    "w": 51,
+    "h": 51,
+    "pivot": [
+     26.0,
+     40.2
+    ],
+    "colours": 19
+   },
+   {
+    "file": "winch_f5.png",
+    "w": 50,
+    "h": 66,
+    "pivot": [
+     25.0,
+     46.2
+    ],
+    "colours": 18
+   },
+   {
+    "file": "winch_f6.png",
+    "w": 26,
+    "h": 64,
+    "pivot": [
+     12.0,
+     45.2
+    ],
+    "colours": 17
+   },
+   {
+    "file": "winch_f7.png",
+    "w": 51,
+    "h": 66,
+    "pivot": [
+     25.0,
+     46.2
+    ],
+    "colours": 18
+   }
+  ]
+ },
+ "helm": {
+  "facings": 8,
+  "frames": [
+   {
+    "file": "helm_f0.png",
+    "w": 16,
+    "h": 68,
+    "pivot": [
+     8.5,
+     60.9
+    ],
+    "colours": 10
+   },
+   {
+    "file": "helm_f1.png",
+    "w": 30,
+    "h": 67,
+    "pivot": [
+     14.5,
+     57.9
+    ],
+    "colours": 10
+   },
+   {
+    "file": "helm_f2.png",
+    "w": 38,
+    "h": 63,
+    "pivot": [
+     18.5,
+     55.9
+    ],
+    "colours": 10
+   },
+   {
+    "file": "helm_f3.png",
+    "w": 30,
+    "h": 67,
+    "pivot": [
+     14.5,
+     57.9
+    ],
+    "colours": 10
+   },
+   {
+    "file": "helm_f4.png",
+    "w": 16,
+    "h": 67,
+    "pivot": [
+     7.5,
+     60.9
+    ],
+    "colours": 10
+   },
+   {
+    "file": "helm_f5.png",
+    "w": 30,
+    "h": 67,
+    "pivot": [
+     15.5,
+     57.9
+    ],
+    "colours": 10
+   },
+   {
+    "file": "helm_f6.png",
+    "w": 38,
+    "h": 63,
+    "pivot": [
+     19.5,
+     56.9
+    ],
+    "colours": 10
+   },
+   {
+    "file": "helm_f7.png",
+    "w": 30,
+    "h": 67,
+    "pivot": [
+     15.5,
+     57.9
+    ],
+    "colours": 10
+   }
+  ]
+ },
+ "lantern": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "lantern.png",
+    "w": 12,
+    "h": 28,
+    "pivot": [
+     6.0,
+     23.8
+    ],
+    "colours": 6
+   }
+  ]
+ },
+ "hatch": {
+  "facings": 8,
+  "frames": [
+   {
+    "file": "hatch_f0.png",
+    "w": 38,
+    "h": 33,
+    "pivot": [
+     19.5,
+     19.6
+    ],
+    "colours": 14
+   },
+   {
+    "file": "hatch_f1.png",
+    "w": 50,
+    "h": 45,
+    "pivot": [
+     24.5,
+     26.6
+    ],
+    "colours": 14
+   },
+   {
+    "file": "hatch_f2.png",
+    "w": 33,
+    "h": 36,
+    "pivot": [
+     15.5,
+     21.6
+    ],
+    "colours": 12
+   },
+   {
+    "file": "hatch_f3.png",
+    "w": 50,
+    "h": 44,
+    "pivot": [
+     24.5,
+     26.6
+    ],
+    "colours": 13
+   },
+   {
+    "file": "hatch_f4.png",
+    "w": 39,
+    "h": 33,
+    "pivot": [
+     18.5,
+     21.6
+    ],
+    "colours": 13
+   },
+   {
+    "file": "hatch_f5.png",
+    "w": 50,
+    "h": 44,
+    "pivot": [
+     25.5,
+     26.6
+    ],
+    "colours": 12
+   },
+   {
+    "file": "hatch_f6.png",
+    "w": 35,
+    "h": 38,
+    "pivot": [
+     18.5,
+     23.6
+    ],
+    "colours": 12
+   },
+   {
+    "file": "hatch_f7.png",
+    "w": 50,
+    "h": 45,
+    "pivot": [
+     25.5,
+     26.6
+    ],
+    "colours": 13
+   }
+  ]
+ },
+ "fishing_net": {
+  "facings": 8,
+  "frames": [
+   {
+    "file": "fishing_net_f0.png",
+    "w": 43,
+    "h": 27,
+    "pivot": [
+     23.5,
+     15.4
+    ],
+    "colours": 11
+   },
+   {
+    "file": "fishing_net_f1.png",
+    "w": 36,
+    "h": 33,
+    "pivot": [
+     18.5,
+     19.4
+    ],
+    "colours": 12
+   },
+   {
+    "file": "fishing_net_f2.png",
+    "w": 28,
+    "h": 38,
+    "pivot": [
+     13.5,
+     19.4
+    ],
+    "colours": 11
+   },
+   {
+    "file": "fishing_net_f3.png",
+    "w": 35,
+    "h": 34,
+    "pivot": [
+     17.5,
+     19.4
+    ],
+    "colours": 11
+   },
+   {
+    "file": "fishing_net_f4.png",
+    "w": 43,
+    "h": 27,
+    "pivot": [
+     19.5,
+     16.4
+    ],
+    "colours": 12
+   },
+   {
+    "file": "fishing_net_f5.png",
+    "w": 36,
+    "h": 36,
+    "pivot": [
+     17.5,
+     22.4
+    ],
+    "colours": 12
+   },
+   {
+    "file": "fishing_net_f6.png",
+    "w": 28,
+    "h": 36,
+    "pivot": [
+     14.5,
+     21.4
+    ],
+    "colours": 12
+   },
+   {
+    "file": "fishing_net_f7.png",
+    "w": 35,
+    "h": 32,
+    "pivot": [
+     17.5,
+     18.4
+    ],
+    "colours": 12
+   }
+  ]
+ },
+ "chest": {
+  "facings": 8,
+  "frames": [
+   {
+    "file": "chest_f0.png",
+    "w": 30,
+    "h": 32,
+    "pivot": [
+     15.5,
+     22.4
+    ],
+    "colours": 12
+   },
+   {
+    "file": "chest_f1.png",
+    "w": 34,
+    "h": 43,
+    "pivot": [
+     16.5,
+     29.4
+    ],
+    "colours": 13
+   },
+   {
+    "file": "chest_f2.png",
+    "w": 23,
+    "h": 42,
+    "pivot": [
+     10.5,
+     29.4
+    ],
+    "colours": 13
+   },
+   {
+    "file": "chest_f3.png",
+    "w": 34,
+    "h": 43,
+    "pivot": [
+     16.5,
+     29.4
+    ],
+    "colours": 12
+   },
+   {
+    "file": "chest_f4.png",
+    "w": 30,
+    "h": 32,
+    "pivot": [
+     14.5,
+     23.4
+    ],
+    "colours": 9
+   },
+   {
+    "file": "chest_f5.png",
+    "w": 34,
+    "h": 43,
+    "pivot": [
+     17.5,
+     29.4
+    ],
+    "colours": 11
+   },
+   {
+    "file": "chest_f6.png",
+    "w": 23,
+    "h": 42,
+    "pivot": [
+     12.5,
+     30.4
+    ],
+    "colours": 15
+   },
+   {
+    "file": "chest_f7.png",
+    "w": 34,
+    "h": 43,
+    "pivot": [
+     17.5,
+     29.4
+    ],
+    "colours": 14
+   }
+  ]
+ },
+ "bollard": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "bollard.png",
+    "w": 18,
+    "h": 25,
+    "pivot": [
+     9.0,
+     19.5
+    ],
+    "colours": 15
+   }
+  ]
+ },
+ "mast": {
+  "facings": 1,
+  "frames": [
+   {
+    "file": "mast.png",
+    "w": 26,
+    "h": 287,
+    "pivot": [
+     13.0,
+     276.2
+    ],
+    "colours": 14
+   }
+  ]
+ }
+}

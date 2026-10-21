@@ -1,0 +1,16 @@
+{
+  "_doc": "VP-0 palette v1.1: ADDITIVE extension of palette.json (Module A3). It never changes a v1 ramp. Same rules: 5 steps per ramp (0 darkest shadow, 1 shadow, 2 base, 3 light, 4 highlight), shadows warm-to-purple, highlights warm, no #000000 and no #ffffff. Read by tools/vp0/*.py; the game loads palette.json first and then merges this file.",
+  "extends": "res://data/look/palette.json",
+  "ramps": {
+    "rope_hemp": ["#3a2a18", "#5e4627", "#8f6f3f", "#bf9c62", "#e6cf94"],
+    "brass": ["#3a2f12", "#655019", "#9a7e2c", "#cfae4a", "#f0d884"],
+    "plaster": ["#5b4a45", "#8c7568", "#bda88f", "#e3d3b4", "#f8eed2"],
+    "terracotta": ["#45201a", "#7a3322", "#b0502e", "#d97a43", "#f2ab6b"],
+    "thatch": ["#3b2c17", "#5f4824", "#8a6c34", "#b8944b", "#dcc275"],
+    "rock_basalt": ["#221f26", "#3b3841", "#5c5960", "#85817f", "#b3aca0"],
+    "foam": ["#7fa9a6", "#b4d6cc", "#dcf0e4", "#f1faee", "#fbfff3"],
+    "wood_pale": ["#4a3a2b", "#725c41", "#a08660", "#c9b085", "#e8d6aa"],
+    "tar": ["#15121a", "#25212b", "#3a343d", "#565059", "#7a7480"],
+    "sea_mid": ["#0f3a4e", "#176070", "#238a8c", "#5dbcb0", "#a9e6cf"]
+  }
+}
