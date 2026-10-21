@@ -768,5 +768,90 @@
     "colours": 24
    }
   ]
+ },
+ "cabin": {
+  "facings": 8,
+  "frames": [
+   {
+    "file": "cabin_f0.png",
+    "w": 118,
+    "h": 155,
+    "pivot": [
+     59.5,
+     112.1
+    ],
+    "colours": 18
+   },
+   {
+    "file": "cabin_f1.png",
+    "w": 167,
+    "h": 186,
+    "pivot": [
+     83.5,
+     126.1
+    ],
+    "colours": 16
+   },
+   {
+    "file": "cabin_f2.png",
+    "w": 118,
+    "h": 158,
+    "pivot": [
+     58.5,
+     115.1
+    ],
+    "colours": 17
+   },
+   {
+    "file": "cabin_f3.png",
+    "w": 167,
+    "h": 184,
+    "pivot": [
+     83.5,
+     126.1
+    ],
+    "colours": 17
+   },
+   {
+    "file": "cabin_f4.png",
+    "w": 119,
+    "h": 149,
+    "pivot": [
+     58.5,
+     109.1
+    ],
+    "colours": 16
+   },
+   {
+    "file": "cabin_f5.png",
+    "w": 167,
+    "h": 184,
+    "pivot": [
+     83.5,
+     126.1
+    ],
+    "colours": 17
+   },
+   {
+    "file": "cabin_f6.png",
+    "w": 119,
+    "h": 153,
+    "pivot": [
+     60.5,
+     109.1
+    ],
+    "colours": 17
+   },
+   {
+    "file": "cabin_f7.png",
+    "w": 167,
+    "h": 186,
+    "pivot": [
+     83.5,
+     126.1
+    ],
+    "colours": 17
+   }
+  ]
  }
 }

@@ -18,7 +18,6 @@ static func build(stage, parent: Node3D, yaw_deg: float, sails := true, props :=
 	ship.rotation_degrees.y = yaw_deg
 	parent.add_child(ship)
 	_hull(stage, ship)
-	_cabin(stage, ship)
 	if sails:
 		_rig(stage, ship)
 	if props:
@@ -222,6 +221,7 @@ static func _props(stage, ship: Node3D, yaw: float) -> void:
 			smat.set_meta("clip_ship", true)
 			stage.get("clip_mats").append(smat)
 		return mi
+	sp.call("cabin", Vector2(-7.7, 0.0))
 	sp.call("mast", L.MAST)
 	sp.call("helm", L.HELM, 0.0)
 	sp.call("winch", L.WINCH, 0.0)

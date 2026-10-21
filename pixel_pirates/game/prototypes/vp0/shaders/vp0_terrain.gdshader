@@ -23,7 +23,7 @@ void vertex() {
 
 int type_at(vec2 p) {
 	ivec2 c = ivec2(floor(p - origin));
-	if (c.x < 0 || c.y < 0 || c.x >= cell_count.x || c.y >= cell_count.y) return 255;
+	c = clamp(c, ivec2(0), cell_count - ivec2(1));      // the map edge continues outward (grass to the north, water to the south)
 	return int(texelFetch(cells, c, 0).r * 255.0 + 0.5);
 }
 

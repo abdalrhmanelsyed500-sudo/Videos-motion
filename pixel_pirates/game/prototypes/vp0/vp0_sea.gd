@@ -25,7 +25,7 @@ func _build() -> void:
 	_island_sprites(U.tex(U.ART + "world/sea_cells.png").get_image(), org)
 	_place_ship()
 	# a second, distant sloop on another heading (the sea is never empty)
-	var far := U.add_sprite(self, world, "hull", "sloop_sea", Vector3(-26.0, 0.0, -22.0), 0.0, false, 0.0, 0.0, 3)
+	var far := U.add_sprite(self, world, "hull", "sloop_sea", Vector3(-9.0, 0.0, -25.0), 0.0, false, 0.0, 0.0, 3)
 	far.set_meta("far", true)
 	set_cam(Vector3(12.0, 0.0, -4.0))
 
@@ -58,8 +58,8 @@ func _island_sprites(img: Image, org: Array) -> void:
 			var wz := float(org[1]) + float(y) + 0.5
 			if t == 7 and r < 0.20:
 				U.add_sprite(self, world, "lod8", "rock_c" if r < 0.08 else "rock_a", Vector3(wx, 0, wz))
-			elif (t == 2 or t == 0) and r < 0.05 and int(roundf(img.get_pixel(x + 2, y).r * 255.0)) != 255 and int(roundf(img.get_pixel(x - 2, y).r * 255.0)) != 255:
-				U.add_sprite(self, world, "lod8", "palm_a" if r < 0.025 else "palm_c", Vector3(wx, 0, wz))
+			elif (t == 2 or t == 0) and r < 0.11 and int(roundf(img.get_pixel(x + 2, y).r * 255.0)) != 255 and int(roundf(img.get_pixel(x - 2, y).r * 255.0)) != 255:
+				U.add_sprite(self, world, "lod8", "palm_a" if r < 0.05 else "palm_c", Vector3(wx, 0, wz))
 				n += 1
 			elif t == 2 and r > 0.93:
 				U.add_sprite(self, world, "lod8", "bush_a", Vector3(wx, 0, wz))

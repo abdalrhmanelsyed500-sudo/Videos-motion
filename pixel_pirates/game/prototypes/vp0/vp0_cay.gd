@@ -5,7 +5,7 @@ const SHIP := preload("res://prototypes/vp0/vp0_ship.gd")
 
 const SHOTS := {
 	"street": Vector3(2.0, 0.0, -12.0),
-	"harbour": Vector3(2.0, 0.0, 3.5),
+	"harbour": Vector3(3.0, 0.0, 5.0),
 	"beach": Vector3(-14.0, 0.0, 2.0),
 }
 var ocean: ShaderMaterial
@@ -24,17 +24,18 @@ func _build() -> void:
 	var cells: Array = meta["cells"]
 	var org: Array = meta["origin"]
 	var tm := make_terrain(U.ART + "world/cay_cells.png", Vector2(org[0], org[1]), Vector2i(cells[0], cells[1]), 2.0)
-	U.add_plane(world, Vector3(float(org[0]) + cells[0] * 0.5, 0.0, float(org[1]) + cells[1] * 0.5), Vector2(cells[0], cells[1]), tm, -1)
+	U.add_plane(world, Vector3(float(org[0]) + cells[0] * 0.5, 0.0, float(org[1]) + cells[1] * 0.5 - 40.0), Vector2(220, 160), tm, -1)
 	_terrace()
 	_props()
 	var ship := SHIP.build(self, world, 180.0)
-	ship.position = Vector3(2.5, 0.0, 11.2)
+	ship.position = Vector3(3.5, 0.0, 13.0)
 	for m in clip_mats:
-		(m as ShaderMaterial).set_shader_parameter("clip", Vector4(2.5, 11.2, -1.0, 0.0))
-	ocean.set_shader_parameter("ship_pos", Vector2(2.5, 11.2))
+		(m as ShaderMaterial).set_shader_parameter("clip", Vector4(3.5, 13.0, -1.0, 0.0))
+	ocean.set_shader_parameter("ship_pos", Vector2(3.5, 13.0))
 	ocean.set_shader_parameter("ship_fwd", Vector2(-1.0, 0.0))
 	ocean.set_shader_parameter("ship_speed", 0.0)
 	var shot := String(args.get("shot", "street"))
+	ship.visible = shot == "harbour"
 	set_cam(args["cam"] if false else SHOTS.get(shot, SHOTS["street"]))
 	if args.has("cam"):
 		var p := String(args["cam"]).split(",")
@@ -55,7 +56,7 @@ func _terrace() -> void:
 	wall.quad(Vector3(x0, 0, z0), Vector3(x0, 0, z1), Vector3(x0, h, z1), Vector3(x0, h, z0), Vector2(0, 0), Vector2(3, 0), Vector2(3, h / 2), Vector2(0, h / 2))
 	var tm := MeshInstance3D.new()
 	tm.mesh = top.build()
-	tm.material_override = make_cel(atlas_tile(2, 1), Color(1, 1, 1))
+	tm.material_override = make_cel(atlas_tile(2, 1), Color(1.3, 1.3, 1.2))
 	tm.extra_cull_margin = 30.0
 	world.add_child(tm)
 	var wm := MeshInstance3D.new()

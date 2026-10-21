@@ -120,7 +120,7 @@ void fragment() {
 	float in_wake = step(0.0, k) * step(k, 26.0) * sf;
 	float wake_edge = step(abs(abs(b) - wk_w), 0.33) * step(0.28 + k * 0.012, n3 + 0.12 + n2 * 0.25);
 	float wake_core = step(abs(b), wk_w * 0.55) * step(0.5 + k * 0.022, n3 * 0.9 + n2 * 0.25);
-	float wake_cross = step(abs(b), wk_w) * step(fract((k - t * 2.2 * sf) * 0.45), 0.10) * step(0.4, n2);
+	float wake_cross = step(abs(b), wk_w) * step(fract((k - t * 2.2 * sf) * 0.45), 0.10) * step(0.62, n2) * step(0.5, n3);
 	col = mix(col, foam[1], clamp(in_wake * (wake_edge + wake_core * 0.8 + wake_cross * 0.7), 0.0, 1.0));
 	col = mix(col, foam[2], clamp(hull_band + bow * sf, 0.0, 1.0));
 	col = mix(col, foam[3], hull_rim);

@@ -270,6 +270,41 @@ def mast() -> Vox:
     return v
 
 
+def cabin() -> Vox:
+    """The captain's cabin (ship_layout CABIN: u -10.0..-5.4, v +-2.2): 110 x 106 voxels footprint, 2.4 m walls, overhanging roof, chimney.
+    Windows (emissive glass) on the starboard / port / stern walls, the door on the bow wall at v -2.0..-0.6. Baked in 8 facings like every prop."""
+    v = _new(116, 116, 84)
+    v.box(3, 3, 0, 113, 109, 58, WOOD, tone=tone_planks("z", 4, 31, 0.14))
+    v.box(3, 3, 0, 113, 109, 4, TAR)                                                  # sill
+    for (x0, y0, x1, y1) in ((3, 3, 7, 7), (109, 3, 113, 7), (3, 105, 7, 109), (109, 105, 113, 109)):
+        v.box(x0, y0, 0, x1, y1, 58, PALE)                                              # corner posts
+    for cx in (26, 58, 90):                                                           # windows, front (starboard) and back (port) walls
+        for (ya, yb) in ((2, 5), (107, 110)):
+            v.box(cx - 10, ya, 22, cx + 10, yb, 46, TAR)
+            v.box(cx - 8, ya, 24, cx + 8, yb, 44, GLASS)
+            v.box(cx - 1, ya, 24, cx + 1, yb, 44, TAR)                                  # mullion
+            v.box(cx - 8, ya, 33, cx + 8, yb, 35, TAR)
+    for (xa, xb) in ((2, 5),):                                                        # stern window pair (west wall)
+        for cy in (34, 78):
+            v.box(xa, cy - 10, 22, xb, cy + 10, 46, TAR)
+            v.box(xa, cy - 8, 24, xb, cy + 8, 44, GLASS)
+    v.box(111, 70, 0, 115, 106, 50, TAR)                                              # door frame (bow wall, v -2.0..-0.6)
+    v.box(111, 72, 2, 116, 104, 48, WOOD, tone=tone_planks("y", 4, 9))
+    v.box(113, 76, 20, 117, 78, 30, BRASS)
+    v.box(111, 14, 24, 115, 40, 46, TAR)                                              # bow-wall window
+    v.box(111, 16, 26, 116, 38, 44, GLASS)
+    v.box(0, 0, 58, 116, 116, 63, WOOD, tone=tone_planks("y", 5, 17, 0.12))             # overhanging roof
+    v.box(0, 0, 63, 116, 2, 65, PALE)
+    v.box(0, 114, 63, 116, 116, 65, PALE)
+    v.box(0, 0, 63, 2, 116, 65, PALE)
+    v.box(114, 0, 63, 116, 116, 65, PALE)
+    v.box(30, 30, 63, 86, 80, 68, PALE, tone=tone_planks("x", 4, 5))                   # skylight deck
+    v.box(46, 46, 68, 70, 64, 71, GLASS)
+    v.cyl(96, 92, 63, 84, 4.5, IRON)                                                  # chimney
+    v.cyl(96, 92, 80, 84, 5.5, TAR)
+    return v
+
+
 def pirate() -> Vox:
     """Scale-reference mannequin (1.8 m = 43 voxels). NOT the final character art: production characters are hand-painted frames at the
     same 24 px/m (see VP0_ART_BIBLE). Shares the voxel light so it sits in the scene while the prototype is judged."""
@@ -314,4 +349,5 @@ MODELS = {
     "chest": (chest, 8),
     "bollard": (bollard, 1),
     "mast": (mast, 1),
+    "cabin": (cabin, 8),
 }

@@ -13,6 +13,7 @@ uniform float ppm = 24.0;                    // screen pixels per metre at the c
 uniform float bias = 0.6;
 uniform vec3 light_tint = vec3(1.0);
 uniform float fade = 1.0;
+uniform float glow = 1.0;   // 0 by day (lamps and windows are unlit glass), 1 at night
 
 void vertex() {
 	vec4 pv = VIEW_MATRIX * vec4(MODEL_MATRIX[3].xyz, 1.0);
@@ -27,5 +28,9 @@ void fragment() {
 	vec4 c = texture(tex, UV);
 	if (c.a < 0.5) discard;
 	float emit = step(0.995, c.r) * step(0.55, c.g) * step(c.b, 0.62);
-	ALBEDO = c.rgb * mix(light_tint, vec3(1.0), emit) * fade;
+	vec3 lit = c.rgb;
+	vec3 glass = vec3(0.30, 0.42, 0.50) * (0.55 + 0.45 * c.g);
+	vec3 col = c.rgb * light_tint;
+	col = mix(col, mix(glass * light_tint, lit, glow), emit);
+	ALBEDO = col * fade;
 }

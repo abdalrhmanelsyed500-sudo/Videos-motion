@@ -18,9 +18,9 @@ const LOOKS := {
 		"grade_mul": Color(1.0, 1.0, 1.0), "sat": 1.12, "contrast": 1.06, "bloom": 0.25, "vignette": 0.55,
 	},
 	"golden": {
-		"tint": Color(1.0, 0.80, 0.60), "sun": Vector3(0.85, -0.42, -0.40), "shadow": Color(0.24, 0.08, 0.26, 0.50),
+		"tint": Color(1.0, 0.85, 0.68), "sun": Vector3(0.85, -0.42, -0.40), "shadow": Color(0.24, 0.08, 0.26, 0.50),
 		"fog": Color(0.92, 0.64, 0.50), "fog_amt": 0.35, "halo": 0.35,
-		"grade_mul": Color(1.05, 0.98, 0.92), "sat": 1.22, "contrast": 1.08, "bloom": 0.45, "vignette": 0.68,
+		"grade_mul": Color(1.03, 0.99, 0.95), "sat": 1.15, "contrast": 1.08, "bloom": 0.45, "vignette": 0.68,
 	},
 	"dusk": {
 		"tint": Color(0.72, 0.64, 0.88), "sun": Vector3(0.9, -0.28, -0.30), "shadow": Color(0.12, 0.07, 0.26, 0.46),
@@ -175,6 +175,7 @@ func set_look(name: String) -> void:
 	var tv := Vector3(t.r, t.g, t.b)
 	for m in sprite_mats:
 		(m as ShaderMaterial).set_shader_parameter("light_tint", tv)
+		(m as ShaderMaterial).set_shader_parameter("glow", clampf(float(look["halo"]) * 2.0, 0.0, 1.0))
 	for m in shadow_mats:
 		(m as ShaderMaterial).set_shader_parameter("sun_dir", sun)
 		(m as ShaderMaterial).set_shader_parameter("shadow_colour", look["shadow"])
@@ -185,7 +186,7 @@ func set_look(name: String) -> void:
 		(m as ShaderMaterial).set_shader_parameter("light_tint", tv)
 	var fog: Color = look["fog"]
 	for m in ocean_mats:
-		(m as ShaderMaterial).set_shader_parameter("light_tint", tv)
+		(m as ShaderMaterial).set_shader_parameter("light_tint", Vector3(1, 1, 1).lerp(tv, 0.6))
 		(m as ShaderMaterial).set_shader_parameter("fog_colour", Vector3(fog.r, fog.g, fog.b))
 		(m as ShaderMaterial).set_shader_parameter("fog_amount", float(look["fog_amt"]))
 	for m in halo_mats:
