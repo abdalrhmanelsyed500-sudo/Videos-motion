@@ -29,7 +29,6 @@ float lum(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
 
 void fragment() {
 	vec2 uv = UV;
-	vec2 px = 1.0 / vec2(textureSize(src_lin, 0)) ;
 	float dy = abs(uv.y - focus_y);
 	float blur = smoothstep(focus_half, focus_half + ramp_w, dy);
 	vec3 col = texture(src_near, uv).rgb;

@@ -6,12 +6,13 @@ render_mode unshaded, depth_draw_never, cull_disabled;
 
 uniform sampler2D cells : filter_nearest, repeat_disable;
 uniform sampler2D atlas : filter_nearest, repeat_disable;
+uniform float tile_m = 2.0;
 uniform sampler2D noise_tex : filter_linear, repeat_enable;
 uniform vec2 origin = vec2(-30.0, -17.0);
 uniform ivec2 cell_count = ivec2(60, 34);
 uniform float ppm = 24.0;
 uniform vec3 light_tint = vec3(1.0);
-uniform vec3 edge_colour : source_color = vec3(0.15, 0.21, 0.12);
+uniform vec3 edge_colour = vec3(0.15, 0.21, 0.12);
 uniform float wobble = 0.85;
 
 varying vec3 wpos;
@@ -32,9 +33,9 @@ void fragment() {
 	vec2 p = q + disp;
 	int t = type_at(p);
 	if (t == 255) discard;
-	vec2 tuv = fract(q / 2.0);
+	vec2 tuv = fract(q / tile_m);
 	ivec2 tp = ivec2(floor(tuv * 48.0));
-	int var_ = int(mod(floor(p.x) * 3.0 + floor(p.y) * 7.0, 4.0));
+	int var_ = int(mod(floor(p.x / tile_m) * 3.0 + floor(p.y / tile_m) * 7.0, 4.0));
 	vec3 col = texelFetch(atlas, ivec2(var_ * 48, t * 48) + tp, 0).rgb;
 	// grass / cobble borders: a 1 px darker line where the neighbour (3 px away) is another ground type
 	float px = 3.0 / ppm;

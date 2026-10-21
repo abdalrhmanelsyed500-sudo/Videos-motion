@@ -54,7 +54,7 @@ static func frame_for(nf: int, phi_deg: float) -> int:
 
 ## Adds one sprite (and optionally its flattened shadow) standing on `pos` (the pivot = centre of the footprint on the ground).
 ## Returns the MeshInstance3D; stage.sprite_mats / stage.shadow_mats get the materials so the look can retint them.
-static func add_sprite(stage: Node, parent: Node3D, group: String, sname: String, pos: Vector3, phi_deg := 0.0, shadow := true, ppm_override := 0.0, extra_bias := 0.0) -> MeshInstance3D:
+static func add_sprite(stage, parent: Node3D, group: String, sname: String, pos: Vector3, phi_deg := 0.0, shadow := true, ppm_override := 0.0, extra_bias := 0.0, frame := -1) -> MeshInstance3D:
 	var man: Dictionary = manifest(group)
 	if not man.has(sname):
 		push_warning("VP0: no sprite %s/%s" % [group, sname])
@@ -62,6 +62,8 @@ static func add_sprite(stage: Node, parent: Node3D, group: String, sname: String
 	var e: Dictionary = man[sname]
 	var frames: Array = e["frames"]
 	var k := frame_for(int(e["facings"]), phi_deg) if int(e["facings"]) > 1 else 0
+	if frame >= 0:
+		k = frame % frames.size()
 	var f: Dictionary = frames[k]
 	var t := tex(ART + group + "/" + String(f["file"]))
 	var ppm: float = ppm_override if ppm_override > 0.0 else float(stage.get("ppm"))
@@ -96,6 +98,7 @@ static func add_sprite(stage: Node, parent: Node3D, group: String, sname: String
 		sm.shader = shader("vp0_shadow")
 		sm.set_shader_parameter("tex", t)
 		sm.set_shader_parameter("size_m", Vector2(w, h) / ppm)
+		sm.set_shader_parameter("ground_y", parent.position.y + pos.y + 0.03)
 		sm.set_shader_parameter("pivot_m", Vector2(piv.x, h - piv.y) / ppm)
 		sh.material_override = sm
 		sh.position = pos
@@ -104,7 +107,7 @@ static func add_sprite(stage: Node, parent: Node3D, group: String, sname: String
 	return mi
 
 
-static func add_halo(stage: Node, parent: Node3D, pos: Vector3, radius_m: float, colour: Color, weight := 1.0, seed := 0.0) -> MeshInstance3D:
+static func add_halo(stage, parent: Node3D, pos: Vector3, radius_m: float, colour: Color, weight := 1.0, seed := 0.0) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	var q := QuadMesh.new()
 	q.size = Vector2(1, 1)

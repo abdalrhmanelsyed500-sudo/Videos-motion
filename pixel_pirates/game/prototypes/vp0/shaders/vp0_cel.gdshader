@@ -9,13 +9,12 @@ uniform vec3 light_tint = vec3(1.0);
 uniform vec3 shadow_tint = vec3(0.78, 0.74, 0.95);
 uniform float band_gain = 1.0;
 uniform float back_glow = 0.0;     // sails: light seen through the cloth from behind
-uniform vec4 tint : source_color = vec4(1.0);
+uniform vec4 tint = vec4(1.0);
 
 void fragment() {
 	vec4 c = texture(albedo_tex, UV);
 	vec3 n = normalize((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
-	bool front = FRONT_FACING;
-	if (!front) n = -n;
+	bool front = FRONT_FACING;   // NORMAL is already flipped by the engine for back faces (cull_disabled)
 	float ndl = dot(n, -normalize(sun_dir));
 	float band = floor(clamp(ndl * 0.5 + 0.55, 0.0, 0.999) * 4.0);
 	float m[4] = float[4](0.58, 0.78, 0.98, 1.12);

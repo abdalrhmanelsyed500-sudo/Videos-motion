@@ -7,6 +7,7 @@ render_mode unshaded, depth_draw_never, cull_disabled;
 uniform sampler2D depth_tex : filter_linear, repeat_disable;
 uniform sampler2D noise_tex : filter_linear, repeat_enable;
 uniform sampler2D bed_atlas : filter_nearest, repeat_disable;
+uniform float tile_m = 2.0;
 uniform vec4 depth_rect = vec4(-52.0, -39.0, 104.0, 78.0);   // x0, z0, w, h in metres
 uniform vec2 depth_range = vec2(-4.0, 20.0);
 uniform float ppm = 24.0;                                      // art pixels per metre on the ground
@@ -81,9 +82,9 @@ void fragment() {
 	col = mix(col, foam[3], step(0.9982 - 0.0016 * glint, sp) * step(0.5, n1));
 	// sand seen through the shallows
 	float bed_a = 1.0 - smoothstep(0.9, 3.4, d + (n1 - 0.5) * 0.8);
-	vec2 tuv = fract(q / 2.0);
+	vec2 tuv = fract(q / tile_m);
 	ivec2 tp = ivec2(floor(tuv * 48.0));
-	ivec2 var_ = ivec2(int(mod(floor(q.x / 2.0) + 3.0 * floor(q.y / 2.0), 4.0)) * 48, int(bed_row) * 48);
+	ivec2 var_ = ivec2(int(mod(floor(q.x / tile_m) + 3.0 * floor(q.y / tile_m), 4.0)) * 48, int(bed_row) * 48);
 	vec3 bed = texelFetch(bed_atlas, var_ + tp, 0).rgb;
 	bed = mix(bed, ramp[5], 0.38);
 	if (bed_a > 0.02 && dith < bed_a * 0.95) {
@@ -99,15 +100,21 @@ void fragment() {
 	col = mix(col, foam[1], swash2 * 0.9);
 	col = mix(col, foam[2], swash);
 	col = mix(col, foam[3], rim);
-	// the ship: hull rim foam, bow splash and a wake that widens astern
+	// the ship: foam hugging the hull outline, a bow splash and a wake that widens astern
 	vec2 rel = q - ship_pos;
 	vec2 side = vec2(-ship_fwd.y, ship_fwd.x);
 	float a = dot(rel, ship_fwd);
 	float b = dot(rel, side);
-	float e = length(vec2(a / ship_half.x, b / ship_half.y));
+	float rr = a / ship_half.x;
+	float wh = a > 0.0 ? ship_half.y * sqrt(max(1.0 - pow(abs(rr), 1.6), 0.0)) : ship_half.y * 0.97 - 1.1 * pow(abs(rr), 4.0);
 	float sf = clamp(ship_speed, 0.0, 1.0);
-	float hull_foam = step(e, 1.12 + (n3 - 0.5) * 0.14) * step(1.0, e + 0.0);
-	float bow = step(0.62 * ship_half.x, a) * step(e, 1.28) * step(0.5, n3);
+	float out_d = abs(b) - 0.64 * wh;                                   // distance outside the hull outline
+	float along = step(abs(a), ship_half.x + 0.5);
+	float jitter = (n3 - 0.5) * 0.3;
+	float hull_rim = along * step(0.0, out_d + 0.05) * step(out_d, 0.28 + jitter + 0.22 * sf * smoothstep(0.0, ship_half.x, a));
+	float hull_band = along * step(0.28, out_d) * step(out_d, 0.8 + jitter + 0.5 * sf) * step(0.42, n3 + n2 * 0.3);
+	float tip = length(rel - ship_fwd * (ship_half.x * 0.9));
+	float bow = step(tip, 1.0 + 0.9 * sf) * step(0.45, n3 + 0.15);
 	float k = -a - 0.78 * ship_half.x;
 	float wk_w = 0.9 + 0.17 * max(k, 0.0);
 	float in_wake = step(0.0, k) * step(k, 26.0) * sf;
@@ -115,8 +122,8 @@ void fragment() {
 	float wake_core = step(abs(b), wk_w * 0.55) * step(0.5 + k * 0.022, n3 * 0.9 + n2 * 0.25);
 	float wake_cross = step(abs(b), wk_w) * step(fract((k - t * 2.2 * sf) * 0.45), 0.10) * step(0.4, n2);
 	col = mix(col, foam[1], clamp(in_wake * (wake_edge + wake_core * 0.8 + wake_cross * 0.7), 0.0, 1.0));
-	col = mix(col, foam[2], clamp((hull_foam * 0.9 + bow * sf), 0.0, 1.0) * step(e, 1.28));
-	col = mix(col, foam[3], hull_foam * step(e, 1.07) * step(0.0, e - 1.0) * 0.9);
+	col = mix(col, foam[2], clamp(hull_band + bow * sf, 0.0, 1.0));
+	col = mix(col, foam[3], hull_rim);
 	// distance haze (only the far edge of the screen: the sea is seen from ~48 degrees, so this is subtle)
 	float dist = length(wpos - CAMERA_POSITION_WORLD);
 	col = mix(col, fog_colour, fog_amount * smoothstep(40.0, 110.0, dist));

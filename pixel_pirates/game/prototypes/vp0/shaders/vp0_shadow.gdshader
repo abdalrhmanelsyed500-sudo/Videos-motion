@@ -7,9 +7,13 @@ uniform sampler2D tex : filter_nearest;
 uniform vec2 size_m = vec2(1.0);          // sprite size in metres
 uniform vec2 pivot_m = vec2(0.5, 0.0);    // pivot: distance from the left and from the bottom, metres
 uniform vec3 sun_dir = vec3(0.55, -0.75, -0.4);   // direction the light travels (toward the ground)
-uniform vec4 shadow_colour : source_color = vec4(0.16, 0.09, 0.2, 0.42);
+uniform vec4 shadow_colour = vec4(0.16, 0.09, 0.2, 0.42);
 uniform float ground_y = 0.03;
 uniform float max_len = 7.0;
+uniform vec4 clip = vec4(0.0, 0.0, 1.0, 0.0);   // ship clip: centre x, z, cos(yaw), sin(yaw); active when clip_on > 0.5 (keeps deck shadows on the deck)
+uniform float clip_on = 0.0;
+
+varying vec3 wp;
 
 void vertex() {
 	vec3 piv = MODEL_MATRIX[3].xyz;
@@ -25,12 +29,21 @@ void vertex() {
 	p.xz += dir * len;
 	// the part below the pivot is the footprint toward the viewer: keep it as a contact shadow
 	p.z += max(-h, 0.0) * 0.55;
+	wp = p;
 	POSITION = PROJECTION_MATRIX * VIEW_MATRIX * vec4(p, 1.0);
 }
 
 void fragment() {
 	float a = texture(tex, UV).a;
 	if (a < 0.5) discard;
+	if (clip_on > 0.5) {
+		vec2 rel = wp.xz - clip.xy;
+		float u = dot(rel, vec2(clip.z, -clip.w));
+		float v = dot(rel, vec2(clip.w, clip.z));
+		float r = u / 11.0;
+		float w = u > 0.0 ? 3.1 * sqrt(max(1.0 - pow(abs(r), 1.6), 0.0)) : 3.0 - 1.1 * pow(abs(r), 4.0);
+		if (abs(u) > 10.7 || abs(v) > w - 0.35) discard;
+	}
 	ALBEDO = shadow_colour.rgb;
 	ALPHA = shadow_colour.a;
 }

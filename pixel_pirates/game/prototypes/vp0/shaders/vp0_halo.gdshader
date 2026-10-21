@@ -3,7 +3,7 @@
 shader_type spatial;
 render_mode unshaded, blend_add, depth_draw_never, depth_test_disabled, cull_disabled;
 
-uniform vec3 halo_colour : source_color = vec3(1.0, 0.62, 0.22);
+uniform vec3 halo_colour = vec3(1.0, 0.62, 0.22);
 uniform float intensity = 0.8;
 uniform float radius_m = 1.6;
 uniform float time_s = 0.0;
