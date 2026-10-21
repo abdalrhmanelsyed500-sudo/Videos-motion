@@ -287,8 +287,8 @@ void fragment() {
 		vec2 ss = normalize(vec2(h2d_sun_dir.x, h2d_sun_dir.z) + vec2(0.0001));
 		float hgr = pow(1.0 - clamp(vdir.y, 0.0, 1.0), 5.0);
 		float glow = hgr * pow(clamp(dot(vv, ss), 0.0, 1.0), 3.0) * (1.0 - h2d_overcast) * (1.0 - 0.5 * h2d_night);
-		float gq = clamp(floor(glow * 3.0 + bayer4(FRAGCOORD.xy + vec2(7.0, 4.0))) / 3.0, 0.0, 1.0);
-		col = mix(col, h2d_fog_col * (0.85 + 0.75 * h2d_sun_col), gq * 0.55);
+		// smooth on purpose: quantising this low-contrast field draws contour lines across the open sea
+		col = mix(col, h2d_fog_col * (0.85 + 0.75 * h2d_sun_col), clamp(glow, 0.0, 1.0) * 0.5);
 	}
 	// VP-1A.2 hull contact: the water is dark right at the hull, a thin bright line of foam rides on the waterline, and the hull throws a small
 	// reflection shimmer (a darker, wobbling strip) on the sun-away side
