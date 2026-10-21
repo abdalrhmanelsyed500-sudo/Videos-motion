@@ -3,6 +3,9 @@
 // lanterns (a cheap distance falloff, no real-time lights). Cheap on purpose: no transparency (dissolve = dither + discard),
 // no extra passes. Vertex colour = tint, alpha < 0.9 = "see-through" geometry that dissolves in a hole around the pirate.
 // UV.x = material id (see ship_mesh.gd), UV.y = height up the object (0..1). NOT YET RUN ON THE USER'S PC.
+// VP-1A: deck planks, hull strakes, timber and sailcloth now come from ONE 256x256 atlas (art/vp1/ship_mats.png, tools/vp1/make_ship_mats.py),
+// sampled nearest at the deck's art-pixel density; sails are lit from both sides (translucent canvas); depth-jump outlines and a salt/wet
+// pass tie the meshes to the outlined sprites (hero, island).
 shader_type spatial;
 render_mode unshaded, cull_disabled, fog_disabled;
 
@@ -23,6 +26,11 @@ uniform vec4 lampD = vec4(0.0, 0.0, 0.0, 0.0);
 uniform float lamp_r = 6.5;
 uniform vec3 lamp_col = vec3(1.0, 0.68, 0.32);
 uniform float wet = 0.0;
+uniform sampler2D mats : filter_nearest, repeat_disable;   // VP-1A material atlas: R value, G warm/cool, B crevice
+uniform float tex_on = 1.0;           // 0: the old procedural patterns only (fallback if the atlas is missing)
+uniform float outline = 1.0;          // 0 off (Dev-Lite may turn it off), 1 on
+uniform float outline_k = 0.55;       // how dark the outline pixel is
+uniform float tile_m = 8.889;         // one atlas tile in ship metres (128 px at 14.4 px/m)
 
 varying vec3 l_pos;
 varying vec3 l_nrm;
@@ -59,6 +67,14 @@ float lamp_term(vec4 l, vec3 p) {
 	return k * k * l.w;
 }
 
+// One tile of the material atlas: idx 0 deck, 1 hull, 2 timber, 3 canvas. c in ship metres; returns (value, warm, crevice).
+vec3 mat_tile(int idx, vec2 c) {
+	vec2 f = fract(c / tile_m);
+	f = clamp(f, vec2(0.002), vec2(0.998));
+	vec2 o = vec2(float(idx % 2), float(idx / 2));
+	return texture(mats, (o + f) * 0.5).rgb;
+}
+
 void fragment() {
 	if (fade < 0.999 && ign(FRAGCOORD.xy + vec2(1.7, 4.1)) > fade) {
 		discard;
@@ -92,24 +108,44 @@ void fragment() {
 		float pw = 0.34;
 		float pidx = floor(l_pos.x / pw);
 		float ph = h2d_hash(vec2(pidx, 7.0));
-		pal = tint * (0.86 + 0.26 * ph) * (0.94 + 0.12 * h);
-		if (fract(l_pos.x / pw) < 0.07) {
-			pal = tint * 0.45;
-		}
-		float joint = fract((l_pos.z + ph * 4.0) / 2.6);
-		if (joint < 0.025) {
-			pal = tint * 0.5;
+		if (tex_on > 0.5) {
+			vec3 tx = mat_tile(0, vec2(l_pos.x, -l_pos.z));
+			pal = tint * (2.0 * tx.r) * (0.92 + 0.16 * ph);
+			pal = mix(pal, pal * vec3(1.10, 1.0, 0.86), clamp(tx.g - 0.5, 0.0, 0.5) * 1.6);
+			pal = mix(pal, pal * vec3(0.90, 0.98, 1.08), clamp(0.5 - tx.g, 0.0, 0.5) * 1.6);
+			pal *= 1.0 - 0.18 * tx.b * wet;
+		} else {
+			pal = tint * (0.86 + 0.26 * ph) * (0.94 + 0.12 * h);
+			if (fract(l_pos.x / pw) < 0.07) {
+				pal = tint * 0.45;
+			}
+			float joint = fract((l_pos.z + ph * 4.0) / 2.6);
+			if (joint < 0.025) {
+				pal = tint * 0.5;
+			}
 		}
 	} else if (m == 1) {                             // hull boards, horizontal
-		float bh = 0.30;
-		pal = tint * (0.9 + 0.2 * h);
-		if (fract(c.y / bh) < 0.1) {
-			pal = tint * 0.5;
+		if (tex_on > 0.5) {
+			vec3 tx = mat_tile(1, vec2(c.x * 0.7 + c.y * 0.0, -c.y));
+			pal = tint * (2.0 * tx.r);
+			pal = mix(pal, pal * vec3(1.12, 1.0, 0.84), clamp(tx.g - 0.5, 0.0, 0.5) * 1.4);
+			pal = mix(pal, pal * vec3(0.88, 0.98, 1.1), clamp(0.5 - tx.g, 0.0, 0.5) * 1.4);
+		} else {
+			float bh = 0.30;
+			pal = tint * (0.9 + 0.2 * h);
+			if (fract(c.y / bh) < 0.1) {
+				pal = tint * 0.5;
+			}
+			float bi = floor(c.y / bh);
+			pal *= 0.92 + 0.16 * h2d_hash(vec2(bi, 3.0));
 		}
-		float bi = floor(c.y / bh);
-		pal *= 0.92 + 0.16 * h2d_hash(vec2(bi, 3.0));
 	} else if (m == 2) {                             // timber: beams, posts, spars
-		pal = tint * (0.82 + 0.3 * h2d_noise(vec2(q.x * 0.3 + q.y * 0.04, q.y * 0.9 + q.x * 0.05)));
+		if (tex_on > 0.5) {
+			vec3 tx = mat_tile(2, c * 1.0);
+			pal = tint * (2.0 * tx.r) * (0.9 + 0.2 * h);
+		} else {
+			pal = tint * (0.82 + 0.3 * h2d_noise(vec2(q.x * 0.3 + q.y * 0.04, q.y * 0.9 + q.x * 0.05)));
+		}
 	} else if (m == 3) {                             // barrel: staves and two iron hoops
 		float stave = fract(c.x / 0.15);
 		pal = tint * (0.85 + 0.25 * h) * (stave < 0.12 ? 0.62 : 1.0);
@@ -117,11 +153,17 @@ void fragment() {
 		if (abs(hp - 0.12) < 0.045 || abs(hp - 0.86) < 0.045 || abs(hp - 0.5) < 0.03) {
 			pal = vec3(0.17, 0.16, 0.16) * (0.8 + 0.4 * h);
 		}
-	} else if (m == 4) {                             // canvas: weave, panel seams
-		float weave = mod(q.x + q.y, 2.0) < 1.0 ? 1.0 : 0.94;
-		pal = tint * weave * (0.92 + 0.1 * h);
-		if (fract((l_pos.x + l_pos.z * 0.7) / 0.9) < 0.035) {
-			pal = tint * 0.72;
+	} else if (m == 4) {                             // canvas: panels, stitching, patches, reef bands (atlas) + weave
+		if (tex_on > 0.5) {
+			vec3 tx = mat_tile(3, vec2(l_pos.z * 0.9 + l_pos.x * 0.35, -l_pos.y * 0.9));
+			pal = tint * (2.0 * tx.r) * (0.96 + 0.08 * h);
+			pal = mix(pal, pal * vec3(1.10, 0.97, 0.80), clamp(tx.g - 0.5, 0.0, 0.5) * 1.5);
+		} else {
+			float weave = mod(q.x + q.y, 2.0) < 1.0 ? 1.0 : 0.94;
+			pal = tint * weave * (0.92 + 0.1 * h);
+			if (fract((l_pos.x + l_pos.z * 0.7) / 0.9) < 0.035) {
+				pal = tint * 0.72;
+			}
 		}
 	} else if (m == 5) {                             // rope: a diagonal twist
 		float tw = fract((l_pos.x + l_pos.y + l_pos.z) * 9.0);
@@ -150,6 +192,9 @@ void fragment() {
 	} else if (m == 9) {                             // crate boards, vertical, with a dark frame
 		float bw = 0.2;
 		pal = tint * (0.88 + 0.22 * h2d_hash(vec2(floor(c.x / bw), 11.0)));
+		if (tex_on > 0.5) {
+			pal *= 2.0 * mat_tile(2, c * 1.3 + 3.0).r;
+		}
 		if (fract(c.x / bw) < 0.1) {
 			pal = tint * 0.5;
 		}
@@ -165,12 +210,26 @@ void fragment() {
 		pal = tint * (mod(q.x + q.y, 3.0) < 1.0 ? 0.9 : 1.0) * (0.92 + 0.12 * h);
 	} else if (m == 12) {                            // lantern: glows by itself
 		pal = tint * 1.3;
+	} else if (m == 14) {                            // fishing net: a diamond lattice of twine, the holes are discarded
+		float kk = 3.2;
+		vec2 dd = vec2(fract((l_pos.x + l_pos.z) * kk + l_pos.y * kk * 0.6), fract((l_pos.x - l_pos.z) * kk - l_pos.y * kk * 0.6));
+		float ln = min(min(dd.x, 1.0 - dd.x), min(dd.y, 1.0 - dd.y));
+		if (ln > 0.2) {
+			discard;
+		}
+		pal = tint * (0.85 + 0.3 * h);
 	} else if (m == 13) {                            // void: the hatch opening, the dark under the deck
 		pal = tint * (0.8 + 0.3 * h);
 	}
 	// light: one sun, quantised like the sprites, plus the ambient and the lanterns
 	vec3 n = normalize(w_nrm);
 	float ndl = clamp(dot(n, h2d_sun_dir), 0.0, 1.0);
+	float cloth = 0.0;
+	if (m == 4) {                                    // sailcloth is translucent: lit from both faces, a little brighter when the sun is behind it
+		float sd = dot(n, h2d_sun_dir);
+		ndl = clamp(abs(sd) * 0.8 + 0.18, 0.0, 1.0);
+		cloth = clamp(-sd, 0.0, 1.0);
+	}
 	ndl = mix(floor(ndl * 4.0 + 0.5) / 4.0, ndl, 0.35);
 	float sun_k = mix(1.0, 0.12, interior);
 	vec3 amb = h2d_amb_col * mix(1.0, 0.62, interior) * (0.78 + 0.22 * n.y);
@@ -182,7 +241,20 @@ void fragment() {
 	if (m == 12) {
 		col = pal;
 	}
+	col += pal * h2d_sun_col * cloth * 0.28 * (1.0 - interior);
 	col *= 1.0 - 0.18 * wet;
+	if (outline > 0.5 && m != 12) {
+		// outline on the FAR side of a depth jump (the near object keeps its colour), like the 1-px outlines of the sprites
+		float zd = -VERTEX.z;
+		float par_x = mod(floor(FRAGCOORD.x), 2.0) < 0.5 ? 1.0 : -1.0;
+		float par_y = mod(floor(FRAGCOORD.y), 2.0) < 0.5 ? 1.0 : -1.0;
+		float nx = par_x * dFdx(zd);
+		float ny = par_y * dFdy(zd);
+		float thr = 0.22 + 0.0015 * zd;
+		if (nx < -thr || ny < -thr) {
+			col *= outline_k;
+		}
+	}
 	col = h2d_fog_mix(col, length(CAMERA_POSITION_WORLD - w_pos));
 	ALBEDO = h2d_out(col);
 }

@@ -20,6 +20,7 @@ const M_SACK := 10
 const M_CLOTH := 11
 const M_LAMP := 12
 const M_VOID := 13
+const M_NET := 14       ## VP-1A: fishing net: a cut-out diamond lattice (holes are really see-through)
 
 var _v := PackedVector3Array()
 var _n := PackedVector3Array()
@@ -192,3 +193,33 @@ func bounds() -> AABB:
 		lo = Vector3(minf(lo.x, pt.x), minf(lo.y, pt.y), minf(lo.z, pt.z))
 		hi = Vector3(maxf(hi.x, pt.x), maxf(hi.y, pt.y), maxf(hi.z, pt.z))
 	return AABB(lo, hi - lo)
+
+## VP-1A: a smooth parametric surface (sails): `pt` is a Callable(t, s) -> Vector3 over [0,1]x[0,1]; the normals are averaged over the grid,
+## so cloth shades as one curved piece instead of 36 flat facets.
+func surface(pt: Callable, rows: int, cols: int, col: Color, mat: int) -> void:
+	var pts: Array = []
+	for r in rows + 1:
+		var row: Array = []
+		for c in cols + 1:
+			row.append(pt.call(float(r) / float(rows), float(c) / float(cols)))
+		pts.append(row)
+	var base := _v.size()
+	for r in rows + 1:
+		for c in cols + 1:
+			var p0: Vector3 = (pts[r] as Array)[c]
+			var pr: Vector3 = (pts[mini(r + 1, rows)] as Array)[c] - (pts[maxi(r - 1, 0)] as Array)[c]
+			var pc: Vector3 = (pts[r] as Array)[mini(c + 1, cols)] - (pts[r] as Array)[maxi(c - 1, 0)]
+			var n := pc.cross(pr)
+			if n.length() < 0.000001:
+				n = Vector3.RIGHT
+			_v.append(p0)
+			_n.append(n.normalized())
+			_c.append(col)
+			_uv.append(Vector2(float(mat), float(r) / float(rows)))
+	for r in rows:
+		for c in cols:
+			var i0 := base + r * (cols + 1) + c
+			var i1 := i0 + 1
+			var i2 := i0 + cols + 2
+			var i3 := i0 + cols + 1
+			_i.append_array(PackedInt32Array([i0, i1, i2, i0, i2, i3]))

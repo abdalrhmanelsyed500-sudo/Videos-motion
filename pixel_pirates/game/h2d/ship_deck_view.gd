@@ -14,6 +14,8 @@ const CRATE_COL := Color(0.56, 0.40, 0.22)
 const Layout := preload("res://h2d/ship_layout.gd")
 const ShipMesh := preload("res://h2d/ship_mesh.gd")
 const SHADER := "res://h2d/shaders/ship_deck.gdshader"
+const MATS_PATH := "res://art/vp1/ship_mats.png"
+static var _mats_cache: Texture2D = null
 const F := Layout.FLOOR_Y
 const NEST_Y := Layout.NEST_Y
 const MAST_TOP := F + 11.6
@@ -32,6 +34,7 @@ const ROOF_C := Color(0.33, 0.20, 0.13)
 const CANVAS_C := Color(0.93, 0.87, 0.70)
 const ROPE_C := Color(0.71, 0.58, 0.36)
 const IRON_C := Color(0.23, 0.24, 0.27)
+const NET_C := Color(0.66, 0.58, 0.40)
 const LAMP_C := Color(1.0, 0.80, 0.42)
 const VOID_C := Color(0.035, 0.03, 0.04)
 const SEE := 0.5
@@ -102,7 +105,26 @@ func _material(texel: float, interior: float, lamp_day: float) -> ShaderMaterial
 	m.set_shader_parameter("texel", texel)
 	m.set_shader_parameter("interior", interior)
 	m.set_shader_parameter("lamp_day", lamp_day)
+	var at := _mats_tex()
+	m.set_shader_parameter("tex_on", 1.0 if at != null else 0.0)
+	if at != null:
+		m.set_shader_parameter("mats", at)
+		m.set_shader_parameter("tile_m", 128.0 * texel)
 	return m
+
+
+## VP-1A: the material atlas (art/vp1/ship_mats.png). Imported texture if the editor has imported it, otherwise read straight from the
+## file (so a project that was never opened in the editor still shows the textures); null = the shader falls back to its old patterns.
+static func _mats_tex() -> Texture2D:
+	if _mats_cache != null:
+		return _mats_cache
+	if ResourceLoader.exists(MATS_PATH):
+		_mats_cache = load(MATS_PATH) as Texture2D
+	if _mats_cache == null and FileAccess.file_exists(MATS_PATH):
+		var img := Image.load_from_file(MATS_PATH)
+		if img != null and not img.is_empty():
+			_mats_cache = ImageTexture.create_from_image(img)
+	return _mats_cache
 
 
 func _set_lamps(m: ShaderMaterial, lamps: Array) -> void:
@@ -215,6 +237,23 @@ func _crate(b: ShipMesh, c: Vector2, half: Vector2, y: float, h: float, col: Col
 	b.box(ShipMesh.p(c.x, c.y, y + h * 0.5), Vector3(half.y, h * 0.5, half.x), col, ShipMesh.M_CRATE, yaw)
 
 
+## VP-1A: a gun port on the outside of the hull at u: a timber frame, the dark opening, the cannon muzzle run out (tube + muzzle ring + a lashing).
+func _gun_port(b: ShipMesh, u: float, side: float) -> void:
+	var h := Layout.hull_half(0, u) + 0.05
+	var y0 := F + 0.08
+	var y1 := F + 0.56
+	var hu := 0.32
+	b.quad(ShipMesh.p(u - hu, side * h, y0), ShipMesh.p(u + hu, side * h, y0), ShipMesh.p(u + hu, side * h, y1), ShipMesh.p(u - hu, side * h, y1), VOID_C, ShipMesh.M_VOID, Vector3(side, 0.0, 0.0))
+	for e in [-1.0, 1.0]:
+		_bx(b, u + float(e) * (hu + 0.04), side * (h + 0.01), y0 - 0.04, 0.04, 0.03, y1 - y0 + 0.08, WOOD_D, ShipMesh.M_TIMBER)
+	_bx(b, u, side * (h + 0.01), y1, hu + 0.08, 0.03, 0.05, WOOD_D, ShipMesh.M_TIMBER)
+	_bx(b, u, side * (h + 0.01), y0 - 0.05, hu + 0.08, 0.03, 0.05, WOOD_D, ShipMesh.M_TIMBER)
+	var ym := (y0 + y1) * 0.5
+	b.tube(ShipMesh.p(u, side * (h - 0.1), ym), ShipMesh.p(u, side * (h + 0.52), ym), 0.14, 8, IRON_C, ShipMesh.M_IRON)
+	b.tube(ShipMesh.p(u, side * (h + 0.44), ym), ShipMesh.p(u, side * (h + 0.54), ym), 0.18, 8, IRON_C.darkened(0.2), ShipMesh.M_IRON)
+	b.tube(ShipMesh.p(u, side * (h + 0.1), ym), ShipMesh.p(u, side * (h + 0.16), ym), 0.17, 8, Color(0.55, 0.42, 0.18), ShipMesh.M_IRON)
+
+
 # ---- the open air: hull, main deck, mast, rigging, winch, barrels, helm, nest ---------------------------------------
 func _build_open() -> void:
 	var b := ShipMesh.new()
@@ -231,6 +270,20 @@ func _build_open() -> void:
 			b.quad(ShipMesh.p(u, float(s) * h0, F - 0.25), ShipMesh.p(u2, float(s) * h1, F - 0.25), ShipMesh.p(u2, float(s) * h1, F - 0.05),
 					ShipMesh.p(u, float(s) * h0, F - 0.05), TRIM_R, ShipMesh.M_PAINT, Vector3(float(s), 0.0, 0.0))
 			u = u2
+	# VP-1A: a tarred, weed-darkened waterline band, a thin dark wale at the rail, and four gun ports (two a side) with the muzzles run out
+	for s in [-1.0, 1.0]:
+		var u3 := -11.0
+		while u3 < 10.5:
+			var u4 := minf(u3 + 0.5, 11.0)
+			var g0 := Layout.hull_half(0, u3) + 0.025
+			var g1 := Layout.hull_half(0, u4) + 0.025
+			b.quad(ShipMesh.p(u3, float(s) * g0, -0.5), ShipMesh.p(u4, float(s) * g1, -0.5), ShipMesh.p(u4, float(s) * g1, 0.14), ShipMesh.p(u3, float(s) * g0, 0.14),
+					Color(0.15, 0.19, 0.17), ShipMesh.M_PAINT, Vector3(float(s), 0.0, 0.0))
+			b.quad(ShipMesh.p(u3, float(s) * g0, F + 0.62), ShipMesh.p(u4, float(s) * g1, F + 0.62), ShipMesh.p(u4, float(s) * g1, F + 0.72), ShipMesh.p(u3, float(s) * g0, F + 0.72),
+					WOOD_D, ShipMesh.M_TIMBER, Vector3(float(s), 0.0, 0.0))
+			u3 = u4
+		for pu in [-4.6, -1.6, 4.4, 6.8]:
+			_gun_port(b, float(pu), float(s))
 	_floor(b, 0, F, DECK_C)
 	# transom (stern wall), the stem post and the bowsprit
 	b.quad(ShipMesh.p(-11.0, -1.9, -0.5), ShipMesh.p(-11.0, 1.9, -0.5), ShipMesh.p(-11.0, 1.9, rail_top + 0.1), ShipMesh.p(-11.0, -1.9, rail_top + 0.1), HULL_C, ShipMesh.M_HULL, Vector3(0.0, 0.0, 1.0))
@@ -290,13 +343,15 @@ func _build_open() -> void:
 	b.beam(ShipMesh.p(pu, -2.7, F + 2.4), ShipMesh.p(pu, -4.35, F + 2.05), 0.04, ROPE_C, ShipMesh.M_ROPE)
 	b.beam(ShipMesh.p(pu, -4.35, F + 1.9), ShipMesh.p(pu, -4.35, F + 0.95), 0.04, ROPE_C, ShipMesh.M_ROPE)
 	# the net bundle hanging at the end of the rope: cork floats and a rolled net
-	b.cyl(ShipMesh.p(pu, -4.35, F + 0.45), 0.34, 0.55, 8, Color(0.22, 0.30, 0.30), ShipMesh.M_ROPE, 0.22, false, false)
+	b.cyl(ShipMesh.p(pu, -4.35, F + 0.4), 0.42, 0.62, 12, NET_C, ShipMesh.M_NET, 0.2, false, false)
+	b.cyl(ShipMesh.p(pu, -4.35, F + 0.4), 0.3, 0.6, 10, NET_C.darkened(0.25), ShipMesh.M_NET, 0.14, false, false)
 	for k in 5:
 		var a := TAU * float(k) / 5.0
 		b.box(ShipMesh.p(pu + cos(a) * 0.34, -4.35 + sin(a) * 0.34, F + 1.0), Vector3(0.06, 0.05, 0.06), Color(0.85, 0.62, 0.3), ShipMesh.M_SACK)
 	# net heap and hauled rope on the deck (flat: nothing to trip on)
-	b.cyl(ShipMesh.p(1.9, -2.15, F), 0.46, 0.14, 8, Color(0.22, 0.30, 0.30), ShipMesh.M_ROPE, 0.3, false, false)
-	b.cyl(ShipMesh.p(2.3, -1.45, F), 0.34, 0.1, 8, Color(0.24, 0.32, 0.31), ShipMesh.M_ROPE, 0.22, false, false)
+	b.cyl(ShipMesh.p(1.9, -2.15, F), 0.62, 0.2, 12, NET_C, ShipMesh.M_NET, 0.42, false, false)
+	b.cyl(ShipMesh.p(1.9, -2.15, F), 0.46, 0.3, 10, NET_C.darkened(0.2), ShipMesh.M_NET, 0.26, false, false)
+	b.cyl(ShipMesh.p(2.3, -1.45, F), 0.4, 0.14, 10, NET_C.darkened(0.1), ShipMesh.M_NET, 0.28, false, false)
 	# fish barrels (open; the fish are separate nodes)
 	for k in Layout.FISH_BARRELS.size():
 		_barrel(b, Layout.FISH_BARRELS[k], Layout.FISH_BARREL_R, F, 1.0, true, Color(0.50, 0.33, 0.17))
@@ -354,8 +409,14 @@ func _build_rigging() -> void:
 	b.beam(ShipMesh.p(m.x, 0.0, MAST_TOP - 0.2), ShipMesh.p(-10.8, 0.0, F + 1.9), 0.045, rope, ShipMesh.M_ROPE)
 	# the jib: a triangle from the masthead to the bowsprit
 	var cream := tc(CANVAS_C, true)
-	b.tri(ShipMesh.p(m.x + 0.3, 0.0, MAST_TOP - 0.9), ShipMesh.p(13.6, 0.0, F + 2.3), ShipMesh.p(9.2, 0.0, F + 2.9), cream, ShipMesh.M_CANVAS, Vector3(1.0, 0.0, 0.0))
-	b.tri(ShipMesh.p(m.x + 0.3, 0.0, MAST_TOP - 0.9), ShipMesh.p(13.6, 0.0, F + 2.3), ShipMesh.p(9.2, 0.0, F + 2.9), cream, ShipMesh.M_CANVAS, Vector3(-1.0, 0.0, 0.0))
+	var ja := ShipMesh.p(m.x + 0.3, 0.0, MAST_TOP - 0.9)
+	var jb := ShipMesh.p(13.6, 0.0, F + 2.3)
+	var jc := ShipMesh.p(9.2, 0.0, F + 2.9)
+	var jib := func(t: float, s: float) -> Vector3:
+		var pnt := ja + ((jb - ja) * (1.0 - s) + (jc - ja) * s) * t
+		var belly := 0.42 * sin(PI * s) * sin(PI * minf(t * 1.1, 1.0)) * t
+		return pnt + Vector3(belly + 0.04 * sin(s * 14.0 + t * 6.0) * t, 0.0, 0.0)
+	b.surface(jib, 10, 8, cream, ShipMesh.M_CANVAS)
 	_mesh_node(b, _m_open, _g_open)
 
 
@@ -400,23 +461,11 @@ func _build_dynamic() -> void:
 	_g_open.add_child(_boom)
 	bm.beam(Vector3(0.0, 0.0, 0.1), Vector3(0.0, 0.0, BOOM_LEN), 0.18, WOOD_L, ShipMesh.M_TIMBER)
 	bm.beam(Vector3(0.0, 0.0, BOOM_LEN), Vector3(0.0, 0.08, BOOM_LEN + 0.2), 0.12, IRON_C, ShipMesh.M_IRON)
-	var rows := 6
-	var cols := 6
 	var cream := tc(CANVAS_C, true)
-	for r in rows:
-		var t0 := float(r) / float(rows)
-		var t1 := float(r + 1) / float(rows)
-		for c in cols:
-			var s0 := float(c) / float(cols)
-			var s1 := float(c + 1) / float(cols)
-			var a := _sail_pt(t0, s0)
-			var bb := _sail_pt(t0, s1)
-			var cc := _sail_pt(t1, s1)
-			var d := _sail_pt(t1, s0)
-			if t1 >= 0.999 and s1 > 0.999:
-				bm.tri(a, bb, d, cream, ShipMesh.M_CANVAS, Vector3(1.0, 0.0, 0.0))
-			else:
-				bm.quad(a, bb, cc, d, cream, ShipMesh.M_CANVAS, Vector3(1.0, 0.0, 0.0))
+	bm.surface(Callable(self, "_sail_pt"), 14, 12, cream, ShipMesh.M_CANVAS)
+	# the foot of the sail is laced to the boom, the head hangs from a halyard block at the masthead (iron)
+	bm.beam(_sail_pt(0.0, 0.0), _sail_pt(0.0, 1.0), 0.05, ROPE_C.darkened(0.15), ShipMesh.M_ROPE)
+	bm.beam(_sail_pt(1.0, 0.0) + Vector3(0.0, 0.05, 0.0), _sail_pt(0.97, 0.0) + Vector3(0.0, -0.05, 0.0), 0.08, IRON_C, ShipMesh.M_IRON)
 	_mesh_node(bm, _m_open, _boom)
 	# the wheel
 	var wb := ShipMesh.new()
@@ -445,7 +494,9 @@ func _build_dynamic() -> void:
 func _sail_pt(t: float, s: float) -> Vector3:
 	var length := BOOM_LEN * (1.0 - t * 0.92)
 	var belly := 0.6 * sin(PI * s) * (1.0 - t * 0.55)
-	return Vector3(belly, 0.12 + t * SAIL_TOP, 0.15 + length * s)
+	# VP-1A: soft diagonal folds running from the boom up towards the mast (cloth that is gathered and pulled), strongest in the lower half
+	var fold := 0.07 * sin(s * 17.0 + t * 5.5) * sin(PI * clampf(s, 0.0, 1.0)) * (1.0 - t * 0.8) + 0.03 * sin(s * 31.0 - t * 9.0) * (1.0 - t)
+	return Vector3(belly + fold, 0.12 + t * SAIL_TOP, 0.15 + length * s)
 
 
 # ---- the captain's cabin -----------------------------------------------------------------------------------------------

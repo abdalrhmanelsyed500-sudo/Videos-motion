@@ -3,6 +3,10 @@
 // foam from the island's data texture, drifting cloud shadow, pack ice, rain rings (the landing of the falling drops,
 // see rain.gdshader), the ship's shadow, bow wave, wake, hull wash and slam foam.
 // Drawn first and never writes depth, so sprites and the island always sit on top (see sea_view_3d.gd).
+// VP-1A: the water is now drawn like pixel art: the depth from the island data is a six-tone ramp (sand-lit shallows .. deep) whose
+// edges are ordered-dithered (Bayer 4x4 in art pixels) instead of smooth blobs; foam has a solid core and a dithered, blue-tinged rim;
+// shallows get a moving caustic net; light slopes get thin wave contour lines. Dev-Lite (detail 0) keeps the ramp, the dither and the
+// foam, and drops the caustic net and the contours (two noise fetches fewer).
 shader_type spatial;
 render_mode unshaded, cull_disabled, depth_draw_never, fog_disabled;
 
@@ -39,6 +43,14 @@ uniform float ring_k = 2.0;         // drops per cell that get a ring (effects b
 uniform float normal_gain = 1.0;    // steeper shading as the sea builds
 
 varying vec3 w_pos;
+
+const float BAYER[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+
+// ordered-dither threshold in (0,1) per art pixel (FRAGCOORD is in internal pixels, so one threshold cell = one art pixel)
+float bayer4(vec2 p) {
+	ivec2 i = ivec2(mod(floor(p), 4.0));
+	return (BAYER[i.x + i.y * 4] + 0.5) / 16.0;
+}
 
 void vertex() {
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
@@ -98,7 +110,15 @@ void fragment() {
 	}
 	vec3 col = mix(deep_col, shallow_col, clamp(crest_h * 0.5 + fres * 0.3, 0.0, 1.0));
 	float shal = 1.0 - smoothstep(0.2, 6.0, depth_m);
-	col = mix(col, lagoon_col, shal * 0.85);
+	float vp_bd = bayer4(FRAGCOORD.xy);
+	// the depth ramp: six dithered tones from sand-lit shallows to the open-sea tone (vp_dk 0 at the beach, 1 at 6.5 m and deeper: the island data stores 8 m at most)
+	float vp_dk = pow(clamp(depth_m / 6.5, 0.0, 1.0), 0.75);
+	float vp_rq = clamp(floor(vp_dk * 6.0 + vp_bd) / 6.0, 0.0, 1.0);
+	vec3 vp_sand = mix(lagoon_col, vec3(0.80, 0.95, 0.80), 0.7);
+	vec3 vp_bc = mix(vp_sand, lagoon_col, clamp(vp_rq / 0.25, 0.0, 1.0));
+	vp_bc = mix(vp_bc, mix(lagoon_col, shallow_col, 0.6), clamp((vp_rq - 0.25) / 0.30, 0.0, 1.0));
+	vp_bc = mix(vp_bc, shallow_col, clamp((vp_rq - 0.55) / 0.25, 0.0, 1.0));
+	col = mix(vp_bc, col, clamp((vp_rq - 0.80) / 0.20, 0.0, 1.0));
 	float ndl = clamp(dot(n, h2d_sun_dir), 0.0, 1.0);
 	vec3 lightc = h2d_amb_col + h2d_sun_col * mix(ndl, 0.55, h2d_overcast);   // overcast light is flat
 	col *= lightc;
@@ -111,7 +131,19 @@ void fragment() {
 	float glass = 1.0 - smoothstep(0.06, 0.30, h2d_sea);
 	col = mix(col, h2d_fog_col, glass * (1.0 - 0.6 * h2d_overcast) * (0.20 + 0.45 * smoothstep(100.0, 300.0, dist)));
 	if (posterize > 1.0) {
-		col = floor(col * posterize + 0.5) / posterize;
+		float pz = posterize * 1.5;
+		col = floor(col * pz + bayer4(FRAGCOORD.xy + vec2(1.0, 3.0)) * 0.9) / pz;
+	}
+	if (detail > 0.5) {
+		// shallow water: a moving caustic net on the sand, and thin contour lines on the lit side of the swell
+		float sh_k = 1.0 - smoothstep(0.4, 3.2, depth_m);
+		if (sh_k > 0.01) {
+			float cn = abs(h2d_noise(w_pos.xz * 1.9 + vec2(h2d_time * 0.35, 0.0)) - h2d_noise(w_pos.xz * 1.5 + vec2(9.0, -h2d_time * 0.30)));
+			col += lightc * (1.0 - smoothstep(0.0, 0.05, cn)) * 0.11 * sh_k;
+		}
+		float cf = h2d_noise(w_pos.xz * 0.30 + vec2(h2d_time * 0.20, 0.0)) * 0.6 + h2d_noise(w_pos.xz * 0.75 - vec2(0.0, h2d_time * 0.15)) * 0.4;
+		float cl = 1.0 - smoothstep(0.0, 0.035, abs(fract(cf * 6.0) - 0.5) - 0.46 + 0.035);
+		col += lightc * cl * 0.05 * ndl * (1.0 - h2d_overcast) * (1.0 - smoothstep(60.0, 200.0, dist));
 	}
 
 	// pack ice: floes where a slow noise field rises above a threshold that falls as the cover grows
@@ -179,7 +211,12 @@ void fragment() {
 		float bring = (1.0 - smoothstep(0.0, 1.7, abs(length(bv) - brad))) * smoothstep(-5.0, 1.5, dot(bv, ship_dir));
 		foam = max(foam, slam * bring * step(0.3, h2d_noise(bv * 0.9 + h2d_time)));
 	}
-	col = mix(col, foam_col * clamp(lightc * 1.3, vec3(0.55), vec3(1.1)), clamp(foam, 0.0, 1.0));
+	// VP-1A foam: a solid core with a dithered rim, the outer pixels tinted towards the water (reads as pixel art, not a soft blob)
+	float vp_fa = smoothstep(0.16, 0.9, clamp(foam, 0.0, 1.0));   // faint foam values are dropped: dithering them would only sprinkle noise
+	float vp_fp = vp_fa > 0.85 ? 1.0 : step(bayer4(FRAGCOORD.xy + vec2(2.0, 1.0)), vp_fa * 1.2);
+	vec3 vp_fcol = foam_col * clamp(lightc * 1.3, vec3(0.55), vec3(1.1));
+	vp_fcol = mix(vp_fcol * vec3(0.78, 0.90, 0.97), vp_fcol, smoothstep(0.35, 0.9, vp_fa));
+	col = mix(col, vp_fcol, vp_fp);
 
 	// H2D-1: a faint painted outline of the berth on the water (dashes), so the player sees where the ship will lie
 	if (berth_show > 0.01) {
