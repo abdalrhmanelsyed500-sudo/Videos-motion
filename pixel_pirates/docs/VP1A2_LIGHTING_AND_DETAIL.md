@@ -122,3 +122,6 @@ sea series are captured with the HUD hidden.
 * Cannons are fixed dress; no reload animation (combat is a later module).
 * Tilt-shift still softens the top and bottom of the frame by design (HD-2D miniature look); the play band stays sharp.
 * Software-renderer screenshots show the water more cyan than a real GPU will.
+* On Standard/Ultra the open sea carries slow drifting cloud-shadow patches (existing H2D cue, `h2d_cloud_shadow`): at 720p
+  their soft edges read as faint meandering tone boundaries. They are weather, present in the before shots too; Dev-Lite
+  shows them coarser. Output dither (ocean + post) was added so no 8-bit banding lines join them.
