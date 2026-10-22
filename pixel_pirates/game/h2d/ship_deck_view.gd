@@ -16,6 +16,7 @@ const ShipMesh := preload("res://h2d/ship_mesh.gd")
 const Props := preload("res://h2d/ship_props.gd")
 const SHADER := "res://h2d/shaders/ship_deck.gdshader"
 const MATS_PATH := "res://art/vp1/ship_px.png"   # VP-1A.3: the authored pixel-art atlas (was the VP-1A channel atlas)
+const MATS2_PATH := "res://art/vp1/interior_px.png"  # VP-1A.4: the authored interior sheet (ids 16..31)
 const F := Layout.FLOOR_Y
 const NEST_Y := Layout.NEST_Y
 const MAST_TOP := F + 11.6
@@ -40,6 +41,7 @@ const VOID_C := Color(0.035, 0.03, 0.04)
 const SEE := 0.5
 
 static var _mats_cache: Texture2D = null
+static var _mats2_cache: Texture2D = null
 
 var lay: RefCounted = Layout.new()
 var root: Node3D = Node3D.new()
@@ -118,6 +120,9 @@ func _material(texel: float, interior: float, lamp_day: float) -> ShaderMaterial
 	m.set_shader_parameter("tex_on", 1.0 if at != null else 0.0)
 	if at != null:
 		m.set_shader_parameter("pxatlas", at)
+	var at2 := _mats_tex2()
+	if at2 != null:
+		m.set_shader_parameter("pxatlas2", at2)
 	return m
 
 
@@ -135,6 +140,20 @@ static func _mats_tex() -> Texture2D:
 			img.generate_mipmaps()
 			_mats_cache = ImageTexture.create_from_image(img)
 	return _mats_cache
+
+
+## VP-1A.4: the interior sheet, loaded like the main atlas (imported if present, else from file with mipmaps).
+static func _mats_tex2() -> Texture2D:
+	if _mats2_cache != null:
+		return _mats2_cache
+	if ResourceLoader.exists(MATS2_PATH):
+		_mats2_cache = load(MATS2_PATH) as Texture2D
+	if _mats2_cache == null and FileAccess.file_exists(MATS2_PATH):
+		var img := Image.load_from_file(MATS2_PATH)
+		if img != null and not img.is_empty():
+			img.generate_mipmaps()
+			_mats2_cache = ImageTexture.create_from_image(img)
+	return _mats2_cache
 
 
 func _set_lamps(m: ShaderMaterial, lamps: Array) -> void:
@@ -189,7 +208,7 @@ func _hull_strip(b: ShipMesh, lv: int, y0: float, y1: float, inner_only: bool, c
 		u = u2
 
 
-func _floor(b: ShipMesh, lv: int, y: float, col: Color) -> void:
+func _floor(b: ShipMesh, lv: int, y: float, col: Color, mat := ShipMesh.M_DECK) -> void:
 	var rg := Layout.hull_range(lv)
 	var u := rg.x
 	var dark := col.darkened(0.38)
@@ -203,8 +222,8 @@ func _floor(b: ShipMesh, lv: int, y: float, col: Color) -> void:
 		var e1 := minf(0.7, h1 * 0.5)
 		for sd in [-1.0, 1.0]:
 			var sg := float(sd)
-			b.quad_c(ShipMesh.p(u, sg * h0, y), ShipMesh.p(u2, sg * h1, y), ShipMesh.p(u2, sg * (h1 - e1), y), ShipMesh.p(u, sg * (h0 - e0), y), dark, dark, mid, mid, ShipMesh.M_DECK, Vector3.UP)
-		b.quad_c(ShipMesh.p(u, -(h0 - e0), y), ShipMesh.p(u2, -(h1 - e1), y), ShipMesh.p(u2, h1 - e1, y), ShipMesh.p(u, h0 - e0, y), mid, mid, col, col, ShipMesh.M_DECK, Vector3.UP)
+			b.quad_c(ShipMesh.p(u, sg * h0, y), ShipMesh.p(u2, sg * h1, y), ShipMesh.p(u2, sg * (h1 - e1), y), ShipMesh.p(u, sg * (h0 - e0), y), dark, dark, mid, mid, mat, Vector3.UP)
+		b.quad_c(ShipMesh.p(u, -(h0 - e0), y), ShipMesh.p(u2, -(h1 - e1), y), ShipMesh.p(u2, h1 - e1, y), ShipMesh.p(u, h0 - e0, y), mid, mid, col, col, mat, Vector3.UP)
 		u = u2
 
 
@@ -551,8 +570,8 @@ func _build_cabin() -> void:
 			continue
 		var c: Vector2 = od["c"]
 		var hf: Vector2 = od["half"]
-		_bx(low, c.x, c.y, F, hf.x, hf.y, 1.0, CABIN_C, ShipMesh.M_HULL)
-		_bx(up, c.x, c.y, F + 1.0, hf.x, hf.y, 1.4, CABIN_C, ShipMesh.M_HULL)
+		_bx(low, c.x, c.y, F, hf.x, hf.y, 1.0, CABIN_C, ShipMesh.M_CWALL)
+		_bx(up, c.x, c.y, F + 1.0, hf.x, hf.y, 1.4, CABIN_C, ShipMesh.M_CWALL)
 		# a dark base board and a red band
 		_bx(low, c.x, c.y, F + 0.95, hf.x + 0.015, hf.y + 0.015, 0.1, TRIM_R, ShipMesh.M_PAINT)
 	# door frame and the open door leaf lying against the inside of the port wall
@@ -568,6 +587,8 @@ func _build_cabin() -> void:
 		up.box(ShipMesh.p(in_f + 0.11, float(wv) * 1.0, F + 1.65), Vector3(0.28, 0.22, 0.03), Color(0.10, 0.15, 0.22), ShipMesh.M_PAINT)
 	# the roof, an overhang, a skylight and the galley pipe
 	_bx(up, (in_f + u1) * 0.5 - 0.1, 0.0, F + 2.4, (u1 - in_f) * 0.5 + 0.3, Layout.CABIN_V + 0.28, 0.14, ROOF_C, ShipMesh.M_DECK)
+	# VP-1A.4: the drawn deck-head seen from inside the cabin
+	up.quad(ShipMesh.p(in_f - 0.1, -Layout.CABIN_V, F + 2.24), ShipMesh.p(u1 + 0.05, -Layout.CABIN_V, F + 2.24), ShipMesh.p(u1 + 0.05, Layout.CABIN_V, F + 2.24), ShipMesh.p(in_f - 0.1, Layout.CABIN_V, F + 2.24), Color(0.45, 0.45, 0.45), ShipMesh.M_CEIL, Vector3.DOWN)
 	_bx(up, -8.4, 0.0, F + 2.54, 0.7, 0.45, 0.22, WOOD_M, ShipMesh.M_TIMBER)
 	up.box(ShipMesh.p(-8.4, 0.0, F + 2.8), Vector3(0.36, 0.03, 0.62), Color(0.2, 0.3, 0.4), ShipMesh.M_PAINT)
 	up.cyl(ShipMesh.p(-6.5, 1.2, F + 2.5), 0.1, 0.9, 6, IRON_C, ShipMesh.M_IRON, 0.09, false, false)
@@ -582,22 +603,22 @@ func _build_cabin() -> void:
 		var hf2: Vector2 = od2["half"]
 		match str(od2["style"]):
 			"desk":
-				_bx(low, c2.x, c2.y, F + 0.78, hf2.x + 0.05, hf2.y + 0.05, 0.1, WOOD_L, ShipMesh.M_DECK)
+				_bx(low, c2.x, c2.y, F + 0.78, hf2.x + 0.05, hf2.y + 0.05, 0.1, WOOD_L, ShipMesh.M_TIMBER)
 				for sx in [-1.0, 1.0]:
 					for sy in [-1.0, 1.0]:
 						_bx(low, c2.x + float(sx) * (hf2.x - 0.06), c2.y + float(sy) * (hf2.y - 0.06), F, 0.06, 0.06, 0.78, WOOD_D, ShipMesh.M_TIMBER)
 				_bx(low, c2.x - 0.2, c2.y, F + 0.18, 0.18, hf2.y - 0.1, 0.6, WOOD_M, ShipMesh.M_CRATE)
 				# the chart on the desk, a compass, a quill and a lantern
-				low.quad(ShipMesh.p(c2.x - 0.4, c2.y - 0.8, F + 0.9), ShipMesh.p(c2.x + 0.4, c2.y - 0.8, F + 0.9), ShipMesh.p(c2.x + 0.4, c2.y + 0.5, F + 0.9), ShipMesh.p(c2.x - 0.4, c2.y + 0.5, F + 0.9), Color(0.86, 0.76, 0.52), ShipMesh.M_CANVAS, Vector3.UP)
-				low.quad(ShipMesh.p(c2.x - 0.3, c2.y - 0.6, F + 0.91), ShipMesh.p(c2.x + 0.1, c2.y - 0.5, F + 0.91), ShipMesh.p(c2.x + 0.2, c2.y + 0.2, F + 0.91), ShipMesh.p(c2.x - 0.2, c2.y + 0.1, F + 0.91), Color(0.40, 0.55, 0.62), ShipMesh.M_PAINT, Vector3.UP)
-				low.ring(ShipMesh.p(c2.x + 0.3, c2.y + 0.72, F + 0.92), Vector3.RIGHT, Vector3.BACK, 0.07, 8, 0.025, Color(0.72, 0.55, 0.2), ShipMesh.M_IRON)
+				low.quad(ShipMesh.p(c2.x - 0.4, c2.y - 0.8, F + 0.9), ShipMesh.p(c2.x + 0.4, c2.y - 0.8, F + 0.9), ShipMesh.p(c2.x + 0.4, c2.y + 0.5, F + 0.9), ShipMesh.p(c2.x - 0.4, c2.y + 0.5, F + 0.9), Color(0.86, 0.76, 0.52), ShipMesh.M_CHART, Vector3.UP)
+				low.quad(ShipMesh.p(c2.x - 0.3, c2.y - 0.6, F + 0.91), ShipMesh.p(c2.x + 0.1, c2.y - 0.5, F + 0.91), ShipMesh.p(c2.x + 0.2, c2.y + 0.2, F + 0.91), ShipMesh.p(c2.x - 0.2, c2.y + 0.1, F + 0.91), Color(0.40, 0.55, 0.62), ShipMesh.M_CHART, Vector3.UP)
+				low.ring(ShipMesh.p(c2.x + 0.3, c2.y + 0.72, F + 0.92), Vector3.RIGHT, Vector3.BACK, 0.07, 8, 0.025, Color(0.72, 0.55, 0.2), ShipMesh.M_BRASS)
 				_lantern(low, c2.x - 0.3, c2.y + 0.78, F + 1.12)
 				low.beam(ShipMesh.p(c2.x + 0.1, c2.y - 0.9, F + 0.92), ShipMesh.p(c2.x + 0.4, c2.y - 0.95, F + 1.25), 0.02, CANVAS_C, ShipMesh.M_CLOTH)
 			"bed":
 				_bx(low, c2.x, c2.y, F, hf2.x, hf2.y, 0.3, WOOD_M, ShipMesh.M_TIMBER)
-				_bx(low, c2.x, c2.y, F + 0.3, hf2.x - 0.04, hf2.y - 0.04, 0.14, Color(0.78, 0.72, 0.6), ShipMesh.M_CLOTH)
-				_bx(low, c2.x + 0.3, c2.y, F + 0.44, hf2.x - 0.5, hf2.y - 0.06, 0.05, TRIM_R, ShipMesh.M_CLOTH)
-				_bx(low, c2.x - hf2.x + 0.22, c2.y, F + 0.44, 0.17, hf2.y - 0.12, 0.1, CANVAS_C, ShipMesh.M_CLOTH)
+				_bx(low, c2.x, c2.y, F + 0.3, hf2.x - 0.04, hf2.y - 0.04, 0.14, Color(0.78, 0.72, 0.6), ShipMesh.M_HAM)
+				_bx(low, c2.x + 0.3, c2.y, F + 0.44, hf2.x - 0.5, hf2.y - 0.06, 0.05, TRIM_R, ShipMesh.M_BLANK)
+				_bx(low, c2.x - hf2.x + 0.22, c2.y, F + 0.44, 0.17, hf2.y - 0.12, 0.1, CANVAS_C, ShipMesh.M_HAM)
 			"chest":
 				_bx(low, c2.x, c2.y, F, hf2.x, hf2.y, 0.5, WOOD_M, ShipMesh.M_CRATE)
 				_bx(low, c2.x, c2.y, F + 0.5, hf2.x + 0.02, hf2.y + 0.02, 0.16, WOOD_L, ShipMesh.M_CRATE)
@@ -612,13 +633,13 @@ func _build_cabin() -> void:
 				while bu < c2.x + hf2.x - 0.1:
 					var bh := 0.22 + float(k2 % 3) * 0.05
 					var bc: Color = [Color(0.5, 0.18, 0.15), Color(0.2, 0.3, 0.4), Color(0.45, 0.35, 0.18), Color(0.25, 0.4, 0.28)][k2 % 4]
-					_bx(low, bu, c2.y, F + 0.6, 0.06, 0.09, bh, bc, ShipMesh.M_PAINT)
-					_bx(low, bu, c2.y, F + 1.0, 0.06, 0.09, bh, bc.lightened(0.1), ShipMesh.M_PAINT)
+					_bx(low, bu, c2.y, F + 0.6, 0.06, 0.09, bh, bc, ShipMesh.M_BOOKS)
+					_bx(low, bu, c2.y, F + 1.0, 0.06, 0.09, bh, bc.lightened(0.1), ShipMesh.M_BOOKS)
 					bu += 0.14
 					k2 += 1
 	# the floor: a dark rug in the middle, a lantern on the chest
-	low.quad(ShipMesh.p(-9.6, -1.6, F + 0.025), ShipMesh.p(-5.9, -1.6, F + 0.025), ShipMesh.p(-5.9, 0.8, F + 0.025), ShipMesh.p(-9.6, 0.8, F + 0.025), Color(0.40, 0.14, 0.12), ShipMesh.M_CLOTH, Vector3.UP)
-	low.quad(ShipMesh.p(-9.3, -1.4, F + 0.03), ShipMesh.p(-6.2, -1.4, F + 0.03), ShipMesh.p(-6.2, 0.6, F + 0.03), ShipMesh.p(-9.3, 0.6, F + 0.03), Color(0.56, 0.38, 0.16), ShipMesh.M_CLOTH, Vector3.UP)
+	low.quad(ShipMesh.p(-9.6, -1.6, F + 0.025), ShipMesh.p(-5.9, -1.6, F + 0.025), ShipMesh.p(-5.9, 0.8, F + 0.025), ShipMesh.p(-9.6, 0.8, F + 0.025), Color(0.40, 0.14, 0.12), ShipMesh.M_RUG, Vector3.UP)
+	low.quad(ShipMesh.p(-9.3, -1.4, F + 0.03), ShipMesh.p(-6.2, -1.4, F + 0.03), ShipMesh.p(-6.2, 0.6, F + 0.03), ShipMesh.p(-9.3, 0.6, F + 0.03), Color(0.56, 0.38, 0.16), ShipMesh.M_RUG, Vector3.UP)
 	_mesh_node(low, _m_cabin, _g_open)
 
 
@@ -626,8 +647,8 @@ func _build_cabin() -> void:
 func _build_sleep() -> void:
 	var b := ShipMesh.new()
 	var top := F + 1.5
-	_floor(b, 1, F, Color(0.50, 0.38, 0.24))
-	_hull_strip(b, 1, F - 0.2, top, false, Color(0.34, 0.21, 0.13), ShipMesh.M_HULL)
+	_floor(b, 1, F, Color(0.45, 0.45, 0.45), ShipMesh.M_IFLOOR)
+	_hull_strip(b, 1, F - 0.2, top, false, Color(0.42, 0.42, 0.42), ShipMesh.M_IHULL)
 	# ribs along both walls and the cross beams overhead (they dissolve near the pirate)
 	var u := -8.4
 	while u < 8.4:
@@ -690,13 +711,13 @@ func _hammock(b: ShipMesh, c: Vector2, half: Vector2, _side: int) -> void:
 			var y01 := F + 0.5 + 0.55 * rise1 - 0.2 * (1.0 - f0 * f0) * (1.0 - rise1)
 			var y11 := F + 0.5 + 0.55 * rise1 - 0.2 * (1.0 - f1 * f1) * (1.0 - rise1)
 			var y10 := F + 0.5 + 0.55 * rise0 - 0.2 * (1.0 - f1 * f1) * (1.0 - rise0)
-			b.quad(ShipMesh.p(u0, c.y + f0 * wv, y00 + 0.0), ShipMesh.p(u1, c.y + f0 * wv, y01), ShipMesh.p(u1, c.y + f1 * wv, y11), ShipMesh.p(u0, c.y + f1 * wv, y10), col, ShipMesh.M_CLOTH, Vector3.UP)
+			b.quad(ShipMesh.p(u0, c.y + f0 * wv, y00 + 0.0), ShipMesh.p(u1, c.y + f0 * wv, y01), ShipMesh.p(u1, c.y + f1 * wv, y11), ShipMesh.p(u0, c.y + f1 * wv, y10), col, ShipMesh.M_HAM, Vector3.UP)
 	# the hooks at the ends and a rolled blanket
 	for e in [-1.0, 1.0]:
 		var eu := c.x + float(e) * (half.x + 0.05)
 		b.beam(ShipMesh.p(eu, c.y, F + 1.05), ShipMesh.p(eu + float(e) * 0.1, c.y, F + 1.9), 0.04, ROPE_C, ShipMesh.M_ROPE)
 		_bx(b, eu + float(e) * 0.1, c.y, F, 0.05, 0.05, 1.9, WOOD_M, ShipMesh.M_TIMBER)
-	b.box(ShipMesh.p(c.x + half.x * 0.4, c.y, F + 0.62), Vector3(wv * 0.7, 0.07, 0.3), TRIM_R, ShipMesh.M_CLOTH)
+	b.box(ShipMesh.p(c.x + half.x * 0.4, c.y, F + 0.62), Vector3(wv * 0.7, 0.07, 0.3), TRIM_R, ShipMesh.M_BLANK)
 
 
 func _bunk(b: ShipMesh, c: Vector2, half: Vector2) -> void:
@@ -705,18 +726,18 @@ func _bunk(b: ShipMesh, c: Vector2, half: Vector2) -> void:
 			_bx(b, c.x + float(sx) * (half.x - 0.05), c.y + float(sy) * (half.y - 0.05), F, 0.05, 0.05, 1.7, WOOD_M, ShipMesh.M_TIMBER)
 	for k in 2:
 		var y := F + 0.35 + float(k) * 0.75
-		_bx(b, c.x, c.y, y, half.x, half.y, 0.07, WOOD_L, ShipMesh.M_DECK)
-		_bx(b, c.x, c.y, y + 0.07, half.x - 0.05, half.y - 0.05, 0.1, Color(0.72, 0.66, 0.52) if k == 0 else Color(0.5, 0.58, 0.62), ShipMesh.M_CLOTH)
-		_bx(b, c.x - half.x + 0.2, c.y, y + 0.17, 0.15, half.y - 0.1, 0.07, CANVAS_C, ShipMesh.M_CLOTH)
-	_bx(b, c.x + 0.25, c.y, F + 0.42, half.x - 0.5, half.y - 0.08, 0.04, TRIM_R if c.y > 0.0 else Color(0.2, 0.32, 0.4), ShipMesh.M_CLOTH)
+		_bx(b, c.x, c.y, y, half.x, half.y, 0.07, WOOD_L, ShipMesh.M_TIMBER)
+		_bx(b, c.x, c.y, y + 0.07, half.x - 0.05, half.y - 0.05, 0.1, Color(0.72, 0.66, 0.52) if k == 0 else Color(0.5, 0.58, 0.62), ShipMesh.M_HAM)
+		_bx(b, c.x - half.x + 0.2, c.y, y + 0.17, 0.15, half.y - 0.1, 0.07, CANVAS_C, ShipMesh.M_HAM)
+	_bx(b, c.x + 0.25, c.y, F + 0.42, half.x - 0.5, half.y - 0.08, 0.04, TRIM_R if c.y > 0.0 else Color(0.2, 0.32, 0.4), ShipMesh.M_BLANK)
 
 
 # ---- the provisioning hold --------------------------------------------------------------------------------------------------
 func _build_hold() -> void:
 	var b := ShipMesh.new()
 	var top := F + 1.6
-	_floor(b, 2, F, Color(0.40, 0.30, 0.20))
-	_hull_strip(b, 2, F - 0.2, top, false, Color(0.30, 0.19, 0.12), ShipMesh.M_HULL)
+	_floor(b, 2, F, Color(0.40, 0.40, 0.40), ShipMesh.M_IFLOOR)
+	_hull_strip(b, 2, F - 0.2, top, false, Color(0.38, 0.38, 0.38), ShipMesh.M_IHULL)
 	var u := -6.4
 	while u < 6.8:
 		var h := Layout.hull_half(2, u) - Layout.WALL_MARGIN
@@ -726,8 +747,8 @@ func _build_hold() -> void:
 			b.beam(ShipMesh.p(u, -h, F + 2.2), ShipMesh.p(u, h, F + 2.2), 0.18, tc(WOOD_D, true), ShipMesh.M_TIMBER)
 		u += 1.6
 	# a keelson down the middle, dunnage boards, the mast step
-	_bx(b, 0.2, 0.0, F, 6.6, 0.1, 0.05, WOOD_D, ShipMesh.M_TIMBER)
-	_bx(b, Layout.MAST.x, Layout.MAST.y, F, 0.65, 0.65, 0.3, WOOD_D, ShipMesh.M_TIMBER)
+	_bx(b, 0.2, 0.0, F, 6.6, 0.1, 0.05, WOOD_D, ShipMesh.M_TAR)
+	_bx(b, Layout.MAST.x, Layout.MAST.y, F, 0.65, 0.65, 0.3, WOOD_D, ShipMesh.M_TAR)
 	b.cyl(ShipMesh.p(Layout.MAST.x, Layout.MAST.y, F + 0.3), 0.3, 2.0, 8, WOOD_M, ShipMesh.M_TIMBER, 0.3, false, false)
 	for o in lay.call("obstacles", Layout.L_HOLD):
 		var od: Dictionary = o
@@ -737,16 +758,23 @@ func _build_hold() -> void:
 			"rack":
 				_rack(b, c, hf)
 			"ledger":
-				_bx(b, c.x, c.y, F + 0.62, hf.x, hf.y, 0.07, WOOD_L, ShipMesh.M_DECK)
+				_bx(b, c.x, c.y, F + 0.62, hf.x, hf.y, 0.07, WOOD_L, ShipMesh.M_TIMBER)
 				for sx in [-1.0, 1.0]:
 					for sy in [-1.0, 1.0]:
 						_bx(b, c.x + float(sx) * (hf.x - 0.05), c.y + float(sy) * (hf.y - 0.05), F, 0.04, 0.04, 0.62, WOOD_M, ShipMesh.M_TIMBER)
-				b.quad(ShipMesh.p(c.x - 0.2, c.y - 0.35, F + 0.7), ShipMesh.p(c.x + 0.2, c.y - 0.35, F + 0.7), ShipMesh.p(c.x + 0.2, c.y + 0.1, F + 0.7), ShipMesh.p(c.x - 0.2, c.y + 0.1, F + 0.7), Color(0.9, 0.84, 0.66), ShipMesh.M_CANVAS, Vector3.UP)
+				b.quad(ShipMesh.p(c.x - 0.2, c.y - 0.35, F + 0.7), ShipMesh.p(c.x + 0.2, c.y - 0.35, F + 0.7), ShipMesh.p(c.x + 0.2, c.y + 0.1, F + 0.7), ShipMesh.p(c.x - 0.2, c.y + 0.1, F + 0.7), Color(0.9, 0.84, 0.66), ShipMesh.M_CHART, Vector3.UP)
 				_bx(b, c.x - 0.2, c.y - 0.35, F + 0.69, 0.02, 0.45, 0.03, Color(0.4, 0.15, 0.1), ShipMesh.M_PAINT)
 				_lantern(b, c.x + 0.1, c.y + 0.5, F + 0.84)
+				b.cyl(ShipMesh.p(c.x + 0.32, c.y + 0.15, F + 0.69), 0.045, 0.2, 6, Color(0.3, 0.5, 0.35), ShipMesh.M_BOTTLE, 0.0, false, false)
 				b.cyl(ShipMesh.p(c.x - 0.25, c.y + 0.45, F + 0.69), 0.04, 0.1, 6, Color(0.1, 0.1, 0.14), ShipMesh.M_PAINT, -1.0, false, false)
 			"ladder_foot":
 				_wood_ladder(b, c.x + 0.4, F, c.x - 0.2, F + 2.3, c.y, 6)
+	# VP-1A.4: ballast piles at both ends, a rope mat under the big coil, an open biscuit crate by the ledger
+	Props.ball(b, ShipMesh.p(6.1, 0.0, F - 0.22), 0.48, Color(0.5, 0.5, 0.5), ShipMesh.M_BALLAST)
+	Props.ball(b, ShipMesh.p(-6.3, 0.0, F - 0.24), 0.42, Color(0.5, 0.5, 0.5), ShipMesh.M_BALLAST)
+	b.quad(ShipMesh.p(6.6, 0.35, F + 0.02), ShipMesh.p(7.8, 0.35, F + 0.02), ShipMesh.p(7.8, 1.15, F + 0.02), ShipMesh.p(6.6, 1.15, F + 0.02), Color(0.6, 0.6, 0.6), ShipMesh.M_ROPEMAT, Vector3.UP)
+	Props.crate(b, Vector2(-3.6, 0.95), Vector2(0.3, 0.24), F, 0.46, Color(0.5, 0.5, 0.5), 0.0)
+	b.quad(ShipMesh.p(-3.88, 0.73, F + 0.47), ShipMesh.p(-3.32, 0.73, F + 0.47), ShipMesh.p(-3.32, 1.17, F + 0.47), ShipMesh.p(-3.88, 1.17, F + 0.47), Color(0.8, 0.8, 0.8), ShipMesh.M_FOOD, Vector3.UP)
 	# the hatch above: a square of light is not drawn, the beam of the hatch frame is
 	_coaming(b, Layout.HOLD_HATCH, Vector2(0.7, 0.6), F + 2.2, 0.05)
 	# loose sacks and a coil near the ledger, a lantern chain
@@ -770,9 +798,9 @@ func _build_hold() -> void:
 func _rack(b: ShipMesh, c: Vector2, half: Vector2) -> void:
 	var side := signf(c.y)
 	var wall_v := c.y + side * (half.y - 0.04)
-	_bx(b, c.x, wall_v, F, half.x, 0.04, 1.4, WOOD_D, ShipMesh.M_HULL)
-	_bx(b, c.x, c.y, F + 0.78, half.x, half.y, 0.06, WOOD_L, ShipMesh.M_DECK)
-	_bx(b, c.x, c.y, F + 1.38, half.x, half.y, 0.05, WOOD_L, ShipMesh.M_DECK)
+	_bx(b, c.x, wall_v, F, half.x, 0.04, 1.4, WOOD_D, ShipMesh.M_RACK)
+	_bx(b, c.x, c.y, F + 0.78, half.x, half.y, 0.06, WOOD_L, ShipMesh.M_RACK)
+	_bx(b, c.x, c.y, F + 1.38, half.x, half.y, 0.05, WOOD_L, ShipMesh.M_RACK)
 	var n := int(roundf(half.x * 2.0 / 0.9)) + 1
 	for k in n:
 		var uu := c.x - half.x + 0.05 + (2.0 * half.x - 0.1) * float(k) / float(maxi(n - 1, 1))

@@ -32,6 +32,7 @@ uniform float lamp_r = 6.5;
 uniform vec3 lamp_col = vec3(1.0, 0.68, 0.32);
 uniform float wet = 0.0;
 uniform sampler2D pxatlas : filter_nearest_mipmap, repeat_disable;   // VP-1A.3: the AUTHORED pixel-art atlas (art/vp1/ship_px.png)
+uniform sampler2D pxatlas2 : filter_nearest_mipmap, repeat_disable;  // VP-1A.4: the interior sheet (art/vp1/interior_px.png), ids 16..31
 uniform float tex_on = 1.0;           // 0: flat tints only (fallback if the atlas file is somehow missing)
 uniform float outline = 1.0;          // 0 off (Dev-Lite may turn it off), 1 on
 uniform float outline_k = 0.55;       // how dark the outline pixel is
@@ -244,10 +245,14 @@ void fragment() {
 		pal = tint * 2.0 * (0.4 + 0.15 * h);
 	} else if (tex_on < 0.5) {
 		pal = tint * 2.0 * (0.85 + 0.3 * h);
-	} else {
+	} else if (m < 16) {
 		pal = texture(pxatlas, UV).rgb;
-		// canvas, lantern glass and net carry their OWN authored colour; everything else is a grey value tint (x2) over the art
-		float own = (m == 4 || m == 12 || m == 14) ? 1.0 : 0.0;
+	} else {
+		pal = texture(pxatlas2, UV).rgb;
+	}
+	if (m != 6 && m != 10 && m != 13 && tex_on >= 0.5) {
+		// canvas, lantern glass, net and the coloured interior props carry their OWN authored colour; everything else is a grey value tint (x2) over the art
+		float own = (m == 4 || m == 12 || m == 14 || (m >= 20 && m <= 27) || m >= 30) ? 1.0 : 0.0;
 		pal *= mix(tint * 2.0, vec3(1.0), own);
 		if (m == 3) {                                // barrel hoops: iron bands at their real heights over the staves
 			float hp = v_rel;

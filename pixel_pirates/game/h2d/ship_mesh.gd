@@ -21,8 +21,25 @@ const M_CLOTH := 11
 const M_LAMP := 12
 const M_VOID := 13
 const M_NET := 14       ## VP-1A: fishing net: a cut-out diamond lattice (holes are really see-through)
+# VP-1A.4: the interior sheet (art/vp1/interior_px.png), ids 16..31: everything below decks is drawn too.
+const M_IFLOOR := 16    ## worn interior floor planks with a foot-traffic path
+const M_IHULL := 17     ## inner hull planking with drawn frames and through-bolts
+const M_CEIL := 18      ## deck-head (underside) planks with nail rows and soot
+const M_CWALL := 19     ## cabin panelling with moulded raised panels
+const M_RUG := 20       ## woven rug (own colour)
+const M_CHART := 21     ## the chart: coastline, rhumb lines, script (own colour)
+const M_HAM := 22       ## hammock canvas (own colour)
+const M_BLANK := 23     ## wool blanket stripes (own colour)
+const M_BOOKS := 24     ## book spines with gilt bands (own colour)
+const M_FOOD := 25      ## provisions: biscuit, salt fish, cheese (own colour)
+const M_BOTTLE := 26    ## glass bottles (own colour)
+const M_BRASS := 27     ## polished brass (own colour)
+const M_TAR := 28       ## tarred wood, glossy speckle
+const M_RACK := 29      ## rack boards with iron uprights
+const M_ROPEMAT := 30   ## coiled rope mat (own colour)
+const M_BALLAST := 31   ## ballast stones (own colour)
 # VP-1A.3 authored atlas (art/vp1/ship_px.png): texel density px per ship metre per material tile, tile size and edge inset.
-const PX_DENS := [48.0, 40.0, 40.0, 32.0, 64.0, 48.0, 48.0, 40.0, 40.0, 48.0, 64.0, 40.0, 48.0, 48.0, 40.0, 40.0]
+const PX_DENS := [48.0, 40.0, 40.0, 32.0, 64.0, 48.0, 48.0, 40.0, 40.0, 48.0, 64.0, 40.0, 48.0, 48.0, 40.0, 40.0, 44.0, 36.0, 40.0, 48.0, 64.0, 96.0, 64.0, 64.0, 96.0, 64.0, 64.0, 64.0, 32.0, 40.0, 48.0, 40.0]
 const PX_TILE := 256.0
 const PX_INSET := 0.0011
 
@@ -43,7 +60,8 @@ static func p(u: float, v: float, y: float) -> Vector3:
 # it (the tiles are periodic), so every surface of the ship carries drawn pixel art: planks with grain and nails, strakes,
 # canvas weave, rope twist, iron plate, staves, boards.
 static func px_origin(mat: int) -> Vector2:
-	return Vector2(float(mat % 4) * 0.25, float(mat / 4) * 0.25)
+	var loc := mat % 16   # VP-1A.4: two 4x4 sheets (ship_px / interior_px); the shader picks by id
+	return Vector2(float(loc % 4) * 0.25, float(loc / 4) * 0.25)
 
 
 ## Atlas uv from a 2D pattern coordinate in ship metres (the caller picks the face plane).
