@@ -21,16 +21,52 @@ const M_CLOTH := 11
 const M_LAMP := 12
 const M_VOID := 13
 const M_NET := 14       ## VP-1A: fishing net: a cut-out diamond lattice (holes are really see-through)
+# VP-1A.3 authored atlas (art/vp1/ship_px.png): texel density px per ship metre per material tile, tile size and edge inset.
+const PX_DENS := [48.0, 40.0, 40.0, 32.0, 64.0, 48.0, 48.0, 40.0, 40.0, 48.0, 64.0, 40.0, 48.0, 48.0, 40.0, 40.0]
+const PX_TILE := 256.0
+const PX_INSET := 0.0011
 
 var _v := PackedVector3Array()
 var _n := PackedVector3Array()
 var _c := PackedColorArray()
 var _uv := PackedVector2Array()
+var _uv2 := PackedVector2Array()   ## VP-1A.3: (material id, height 0..1); UV carries the authored atlas coords
 var _i := PackedInt32Array()
 
 
 static func p(u: float, v: float, y: float) -> Vector3:
 	return Vector3(v, y, -u)
+
+
+# VP-1A.3: the authored pixel-art atlas (art/vp1/ship_px.png, tools/vp1/make_px_atlas.py): 16 seamless 256 px tiles in a 4x4
+# grid, one per material, each drawn at its own texel density. Mesh UVs are PLANAR projections into a tile and wrap inside
+# it (the tiles are periodic), so every surface of the ship carries drawn pixel art: planks with grain and nails, strakes,
+# canvas weave, rope twist, iron plate, staves, boards.
+static func px_origin(mat: int) -> Vector2:
+	return Vector2(float(mat % 4) * 0.25, float(mat / 4) * 0.25)
+
+
+## Atlas uv from a 2D pattern coordinate in ship metres (the caller picks the face plane).
+static func px_uv2(mat: int, c: Vector2) -> Vector2:
+	var d: float = PX_DENS[mat] if mat < PX_DENS.size() else 32.0
+	var t := c * d
+	var w := Vector2(posmod(t.x, PX_TILE), posmod(t.y, PX_TILE)) / PX_TILE
+	return px_origin(mat) + Vector2(PX_INSET, PX_INSET) + w * (0.25 - 2.0 * PX_INSET)
+
+
+## Atlas uv for a point on a face with normal n: floors use (x, z), walls the two in-plane axes.
+static func px_uv(mat: int, pt: Vector3, n: Vector3) -> Vector2:
+	var an := Vector3(absf(n.x), absf(n.y), absf(n.z))
+	var c: Vector2
+	if an.y > 0.7:
+		c = Vector2(pt.x, pt.z)
+	elif an.x > an.z:
+		c = Vector2(pt.z, pt.y)
+	else:
+		c = Vector2(pt.x, pt.y)
+	return px_uv2(mat, c)
+
+
 
 
 func vertex_count() -> int:
@@ -50,14 +86,14 @@ func quad(a: Vector3, b: Vector3, c: Vector3, d: Vector3, col: Color, mat: int, 
 	if outward != Vector3.ZERO and n.dot(outward) < 0.0:
 		n = -n
 	var base := _v.size()
+	var k := 0
 	for pt in [a, b, c, d]:
 		_v.append(pt)
 		_n.append(n)
 		_c.append(col)
-	_uv.append(Vector2(float(mat), rel0))
-	_uv.append(Vector2(float(mat), rel0))
-	_uv.append(Vector2(float(mat), rel1))
-	_uv.append(Vector2(float(mat), rel1))
+		_uv.append(px_uv(mat, pt, n))
+		_uv2.append(Vector2(float(mat), rel0 if k < 2 else rel1))
+		k += 1
 	_i.append_array(PackedInt32Array([base, base + 1, base + 2, base, base + 2, base + 3]))
 
 
@@ -70,7 +106,8 @@ func tri(a: Vector3, b: Vector3, c: Vector3, col: Color, mat: int, outward := Ve
 		_v.append(pt)
 		_n.append(n)
 		_c.append(col)
-		_uv.append(Vector2(float(mat), 0.5))
+		_uv.append(px_uv(mat, pt, n))
+		_uv2.append(Vector2(float(mat), 0.5))
 	_i.append_array(PackedInt32Array([base, base + 1, base + 2]))
 
 
@@ -178,6 +215,7 @@ func build() -> ArrayMesh:
 	arrays[Mesh.ARRAY_NORMAL] = _n
 	arrays[Mesh.ARRAY_COLOR] = _c
 	arrays[Mesh.ARRAY_TEX_UV] = _uv
+	arrays[Mesh.ARRAY_TEX_UV2] = _uv2
 	arrays[Mesh.ARRAY_INDEX] = _i
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return mesh
@@ -196,7 +234,7 @@ func bounds() -> AABB:
 
 ## VP-1A: a smooth parametric surface (sails): `pt` is a Callable(t, s) -> Vector3 over [0,1]x[0,1]; the normals are averaged over the grid,
 ## so cloth shades as one curved piece instead of 36 flat facets.
-func surface(pt: Callable, rows: int, cols: int, col: Color, mat: int) -> void:
+func surface(pt: Callable, rows: int, cols: int, col: Color, mat: int, uvscale_x := 8.0, uvscale_y := 8.0) -> void:
 	var pts: Array = []
 	for r in rows + 1:
 		var row: Array = []
@@ -215,7 +253,8 @@ func surface(pt: Callable, rows: int, cols: int, col: Color, mat: int) -> void:
 			_v.append(p0)
 			_n.append(n.normalized())
 			_c.append(col)
-			_uv.append(Vector2(float(mat), float(r) / float(rows)))
+			_uv.append(px_uv2(mat, Vector2(float(c) / float(cols) * uvscale_x, float(r) / float(rows) * uvscale_y)))
+			_uv2.append(Vector2(float(mat), float(r) / float(rows)))
 	for r in rows:
 		for c in cols:
 			var i0 := base + r * (cols + 1) + c
@@ -239,7 +278,8 @@ func quad_c(a: Vector3, b: Vector3, c: Vector3, d: Vector3, ca: Color, cb: Color
 		_v.append(pt)
 		_n.append(n)
 		_c.append([ca, cb, cc, cd][k])
-		_uv.append(Vector2(float(mat), 0.5))
+		_uv.append(px_uv(mat, pt, n))
+		_uv2.append(Vector2(float(mat), 0.5))
 		k += 1
 	_i.append_array(PackedInt32Array([base, base + 1, base + 2, base, base + 2, base + 3]))
 
@@ -272,7 +312,8 @@ func lathe(base: Vector3, prof: Array, segs: int, col: Color, mat: int, axis := 
 			_v.append(base + d * pr.x + f * pr.y)
 			_n.append((d * nr.x + f * nr.y).normalized())
 			_c.append(col)
-			_uv.append(Vector2(float(mat) + 0.4 * float(k) / float(segs), (pr.y - h0) / hmax))
+			_uv.append(px_uv2(mat, Vector2(a * pr.x, pr.y)))
+			_uv2.append(Vector2(float(mat), (pr.y - h0) / hmax))
 	for r in rows - 1:
 		for k in segs:
 			var i0 := base_i + r * (segs + 1) + k

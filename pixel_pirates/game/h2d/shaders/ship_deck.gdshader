@@ -31,11 +31,10 @@ uniform vec4 lampD = vec4(0.0, 0.0, 0.0, 0.0);
 uniform float lamp_r = 6.5;
 uniform vec3 lamp_col = vec3(1.0, 0.68, 0.32);
 uniform float wet = 0.0;
-uniform sampler2D mats : filter_nearest, repeat_disable;   // VP-1A material atlas: R value, G warm/cool, B crevice
-uniform float tex_on = 1.0;           // 0: the old procedural patterns only (fallback if the atlas is missing)
+uniform sampler2D pxatlas : filter_nearest_mipmap, repeat_disable;   // VP-1A.3: the AUTHORED pixel-art atlas (art/vp1/ship_px.png)
+uniform float tex_on = 1.0;           // 0: flat tints only (fallback if the atlas file is somehow missing)
 uniform float outline = 1.0;          // 0 off (Dev-Lite may turn it off), 1 on
 uniform float outline_k = 0.55;       // how dark the outline pixel is
-uniform float tile_m = 8.889;
 // VP-1A.2 shadows (model space: x starboard, y up, -z bow). Set by ship_deck_view.gd; sh_n = 0 switches everything off (interiors).
 uniform vec4 sh_c[40];                 // box centres
 uniform vec4 sh_h[40];                 // box half extents
@@ -67,8 +66,8 @@ void vertex() {
 	w_nrm = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 	w_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	v_col = COLOR;
-	v_mat = UV.x;
-	v_rel = UV.y;
+	v_mat = UV2.x;
+	v_rel = UV2.y;
 	sun_m = normalize(transpose(mat3(MODEL_MATRIX)) * h2d_sun_dir);
 }
 
@@ -89,14 +88,6 @@ float lamp_term(vec4 l, vec3 p, vec3 nm) {
 	float k = clamp(1.0 - d, 0.0, 1.0);
 	float face = 0.3 + 0.7 * clamp(dot(nm, normalize(dv)), 0.0, 1.0);
 	return k * k * l.w * face;
-}
-
-// One tile of the material atlas: idx 0 deck, 1 hull, 2 timber, 3 canvas. c in ship metres; returns (value, warm, crevice).
-vec3 mat_tile(int idx, vec2 c) {
-	vec2 f = fract(c / tile_m);
-	f = clamp(f, vec2(0.002), vec2(0.998));
-	vec2 o = vec2(float(idx % 2), float(idx / 2));
-	return texture(mats, (o + f) * 0.5).rgb;
 }
 
 // walkable hull half-width at u (the same table as ship_layout.gd HULL[0]); the bulwark stands on its outer 0.3 m
@@ -212,106 +203,24 @@ void fragment() {
 			}
 		}
 	}
-	// which plane the pattern lives in: floors use (x, z), walls (along, y)
-	vec3 an = abs(l_nrm);
-	vec2 c;
-	if (an.y > 0.7) {
-		c = l_pos.xz;
-	} else if (an.x > an.z) {
-		c = vec2(l_pos.z, l_pos.y);
+	// VP-1A.3: the surface colour comes from the AUTHORED pixel-art atlas (planar UVs baked into the mesh); only the fish
+	// and the sacks keep their little procedural patterns, and the barrel hoops are iron bands at their real heights.
+	vec3 an0 = abs(l_nrm);
+	vec2 c0;
+	if (an0.y > 0.7) {
+		c0 = l_pos.xz;
+	} else if (an0.x > an0.z) {
+		c0 = vec2(l_pos.z, l_pos.y);
 	} else {
-		c = vec2(l_pos.x, l_pos.y);
+		c0 = vec2(l_pos.x, l_pos.y);
 	}
-	vec2 q = floor(c / texel);
-	float h = q_hash(q);
+	vec2 q0 = floor(c0 / texel);
+	float h = q_hash(q0);
 	vec3 tint = v_col.rgb;
 	vec3 pal = tint;
-	if (m == 0) {                                    // deck planks, run fore and aft (z)
-		float pw = 0.34;
-		float pidx = floor(l_pos.x / pw);
-		float ph = h2d_hash(vec2(pidx, 7.0));
-		if (tex_on > 0.5) {
-			vec3 tx = mat_tile(0, vec2(l_pos.x, -l_pos.z));
-			pal = tint * (2.0 * tx.r) * (0.92 + 0.16 * ph);
-			pal = mix(pal, pal * vec3(1.10, 1.0, 0.86), clamp(tx.g - 0.5, 0.0, 0.5) * 1.6);
-			pal = mix(pal, pal * vec3(0.90, 0.98, 1.08), clamp(0.5 - tx.g, 0.0, 0.5) * 1.6);
-			pal *= 1.0 - 0.18 * tx.b * wet;
-		} else {
-			pal = tint * (0.86 + 0.26 * ph) * (0.94 + 0.12 * h);
-			if (fract(l_pos.x / pw) < 0.07) {
-				pal = tint * 0.45;
-			}
-			float joint = fract((l_pos.z + ph * 4.0) / 2.6);
-			if (joint < 0.025) {
-				pal = tint * 0.5;
-			}
-		}
-	} else if (m == 1) {                             // hull boards, horizontal
-		if (tex_on > 0.5) {
-			vec3 tx = mat_tile(1, vec2(c.x * 0.7 + c.y * 0.0, -c.y));
-			pal = tint * (2.0 * tx.r);
-			pal = mix(pal, pal * vec3(1.12, 1.0, 0.84), clamp(tx.g - 0.5, 0.0, 0.5) * 1.4);
-			pal = mix(pal, pal * vec3(0.88, 0.98, 1.1), clamp(0.5 - tx.g, 0.0, 0.5) * 1.4);
-		} else {
-			float bh = 0.30;
-			pal = tint * (0.9 + 0.2 * h);
-			if (fract(c.y / bh) < 0.1) {
-				pal = tint * 0.5;
-			}
-			float bi = floor(c.y / bh);
-			pal *= 0.92 + 0.16 * h2d_hash(vec2(bi, 3.0));
-		}
-	} else if (m == 2) {                             // timber: beams, posts, spars
-		if (tex_on > 0.5) {
-			vec3 tx = mat_tile(2, c * 1.0);
-			pal = tint * (2.0 * tx.r) * (0.9 + 0.2 * h);
-		} else {
-			pal = tint * (0.82 + 0.3 * h2d_noise(vec2(q.x * 0.3 + q.y * 0.04, q.y * 0.9 + q.x * 0.05)));
-		}
-	} else if (m == 3) {                             // barrel: staves (angle round the lathe), grain, iron hoops
-		float fr = v_mat - 3.0;
-		if (fr > 0.02) {
-			float stv = (fr - 0.05) * 2.857 * 14.0;
-			float si = floor(stv);
-			float sf = fract(stv);
-			float sh = h2d_hash(vec2(si, 5.0));
-			pal = tint * (0.78 + 0.34 * sh) * (0.94 + 0.1 * h);
-			if (tex_on > 0.5) {
-				pal *= 2.0 * mat_tile(2, vec2(si * 0.37, l_pos.y * 1.7 + sh * 3.0)).r;
-			}
-			if (sf < 0.1 || sf > 0.94) {
-				pal = tint * 0.5;
-			}
-			pal *= 0.94 + 0.1 * smoothstep(0.1, 0.5, sf);   // each stave is a little rounder in the middle
-		} else {
-			float stave = fract(c.x / 0.15);
-			pal = tint * (0.85 + 0.25 * h) * (stave < 0.12 ? 0.62 : 1.0);
-		}
-		float hp = v_rel;
-		if (abs(hp - 0.12) < 0.05 || abs(hp - 0.86) < 0.05 || abs(hp - 0.5) < 0.032 || abs(hp - 0.3) < 0.02 || abs(hp - 0.7) < 0.02) {
-			pal = vec3(0.19, 0.18, 0.18) * (0.8 + 0.4 * h);
-			if (fract(l_pos.x * 7.0 + l_pos.z * 5.0) > 0.86) {
-				pal = vec3(0.45, 0.42, 0.36);   // a rivet
-			}
-		}
-	} else if (m == 4) {                             // canvas: panels, stitching, patches, reef bands (atlas) + weave
-		if (tex_on > 0.5) {
-			vec3 tx = mat_tile(3, vec2(l_pos.z * 0.9 + l_pos.x * 0.35, -l_pos.y * 0.9));
-			pal = tint * (2.0 * tx.r) * (0.96 + 0.08 * h);
-			pal = mix(pal, pal * vec3(1.10, 0.97, 0.80), clamp(tx.g - 0.5, 0.0, 0.5) * 1.5);
-		} else {
-			float weave = mod(q.x + q.y, 2.0) < 1.0 ? 1.0 : 0.94;
-			pal = tint * weave * (0.92 + 0.1 * h);
-			if (fract((l_pos.x + l_pos.z * 0.7) / 0.9) < 0.035) {
-				pal = tint * 0.72;
-			}
-		}
-	} else if (m == 5) {                             // rope: a diagonal twist
-		float tw = fract((l_pos.x + l_pos.y + l_pos.z) * 9.0);
-		pal = tint * (tw < 0.5 ? 1.0 : 0.72);
-	} else if (m == 6) {                             // fish: silver scales, dark backs, a red gill here and there
-		float row = mod(q.y, 6.0);
-		float sc = mod(q.x + (mod(floor(q.y / 2.0), 2.0)) * 1.0, 3.0);
+	if (m == 6) {                                    // fish: silver scales, dark backs, a red gill here and there
+		float row = mod(q0.y, 6.0);
+		float sc = mod(q0.x + (mod(floor(q0.y / 2.0), 2.0)) * 1.0, 3.0);
 		pal = vec3(0.66, 0.76, 0.85) * (0.82 + 0.3 * h);
 		if (sc < 1.0) {
 			pal *= 0.86;
@@ -326,41 +235,37 @@ void fragment() {
 			pal = vec3(0.05, 0.06, 0.08);
 		}
 		pal = mix(pal, tint, 0.15);
-	} else if (m == 7) {                             // iron
-		pal = tint * (0.8 + 0.4 * h) * (h > 0.93 ? 1.6 : 1.0);
-	} else if (m == 8) {                             // painted wood: a little noise
-		pal = tint * (0.93 + 0.14 * h);
-	} else if (m == 9) {                             // crate boards, vertical, with a dark frame
-		float bw = 0.2;
-		pal = tint * (0.88 + 0.22 * h2d_hash(vec2(floor(c.x / bw), 11.0)));
-		if (tex_on > 0.5) {
-			pal *= 2.0 * mat_tile(2, c * 1.3 + 3.0).r;
-		}
-		if (fract(c.x / bw) < 0.1) {
-			pal = tint * 0.5;
-		}
-		if (v_rel < 0.1 || v_rel > 0.9) {
-			pal = tint * 0.6;
-		}
 	} else if (m == 10) {                            // sack: lumpy cloth, a rope tie near the top
-		pal = tint * (0.75 + 0.35 * h2d_noise(c * 7.0 + 4.0)) * (0.94 + 0.1 * h);
+		pal = tint * (0.75 + 0.35 * h2d_noise(c0 * 7.0 + 4.0)) * (0.94 + 0.1 * h);
 		if (abs(v_rel - 0.78) < 0.05) {
 			pal = vec3(0.45, 0.32, 0.18);
 		}
-	} else if (m == 11) {                            // hammock cloth, coarse weave
-		pal = tint * (mod(q.x + q.y, 3.0) < 1.0 ? 0.9 : 1.0) * (0.92 + 0.12 * h);
-	} else if (m == 12) {                            // lantern: glows by itself
-		pal = tint * 1.3;
-	} else if (m == 14) {                            // fishing net: a diamond lattice of twine, the holes are discarded
-		float kk = 3.2;
-		vec2 dd = vec2(fract((l_pos.x + l_pos.z) * kk + l_pos.y * kk * 0.6), fract((l_pos.x - l_pos.z) * kk - l_pos.y * kk * 0.6));
-		float ln = min(min(dd.x, 1.0 - dd.x), min(dd.y, 1.0 - dd.y));
-		if (ln > 0.2) {
-			discard;
-		}
-		pal = tint * (0.85 + 0.3 * h);
 	} else if (m == 13) {                            // void: the hatch opening, the dark under the deck
-		pal = tint * (0.8 + 0.3 * h);
+		pal = tint * 2.0 * (0.4 + 0.15 * h);
+	} else if (tex_on < 0.5) {
+		pal = tint * 2.0 * (0.85 + 0.3 * h);
+	} else {
+		pal = texture(pxatlas, UV).rgb;
+		// canvas, lantern glass and net carry their OWN authored colour; everything else is a grey value tint (x2) over the art
+		float own = (m == 4 || m == 12 || m == 14) ? 1.0 : 0.0;
+		pal *= mix(tint * 2.0, vec3(1.0), own);
+		if (m == 3) {                                // barrel hoops: iron bands at their real heights over the staves
+			float hp = v_rel;
+			if (abs(hp - 0.12) < 0.05 || abs(hp - 0.86) < 0.05 || abs(hp - 0.5) < 0.032) {
+				pal = mix(pal, vec3(0.16, 0.15, 0.15), 0.8) * (0.8 + 0.4 * h);
+				if (fract(l_pos.x * 7.0 + l_pos.z * 5.0) > 0.86) {
+					pal = vec3(0.45, 0.42, 0.36);
+				}
+			}
+		}
+		if (m == 14) {                               // fishing net: a diamond lattice of twine, the holes are discarded
+			float kk = 3.2;
+			vec2 dd = vec2(fract((l_pos.x + l_pos.z) * kk + l_pos.y * kk * 0.6), fract((l_pos.x - l_pos.z) * kk - l_pos.y * kk * 0.6));
+			float ln = min(min(dd.x, 1.0 - dd.x), min(dd.y, 1.0 - dd.y));
+			if (ln > 0.2) {
+				discard;
+			}
+		}
 	}
 	// light: one sun (with shadows), a cool ambient (with contact darkening) and the lanterns
 	vec3 n = normalize(w_nrm);

@@ -10,12 +10,12 @@ extends Node3D
 ## Dynamic parts: the whole ship pose (heading, roll, pitch, heave), the boom and mainsail trim, the wheel, the fish in the barrels
 ## (from the real hold), the pieces on the provision racks (from the real inventory), the cabin roof dissolve, the hole around the pirate.
 ## Model space: x starboard, y up, -z toward the bow; ship-local (u, v) becomes (v, -u) (ShipMesh.p). NOT YET RUN ON THE USER'S PC.
-const CRATE_COL := Color(0.56, 0.40, 0.22)
+const CRATE_COL := Color(0.5, 0.5, 0.5)
 const Layout := preload("res://h2d/ship_layout.gd")
 const ShipMesh := preload("res://h2d/ship_mesh.gd")
 const Props := preload("res://h2d/ship_props.gd")
 const SHADER := "res://h2d/shaders/ship_deck.gdshader"
-const MATS_PATH := "res://art/vp1/ship_mats.png"
+const MATS_PATH := "res://art/vp1/ship_px.png"   # VP-1A.3: the authored pixel-art atlas (was the VP-1A channel atlas)
 const F := Layout.FLOOR_Y
 const NEST_Y := Layout.NEST_Y
 const MAST_TOP := F + 11.6
@@ -23,14 +23,14 @@ const BOOM_Y := F + 3.0
 const BOOM_LEN := 6.4
 const SAIL_TOP := 8.4
 # palette (the wood ramp matches the pier and the sprites)
-const WOOD_D := Color(0.29, 0.157, 0.078)
-const WOOD_M := Color(0.427, 0.251, 0.1255)
-const WOOD_L := Color(0.58, 0.404, 0.18)
-const DECK_C := Color(0.70, 0.55, 0.33)
-const HULL_C := Color(0.36, 0.22, 0.13)
-const TRIM_R := Color(0.40, 0.15, 0.11)
-const CABIN_C := Color(0.50, 0.33, 0.20)
-const ROOF_C := Color(0.33, 0.20, 0.13)
+const WOOD_D := Color(0.36, 0.36, 0.36)
+const WOOD_M := Color(0.5, 0.5, 0.5)
+const WOOD_L := Color(0.63, 0.63, 0.63)
+const DECK_C := Color(0.53, 0.53, 0.53)
+const HULL_C := Color(0.44, 0.44, 0.44)
+const TRIM_R := Color(0.55, 0.50, 0.48)
+const CABIN_C := Color(0.5, 0.5, 0.5)
+const ROOF_C := Color(0.4, 0.4, 0.4)
 const CANVAS_C := Color(0.93, 0.87, 0.70)
 const ROPE_C := Color(0.71, 0.58, 0.36)
 const IRON_C := Color(0.23, 0.24, 0.27)
@@ -117,13 +117,13 @@ func _material(texel: float, interior: float, lamp_day: float) -> ShaderMaterial
 	var at := _mats_tex()
 	m.set_shader_parameter("tex_on", 1.0 if at != null else 0.0)
 	if at != null:
-		m.set_shader_parameter("mats", at)
-		m.set_shader_parameter("tile_m", 128.0 * texel)
+		m.set_shader_parameter("pxatlas", at)
 	return m
 
 
-## VP-1A: the material atlas (art/vp1/ship_mats.png). Imported texture if the editor has imported it, otherwise read straight from the
-## file (so a project that was never opened in the editor still shows the textures); null = the shader falls back to its old patterns.
+## VP-1A.3: the authored pixel-art atlas (art/vp1/ship_px.png). Imported texture if the editor has imported it, otherwise read
+## straight from the file (so a project that was never opened in the editor still shows the art); mipmaps for the Dev-Lite
+## internal resolution; null = the shader falls back to flat tints.
 static func _mats_tex() -> Texture2D:
 	if _mats_cache != null:
 		return _mats_cache
@@ -132,6 +132,7 @@ static func _mats_tex() -> Texture2D:
 	if _mats_cache == null and FileAccess.file_exists(MATS_PATH):
 		var img := Image.load_from_file(MATS_PATH)
 		if img != null and not img.is_empty():
+			img.generate_mipmaps()
 			_mats_cache = ImageTexture.create_from_image(img)
 	return _mats_cache
 
@@ -454,7 +455,7 @@ func _build_rigging() -> void:
 		var pnt := ja + ((jb - ja) * (1.0 - s) + (jc - ja) * s) * t
 		var belly := 0.42 * sin(PI * s) * sin(PI * minf(t * 1.1, 1.0)) * t
 		return pnt + Vector3(belly + 0.04 * sin(s * 14.0 + t * 6.0) * t, 0.0, 0.0)
-	b.surface(jib, 10, 8, cream, ShipMesh.M_CANVAS)
+	b.surface(jib, 10, 8, cream, ShipMesh.M_CANVAS, 6.0, 7.0)
 	_mesh_node(b, _m_open, _g_open)
 
 
@@ -500,7 +501,7 @@ func _build_dynamic() -> void:
 	bm.beam(Vector3(0.0, 0.0, 0.1), Vector3(0.0, 0.0, BOOM_LEN), 0.18, WOOD_L, ShipMesh.M_TIMBER)
 	bm.beam(Vector3(0.0, 0.0, BOOM_LEN), Vector3(0.0, 0.08, BOOM_LEN + 0.2), 0.12, IRON_C, ShipMesh.M_IRON)
 	var cream := tc(CANVAS_C, true)
-	bm.surface(Callable(self, "_sail_pt"), 14, 12, cream, ShipMesh.M_CANVAS)
+	bm.surface(Callable(self, "_sail_pt"), 14, 12, cream, ShipMesh.M_CANVAS, 7.0, 9.0)
 	# the foot of the sail is laced to the boom, the head hangs from a halyard block at the masthead (iron)
 	bm.beam(_sail_pt(0.0, 0.0), _sail_pt(0.0, 1.0), 0.05, ROPE_C.darkened(0.15), ShipMesh.M_ROPE)
 	bm.beam(_sail_pt(1.0, 0.0) + Vector3(0.0, 0.05, 0.0), _sail_pt(0.97, 0.0) + Vector3(0.0, -0.05, 0.0), 0.08, IRON_C, ShipMesh.M_IRON)
