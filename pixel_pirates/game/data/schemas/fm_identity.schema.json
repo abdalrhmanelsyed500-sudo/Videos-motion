@@ -1,0 +1,84 @@
+{
+ "kind": "fm_identity",
+ "key_field": "id",
+ "id_prefix": "fm",
+ "record": {
+  "type": "object",
+  "required": [
+   "id",
+   "title",
+   "currency",
+   "era",
+   "units",
+   "home_region",
+   "provisional",
+   "owner",
+   "source"
+  ],
+  "props": {
+   "id": {
+    "type": "string",
+    "pattern": "^fm_[a-z0-9_]+$"
+   },
+   "title": {
+    "type": "string",
+    "pattern": "^.{2,40}$"
+   },
+   "tagline": {
+    "type": "string"
+   },
+   "currency": {
+    "type": "object",
+    "required": [
+     "code",
+     "symbol",
+     "name"
+    ],
+    "props": {
+     "code": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+     },
+     "symbol": {
+      "type": "string"
+     },
+     "name": {
+      "type": "string"
+     }
+    }
+   },
+   "era": {
+    "type": "string",
+    "enum": [
+     "contemporary"
+    ]
+   },
+   "units": {
+    "type": "string",
+    "enum": [
+     "metric"
+    ]
+   },
+   "home_region": {
+    "type": "string",
+    "ref": "region"
+   },
+   "start_boat": {
+    "type": "string"
+   },
+   "term_map": {
+    "type": "object",
+    "extra": true
+   },
+   "provisional": {
+    "type": "boolean"
+   },
+   "owner": {
+    "type": "string"
+   },
+   "source": {
+    "type": "string"
+   }
+  }
+ }
+}

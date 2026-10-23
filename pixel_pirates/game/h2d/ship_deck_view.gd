@@ -981,7 +981,7 @@ func set_fish_fill(frac: float) -> void:
 	var n := _fish.size()
 	for k in n:
 		var f := clampf(clampf(frac, 0.0, 1.0) * float(n) - float(k), 0.0, 1.0)
-		var node := _fish[k]
+		var node: MeshInstance3D = _fish[k]
 		node.visible = f > 0.01
 		var c: Vector2 = Layout.FISH_BARRELS[k]
 		node.position = ShipMesh.p(c.x, c.y, F + 0.1 + f * 0.8)

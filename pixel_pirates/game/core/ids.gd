@@ -4,6 +4,7 @@ extends RefCounted
 ##   asset id  = <prefix>_<words>   prefixes below
 const DATA_KINDS: PackedStringArray = [
 	"isl", "reg", "crew", "npc", "item", "rcp", "ship", "evt", "loc", "fac", "qst", "dlg", "clue", "mode", "kit", "tpl",
+	"spc", "bnd", "fm",   # FM-0: wildlife species, bounds and Fishmonger identity tables join the grammar (parity with tools/check_project.py)
 ]
 const ASSET_PREFIXES: PackedStringArray = ["spr", "til", "prp", "shp", "ico", "fx", "ui", "bg"]
 

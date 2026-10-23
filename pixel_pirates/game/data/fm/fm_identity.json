@@ -1,0 +1,32 @@
+{
+ "schema": 1,
+ "kind": "fm_identity",
+ "records": [
+  {
+   "id": "fm_core",
+   "title": "Fishmonger",
+   "tagline": "A modern ocean fishing and life simulation.",
+   "currency": {"code": "USD", "symbol": "$", "name": "dollar"},
+   "era": "contemporary",
+   "units": "metric",
+   "home_region": "reg_kettle_seas",
+   "start_boat": "boat_class_coastal_7m",
+   "term_map": {
+    "reales": "dollars",
+    "purse": "account",
+    "piece of eight": "coin",
+    "doubloon": "collector coin",
+    "ship's hold": "fish hold",
+    "crow's nest": "observer mast",
+    "crew share": "wage",
+    "hardtack": "ship biscuit",
+    "grog": "(retired)",
+    "gunpowder": "(retired)",
+    "cannonball": "(retired)"
+   },
+   "provisional": true,
+   "owner": "FM-0",
+   "source": "Fishmonger master brief Parts I-II; Phase 0 audit docs/FISHMONGER_PHASE0_AUDIT.md. Names/currency pending user confirmation (audit section 8)."
+  }
+ ]
+}

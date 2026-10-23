@@ -240,6 +240,66 @@
    "source": {
     "type": "string",
     "pattern": "^.{1,200}$"
+   },
+   "baits": {
+    "type": "array",
+    "items": {
+     "type": "string",
+     "enum": [
+      "none",
+      "worm",
+      "shrimp",
+      "squid",
+      "cut_fish",
+      "live_bait",
+      "lure",
+      "jig",
+      "chum"
+     ]
+    }
+   },
+   "gear": {
+    "type": "array",
+    "items": {
+     "type": "string",
+     "enum": [
+      "rod",
+      "handline",
+      "longline",
+      "gillnet",
+      "trap",
+      "pot",
+      "spear",
+      "winch_net",
+      "dive",
+      "observe"
+     ]
+    }
+   },
+   "fight": {
+    "type": "integer",
+    "min": 1,
+    "max": 5
+   },
+   "legal_min_cm": {
+    "type": "number",
+    "min": 0,
+    "max": 500
+   },
+   "protected": {
+    "type": "boolean"
+   },
+   "market_tags": {
+    "type": "array",
+    "items": {
+     "type": "string",
+     "pattern": "^[a-z0-9_]+$"
+    }
+   },
+   "freshness_h": {
+    "type": "integer",
+    "min": 1,
+    "max": 240
    }
   }
  }

@@ -7,6 +7,8 @@ func run(t: Object) -> void:
 	t.check(not Ids.is_valid_data_id("isl_1"), "isl_1 invalid (3 digits)")
 	t.check(not Ids.is_valid_data_id("isl_sunken_bay"), "islands are numeric only")
 	t.check(Ids.is_valid_data_id("item_hardtack"), "item_hardtack valid")
+	t.check(Ids.is_valid_data_id("spc_sardine"), "spc_sardine valid")
+	t.check(Ids.is_valid_data_id("fm_core"), "fm_core valid")
 	t.check(Ids.is_valid_data_id("crew_old_tomas"), "multi-word slug valid")
 	t.check(not Ids.is_valid_data_id("Item_Hardtack"), "uppercase invalid")
 	t.check(not Ids.is_valid_data_id("item-hardtack"), "dash invalid")
