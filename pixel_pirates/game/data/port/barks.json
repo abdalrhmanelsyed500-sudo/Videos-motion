@@ -21,7 +21,7 @@
   "any": ["Fresh today. Everything is fresh today.", "Look all you like. Looking is free.", "Rope, tar and needles are cheaper at the quay. I tell you this out of kindness."]
  },
  "townsman": {
-  "any": ["Anvil Harbor has stood on this shore for two hundred years. The tide takes some, the walls keep the rest.", "Mind the canal, friend. The bridge is wider than it looks, the water deeper than it looks.", "Fish Row is loud at dawn, quiet by noon, and loud again when the boats come in."],
+  "any": ["Port Marlin has stood on this shore for two hundred years. The tide takes some, the walls keep the rest.", "Mind the canal, friend. The bridge is wider than it looks, the water deeper than it looks.", "Fish Row is loud at dawn, quiet by noon, and loud again when the boats come in."],
   "no_fish": ["There are people looking for a berth. Check the notice board by the pier."]
  },
  "fishmonger": {

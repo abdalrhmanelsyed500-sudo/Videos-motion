@@ -254,7 +254,7 @@ func _recruiting() -> void:
 	await frames(2)
 	var rows: String = str(mp.call("rows_text"))
 	chk(rows.contains("aboard your ship"), "RECRUIT: the map shows Pip as aboard your ship")
-	chk(rows.contains("reales"), "RECRUIT: the others show their price")
+	chk(rows.contains("$"), "RECRUIT: the others show their price")
 	await key(KEY_ESCAPE)
 	chk(not bool(mp.call("is_open")), "RECRUIT: map closed")
 	walker.call("board")

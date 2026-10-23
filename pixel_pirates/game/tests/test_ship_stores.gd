@@ -18,9 +18,9 @@ func run(t: Object) -> void:
 	var names: Array = []
 	for r in rows:
 		names.append(str((r as Array)[0]))
-	t.call("check", names.has("Hardtack") and names.has("Water Barrel") or names.has("Water barrel"), "hardtack and water listed: %s" % str(names))
+	t.call("check", names.has("Ship Biscuit") and names.has("Water Drum"), "ship biscuit and water listed: %s" % str(names))
 	t.call("check", not names.has("Rope"), "a zero-count item is hidden")
-	t.call("check", names.find("FOOD") < names.find("Hardtack"), "group heading precedes its items")
+	t.call("check", names.find("FOOD") < names.find("Ship Biscuit"), "group heading precedes its items")
 	var kg := Stores.total_kg(inv, items)
 	t.call("check", kg > 40.0, "total weight counts the items (%.1f kg)" % kg)
 	for id in Stores.TEST_PACK.keys():

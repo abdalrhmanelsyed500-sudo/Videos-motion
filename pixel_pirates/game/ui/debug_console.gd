@@ -37,7 +37,7 @@ func _ready() -> void:
 	_build_ui()
 	_panel.visible = false
 	set_process(true)
-	_print("[color=#ffd9a0]Crown of the Seas debug console.[/color] Type 'help'. ` or Esc closes it.")
+	_print("[color=#ffd9a0]Fishmonger debug console.[/color] Type 'help'. ` or Esc closes it.")
 
 
 func attach_state(new_state: RefCounted) -> void:

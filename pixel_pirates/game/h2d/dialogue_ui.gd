@@ -407,7 +407,7 @@ func show_trade(speaker: Dictionary, d: Dictionary) -> void:
 	var pv := K.box(true, 0)
 	pur.add_child(pv)
 	pv.add_child(K.label("YOUR PURSE", 12, K.DIM, 3))
-	pv.add_child(K.label("%d reales" % int(d["purse"]), 28, K.GOLD, 5, true))
+	pv.add_child(K.label(Identity.money(float(d["purse"])), 28, K.GOLD, 5, true))
 	root.add_child(K.rect(K.BORDER, Vector2(10, 2)))
 	var body := K.box(false, 18)
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -462,7 +462,7 @@ func _fill_counter(body: BoxContainer, d: Dictionary) -> void:
 			grid.add_child(K.label("%.2f  %s" % [float(rd["price"]), "(low)" if lv < 0.8 else ""], 18, K.AMBER if lv < 0.8 else K.CREAM, 3))
 			grid.add_child(K.label("%d" % int(rd["est"]), 18, K.GOLD, 3))
 		left.add_child(K.rect(K.BORDER, Vector2(10, 1)))
-		var tot := K.label("Everything: about %d reales" % int(d["total"]), 24, K.GOLD, 5, true)
+		var tot := K.label("Everything: about " + Identity.money(float(d["total"])), 24, K.GOLD, 5, true)
 		left.add_child(tot)
 		var sell := K.button("SELL EVERYTHING   (Enter / E)", 22)
 		sell.custom_minimum_size = Vector2(0, 46)
@@ -482,7 +482,7 @@ func _fill_counter(body: BoxContainer, d: Dictionary) -> void:
 	var right := K.box(true, 6)
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.add_child(right)
-	right.add_child(K.label("TODAY'S PRICE BOARD  (reales per kg)", 14, K.GOLD, 3))
+	right.add_child(K.label("TODAY'S PRICE BOARD  (" + Identity.per_kg() + ")", 14, K.GOLD, 3))
 	for bd in d["board"]:
 		var b2 := bd as Dictionary
 		var lv2 := float(b2["level"])
@@ -516,13 +516,13 @@ func _fill_receipt(body: BoxContainer, res: Dictionary) -> void:
 	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	body.add_child(v)
 	v.add_child(K.label("SOLD", 16, K.GOLD, 3))
-	var total := K.label("+%d reales" % int(res["reales"]), 64, K.GREEN, 10, true)
+	var total := K.label("+" + Identity.money(float(res["reales"])), 64, K.GREEN, 10, true)
 	total.name = "ReceiptTotal"
 	v.add_child(total)
-	v.add_child(K.label("Purse  %d  ->  %d reales" % [int(res["purse_before"]), int(res["purse_after"])], 24, K.GOLD, 5))
+	v.add_child(K.label("Account  %s  ->  %s" % [Identity.money(float(res["purse_before"])), Identity.money(float(res["purse_after"]))], 24, K.GOLD, 5))
 	for r in res["rows"]:
 		var rd := r as Dictionary
-		v.add_child(K.label("%s   %.1f kg   at %d%% fresh   =   %d reales" % [str(rd["name"]), float(rd["kg"]), int(roundf(float(rd["fresh"]) * 100.0)), int(rd["reales"])], 19, K.CREAM, 3))
+		v.add_child(K.label("%s   %.1f kg   at %d%% fresh   =   %s" % [str(rd["name"]), float(rd["kg"]), int(roundf(float(rd["fresh"]) * 100.0)), Identity.money(float(rd["reales"]))], 19, K.CREAM, 3))
 	var ln := K.label(str(res["line"]), 18, K.DIM, 3)
 	ln.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ln.custom_minimum_size = Vector2(900, 0)

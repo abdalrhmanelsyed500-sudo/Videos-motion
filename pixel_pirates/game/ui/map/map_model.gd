@@ -10,7 +10,7 @@ const ENTRY_KEYS: Array = ["id", "kind", "name", "x", "z"]
 ## Built-in copy of the three views. It is used ONLY when map_views.json is missing or unreadable, so the map can still open with
 ## its three tabs. tests/test_map_model.gd compares it with the file, so the copy cannot drift. Bake: tools/h2d/city_map.py.
 const DEFAULT_VIEWS: Array = [
-	{"id": "city", "tab": "City", "title": "Anvil Harbor", "hint": "The walled city: streets, terraces, shops and people",
+	{"id": "city", "tab": "City", "title": "Port Marlin", "hint": "The walled city: streets, terraces, shops and people",
 		"file": "map_city.png", "bounds": [-212.0, -282.0, 212.0, 42.0], "ppm": 2.5, "zoom": 0.9},
 	{"id": "island", "tab": "Island", "title": "Anvil Cay", "hint": "The whole island: hills, tracks and the harbour",
 		"file": "map_island.png", "bounds": [-1300.0, -3500.0, 1500.0, 140.0], "ppm": 0.25, "zoom": 1.0},

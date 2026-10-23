@@ -5,7 +5,8 @@ extends RefCounted
 ## the Python twin of this file. The market arithmetic is core/market.gd (B4). Every number is in
 ## data/tuning/tuning_port.json (port.*, fish.spoil_*, market.fish_depth_reales) and data/port/*.json; DEFAULTS only
 ## covers a missing key and is checked against the JSON by economy_logic.py --check and tests/test_port.gd.
-## Money is a whole number of reales. Time is in game days (1 day = 15 real minutes, T1). NOT YET RUN IN GODOT.
+## Money is a whole number of DOLLARS (FM-1); the internal field/tuning names keep "reales" for save compatibility.
+## Time is in game days (1 day = 15 real minutes, T1). NOT YET RUN IN GODOT.
 const Market := preload("res://core/market.gd")
 const DEFAULTS := {
 	"port.start_reales": 5.0, "port.hold_kg": 40.0, "port.hold_warn_frac": 0.85, "fish.spoil_per_day": 0.35,

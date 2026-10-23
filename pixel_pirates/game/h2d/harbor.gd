@@ -20,7 +20,7 @@ const COMPASS: Array[String] = ["north", "north-east", "east", "south-east", "so
 		"north-west"]
 
 var state := SAILING
-var port_name := "Anvil Harbor"
+var port_name := "Port Marlin"   # FM-1: display name; Identity.home_port is the canonical source at runtime
 var berth_x := 21.4
 var berth_z := 21.0
 var berth_heading := 0.0
@@ -40,7 +40,7 @@ var _h0 := 0.0
 
 
 ## `layout` is the "harbor_layout" dictionary of anvil_cay.json; `values` a tuning dictionary {key: value}.
-func configure(layout: Dictionary, values: Dictionary, p_name: String = "Anvil Harbor") -> void:
+func configure(layout: Dictionary, values: Dictionary, p_name: String = "Port Marlin") -> void:
 	_p = DEFAULTS.duplicate()
 	for k in DEFAULTS.keys():
 		var full: String = PREFIX + str(k)

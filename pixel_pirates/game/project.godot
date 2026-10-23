@@ -4,8 +4,8 @@ config_version=5
 
 [application]
 
-config/name="Crown of the Seas"
-config/description="Open-world pirate survival adventure (working title)."
+config/name="Fishmonger"
+config/description="A modern ocean fishing and life simulation on a fictional contemporary coast."
 run/main_scene="res://h2d/h2d0.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/version="0.0.1"
@@ -17,6 +17,7 @@ Bus="*res://core/bus.gd"
 Quality="*res://core/quality.gd"
 Assets="*res://core/assets.gd"
 Data="*res://core/registry.gd"
+Identity="*res://core/identity.gd"
 DebugConsole="*res://ui/debug_console.gd"
 
 [display]

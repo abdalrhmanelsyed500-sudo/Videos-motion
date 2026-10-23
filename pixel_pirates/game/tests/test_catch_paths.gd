@@ -122,7 +122,7 @@ func run(t: Object) -> void:
 	t.check(is_equal_approx(put, 10.0) and is_equal_approx(st.hold_kg(), 10.0), "add_catch stores exactly what it is given (once)")
 	var purse := st.reales
 	var sale: Dictionary = st.sell_all(0.0)
-	t.check(int(sale["reales"]) > 0 and st.reales == purse + int(sale["reales"]), "selling pays the market price (%d reales)" % int(sale["reales"]))
+	t.check(int(sale["reales"]) > 0 and st.reales == purse + int(sale["reales"]), "selling pays the market price (%d dollars)" % int(sale["reales"]))
 	t.check(st.hold_kg() == 0.0 and st.lots.is_empty(), "the sale empties the hold")
 	var again: Dictionary = st.sell_all(0.0)
 	t.check(int(again["reales"]) == 0 and st.reales == purse + int(sale["reales"]), "selling the same fish twice pays once")

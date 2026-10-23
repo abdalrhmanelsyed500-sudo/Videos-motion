@@ -1,5 +1,5 @@
 {
- "note": "CP-1 revision dialogue trees. A speaker (one NPC) uses a tree by its group; the game fills the {variables} from real state (purse, hold, prices, the recruit's own record). Node fields: text | texts [{if, text}] | pages [text...] (Enter continues), set [flags], options [{label, next | action, arg, if [flags], enable_if [flags], hint}]. Flags are computed by port_game.gd (has_fish, never_fished, poor, crew, afford, met, hired, rich, full_crew...), '!flag' negates. Actions: leave, trade, hire, track (arg: a target id), pay (arg: reales, next on success, fail on too poor), map. Every speaker is a man; the Canon content rules apply to every line.",
+ "note": "CP-1 revision dialogue trees. A speaker (one NPC) uses a tree by its group; the game fills the {variables} from real state (purse, hold, prices, the recruit's own record). Node fields: text | texts [{if, text}] | pages [text...] (Enter continues), set [flags], options [{label, next | action, arg, if [flags], enable_if [flags], hint}]. Flags are computed by port_game.gd (has_fish, never_fished, poor, crew, afford, met, hired, rich, full_crew...), '!flag' negates. Actions: leave, trade, hire, track (arg: a target id), pay (arg: dollars, next on success, fail on too poor), map. Every speaker is a man; the Canon content rules apply to every line.",
  "defaults": {"leave": "Leave"},
  "trees": {
   "recruit": {
@@ -9,14 +9,14 @@
     "hub": {
      "texts": [{"if": ["afford"], "text": "{offer}"}, {"text": "{poor}"}],
      "options": [
-      {"label": "Hire {rname}   ({cost} reales)", "action": "hire", "if": ["afford"]},
-      {"label": "Hire {rname}   ({cost} reales, you are {missing} short)", "enable_if": ["afford"], "hint": "You are {missing} reales short. Fish, sell, come back.", "action": "hire", "if": ["!afford"]},
+      {"label": "Hire {rname}   ({cost} dollars)", "action": "hire", "if": ["afford"]},
+      {"label": "Hire {rname}   ({cost} dollars, you are {missing} short)", "enable_if": ["afford"], "hint": "You are {missing} dollars short. Fish, sell, come back.", "action": "hire", "if": ["!afford"]},
       {"label": "What would you do aboard my ship?", "next": "skills"},
       {"label": "Who are you?", "next": "about"},
       {"label": "How do I earn the coin?", "next": "earn", "if": ["!afford"]},
       {"label": "Not now.", "next": "declined"}
      ]},
-    "skills": {"text": "{effect}  He asks {cost} reales once, and your purse holds {reales}.", "options": [{"label": "Back", "next": "hub"}]},
+    "skills": {"text": "{effect}  He asks {cost} dollars once, and your purse holds {reales}.", "options": [{"label": "Back", "next": "hub"}]},
     "about": {"text": "{backstory}", "options": [{"label": "Back", "next": "hub"}]},
     "earn": {"text": "Fish pays. Sail to a ground, work the winch by hand, come home and sell at the Fish Market. The nearest ground is {nearest_ground}.", "options": [
       {"label": "Mark the fishing ground on my map", "action": "track", "arg": "ground_nearest", "next": "tracked"},
@@ -31,7 +31,7 @@
    "entry": [{"node": "hub"}],
    "nodes": {
     "hub": {
-     "texts": [{"if": ["has_fish"], "text": "Barnaby Gull, fishmonger of Fish Row. I buy by the kilo and I weigh honest. That is {hold_kg} kg you carry, Captain: about {hold_value} reales on my board today."}, {"text": "Barnaby Gull, fishmonger of Fish Row. I buy by the kilo and I weigh honest. Nothing in your hold, Captain: sail out, cast your nets, come back with something that still smells of the sea."}],
+     "texts": [{"if": ["has_fish"], "text": "Barnaby Gull, fishmonger of Fish Row. I buy by the kilo and I weigh honest. That is {hold_kg} kg you carry, Captain: about {hold_value} dollars on my board today."}, {"text": "Barnaby Gull, fishmonger of Fish Row. I buy by the kilo and I weigh honest. Nothing in your hold, Captain: sail out, cast your nets, come back with something that still smells of the sea."}],
      "options": [
       {"label": "Sell my catch", "action": "trade", "if": ["has_fish"]},
       {"label": "Sell my catch   (the hold is empty)", "enable_if": ["has_fish"], "hint": "The hold is empty. Fish first.", "action": "trade", "if": ["!has_fish"]},
@@ -56,7 +56,7 @@
       {"label": "How is the fishing?", "next": "fishing"},
       {"label": "Where are the best grounds?", "next": "grounds"},
       {"label": "When do the fish bite?", "next": "when"},
-      {"label": "Buy his secret spot   (3 reales)", "action": "pay", "arg": 3, "next": "tip", "fail": "broke", "if": ["!tip_bought"]},
+      {"label": "Buy his secret spot   (3 dollars)", "action": "pay", "arg": 3, "next": "tip", "fail": "broke", "if": ["!tip_bought"]},
       {"label": "Just talking.", "next": "chat"},
       {"label": "Leave", "action": "leave"}]},
     "fishing": {"text": "Mackerel thick at Gannet Bank this morning; sardines everywhere in the Shallows. Under one knot and a quiet sea, the net goes down true. Go faster and it only drags.", "options": [{"label": "Back", "next": "hub"}]},
@@ -67,7 +67,7 @@
     "tracked": {"text": "{track_name}: {track_dist}. Look for the buoys and the circling gulls.", "options": [{"label": "Back", "next": "hub"}, {"label": "Leave", "action": "leave"}]},
     "when": {"text": "Dawn and dusk, friend. Fish bite when the light is thin. Night is for sleeping, or for the brave: fewer fish, and the dark sits heavy.", "options": [{"label": "Back", "next": "hub"}]},
     "tip": {"text": "Take the north edge of the Kelp Reef at dusk, and let nobody see you do it. The big snappers lie under the weed. (A true tip, and now you owe me a story.)", "set": ["tip_bought"], "options": [{"label": "Back", "next": "hub"}]},
-    "broke": {"text": "Three reales, Captain. You have {reales}. Pay me when you can afford my silence.", "options": [{"label": "Back", "next": "hub"}]},
+    "broke": {"text": "Three dollars, Captain. You have {reales}. Pay me when you can afford my silence.", "options": [{"label": "Back", "next": "hub"}]},
     "chat": {"text": "{line}", "options": [{"label": "Back", "next": "hub"}]}
    }
   },
@@ -79,13 +79,13 @@
      "options": [
       {"label": "What sells well in this port?", "next": "prices"},
       {"label": "Where is the Fish Market?", "action": "track", "arg": "market", "next": "tracked"},
-      {"label": "Buy market gossip   (5 reales)", "action": "pay", "arg": 5, "next": "gossip", "fail": "broke", "if": ["!gossip_bought"]},
+      {"label": "Buy market gossip   (5 dollars)", "action": "pay", "arg": 5, "next": "gossip", "fail": "broke", "if": ["!gossip_bought"]},
       {"label": "Just talking.", "next": "chat"},
       {"label": "Leave", "action": "leave"}]},
     "prices": {"text": "Fish today, per kilo:\n{price_list}\nSell too much of one thing in one day and the market stops listening.", "options": [{"label": "Back", "next": "hub"}]},
     "tracked": {"text": "{track_name}: {track_dist}. Mind the bridge over the Cut.", "options": [{"label": "Back", "next": "hub"}, {"label": "Leave", "action": "leave"}]},
     "gossip": {"text": "Yellowfin pays three times what sardines do, but the Blue Drop is a long sail and the fish will not wait for you. Sell a mix, keep the price alive. That is all a merchant knows.", "set": ["gossip_bought"], "options": [{"label": "Back", "next": "hub"}]},
-    "broke": {"text": "Five reales for the truth, Captain. You carry {reales}. Fish first, pay later.", "options": [{"label": "Back", "next": "hub"}]},
+    "broke": {"text": "Five dollars for the truth, Captain. You carry {reales}. Fish first, pay later.", "options": [{"label": "Back", "next": "hub"}]},
     "chat": {"text": "{line}", "options": [{"label": "Back", "next": "hub"}]}
    }
   },
@@ -144,7 +144,7 @@
      "texts": [{"if": ["never_fished"], "text": "{greeting} If you are looking for work, Captain, the notice board by the pier lists those who need a berth."}, {"text": "{greeting}"}],
      "options": [
       {"label": "Ask for directions", "next": "directions"},
-      {"label": "Tell me about Anvil Harbor.", "next": "lore"},
+      {"label": "Tell me about Port Marlin.", "next": "lore"},
       {"label": "Just talking.", "next": "chat"},
       {"label": "Leave", "action": "leave"}]},
     "directions": {"text": "Where to, Captain?", "options": [
@@ -156,7 +156,7 @@
       {"label": "The Governor's Palace", "action": "track", "arg": "palace", "next": "tracked"},
       {"label": "Back", "next": "hub"}]},
     "tracked": {"text": "{track_name}: {track_dist}. Follow the main streets; the city is bigger than it looks from the sea.", "options": [{"label": "More directions", "next": "directions"}, {"label": "Leave", "action": "leave"}]},
-    "lore": {"text": "Anvil Harbor has stood on this shore for two hundred years. The Quay below, the markets in the middle, the Hill above, where the Governor's household keeps the view. The tide takes some, the walls keep the rest.", "options": [{"label": "Back", "next": "hub"}]},
+    "lore": {"text": "Port Marlin has stood on this shore for two hundred years. The Quay below, the markets in the middle, the Hill above, where the Governor's household keeps the view. The tide takes some, the walls keep the rest.", "options": [{"label": "Back", "next": "hub"}]},
     "chat": {"text": "{line}", "options": [{"label": "Back", "next": "hub"}]}
    }
   },
@@ -167,7 +167,7 @@
      "text": "{greeting}",
      "options": [
       {"label": "Is the city safe?", "next": "safe"},
-      {"label": "Who governs Anvil Harbor?", "next": "governor"},
+      {"label": "Who governs Port Marlin?", "next": "governor"},
       {"label": "Directions to the Governor's Palace", "action": "track", "arg": "palace", "next": "tracked"},
       {"label": "Just talking.", "next": "chat"},
       {"label": "Leave", "action": "leave"}]},
@@ -198,12 +198,12 @@
     "hub": {
      "text": "{greeting}",
      "options": [
-      {"label": "A mug and the rumours   (2 reales)", "action": "pay", "arg": 2, "next": "rumour", "fail": "broke"},
+      {"label": "A mug and the rumours   (2 dollars)", "action": "pay", "arg": 2, "next": "rumour", "fail": "broke"},
       {"label": "Who drinks here?", "next": "crowd"},
       {"label": "Looking for hands for my ship.", "action": "track", "arg": "recruit_cheapest", "next": "tracked"},
       {"label": "Leave", "action": "leave"}]},
     "rumour": {"text": "{rumour}", "options": [{"label": "Another mug.", "next": "hub"}, {"label": "Leave", "action": "leave"}]},
-    "broke": {"text": "Two reales for a mug, Captain. You have {reales}. The soup is free if you do the washing.", "options": [{"label": "Back", "next": "hub"}]},
+    "broke": {"text": "Two dollars for a mug, Captain. You have {reales}. The soup is free if you do the washing.", "options": [{"label": "Back", "next": "hub"}]},
     "crowd": {"text": "Sailors with a week's pay, dockers with a day's, merchants who never pay, and the odd captain who is none of the above. The Rusty Anchor feeds them all.", "options": [{"label": "Back", "next": "hub"}]},
     "tracked": {"text": "{track_name}: {track_dist}. Tell him the Anchor sent you; he will give you a better price. He will not.", "options": [{"label": "Back", "next": "hub"}, {"label": "Leave", "action": "leave"}]}
    }

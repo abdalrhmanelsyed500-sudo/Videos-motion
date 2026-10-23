@@ -65,7 +65,7 @@ func _build_card() -> void:
 	var coin := K.rect(K.GOLD, Vector2(18, 18))
 	coin.name = "Coin"
 	top.add_child(coin)
-	_purse = K.label("0 reales", 26, K.GOLD, 5, true)
+	_purse = K.label(Identity.money(0), 26, K.GOLD, 5, true)
 	_purse.name = "Purse"
 	top.add_child(_purse)
 	_hold_lbl = K.label("Hold 0 / 40 kg", 15, K.CREAM, 3)
@@ -234,7 +234,7 @@ func _process(delta: float) -> void:
 		_purse_shown = float(_purse_target)
 	else:
 		_purse_shown += diff * minf(delta * 5.0, 1.0) + signf(diff) * minf(absf(diff), delta * 4.0)
-	_purse.text = "%d reales" % int(roundf(_purse_shown))
+	_purse.text = Identity.money(_purse_shown)
 	_purse_pulse = maxf(_purse_pulse - delta * 1.2, 0.0)
 	var pulse := _purse_pulse > 0.0
 	_purse.add_theme_color_override("font_color", K.GREEN.lerp(K.GOLD, 1.0 - _purse_pulse) if pulse else K.GOLD)

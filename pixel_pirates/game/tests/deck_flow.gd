@@ -181,7 +181,7 @@ func _levels() -> void:
 	# chest, winch, barrels, berths: toasts or panels, never a crash
 	put(Layout.L_DECK, at(Layout.L_DECK, "chest"))
 	await key(KEY_E)
-	chk(str(hud().call("toast_text")).contains("reales"), "the chest shows the purse: %s" % str(hud().call("toast_text")))
+	chk(str(hud().call("toast_text")).contains("lockbox"), "the lockbox toast shows the purse: %s" % str(hud().call("toast_text")))
 	put(Layout.L_DECK, at(Layout.L_DECK, "winch"))
 	await key(KEY_E)
 	chk(str(hud().call("toast_text")).contains("winch"), "the winch answers")

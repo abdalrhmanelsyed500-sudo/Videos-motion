@@ -827,7 +827,7 @@ func _ship_interact() -> void:
 			_open_fish_barrels()
 		"chest":
 			var ps := _port_state()
-			_ship_hud.toast("The sea chest: %d reales in the purse. The rest of the strongbox stays locked until the crew is paid." % (ps.reales if ps != null else 0), 5.0)
+			_ship_hud.toast("The lockbox: %s in your account. The rest stays locked until the crew is paid." % Identity.money(float(ps.reales) if ps != null else 0.0), 5.0)
 		"winch":
 			_ship_hud.toast("The fishing winch: a heavy oak drum, rope, a pulley on the davit and the net. Press %s here to fish by hand." % ShipKeys.label("fish_winch"), 6.0)
 		"berths":
@@ -1164,7 +1164,7 @@ func _draw_hud(speed_scene: float, st: Dictionary) -> void:
 		return
 	var wind_from := float(_d["wind_from"])
 	var lines: Array[String] = []
-	lines.append("CROWN OF THE SEAS - H2D-1.2 Anvil Cay (scale + land)   [%s]   %.0f fps" % [_active.describe(), _fps])
+	lines.append("FISHMONGER - H2D-1.2 Anvil Cay (scale + land)   [%s]   %.0f fps" % [_active.describe(), _fps])
 	lines.append(_renderer_line)
 	lines.append("%s   %02d:%02d   wind %.0f kn (gusting %.0f) from %s   waves %.1f m   visibility %.1f km" % [
 			_region_name(), int(_hour), int((_hour - floorf(_hour)) * 60.0), float(_d["wind_kn"]), _env.wind_inst_kn,

@@ -302,7 +302,7 @@ func _barrels_panel() -> void:
 	var purse0 := int(ps().get("reales"))
 	var worth := int(ps().call("estimate_all", float(scene.get("_state").get("clock").get("t")) / 86400.0))
 	var sale: Dictionary = ps().call("sell_all", float(scene.get("_state").get("clock").get("t")) / 86400.0)
-	chk(int(sale["reales"]) > 0 and int(ps().get("reales")) == purse0 + int(sale["reales"]), "SELLING still works: the market paid %d reales (estimate %d)" % [int(sale["reales"]), worth])
+	chk(int(sale["reales"]) > 0 and int(ps().get("reales")) == purse0 + int(sale["reales"]), "SELLING still works: the market paid %d dollars (estimate %d)" % [int(sale["reales"]), worth])
 	chk(float(ps().call("hold_kg")) == 0.0 and (ps().get("lots") as Array).is_empty(), "the sale emptied the hold")
 	var again: Dictionary = ps().call("sell_all", float(scene.get("_state").get("clock").get("t")) / 86400.0)
 	chk(int(again["reales"]) == 0 and int(ps().get("reales")) == purse0 + int(sale["reales"]), "selling twice pays once")

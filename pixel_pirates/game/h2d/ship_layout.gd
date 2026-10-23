@@ -62,11 +62,11 @@ const ARRIVE_BACK_UP := Vector2(3.4, 0.0)   ## sleeping deck, aft of the hold ha
 ## the number of visible pieces is ceil(units / units_per_slot), at most `slots`. side: -1 port, +1 starboard.
 const ZONES: Array[Dictionary] = [
 	{"id": "food", "label": "Food", "side": -1, "u": -4.2, "hu": 1.4, "cats": ["food"], "units_per_slot": 8, "slots": 6, "piece": "sack"},
-	{"id": "drink", "label": "Water and grog", "side": 1, "u": -4.2, "hu": 1.4, "cats": ["drink"], "units_per_slot": 4, "slots": 6, "piece": "barrel"},
-	{"id": "ammo", "label": "Powder and shot", "side": -1, "u": -1.6, "hu": 0.9, "cats": ["ammo"], "units_per_slot": 5, "slots": 6, "piece": "keg"},
+	{"id": "drink", "label": "Water and drinks", "side": 1, "u": -4.2, "hu": 1.4, "cats": ["drink"], "units_per_slot": 4, "slots": 6, "piece": "barrel"},
+	{"id": "ammo", "label": "Legacy stores", "side": -1, "u": -1.6, "hu": 0.9, "cats": ["ammo"], "units_per_slot": 5, "slots": 6, "piece": "keg"},
 	{"id": "parts", "label": "Rope, planks, tar, canvas", "side": 1, "u": -1.6, "hu": 0.9, "cats": ["ship_part"], "units_per_slot": 4, "slots": 6, "piece": "plank"},
 	{"id": "stores", "label": "Medicine and tools", "side": -1, "u": 3.2, "hu": 1.0, "cats": ["medicine", "tool"], "units_per_slot": 3, "slots": 6, "piece": "crate"},
-	{"id": "trade", "label": "Trade goods and treasure", "side": 1, "u": 3.2, "hu": 1.0, "cats": ["trade", "treasure"], "units_per_slot": 6, "slots": 6, "piece": "bale"},
+	{"id": "trade", "label": "Trade goods", "side": 1, "u": 3.2, "hu": 1.0, "cats": ["trade", "treasure"], "units_per_slot": 6, "slots": 6, "piece": "bale"},
 ]
 const RACK_V := 1.4                        ## rack centre |v| in the hold
 const RACK_HV := 0.4

@@ -78,6 +78,18 @@
    },
    "source": {
     "type": "string"
+   },
+   "home_port": {
+    "type": "string",
+    "pattern": "^.{2,40}$"
+   },
+   "boat_len_m": {
+    "type": "number",
+    "min": 2,
+    "max": 100
+   },
+   "crew_policy": {
+    "type": "string"
    }
   }
  }

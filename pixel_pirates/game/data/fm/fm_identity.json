@@ -6,7 +6,11 @@
    "id": "fm_core",
    "title": "Fishmonger",
    "tagline": "A modern ocean fishing and life simulation.",
-   "currency": {"code": "USD", "symbol": "$", "name": "dollar"},
+   "currency": {
+    "code": "USD",
+    "symbol": "$",
+    "name": "dollar"
+   },
    "era": "contemporary",
    "units": "metric",
    "home_region": "reg_kettle_seas",
@@ -26,7 +30,10 @@
    },
    "provisional": true,
    "owner": "FM-0",
-   "source": "Fishmonger master brief Parts I-II; Phase 0 audit docs/FISHMONGER_PHASE0_AUDIT.md. Names/currency pending user confirmation (audit section 8)."
+   "source": "Fishmonger master brief; approved decisions 2026-10-23 (currency USD/$, Port Marlin in reg_kettle_seas, Gullwing 7 m, solo start).",
+   "home_port": "Port Marlin",
+   "boat_len_m": 7.0,
+   "crew_policy": "solo start; hired deckhands unlock later as optional progression"
   }
  ]
 }

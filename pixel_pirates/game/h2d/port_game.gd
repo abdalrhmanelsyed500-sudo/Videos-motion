@@ -8,7 +8,7 @@ extends Node
 ##   (the MAP is not here any more: ui/map/map_screen.gd owns M and the MAP button; this class only feeds it places and tracks) |
 ##   in a conversation: W S / Up Down / 1-9 choose, Enter E Space confirm, Esc leave | at the fish counter: Enter / E sell all,
 ##   1-5 one species |
-##   F6 test +25 reales | F8 self-check (runs tests/test_port.gd in the game).
+##   F6 test +25 dollars | F8 self-check (runs tests/test_port.gd in the game).
 ## Objectives, dialogue and markers come from real state: the purse, the hold, the crew, where the ship and the player are.
 ## NO SAVE TO DISK in this slice: the state lives until the game is closed (docs/CP1_CAPITAL_PORT.md).
 const PortState := preload("res://h2d/port_state.gd")
@@ -200,7 +200,7 @@ func _find_near(ctx: Dictionary) -> Dictionary:
 	if ri >= 0:
 		var cid := str((npcs.people[ri] as Dictionary)["recruit"])
 		var rec: Dictionary = state.recruits[cid]
-		return {"kind": "talk", "index": ri, "text": "Talk to %s, %s (%d reales)" % [str(rec["name"]), str(rec["role"]), int(rec["cost"])]}
+		return {"kind": "talk", "index": ri, "text": "Talk to %s, %s (%s)" % [str(rec["name"]), str(rec["role"]), Identity.money(float(rec["cost"]))]}
 	for it in port["interactions"]:
 		var d := it as Dictionary
 		var dx := x - float(d["x"])
@@ -245,17 +245,17 @@ func objective(ctx: Dictionary) -> String:
 		return "Fishing at %s: %.1f of %.0f kg in the hold. Finish the haul at the winch (Esc lets go), then sail home when you have enough." % [str(g["name"]), kg, state.capacity_kg()]
 	if kg > 0.05:
 		if bool(ctx["ashore"]) or bool(ctx["docked"]):
-			return "Sell your %.0f kg of fish at the Fish Market: west along Quay Street, under the red canopy. Press E at the counter (about %d reales)." % [kg, state.estimate_all(now)]
-		return "Sail home with %.0f kg of fish (about %d reales): enter the dock zone and press SPACE to moor. Fish spoils with time." % [kg, state.estimate_all(now)]
+			return "Sell your %.0f kg of fish at the Fish Market: west along Quay Street, under the red canopy. Press E at the counter (about %s)." % [kg, Identity.money(state.estimate_all(now))]
+		return "Sail home with %.0f kg of fish (about %s): enter the dock zone and press SPACE to moor. Fish spoils with time." % [kg, Identity.money(state.estimate_all(now))]
 	if state.can_afford(cheap):
-		return "You can afford %s, the %s (%d reales). Find him at %s. Press M for the map." % [str(rec["name"]), str(rec["role"]), int(rec["cost"]), str(rec["place"])]
+		return "You can afford %s, the %s (%s). Find him at %s. Press M for the map." % [str(rec["name"]), str(rec["role"]), Identity.money(float(rec["cost"])), str(rec["place"])]
 	var need := state.cost_of(cheap) - state.reales
 	if state.kg_total <= 0.0:
-		return ("You have %d reales and need a crew. Sail to the Pilchard Shallows (0.6 km south-west; chart on M) and fish by hand: "
-				+ "press E at the helm to leave it, walk to the winch on the main deck and press F.") % state.reales
+		return ("You have %s and need a deckhand. Sail to the Pilchard Shallows (0.6 km south-west; chart on M) and fish by hand: "
+				+ "press E at the helm to leave it, walk to the winch on the main deck and press F.") % Identity.money(float(state.reales))
 	if bool(ctx["ashore"]):
-		return "Earn %d more reales for %s (%d). Board the ship (F at the pier), sail to a fishing ground and work the winch." % [need, str(rec["name"]), int(rec["cost"])]
-	return "Earn %d more reales for %s, the %s (%d). Fish a ground (M for the chart), return and sell." % [need, str(rec["name"]), str(rec["role"]), int(rec["cost"])]
+		return "Earn %s more for %s (%s). Board the ship (F at the pier), sail to a fishing ground and work the winch." % [Identity.money(float(need)), str(rec["name"]), Identity.money(float(rec["cost"]))]
+	return "Earn %s more for %s, the %s (%s). Fish a ground (M for the chart), return and sell." % [Identity.money(float(need)), str(rec["name"]), str(rec["role"]), Identity.money(float(rec["cost"]))]
 # gdlint: enable=max-returns
 
 
@@ -361,7 +361,7 @@ func _ui_diag(sc: SelfCheck) -> void:
 	sc.check(ui.dialogue.portrait("pip") != null and ui.dialogue.portrait("guard") != null, "UI: the portrait atlas loaded (pip, guard)")
 	var view := {"pages": ["Diagnostic line: if you can read this sentence, the dialogue window shows names, portraits and text."],
 			"options": [{"label": "Continue", "enabled": true}], "status": {"text": "diagnostic", "color": Color(0.2, 0.38, 0.12)}}
-	ui.dialogue.show_view({"portrait": "pip", "name": "Pip Larkin", "sub": "Deckhand, 14 - asks 18 reales"}, view)
+	ui.dialogue.show_view({"portrait": "pip", "name": "Pip Larkin", "sub": "Deckhand, 14 - asks " + Identity.money(18)}, view)
 	await ui.get_tree().process_frame
 	await ui.get_tree().process_frame
 	ui.dialogue.finish_typing()
@@ -467,7 +467,7 @@ func _speaker_for(i: int) -> Dictionary:
 		var look := str(rec.get("look", "r_pip"))
 		s["tree"] = "recruit"
 		s["name"] = str(rec["name"])
-		s["sub"] = "%s, %d  -  asks %d reales" % [str(rec["role"]).capitalize(), int(rec["age"]), int(rec["cost"])]
+		s["sub"] = "%s, %d  -  asks %s" % [str(rec["role"]).capitalize(), int(rec["age"]), Identity.money(float(rec["cost"]))]
 		s["label"] = str(rec["name"])
 		s["portrait"] = look.substr(2)
 		return s
@@ -562,8 +562,8 @@ func _rumour() -> String:
 		return "Quiet on the quay tonight: every hand worth hiring is already aboard your sloop, Captain. They say that is a first."
 	var cid := str(state.cheapest_unhired())
 	var rec: Dictionary = state.recruits[cid]
-	return "They say %s, a %s, is looking for a berth: %s. He asks %d reales. And a shoal of mackerel was seen off Gannet Bank at first light." % [
-			str(rec["name"]).replace("\"", ""), str(rec["role"]), str(rec["place"]), int(rec["cost"])]
+	return "They say %s, a %s, is looking for a berth: %s. He asks %s. And a shoal of mackerel was seen off Gannet Bank at first light." % [
+			str(rec["name"]).replace("\"", ""), str(rec["role"]), str(rec["place"]), Identity.money(float(rec["cost"]))]
 
 
 func _show_node() -> void:
@@ -838,7 +838,7 @@ func _entries(ctx: Dictionary) -> Array:
 			col = Color(0.5, 0.5, 0.5)
 		else:
 			var short := "" if afford else " (short %d)" % (int(r["cost"]) - state.reales)
-			detail = "%s  -  %d reales%s  -  %s" % [str(r["role"]), int(r["cost"]), short, _dist_text(org, Vector2(float(spot["x"]), float(spot["z"])))]
+			detail = "%s  -  %s%s  -  %s" % [str(r["role"]), Identity.money(float(r["cost"])), short, _dist_text(org, Vector2(float(spot["x"]), float(spot["z"])))]
 			col = Color(0.55, 0.92, 0.38) if afford else Color(0.98, 0.72, 0.25)
 		out.append({"id": "recruit_" + cid, "kind": "recruit", "name": str(r["name"]).replace("\"", ""), "detail": detail, "x": float(spot["x"]), "z": float(spot["z"]),
 				"rank": 2, "views": ["city", "island"], "color": col})

@@ -1,6 +1,6 @@
 {
- "port": "Anvil Harbor",
- "currency": "reales",
+ "port": "Port Marlin",
+ "currency": "USD",
  "note": "CP-1 prices of the Fish Row market. base_reales_per_kg is the price of 1 kg of FRESH fish before the market spread and before the market remembers your sales (core/market.gd). Owner B4; provisional. Every number is explained in docs/CP1_CAPITAL_PORT.md.",
  "species": {
   "spc_sardine": {"name": "Sardine", "base_reales_per_kg": 1.0, "factor": 1.0, "note": "Cheap and plentiful: the first-trip fish. B4 prices fresh fish at 2/kg on average; a sardine is the bottom of that range."},
