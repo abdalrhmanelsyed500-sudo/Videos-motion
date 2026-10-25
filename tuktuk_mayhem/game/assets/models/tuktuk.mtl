@@ -1,0 +1,18 @@
+newmtl M_paint
+Kd 0.8 0.8 0.8
+newmtl M_trim
+Kd 0.8 0.8 0.8
+newmtl M_canopy
+Kd 0.8 0.8 0.8
+newmtl M_glass
+Kd 0.8 0.8 0.8
+newmtl M_cabin
+Kd 0.8 0.8 0.8
+newmtl M_seat
+Kd 0.8 0.8 0.8
+newmtl M_wheel
+Kd 0.8 0.8 0.8
+newmtl M_lamp
+Kd 0.8 0.8 0.8
+newmtl M_sign
+Kd 0.8 0.8 0.8

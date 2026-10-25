@@ -1,0 +1,22 @@
+{
+  "id": "veh_tuktuk_base",
+  "name": "Baladi 150 (base tuk-tuk)",
+  "class": "tuktuk",
+  "note": "Phase 1 hero vehicle tuning. Arcade integrator (CharacterBody3D), metres/seconds. Edited here, never in code.",
+  "vmax": 24.0,
+  "vreverse_max": 6.0,
+  "accel": 13.0,
+  "brake": 24.0,
+  "drag": 0.55,
+  "roll_resist": 1.6,
+  "steer_rate": 2.5,
+  "steer_speed_fade": 0.45,
+  "grip_lat": 9.0,
+  "drift_grip_lat": 2.6,
+  "drift_speed_min": 12.0,
+  "slope_slide": 5.5,
+  "impact_loss": 0.35,
+  "upright_min_dot": 0.35,
+  "reset_after_s": 1.4,
+  "seat_offset": [0.0, 1.05, 0.62]
+}

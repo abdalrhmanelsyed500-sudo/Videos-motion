@@ -1,0 +1,22 @@
+{
+  "id": "tune_rewards_p1",
+  "currency_code": "EGP",
+  "symbol_en": "E£",
+  "symbol_ar": "ج.م",
+  "start_balance": 60,
+  "start_reputation": 50,
+  "base_fare": 8.0,
+  "per_m": 0.055,
+  "time_base_s": 35.0,
+  "time_per_m": 0.38,
+  "time_left_rate": 0.35,
+  "clean_drive_bonus": 6.0,
+  "shortcut_bonus": 5.0,
+  "collision_penalty": 2.5,
+  "reward_cap": 120.0,
+  "rep_win": 1,
+  "rep_fail": -2,
+  "offer_timeout_s": 12.0,
+  "deliver_max_speed": 3.0,
+  "note": "All mission economy lives here (master brief: no scattered numbers). reward = base + per_m*m + time_left_rate*sec_left + bonuses - penalties, clamped [0, cap]."
+}

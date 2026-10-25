@@ -1,0 +1,10 @@
+newmtl M_legs
+Kd 0.8 0.8 0.8
+newmtl M_cloth
+Kd 0.8 0.8 0.8
+newmtl M_skin
+Kd 0.8 0.8 0.8
+newmtl M_hair
+Kd 0.8 0.8 0.8
+newmtl M_hijab
+Kd 0.8 0.8 0.8

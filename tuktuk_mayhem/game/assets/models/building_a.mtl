@@ -1,0 +1,8 @@
+newmtl M_facade_a
+Kd 0.8 0.8 0.8
+newmtl M_trim_w
+Kd 0.8 0.8 0.8
+newmtl M_rail
+Kd 0.8 0.8 0.8
+newmtl M_tank
+Kd 0.8 0.8 0.8

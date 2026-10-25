@@ -1,0 +1,4 @@
+newmtl M_trim
+Kd 0.8 0.8 0.8
+newmtl M_lamp
+Kd 0.8 0.8 0.8

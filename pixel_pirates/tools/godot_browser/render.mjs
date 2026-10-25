@@ -137,6 +137,17 @@ func _fish_hook() -> void:
 `;
 
 const PATCHES = {
+  // EGYPTIAN TUKTUK MAYHEM: harness-only PLACEMENT hooks (F10 pickup ring, F11 dest ring).
+  // They only place the vehicle; mission transitions (offer/accept/deliver) are real keys + real logic.
+  'scripts/world/district.gd': (s) => s.replace(
+    '\t\t_dbg_dump("key")',
+    '\t\t_dbg_dump("key")\n' +
+    '\tif event is InputEventKey and event.pressed and event.physical_keycode == KEY_F10:\n' +
+    '\t\ttuktuk.global_position = Vector3(-60, 0.2, -60)\n' +
+    '\t\ttuktuk.set("speed", 0.0)\n' +
+    '\tif event is InputEventKey and event.pressed and event.physical_keycode == KEY_F11:\n' +
+    '\t\ttuktuk.global_position = Vector3(58, 0.2, 0)\n' +
+    '\t\ttuktuk.set("speed", 0.0)'),
   // harness-only hook: F9 steps ashore at the pier without the docking manoeuvre (steering into the berth by script is not the point)
   'h2d/h2d0.gd': (s) => fishHooks(deckHooks(s.replace('\tvar kc: int = KeyUtil.code(k)', '\tif k.keycode == KEY_F9:\n\t\t_walker.disembark((_v3 as View3D).land_world().meta["land"])\n\t\t(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))\n\t\treturn\n\tif k.keycode == KEY_F10 or k.keycode == KEY_F11:\n\t\t_walker.x = 27.5 if k.keycode == KEY_F10 else -75.0\n\t\t_walker.z = -0.5 if k.keycode == KEY_F10 else -10.6\n\t\t(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))\n\t\treturn\n\tvar kc: int = KeyUtil.code(k)'))),
   'h2d/sea_view_3d.gd': (s) => s.replace('\tif not ResourceLoader.exists(path):\n', '\tif false:\n').replace('\treturn load(path) as Texture2D\n',

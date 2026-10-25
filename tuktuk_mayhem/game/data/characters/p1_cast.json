@@ -1,0 +1,18 @@
+{
+  "id": "cast_p1",
+  "note": "Phase 1 cast: 4 authored characters. Female entries carry hijab:true - the passenger/character builder MUST use person_hijab mesh and hijab material for them (ART_BIBLE §5, geometry-level enforcement). Colours are albedo tints (hex).",
+  "cast": [
+    {"id": "pax_am_hassan", "name_en": "Hassan", "role": "mechanic", "hijab": false,
+     "skin": "#8a5a3b", "cloth": "#3b4d6b", "legs": "#4a4238", "hair": "#201812",
+     "line_en": "The workshop closes in ten minutes, ya ostaz!", "line_ar": "الورش هتقفل بعد عشر دقايق يا أستاذ!"},
+    {"id": "pax_af_mona", "name_en": "Mona", "role": "university student", "hijab": true,
+     "skin": "#a06c48", "cloth": "#5d7a4f", "legs": "#3f3a34", "hijab_col": "#2f4f63",
+     "line_en": "My exam is at nine sharp - please, the fast way!", "line_ar": "الامتحان الساعة تسعة بالظبط - لو سمحت من الطريق السريع!"},
+    {"id": "pax_af_saida", "name_en": "Saida", "role": "market merchant", "hijab": true,
+     "skin": "#7c4d30", "cloth": "#8a6a3a", "legs": "#37322c", "hijab_col": "#6b3a4a",
+     "line_en": "These crates are full of tomatoes - gently, gently!", "line_ar": "الصناديق دي كلها طماطم - على مهلك يا عم!"},
+    {"id": "pax_am_tarek", "name_en": "Tarek", "role": "office clerk", "hijab": false,
+     "skin": "#96684a", "cloth": "#d8d2c2", "legs": "#2e2a26", "hair": "#181410",
+     "line_en": "The koshary is waiting and so is my boss.", "line_ar": "الكشري مستنيني ورئيسي كمان مستنيني."}
+  ]
+}

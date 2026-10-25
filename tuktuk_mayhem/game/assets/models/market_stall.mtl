@@ -1,0 +1,6 @@
+newmtl M_crate
+Kd 0.8 0.8 0.8
+newmtl M_trim
+Kd 0.8 0.8 0.8
+newmtl M_awning
+Kd 0.8 0.8 0.8
