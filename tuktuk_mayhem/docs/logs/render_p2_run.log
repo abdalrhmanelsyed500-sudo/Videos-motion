@@ -1,0 +1,44 @@
+[page] Godot Engine v4.7.2.stable.custom_build.3d95ead8f (2026-10-08 08:18:16 UTC) - https://godotengine.org
+[page] OpenGL API OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium)) - Compatibility - Using Device: WebKit - WebKit WebGL
+[page] Build configuration: Emscripten 4.0.14, single-threaded, no GDExtension support.
+[render] engine started after 1.4 s, 83 project files
+[render] shot t00_menu.png
+[page] TKDBG key cam=(-5.199998, 3.430782, 59.99999) rot=(-15.89284, -90.00011, 0.0) tuk=(0.0, -0.069219, 60.0) yaw=-1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[render] shot t01_start.png
+[page] TKDBG key cam=(0.213124, 3.430851, 59.99999) rot=(-12.29434, -90.00011, 0.0) tuk=(6.221259, -0.069123, 60.0) yaw=-1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[render] shot t02_speed_straight.png
+[page] TKDBG key cam=(130.1762, 3.40119, 78.78414) rot=(-11.11141, 67.04152, 0.0) tuk=(124.75, -0.098811, 75.66911) yaw=-37.1362661275203 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[render] shot t03_drift.png
+[render] shot t04_drift_exit.png
+[page] TKDBG key cam=(-29.99999, 3.430009, 2.850255) rot=(-15.89284, 0.000046, 0.0) tuk=(-30.0, -0.069992, -2.349745) yaw=0.0 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[render] shot t05_impact.png
+[render] shot t05b_impact_settled.png
+[page] TKDBG key cam=(-27.52054, 3.505577, 56.2011) rot=(-12.58487, 100.741, 0.0) tuk=(-32.43274, -0.069119, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-33.07667, 3.831748, 60.27323) rot=(-9.150032, 87.83638, 0.0) tuk=(-39.64895, 0.650173, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[render] shot t06_air_1.png
+[page] TKDBG key cam=(-43.55061, 3.437047, 60.00129) rot=(-12.95741, 89.98972, 0.0) tuk=(-49.44079, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-46.19767, 3.430974, 60.00009) rot=(-13.66143, 89.99929, 0.0) tuk=(-51.89072, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-47.86467, 3.430881, 60.0) rot=(-14.23792, 90.00008, 0.0) tuk=(-53.41827, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-49.07297, 3.430879, 59.99999) rot=(-14.76727, 90.00011, 0.0) tuk=(-54.50803, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-49.83776, 3.430879, 59.99999) rot=(-15.22457, 90.00011, 0.0) tuk=(-55.17694, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-50.23256, 3.430879, 59.99999) rot=(-15.59964, 90.00011, 0.0) tuk=(-55.49718, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-50.36416, 3.430879, 59.99999) rot=(-15.88511, 90.00011, 0.0) tuk=(-55.56785, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-50.36778, 3.430879, 59.99999) rot=(-15.89269, 90.00011, 0.0) tuk=(-55.56785, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-50.36784, 3.430879, 59.99999) rot=(-15.89281, 90.00011, 0.0) tuk=(-55.56785, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-50.36784, 3.430879, 59.99999) rot=(-15.89281, 90.00011, 0.0) tuk=(-55.56785, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-50.36784, 3.430879, 59.99999) rot=(-15.89281, 90.00011, 0.0) tuk=(-55.56785, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-50.36784, 3.430879, 59.99999) rot=(-15.89281, 90.00011, 0.0) tuk=(-55.56785, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-50.36784, 3.430879, 59.99999) rot=(-15.89281, 90.00011, 0.0) tuk=(-55.56785, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-50.36784, 3.430879, 59.99999) rot=(-15.89281, 90.00011, 0.0) tuk=(-55.56785, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[page] TKDBG key cam=(-50.36784, 3.430879, 59.99999) rot=(-15.89281, 90.00011, 0.0) tuk=(-55.56785, -0.069122, 60.0) yaw=1.5708 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[render] shot t07_landed.png
+[page] TKDBG key cam=(-29.67703, 3.430881, -38.19755) rot=(-10.89197, 56.14986, 0.0) tuk=(-35.08095, -0.06912, -41.82201) yaw=0.98 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[render] shot t08_alley.png
+[page] TKDBG key cam=(9.743854, 3.400849, -7.87712) rot=(-16.50655, 56.147, 0.0) tuk=(6.07388, -0.099585, -10.33902) yaw=0.98 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 6.0, 0.0) state=0
+[render] shot t09_reverse.png
+[page] WebGL: INVALID_OPERATION: bindBuffer: element array buffers can not be bound to a different target
+[page] WebGL: INVALID_OPERATION: bufferSubData: no buffer
+[render] shot t10_mission_drift.png
+[render] shot t11_drift_bonus_toast.png
+[page] TKDBG key cam=(56.36706, 3.43047, 4.93695) rot=(-15.89284, -18.30215, 0.0) tuk=(58.0, -0.069531, 0.0) yaw=-44.3017311806318 meshes=34/35 ground=(0.0, 0.0, 0.0) arrow=(60.0, 5.835619, 0.0) state=4
+[render] shot t12_result.png

@@ -137,8 +137,11 @@ func _fish_hook() -> void:
 `;
 
 const PATCHES = {
-  // EGYPTIAN TUKTUK MAYHEM: harness-only PLACEMENT hooks (F10 pickup ring, F11 dest ring).
-  // They only place the vehicle; mission transitions (offer/accept/deliver) are real keys + real logic.
+  // EGYPTIAN TUKTUK MAYHEM: harness-only PLACEMENT hooks (F10 pickup ring, F11 dest ring;
+  // Phase 2: F6 speed-straight run east on the south ring, F7 diagonal alley,
+  // F8 collision course at the parked car, F12 ramp approach on the south ring). They only PLACE the vehicle (position/yaw/speed, zeroed slip);
+  // every behaviour after placement (driving, drift, impact, ramp launch, mission flow)
+  // is real keys + real game logic. No defect is hidden: physics and camera run untouched.
   'scripts/world/district.gd': (s) => s.replace(
     '\t\t_dbg_dump("key")',
     '\t\t_dbg_dump("key")\n' +
@@ -147,7 +150,22 @@ const PATCHES = {
     '\t\ttuktuk.set("speed", 0.0)\n' +
     '\tif event is InputEventKey and event.pressed and event.physical_keycode == KEY_F11:\n' +
     '\t\ttuktuk.global_position = Vector3(58, 0.2, 0)\n' +
-    '\t\ttuktuk.set("speed", 0.0)'),
+    '\t\ttuktuk.set("speed", 0.0)\n' +
+    '\tif event is InputEventKey and event.pressed and event.physical_keycode == KEY_F6:\n' +
+    '\t\t_place_tuk(Vector3(-70, 0.2, 60), -1.5708, 10.0)\n' +
+    '\tif event is InputEventKey and event.pressed and event.physical_keycode == KEY_F7:\n' +
+    '\t\t_place_tuk(Vector3(-10, 0.2, -25), 0.98, 7.0)\n' +
+    '\tif event is InputEventKey and event.pressed and event.physical_keycode == KEY_F8:\n' +
+    '\t\t_place_tuk(Vector3(-30, 0.2, 6), 0.0, 12.0)\n' +
+    '\tif event is InputEventKey and event.pressed and event.physical_keycode == KEY_F12:\n' +
+    '\t\t_place_tuk(Vector3(-28, 0.2, 60), 1.5708, 22.0)') + `
+func _place_tuk(pos: Vector3, y: float, spd: float) -> void:
+	tuktuk.global_position = pos
+	tuktuk.set("yaw", y)
+	tuktuk.set("speed", spd)
+	tuktuk.set("lat_vel", Vector3.ZERO)
+	tuktuk.set("velocity", Vector3.ZERO)
+`,
   // harness-only hook: F9 steps ashore at the pier without the docking manoeuvre (steering into the berth by script is not the point)
   'h2d/h2d0.gd': (s) => fishHooks(deckHooks(s.replace('\tvar kc: int = KeyUtil.code(k)', '\tif k.keycode == KEY_F9:\n\t\t_walker.disembark((_v3 as View3D).land_world().meta["land"])\n\t\t(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))\n\t\treturn\n\tif k.keycode == KEY_F10 or k.keycode == KEY_F11:\n\t\t_walker.x = 27.5 if k.keycode == KEY_F10 else -75.0\n\t\t_walker.z = -0.5 if k.keycode == KEY_F10 else -10.6\n\t\t(_v3 as View3D).land_world().prime(Vector2(_walker.x, _walker.z))\n\t\treturn\n\tvar kc: int = KeyUtil.code(k)'))),
   'h2d/sea_view_3d.gd': (s) => s.replace('\tif not ResourceLoader.exists(path):\n', '\tif false:\n').replace('\treturn load(path) as Texture2D\n',

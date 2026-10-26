@@ -1,0 +1,13 @@
+# EGYPTIAN TUKTUK MAYHEM authored mesh ramp (tools/make_models.py)
+mtllib ramp.mtl
+v -1.3000 0.0000 -2.0000
+v 1.3000 0.0000 -2.0000
+v 1.3000 0.0000 2.0000
+v -1.3000 0.0000 2.0000
+v -1.3000 0.9000 1.6000
+v 1.3000 0.9000 1.6000
+usemtl M_ramp
+f 5/5 6/6 2/2 1/1
+f 6/6 5/5 4/4 3/3
+f 6/6 3/3 1/1
+f 1/1 2/2 4/4

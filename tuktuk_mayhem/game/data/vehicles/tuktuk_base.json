@@ -18,5 +18,22 @@
   "impact_loss": 0.35,
   "upright_min_dot": 0.35,
   "reset_after_s": 1.4,
-  "seat_offset": [0.0, 1.05, 0.62]
+  "seat_offset": [
+    0.0,
+    1.05,
+    0.62
+  ],
+  "accel_taper": 0.55,
+  "steer_smooth": 10.0,
+  "steer_return": 8.0,
+  "lat_max": 8.0,
+  "drift_grip_smooth": 6.0,
+  "drift_min_s": 0.7,
+  "impact_min": 3.0,
+  "impact_cooldown_s": 0.5,
+  "jump_impulse": 9.0,
+  "jump_speed_min": 8.0,
+  "landing_min": 3.0,
+  "note_p2": "Phase 2: taper/steer-smooth/drift-smooth/impact-cooldown/jump ramp/fall-reset keys.",
+  "fall_reset_y": -5.0
 }

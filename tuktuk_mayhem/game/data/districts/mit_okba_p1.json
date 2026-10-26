@@ -1,54 +1,253 @@
 {
   "id": "dist_mit_okba_p1",
   "name": "Mit Okba trial block",
-  "note": "Phase 1 benchmark block (~220x220 m): ring road, market street, east connector, diagonal alley shortcut. Strips are centre-based metres (w across, d along, ry rad about Y). Buildings/props placed clear of carriageway silhouettes (ART_BIBLE §2.2).",
+  "note": "Phase 1 benchmark block (~220x220 m): ring road, market street, east connector, diagonal alley shortcut. Strips are centre-based metres (w across, d along, ry rad about Y). Buildings/props placed clear of carriageway silhouettes (ART_BIBLE \u00a72.2).",
   "roads": [
-    {"cx": 0, "cz": -60, "w": 220, "d": 12, "ry": 0},
-    {"cx": 0, "cz": 60, "w": 220, "d": 12, "ry": 0},
-    {"cx": -104, "cz": 0, "w": 12, "d": 132, "ry": 0},
-    {"cx": 104, "cz": 0, "w": 12, "d": 132, "ry": 0},
-    {"cx": 0, "cz": 0, "w": 140, "d": 12, "ry": 0},
-    {"cx": 60, "cz": -30, "w": 8, "d": 48, "ry": 0},
-    {"cx": -10, "cz": -25, "w": 5, "d": 80, "ry": 0.98}
+    {
+      "cx": 0,
+      "cz": -60,
+      "w": 220,
+      "d": 12,
+      "ry": 0
+    },
+    {
+      "cx": 0,
+      "cz": 60,
+      "w": 220,
+      "d": 12,
+      "ry": 0
+    },
+    {
+      "cx": -104,
+      "cz": 0,
+      "w": 12,
+      "d": 132,
+      "ry": 0
+    },
+    {
+      "cx": 104,
+      "cz": 0,
+      "w": 12,
+      "d": 132,
+      "ry": 0
+    },
+    {
+      "cx": 0,
+      "cz": 0,
+      "w": 140,
+      "d": 12,
+      "ry": 0
+    },
+    {
+      "cx": 60,
+      "cz": -30,
+      "w": 8,
+      "d": 48,
+      "ry": 0
+    },
+    {
+      "cx": -10,
+      "cz": -25,
+      "w": 5,
+      "d": 80,
+      "ry": 0.98
+    }
   ],
   "sidewalks": [
-    {"cx": 0, "cz": 7.5, "w": 140, "d": 3, "ry": 0},
-    {"cx": 0, "cz": -7.5, "w": 140, "d": 3, "ry": 0},
-    {"cx": 0, "cz": -52.5, "w": 196, "d": 3, "ry": 0},
-    {"cx": 0, "cz": 52.5, "w": 196, "d": 3, "ry": 0}
+    {
+      "cx": 0,
+      "cz": 7.5,
+      "w": 140,
+      "d": 3,
+      "ry": 0
+    },
+    {
+      "cx": 0,
+      "cz": -7.5,
+      "w": 140,
+      "d": 3,
+      "ry": 0
+    },
+    {
+      "cx": 0,
+      "cz": -52.5,
+      "w": 196,
+      "d": 3,
+      "ry": 0
+    },
+    {
+      "cx": 0,
+      "cz": 52.5,
+      "w": 196,
+      "d": 3,
+      "ry": 0
+    }
   ],
   "bumps": [
-    {"x": 40, "z": 0, "ry": 1.5708},
-    {"x": 60, "z": -40, "ry": 0}
+    {
+      "x": 40,
+      "z": 0,
+      "ry": 1.5708
+    },
+    {
+      "x": 60,
+      "z": -40,
+      "ry": 0
+    }
   ],
   "buildings": [
-    {"m": "building_b", "x": -78, "z": -30, "ry": 0},
-    {"m": "building_a", "x": -55, "z": -18, "ry": 0},
-    {"m": "building_a", "x": 35, "z": -30, "ry": 0},
-    {"m": "building_b", "x": -60, "z": 30, "ry": 3.1416},
-    {"m": "building_a", "x": 0, "z": 32, "ry": 3.1416},
-    {"m": "building_c", "x": 55, "z": 30, "ry": 3.1416},
-    {"m": "building_c", "x": -128, "z": 20, "ry": 1.5708},
-    {"m": "building_a", "x": 130, "z": -40, "ry": -1.5708}
+    {
+      "m": "building_b",
+      "x": -78,
+      "z": -30,
+      "ry": 0
+    },
+    {
+      "m": "building_a",
+      "x": -55,
+      "z": -18,
+      "ry": 0
+    },
+    {
+      "m": "building_a",
+      "x": 35,
+      "z": -30,
+      "ry": 0
+    },
+    {
+      "m": "building_b",
+      "x": -60,
+      "z": 30,
+      "ry": 3.1416
+    },
+    {
+      "m": "building_a",
+      "x": 0,
+      "z": 32,
+      "ry": 3.1416
+    },
+    {
+      "m": "building_c",
+      "x": 55,
+      "z": 30,
+      "ry": 3.1416
+    },
+    {
+      "m": "building_c",
+      "x": -128,
+      "z": 20,
+      "ry": 1.5708
+    },
+    {
+      "m": "building_a",
+      "x": 130,
+      "z": -40,
+      "ry": -1.5708
+    }
   ],
   "props": [
-    {"m": "market_stall", "x": -20, "z": 7.5, "ry": 0},
-    {"m": "market_stall", "x": -5, "z": 7.5, "ry": 0},
-    {"m": "market_stall", "x": 15, "z": 7.5, "ry": 0},
-    {"m": "crate_stack", "x": 30, "z": -8.2, "ry": 0.4},
-    {"m": "crate_stack", "x": -66, "z": 8.0, "ry": -0.3},
-    {"m": "lamp_post", "x": -40, "z": 8.6, "ry": 0},
-    {"m": "lamp_post", "x": 20, "z": 8.6, "ry": 0},
-    {"m": "lamp_post", "x": 66, "z": -8.6, "ry": 3.1416},
-    {"m": "parked_car", "x": -30, "z": -4.6, "ry": 1.5708},
-    {"m": "parked_car", "x": 10, "z": -4.6, "ry": 1.5708},
-    {"m": "parked_car", "x": -20, "z": -55.5, "ry": 0}
+    {
+      "m": "market_stall",
+      "x": -20,
+      "z": 7.5,
+      "ry": 0
+    },
+    {
+      "m": "market_stall",
+      "x": -5,
+      "z": 7.5,
+      "ry": 0
+    },
+    {
+      "m": "market_stall",
+      "x": 15,
+      "z": 7.5,
+      "ry": 0
+    },
+    {
+      "m": "crate_stack",
+      "x": 30,
+      "z": -8.2,
+      "ry": 0.4
+    },
+    {
+      "m": "crate_stack",
+      "x": -66,
+      "z": 8.0,
+      "ry": -0.3
+    },
+    {
+      "m": "lamp_post",
+      "x": -40,
+      "z": 8.6,
+      "ry": 0
+    },
+    {
+      "m": "lamp_post",
+      "x": 20,
+      "z": 8.6,
+      "ry": 0
+    },
+    {
+      "m": "lamp_post",
+      "x": 66,
+      "z": -8.6,
+      "ry": 3.1416
+    },
+    {
+      "m": "parked_car",
+      "x": -30,
+      "z": -4.6,
+      "ry": 1.5708
+    },
+    {
+      "m": "parked_car",
+      "x": 10,
+      "z": -4.6,
+      "ry": 1.5708
+    },
+    {
+      "m": "parked_car",
+      "x": -20,
+      "z": -55.5,
+      "ry": 0
+    }
   ],
-  "pickup": {"x": -60, "z": -60},
-  "pickup_stand": {"x": -60, "z": -52.5},
-  "dest": {"x": 60, "z": 0},
+  "pickup": {
+    "x": -60,
+    "z": -60
+  },
+  "pickup_stand": {
+    "x": -60,
+    "z": -52.5
+  },
+  "dest": {
+    "x": 60,
+    "z": 0
+  },
   "dest_name_en": "Felfela Koshary",
-  "start": {"x": 0, "z": 60, "ry": -1.5708},
-  "shortcut": {"cx": -10, "cz": -25, "w": 6, "d": 80, "ry": 0.98},
-  "reset": {"x": 0, "z": 60, "ry": -1.5708}
+  "start": {
+    "x": 0,
+    "z": 60,
+    "ry": -1.5708
+  },
+  "shortcut": {
+    "cx": -10,
+    "cz": -25,
+    "w": 6,
+    "d": 80,
+    "ry": 0.98
+  },
+  "reset": {
+    "x": 0,
+    "z": 60,
+    "ry": -1.5708
+  },
+  "ramps": [
+    {
+      "x": -40,
+      "z": 60,
+      "ry": -1.5708
+    }
+  ]
 }

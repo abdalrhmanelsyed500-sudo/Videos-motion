@@ -210,6 +210,22 @@ def person(hijab=False):
     return m.write("person_hijab" if hijab else "person", mats)
 
 
+def ramp():
+    """Jump ramp wedge: 4 m run, 2.6 m wide, 0.9 m rise (visual; launch is the district trigger)."""
+    m = Mesh()
+    gi = len(m.groups)
+    m.groups.append(["ramp", []])
+    verts = [(-1.3, 0.0, -2.0), (1.3, 0.0, -2.0), (1.3, 0.0, 2.0), (-1.3, 0.0, 2.0),
+             (-1.3, 0.9, 1.6), (1.3, 0.9, 1.6)]
+    m.v.extend(verts)
+    faces = [(0, 1, 5, 4), (0, 4, 5, 1), (2, 3, 4, 5), (0, 2, 5), (3, 1, 0), (4, 3, 0), (5, 2, 1)]
+    keep = [(0, 1, 5, 4), (2, 3, 4, 5), (0, 2, 5), (3, 1, 0)]
+    for f in keep:
+        m.f.append(f)
+        m.groups[gi][1].append(len(m.f) - 1)
+    return m.write("ramp", {"ramp": "M_ramp"})
+
+
 def props():
     m = Mesh()  # crate stack
     m.add_box(0, 0.35, 0, 0.7, 0.7, 0.7, "crate")
@@ -247,5 +263,5 @@ def props():
 
 if __name__ == "__main__":
     tuktuk(); wheel_loose(); building_a(); building_b(); building_c()
-    person(False); person(True); props()
+    person(False); person(True); props(); ramp()
     print("models written:", sorted(os.listdir(OUT)))

@@ -1,0 +1,7 @@
+test_reward: TESTS: 8 checks, 0 failed -> PASS
+test_mission: TESTS: 14 checks, 0 failed -> PASS
+test_save: TESTS: 7 checks, 0 failed -> PASS
+test_vehicle: TESTS: 10 checks, 0 failed -> PASS
+test_district: TESTS: 22 checks, 0 failed -> PASS
+selfplay: SELFPLAY: 5 checks, 0 failed -> PASS
+SUITE: 6 passed, 0 failed

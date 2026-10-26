@@ -104,11 +104,12 @@ func _on_result(result: Dictionary) -> void:
 	var sym: String = str(Reg.tuning().get("symbol_en", "E£"))
 	if bool(result.get("success", false)):
 		var fmt := "DELIVERED!\nFare %s%d = base %s%d + dist %s%d + time %s%d"
-		fmt += " + clean %s%d + shortcut %s%d - hits %s%d\nBalance %s%d   [E] next"
+		fmt += " + clean %s%d + drift %s%d + shortcut %s%d - hits %s%d\nBalance %s%d  [E] next"
 		_result_text.text = fmt % [
 			sym, int(result.get("reward", 0)), sym, int(b.get("base", 0)),
 			sym, int(b.get("distance", 0)), sym, int(b.get("time_left", 0)),
-			sym, int(b.get("clean", 0)), sym, int(b.get("shortcut", 0)),
+			sym, int(b.get("clean", 0)), sym, int(b.get("drift", 0)),
+			sym, int(b.get("shortcut", 0)),
 			sym, int(b.get("penalty", 0)), sym, int(Tk.balance)]
 	else:
 		var fmt2 := "TOO SLOW - passenger walked off.\nReputation took a hit.\n"

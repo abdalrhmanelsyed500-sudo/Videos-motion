@@ -8,9 +8,9 @@
 [sub_resource type="Environment" id="Env_tk"]
 background_mode = 1
 background_color = Color(0.55, 0.72, 0.88, 1)
-ambient_light_source = 1
+ambient_light_source = 2
 ambient_light_color = Color(0.72, 0.7, 0.62, 1)
-ambient_light_energy = 0.9
+ambient_light_energy = 0.45
 
 [node name="District" type="Node3D"]
 script = ExtResource("1")
@@ -24,7 +24,7 @@ script = ExtResource("3")
 [node name="HUD" parent="." instance=ExtResource("4")]
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.45, -0.89, 0, 0.89, 0.45, 0, 40, 0)
+transform = Transform3D(1, 0, 0, 0, 0.64, 0.77, 0, -0.77, 0.64, 0, 40, 0)
 light_color = Color(1.0, 0.93, 0.8, 1)
 light_energy = 1.15
 shadow_enabled = false

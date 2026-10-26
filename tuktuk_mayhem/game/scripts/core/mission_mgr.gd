@@ -19,6 +19,7 @@ var time_limit_s: float = 0.0
 var time_left_s: float = 0.0
 var collisions: int = 0
 var used_shortcut: bool = false
+var drift_earned: float = 0.0
 var _paid_this_mission := false
 var _offer_age_s: float = 0.0
 
@@ -79,6 +80,7 @@ func begin_driving() -> void:
 	time_left_s = time_limit_s
 	collisions = 0
 	used_shortcut = false
+	drift_earned = 0.0
 	_paid_this_mission = false
 	state_changed.emit(state)
 	driving_started.emit({"dest": dest_name, "dist_m": distance_m, "time_s": time_limit_s})
@@ -88,6 +90,19 @@ func report_collision() -> void:
 	if state == State.DRIVING:
 		collisions += 1
 		Tk.bump_stat("collisions", 1)
+
+
+## Controlled-drift bonus: rate * seconds, capped per mission (tuning-driven), toast once per drift.
+func report_drift(seconds: float) -> void:
+	if state != State.DRIVING:
+		return
+	var t: Dictionary = Reg.tuning()
+	var cap: float = float(t.get("drift_bonus_cap", 4.0))
+	if drift_earned >= cap:
+		return
+	var add := minf(float(t.get("drift_bonus_per_s", 1.5)) * seconds, cap - drift_earned)
+	drift_earned += add
+	toast.emit("Controlled drift! +E£%d" % int(add))
 
 
 func report_shortcut() -> void:
@@ -110,6 +125,8 @@ func _finish(success: bool, msg: String) -> void:
 	if success:
 		reward = compute_reward(distance_m, time_left_s, collisions, used_shortcut, t)
 		breakdown = compute_breakdown(distance_m, time_left_s, collisions, used_shortcut, t)
+		breakdown["drift"] = drift_earned
+		reward = minf(reward + drift_earned, float(t.get("reward_cap", 120.0)))
 		if not _paid_this_mission:
 			_paid_this_mission = true
 			Tk.add_money(reward)

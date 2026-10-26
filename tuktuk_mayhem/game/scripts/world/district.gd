@@ -32,6 +32,8 @@ var _dest_marker := Vector3.ZERO
 var _pickup_marker := Vector3.ZERO
 var _offer_cooldown := 0.0
 var _result_open := false
+var _ramps: Array = []
+var _ramp_cd: Array = []
 
 
 func _ready() -> void:
@@ -48,15 +50,22 @@ func _ready() -> void:
 	_dest_marker = Vector3(float(d["dest"]["x"]), 0, float(d["dest"]["z"]))
 	_pickup_marker = Vector3(float(d["pickup"]["x"]), 0, float(d["pickup"]["z"]))
 	_add_collision(d)
+	_add_ramps(d.get("ramps", []))
 	_add_shortcut_zone(d.get("shortcut", {}))
 	_arrow = _make_arrow()
 	tuktuk = get_node("Tuktuk")
 	cam = get_node("ChaseCam")
 	hud = get_node("HUD")
 	cam.set("target", tuktuk)
+	var st: Dictionary = d.get("start", {})
+	if not st.is_empty():
+		tuktuk.global_position = Vector3(float(st.get("x", 0)), 0.4, float(st.get("z", 60)))
+		tuktuk.set("yaw", float(st.get("ry", 0)))
 	if hud.has_method("bind_world"):
 		hud.call("bind_world", self)
 	tuktuk.connect("request_reset", _on_reset)
+	tuktuk.connect("impacted", _on_impact)
+	tuktuk.connect("landed", _on_impact)
 	MissionMgr.mission_result.connect(_on_result)
 	_spawn_passenger()
 
@@ -74,6 +83,10 @@ func _quad(w: float, d: float, y: float, tex: String, tile_m: float) -> MeshInst
 		m.albedo_texture = tx
 	m.uv1_scale = Vector3(maxf(w / tile_m, 0.25), maxf(d / tile_m, 0.25), 1)
 	mi.material_override = m
+	# QuadMesh is born in the XY plane (normal +Z): lay it flat, face up, or every road,
+	# sidewalk and the ground itself renders as a vertical wall (P1 defect, found by the
+	# Phase 2 render inspection).
+	mi.rotation.x = -PI / 2.0
 	mi.position.y = y
 	return mi
 
@@ -109,6 +122,10 @@ func _overrides_for(spec: String) -> Dictionary:
 		var band := StandardMaterial3D.new()
 		band.albedo_texture = MaterialsLib.tex("res://assets/textures/t_sign_band.png")
 		return {"sign": band}
+	if spec == "ramp":
+		var rm := StandardMaterial3D.new()
+		rm.albedo_texture = MaterialsLib.tex("res://assets/textures/t_bump.png")
+		return {"ramp": rm}
 	if spec == "parked_car":
 		var paint := StandardMaterial3D.new()
 		paint.albedo_color = Color("3f5d78")
@@ -158,6 +175,34 @@ func _add_collision(d: Dictionary) -> void:
 	for bp in d.get("bumps", []):
 		_static_box(COLLISION_BOXES["speed_bump"],
 				Vector3(float(bp.get("x", 0)), 0.06, float(bp.get("z", 0))), float(bp.get("ry", 0)))
+
+
+## Designated jump ramps: wedge visual + polled launch trigger (clear, testable, isolated).
+func _add_ramps(ramps: Array) -> void:
+	for r in ramps:
+		var mi := MeshInstance3D.new()
+		mi.mesh = MeshBuilder.build("ramp")
+		mi.position = Vector3(float(r.get("x", 0)), 0.03, float(r.get("z", 0)))
+		mi.rotation.y = float(r.get("ry", 0))
+		add_child(mi)
+		MaterialsLib.apply_to(mi, MaterialsLib.lib())
+		_ramps.append(Vector3(float(r.get("x", 0)), 0, float(r.get("z", 0))))
+		_ramp_cd.append(0.0)
+
+
+func _poll_ramps(delta: float) -> void:
+	for i in _ramps.size():
+		_ramp_cd[i] = maxf(float(_ramp_cd[i]) - delta, 0.0)
+		var rp: Vector3 = _ramps[i]
+		var tp := Vector3(tuktuk.global_position.x, 0, tuktuk.global_position.z)
+		if float(_ramp_cd[i]) <= 0.0 and tp.distance_to(rp) < 3.0:
+			tuktuk.call("launch")
+			_ramp_cd[i] = 1.5
+
+
+func _on_impact(strength: float) -> void:
+	if cam != null and cam.has_method("add_shake"):
+		cam.call("add_shake", strength)
 
 
 func _add_shortcut_zone(sz: Dictionary) -> void:
@@ -213,6 +258,7 @@ func _process(delta: float) -> void:
 	var spd: float = absf(float(tuktuk.get("speed")))
 	var max_stop: float = float(Reg.tuning().get("deliver_max_speed", 3.0))
 	_offer_cooldown = maxf(_offer_cooldown - delta, 0.0)
+	_poll_ramps(delta)
 	var st: int = MissionMgr.state
 	if st == MissionMgr.State.IDLE:
 		var at_pick: bool = tpos.distance_to(_pickup_marker) < RING_PICKUP_R

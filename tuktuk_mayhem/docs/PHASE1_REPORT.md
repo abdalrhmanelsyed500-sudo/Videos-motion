@@ -65,3 +65,15 @@ Phase 2 — Driving quality: chase-carm framing/damping tune (fix transient fram
 ## 10. Verified to run?
 Yes within the stated harnesses: wasm-logic 6/6 and wasm-render 0-error mission evidence. Desktop/HD 3000: NOT yet —
 the first Windows export (Phase 10) is the earliest honest measurement point on the user's machine.
+
+## 11. Errata (appended during Phase 2 — 2026-10-26)
+Phase 2 render inspection found a **visual-foundation defect present at Phase 1 commit time**:
+`district.gd::_quad()` never laid the QuadMesh strips flat, so the ground, roads and sidewalks
+rendered as VERTICAL planes, and the scene sun pointed upward from below the horizon (only
+vertical faces were lit; horizontal faces were black). Phase 1 mission-logic evidence
+(offer/accept/board/deliver/result states, HUD, balance) remains valid — none of it depended on
+ground orientation — but the Phase 1 shot set must be read with this in mind: the "street view"
+frames show the asphalt plane filling the frame edge-on, not a horizontal street. Both defects
+were fixed in Phase 2 (`rotation.x = -PI/2` in `_quad`, corrected sun elevation + warm ambient
+fill in `district_p1.tscn`); `docs/phase2_shots/` supersedes `docs/phase1_shots/` as the visual
+evidence of record. The Phase 1 shots are retained untouched as historical artifacts.
