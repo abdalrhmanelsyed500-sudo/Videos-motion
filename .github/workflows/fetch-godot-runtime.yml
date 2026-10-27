@@ -21,7 +21,7 @@ permissions:
   contents: write
 
 jobs:
-  bundle:
+  fetch:
     runs-on: ubuntu-22.04
     steps:
       - name: Check out the active Arena branch
@@ -31,126 +31,87 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Install host runtime dependencies
-        run: |
-          set -euxo pipefail
-          sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            xvfb x11-xkb-utils xfonts-base libgl1 libglx-mesa0 libegl1 libgles2 \
-            libgl1-mesa-dri mesa-vulkan-drivers libgbm1 libdrm2 libx11-6 libxcursor1 \
-            libxinerama1 libxi6 libxrandr2 libxrender1 libxext6 libasound2 libpulse0 \
-            libudev1 libdbus-1-3 libfontconfig1 libfreetype6 libpng16-16 zlib1g
-          command -v Xvfb
-
-      - name: Build a relocatable runtime bundle
+      - name: Download and verify the official Godot editor archive
         env:
-          RELEASE_TAG: ${{ inputs.release_tag }}
-          ASSET_NAME: ${{ inputs.asset_name }}
+          RELEASE_TAG: ${{ inputs.release_tag || '4.2.2-stable' }}
+          ASSET_NAME: ${{ inputs.asset_name || 'Godot_v4.2.2-stable_linux.x86_64.zip' }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -euxo pipefail
+          set -uo pipefail
           ROOT="$PWD"
-          WORK="$RUNNER_TEMP/godot-runtime-build"
-          rm -rf "$WORK"
-          mkdir -p "$WORK/package/lib/dri" "$WORK/package/share/X11"
-          # Primary: authenticated release-asset download through gh/API.
-          # Fallbacks: the official mirror, then the public release URL.
-          if ! gh release download "$RELEASE_TAG" --repo godotengine/godot \
-              --pattern "$ASSET_NAME" --dir "$WORK" --clobber; then
-            VERSION="${RELEASE_TAG%-stable}"
-            if ! curl -fL --retry 4 --retry-all-errors --retry-delay 3 \
-                -A 'ArenaGodotRuntime/1.0' -o "$WORK/godot.zip" \
-                "https://downloads.tuxfamily.org/godotengine/$VERSION/$ASSET_NAME"; then
-              curl -fL --retry 4 --retry-all-errors --retry-delay 3 \
-                -A 'ArenaGodotRuntime/1.0' -o "$WORK/godot.zip" \
-                "https://github.com/godotengine/godot/releases/download/$RELEASE_TAG/$ASSET_NAME"
+          OUT="$ROOT/Asphalt/tools/runtime/godot-4.2.2-linux.x86_64.zip"
+          LOG="$ROOT/Asphalt/tools/runtime/fetch.log"
+          mkdir -p "$(dirname "$OUT")"
+          exec > >(tee "$LOG") 2>&1
+          echo "Runtime fetch started $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          echo "Tag=$RELEASE_TAG Asset=$ASSET_NAME"
+          VERSION="${RELEASE_TAG%-stable}"
+          TUX="https://downloads.tuxfamily.org/godotengine/$VERSION/$ASSET_NAME"
+          PUBLIC="https://github.com/godotengine/godot/releases/download/$RELEASE_TAG/$ASSET_NAME"
+          ok=0
+          rm -f "$OUT"
+
+          if gh release download "$RELEASE_TAG" --repo godotengine/godot \
+              --pattern "$ASSET_NAME" --dir "$ROOT/Asphalt/tools/runtime" --clobber; then
+            if [ -f "$ROOT/Asphalt/tools/runtime/$ASSET_NAME" ]; then
+              mv "$ROOT/Asphalt/tools/runtime/$ASSET_NAME" "$OUT"
             fi
-          else
-            mv "$WORK/$ASSET_NAME" "$WORK/godot.zip"
+            if [ -s "$OUT" ] && unzip -tqq "$OUT"; then
+              echo "Source: authenticated GitHub release API"
+              ok=1
+            fi
           fi
-          test -s "$WORK/godot.zip"
-          unzip -q "$WORK/godot.zip" -d "$WORK/extracted"
-          BIN=$(find "$WORK/extracted" -maxdepth 2 -type f \( -name 'Godot_v*' -o -name 'godot' \) | head -n 1)
-          test -n "$BIN"
-          cp -L "$BIN" "$WORK/package/godot"
-          chmod 755 "$WORK/package/godot"
-          cp -L "$(command -v Xvfb)" "$WORK/package/Xvfb"
-          chmod 755 "$WORK/package/Xvfb"
-          cp -a /usr/share/X11/xkb "$WORK/package/share/X11/" 2>/dev/null || true
 
-          # Gather every non-core shared object reachable from the engine, Xvfb and
-          # the software GL/Vulkan drivers. Core glibc/loader libraries on the
-          # target Debian system are deliberately left untouched.
-          collect_libs() {
-            local target="$1"
-            case "$target" in
-              *linux-vdso*) return 0 ;;
-            esac
-            (ldd "$target" 2>/dev/null || true) | awk '/=> \// {print $3}' | while read -r lib; do
-              local base
-              base=$(basename "$lib")
-              case "$base" in
-                ld-linux-x86-64.so.2|libc.so.6|libm.so.6|libpthread.so.0|libdl.so.2|librt.so.1|libresolv.so.2) continue ;;
-              esac
-              if [ ! -f "$WORK/package/lib/$base" ]; then
-                cp -L "$lib" "$WORK/package/lib/$base" || true
-                [ -f "$WORK/package/lib/$base" ] && collect_libs "$lib" || true
-              fi
-            done
-          }
-          for extra in \
-            /usr/lib/x86_64-linux-gnu/libGL.so.1 \
-            /usr/lib/x86_64-linux-gnu/libEGL.so.1 \
-            /usr/lib/x86_64-linux-gnu/libGLESv2.so.2 \
-            /usr/lib/x86_64-linux-gnu/libGLX_mesa.so.0 \
-            /usr/lib/x86_64-linux-gnu/libEGL_mesa.so.0 \
-            /usr/lib/x86_64-linux-gnu/libgbm.so.1 \
-            /usr/lib/x86_64-linux-gnu/dri/swrast_dri.so \
-            /usr/lib/x86_64-linux-gnu/libvulkan_lvp.so; do
-            [ -f "$extra" ] && collect_libs "$extra"
-          done
-          cp -L /usr/lib/x86_64-linux-gnu/dri/swrast_dri.so "$WORK/package/lib/dri/" 2>/dev/null || true
-          cp -L /usr/lib/x86_64-linux-gnu/libvulkan_lvp.so "$WORK/package/lib/" 2>/dev/null || true
-          if [ -f /usr/share/vulkan/icd.d/lvp_icd.x86_64.json ]; then
-            cp /usr/share/vulkan/icd.d/lvp_icd.x86_64.json "$WORK/package/lib/lvp_icd.x86_64.json"
+          if [ "$ok" -ne 1 ]; then
+            echo "Trying official TuxFamily mirror: $TUX"
+            rm -f "$OUT"
+            if curl -fL --retry 4 --retry-all-errors --retry-delay 3 \
+                -A 'ArenaGodotRuntime/1.0' -o "$OUT" "$TUX" \
+                && [ -s "$OUT" ] && unzip -tqq "$OUT"; then
+              echo "Source: official TuxFamily mirror"
+              ok=1
+            fi
           fi
-          collect_libs "$WORK/package/godot"
-          collect_libs "$WORK/package/Xvfb"
-          find "$WORK/package/lib" -type f -name '*.so*' -exec chmod 755 {} +
 
-          "$WORK/package/godot" --version > "$WORK/package/VERSION.txt" 2>&1 || true
-          cat > "$WORK/package/env.sh" <<'ENVEOF'
-          # Source this file, then run ./godot or ./Xvfb with the exported paths.
-          RUNTIME_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-          export LD_LIBRARY_PATH="$RUNTIME_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          export LIBGL_DRIVERS_PATH="$RUNTIME_DIR/lib/dri"
-          export LIBGL_ALWAYS_SOFTWARE=1
-          export GALLIUM_DRIVER=llvmpipe
-          export MESA_LOADER_DRIVER_OVERRIDE=llvmpipe
-          export VK_ICD_FILENAMES="$RUNTIME_DIR/lib/lvp_icd.x86_64.json"
-          export XKB_CONFIG_ROOT="$RUNTIME_DIR/share/X11/xkb"
-          export PATH="$RUNTIME_DIR:$PATH"
-          ENVEOF
-          cat > "$WORK/package/README.txt" <<'ENVEOF'
-          Portable Godot 4.2.2 + Xvfb + Mesa llvmpipe test runtime.
-          This is a build/test tool, not a game asset. Source env.sh before use.
-          ENVEOF
-          tar -czf "$ROOT/Asphalt/tools/runtime/godot-runtime.tar.gz" -C "$WORK" package
-          sha256sum "$ROOT/Asphalt/tools/runtime/godot-runtime.tar.gz" > "$ROOT/Asphalt/tools/runtime/godot-runtime.tar.gz.sha256"
-          ls -lh "$ROOT/Asphalt/tools/runtime/godot-runtime.tar.gz"
-          du -sh "$WORK/package"
+          if [ "$ok" -ne 1 ]; then
+            echo "Trying public GitHub release URL: $PUBLIC"
+            rm -f "$OUT"
+            if curl -fL --retry 4 --retry-all-errors --retry-delay 3 \
+                -A 'ArenaGodotRuntime/1.0' -o "$OUT" "$PUBLIC" \
+                && [ -s "$OUT" ] && unzip -tqq "$OUT"; then
+              echo "Source: public GitHub release URL"
+              ok=1
+            fi
+          fi
 
-      - name: Commit the staging archive to the active branch
+          if [ -f "$OUT" ]; then
+            echo "Archive bytes: $(wc -c < "$OUT")"
+            sha256sum "$OUT" > "$ROOT/Asphalt/tools/runtime/godot-4.2.2-linux.x86_64.zip.sha256"
+            echo "First bytes: $(head -c 4 "$OUT" | xxd -p)"
+            echo "Archive contents:"
+            unzip -l "$OUT" | head -20 || true
+          fi
+          if [ "$ok" -ne 1 ]; then
+            echo "ERROR: no source produced a valid ZIP archive"
+            exit 1
+          fi
+          echo "Runtime fetch succeeded"
+
+      - name: Commit the archive and log to the active branch
+        if: always()
         run: |
           set -euxo pipefail
           git config user.name "Arena Runtime Bot"
           git config user.email "runtime-bot@users.noreply.github.com"
           git config http.postBuffer 524288000
           git pull --ff-only origin "$GITHUB_REF_NAME" || true
-          git add -f Asphalt/tools/runtime/godot-runtime.tar.gz Asphalt/tools/runtime/godot-runtime.tar.gz.sha256
+          git add -f \
+            Asphalt/tools/runtime/godot-4.2.2-linux.x86_64.zip \
+            Asphalt/tools/runtime/godot-4.2.2-linux.x86_64.zip.sha256 \
+            Asphalt/tools/runtime/fetch.log 2>/dev/null || true
           if ! git diff --cached --quiet; then
-            git commit -m "chore: stage portable Godot runtime for sandbox tests"
+            git commit -m "chore: stage verified Godot runtime archive for sandbox tests"
             git push origin "HEAD:$GITHUB_REF_NAME"
           else
-            echo "Runtime archive is already present."
+            echo "No runtime changes to commit."
           fi
