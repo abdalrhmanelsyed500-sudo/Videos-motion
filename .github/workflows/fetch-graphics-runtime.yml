@@ -1,0 +1,227 @@
+name: Fetch portable Xvfb and Mesa runtime
+
+on:
+  push:
+    branches:
+      - arena/2879e691-videos-motion
+    paths:
+      - Asphalt/tools/runtime/REQUEST_GRAPHICS
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out the active Arena branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install X11 and software Mesa packages
+        run: |
+          set -euxo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            xvfb x11-xkb-utils xfonts-base libgl1 libglx0 libglvnd0 libglx-mesa0 \
+            libgl1-mesa-dri libegl1 libegl-mesa0 libgles2 libgbm1 libdrm2 libglapi-mesa \
+            mesa-vulkan-drivers libvulkan1 libasound2 libpulse0 libxfont2 libpixman-1-0 \
+            libxkbfile1 libx11-xcb1 libxcb-dri3-0 libxcb-present0 libxcb-sync1 \
+            libxcb-xfixes0 libxcb-glx0 libxcb-shm0 libxcb-randr0 libxcb-render0 \
+            libxcb-shape0 libxcb-xinerama0 libxcb-cursor0 libxcb-icccm4 \
+            libxcb-image0 libxcb-keysyms1 libxcb-util1 libxcb-dri2-0 libxcb-xkb1 \
+            libxcb-xinput0 libxkbcommon0 libxkbcommon-x11-0 libfontconfig1 \
+            libfreetype6 libpng16-16 zlib1g
+          command -v Xvfb
+          ls -l /usr/lib/x86_64-linux-gnu/dri/swrast_dri.so
+
+      - name: Build a relocatable Xvfb/Mesa bundle
+        run: |
+          set -euo pipefail
+          ROOT="$PWD"
+          LOG="$ROOT/Asphalt/tools/runtime/graphics-fetch.log"
+          mkdir -p "$ROOT/Asphalt/tools/runtime"
+          exec > >(tee "$LOG") 2>&1
+          echo "Graphics runtime bundle started $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          export WORK="$RUNNER_TEMP/graphics-runtime"
+          PKG="$WORK/package"
+          rm -rf "$WORK"
+          mkdir -p "$PKG/bin" "$PKG/lib/dri" "$PKG/share/X11" "$PKG/share/fonts" "$PKG/share/glvnd/egl_vendor.d" "$PKG/share/vulkan/icd.d"
+          cp -L "$(command -v Xvfb)" "$PKG/bin/Xvfb"
+          chmod 755 "$PKG/bin/Xvfb"
+          cp -a /usr/share/X11/xkb "$PKG/share/X11/" 2>/dev/null || true
+          cp -a /usr/share/fonts/X11 "$PKG/share/fonts/" 2>/dev/null || true
+          cp -a /usr/share/glvnd/egl_vendor.d/. "$PKG/share/glvnd/egl_vendor.d/" 2>/dev/null || true
+          cp -a /usr/share/vulkan/icd.d/. "$PKG/share/vulkan/icd.d/" 2>/dev/null || true
+          python3 - <<'PY'
+          import glob, os, re, shutil, subprocess
+          from pathlib import Path
+          pkg = Path(os.environ["WORK"]) / "package"
+          libdir = pkg / "lib"
+          dridir = libdir / "dri"
+          core = {
+              "linux-vdso.so.1", "ld-linux-x86-64.so.2", "libc.so.6", "libm.so.6",
+              "libpthread.so.0", "libdl.so.2", "librt.so.1", "libresolv.so.2",
+              "libstdc++.so.6", "libgcc_s.so.1",
+          }
+          copied = set()
+
+          def ldd_libs(path):
+              try:
+                  out = subprocess.run(["ldd", str(path)], capture_output=True, text=True, timeout=30).stdout
+              except Exception as exc:
+                  print("ldd failed", path, exc)
+                  return []
+              result = []
+              for line in out.splitlines():
+                  m = re.search(r"=>\s+(\S+)", line)
+                  if m and os.path.isabs(m.group(1)):
+                      result.append(os.path.realpath(m.group(1)))
+              return result
+
+          def copy_lib(src, dst_dir=None, dst_name=None):
+              src = os.path.realpath(src)
+              if not os.path.isfile(src):
+                  return None
+              base = os.path.basename(src)
+              if base in core:
+                  return None
+              target_dir = dst_dir or libdir
+              target = Path(target_dir) / (dst_name or base)
+              if str(target) not in copied:
+                  shutil.copy2(src, target)
+                  copied.add(str(target))
+              return target
+
+          def collect(path, depth=0):
+              if depth > 6:
+                  return
+              for src in ldd_libs(path):
+                  target = copy_lib(src)
+                  if target is not None:
+                      collect(target, depth + 1)
+
+          # Xvfb pulls in the X11/XCB/font stack.
+          collect("/usr/bin/Xvfb")
+          # GLVND + Mesa software GL are loaded dynamically by Godot, so seed
+          # the collector with each relevant shared object explicitly.
+          seeds = []
+          for pattern in [
+              "/usr/lib/x86_64-linux-gnu/libGL.so*",
+              "/usr/lib/x86_64-linux-gnu/libGLX*.so*",
+              "/usr/lib/x86_64-linux-gnu/libGLdispatch*.so*",
+              "/usr/lib/x86_64-linux-gnu/libEGL*.so*",
+              "/usr/lib/x86_64-linux-gnu/libGLESv2*.so*",
+              "/usr/lib/x86_64-linux-gnu/libgbm*.so*",
+              "/usr/lib/x86_64-linux-gnu/libdrm*.so*",
+              "/usr/lib/x86_64-linux-gnu/libglapi*.so*",
+              "/usr/lib/x86_64-linux-gnu/libvulkan*.so*",
+              "/usr/lib/x86_64-linux-gnu/libX*.so*",
+              "/usr/lib/x86_64-linux-gnu/libxcb*.so*",
+              "/usr/lib/x86_64-linux-gnu/libxkb*.so*",
+              "/usr/lib/x86_64-linux-gnu/libasound*.so*",
+              "/usr/lib/x86_64-linux-gnu/libpulse*.so*",
+              "/usr/lib/x86_64-linux-gnu/libfontconfig*.so*",
+              "/usr/lib/x86_64-linux-gnu/libfreetype*.so*",
+              "/usr/lib/x86_64-linux-gnu/libpng*.so*",
+              "/usr/lib/x86_64-linux-gnu/libbz2*.so*",
+              "/usr/lib/x86_64-linux-gnu/libbrotli*.so*",
+              "/usr/lib/x86_64-linux-gnu/libpixman*.so*",
+              "/usr/lib/x86_64-linux-gnu/libfontenc*.so*",
+              "/usr/lib/x86_64-linux-gnu/libz.so*",
+              "/usr/lib/x86_64-linux-gnu/libzstd*.so*",
+              "/usr/lib/x86_64-linux-gnu/liblzma*.so*",
+              "/usr/lib/x86_64-linux-gnu/libffi*.so*",
+              "/usr/lib/x86_64-linux-gnu/libexpat*.so*",
+              "/usr/lib/x86_64-linux-gnu/libuuid*.so*",
+              "/usr/lib/x86_64-linux-gnu/libdbus*.so*",
+              "/usr/lib/x86_64-linux-gnu/libudev*.so*",
+              "/usr/lib/x86_64-linux-gnu/libsystemd*.so*",
+              "/usr/lib/x86_64-linux-gnu/libgcrypt*.so*",
+              "/usr/lib/x86_64-linux-gnu/libgpg-error*.so*",
+              "/usr/lib/x86_64-linux-gnu/libpcre*.so*",
+              "/usr/lib/x86_64-linux-gnu/libselinux*.so*",
+              "/usr/lib/x86_64-linux-gnu/libcap*.so*",
+              "/usr/lib/x86_64-linux-gnu/libmd*.so*",
+              "/usr/lib/x86_64-linux-gnu/libbsd*.so*",
+              "/usr/lib/x86_64-linux-gnu/libLLVM*.so*",
+              "/usr/lib/x86_64-linux-gnu/libvulkan_lvp.so",
+              "/usr/lib/x86_64-linux-gnu/dri/swrast_dri.so",
+              "/usr/lib/x86_64-linux-gnu/dri/kms_swrast_dri.so",
+          ]:
+              seeds.extend(glob.glob(pattern))
+          for src in seeds:
+              target_dir = dridir if "/dri/" in src and src.endswith(".so") else libdir
+              target = copy_lib(src, target_dir)
+              if target is not None:
+                  collect(target)
+          print("Copied", len(copied), "shared libraries")
+          print("swrast present:", (dridir / "swrast_dri.so").exists())
+          print("lavapipe present:", (libdir / "libvulkan_lvp.so").exists())
+          PY
+          # ICD JSON is resolved relative to its own directory.
+          if [ -f /usr/share/vulkan/icd.d/lvp_icd.x86_64.json ]; then
+            cp /usr/share/vulkan/icd.d/lvp_icd.x86_64.json "$PKG/lib/lvp_icd.x86_64.json"
+          fi
+          cat > "$PKG/env.sh" <<'ENVEOF'
+          RUNTIME_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          export PATH="$RUNTIME_DIR/bin:$PATH"
+          export LD_LIBRARY_PATH="$RUNTIME_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          export LIBGL_DRIVERS_PATH="$RUNTIME_DIR/lib/dri"
+          export LIBGL_ALWAYS_SOFTWARE=1
+          export GALLIUM_DRIVER=llvmpipe
+          export MESA_LOADER_DRIVER_OVERRIDE=llvmpipe
+          export MESA_GL_VERSION_OVERRIDE=3.3
+          export MESA_GLSL_VERSION_OVERRIDE=330
+          export VK_ICD_FILENAMES="$RUNTIME_DIR/lib/lvp_icd.x86_64.json"
+          export XKB_CONFIG_ROOT="$RUNTIME_DIR/share/X11/xkb"
+          export XDG_DATA_DIRS="$RUNTIME_DIR/share${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
+          export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp}"
+          ENVEOF
+          cat > "$PKG/README.txt" <<'ENVEOF'
+          Portable Xvfb + Mesa llvmpipe runtime for Godot 4.2.2 software screenshots.
+          Source env.sh, start Xvfb :99, then run Godot with DISPLAY=:99
+          --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy.
+          ENVEOF
+          chmod 755 "$PKG/env.sh" "$PKG/bin/Xvfb"
+          find "$PKG/lib" -type f -name '*.so*' -exec chmod 755 {} + || true
+          # Smoke-test the bundled Xvfb binary with the bundled libraries.
+          set +e
+          . "$PKG/env.sh"
+          "$PKG/bin/Xvfb" :99 -screen 0 1280x720x24 +extension GLX +render -noreset > "$WORK/xvfb.log" 2>&1 &
+          XVFB_PID=$!
+          sleep 2
+          kill -0 "$XVFB_PID" 2>/dev/null
+          XVFB_OK=$?
+          kill "$XVFB_PID" 2>/dev/null || true
+          wait "$XVFB_PID" 2>/dev/null || true
+          set -e
+          echo "Bundled Xvfb startup exit: $XVFB_OK"
+          cat "$WORK/xvfb.log" || true
+          tar -czf "$ROOT/Asphalt/tools/runtime/godot-graphics-runtime.tar.gz" -C "$WORK" package
+          sha256sum "$ROOT/Asphalt/tools/runtime/godot-graphics-runtime.tar.gz" > "$ROOT/Asphalt/tools/runtime/godot-graphics-runtime.tar.gz.sha256"
+          ls -lh "$ROOT/Asphalt/tools/runtime/godot-graphics-runtime.tar.gz"
+          du -sh "$PKG"
+
+      - name: Commit the graphics runtime and log to the active branch
+        if: always()
+        run: |
+          set -euxo pipefail
+          git config user.name "Arena Runtime Bot"
+          git config user.email "runtime-bot@users.noreply.github.com"
+          git config http.postBuffer 524288000
+          git pull --ff-only origin "$GITHUB_REF_NAME" || true
+          git add -f \
+            Asphalt/tools/runtime/godot-graphics-runtime.tar.gz \
+            Asphalt/tools/runtime/godot-graphics-runtime.tar.gz.sha256 \
+            Asphalt/tools/runtime/graphics-fetch.log 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: stage portable Xvfb and Mesa software-rendering runtime"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          else
+            echo "No graphics runtime changes to commit."
+          fi
