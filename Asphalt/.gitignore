@@ -1,0 +1,21 @@
+# Godot generated files
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+.mono/
+
+# Local test/build outputs (not project source)
+.venv/
+.cache/
+build/
+exports/
+logs/
+screenshots/generated/
+*.tmp
+*.log
+
+# Runtime bundles staged temporarily by CI; extracted into .cache locally
+tools/runtime/*.tar.gz
+tools/runtime/*.zip
+tools/runtime/*.sha256
