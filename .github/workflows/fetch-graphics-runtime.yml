@@ -202,10 +202,16 @@ jobs:
           set -e
           echo "Bundled Xvfb startup exit: $XVFB_OK"
           cat "$WORK/xvfb.log" || true
-          tar -czf "$ROOT/Asphalt/tools/runtime/godot-graphics-runtime.tar.gz" -C "$WORK" package
-          sha256sum "$ROOT/Asphalt/tools/runtime/godot-graphics-runtime.tar.gz" > "$ROOT/Asphalt/tools/runtime/godot-graphics-runtime.tar.gz.sha256"
-          ls -lh "$ROOT/Asphalt/tools/runtime/godot-graphics-runtime.tar.gz"
+          TAR="$ROOT/Asphalt/tools/runtime/godot-graphics-runtime.tar.gz"
+          tar -czf "$TAR" -C "$WORK" package
+          echo "Unsplit archive bytes: $(wc -c < "$TAR")"
+          rm -f "$TAR".part*
+          split -b 40m -d -a 2 "$TAR" "$TAR.part"
+          rm -f "$TAR"
+          sha256sum "$TAR".part* > "$ROOT/Asphalt/tools/runtime/godot-graphics-runtime.parts.sha256"
+          ls -lh "$TAR".part*
           du -sh "$PKG"
+          echo "Reassemble with: cat godot-graphics-runtime.tar.gz.part* > godot-graphics-runtime.tar.gz"
 
       - name: Commit the graphics runtime and log to the active branch
         if: always()
@@ -216,9 +222,10 @@ jobs:
           git config http.postBuffer 524288000
           git pull --ff-only origin "$GITHUB_REF_NAME" || true
           git add -f \
-            Asphalt/tools/runtime/godot-graphics-runtime.tar.gz \
-            Asphalt/tools/runtime/godot-graphics-runtime.tar.gz.sha256 \
-            Asphalt/tools/runtime/graphics-fetch.log 2>/dev/null || true
+            Asphalt/tools/runtime/graphics-fetch.log \
+            Asphalt/tools/runtime/godot-graphics-runtime.parts.sha256 2>/dev/null || true
+          find Asphalt/tools/runtime -maxdepth 1 -type f -name 'godot-graphics-runtime.tar.gz.part*' -print0 \
+            | xargs -0 -r git add -f --
           if ! git diff --cached --quiet; then
             git commit -m "chore: stage portable Xvfb and Mesa software-rendering runtime"
             git push origin "HEAD:$GITHUB_REF_NAME"

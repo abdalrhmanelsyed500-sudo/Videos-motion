@@ -17,5 +17,6 @@ screenshots/generated/
 
 # Runtime bundles staged temporarily by CI; extracted into .cache locally
 tools/runtime/*.tar.gz
+tools/runtime/*.tar.gz.part*
 tools/runtime/*.zip
 tools/runtime/*.sha256
