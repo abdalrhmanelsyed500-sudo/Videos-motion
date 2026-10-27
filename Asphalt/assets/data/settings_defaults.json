@@ -1,0 +1,10 @@
+{
+  "quality": "medium",
+  "resolution_scale": 1.0,
+  "shadows": true,
+  "traffic_density": 1.0,
+  "difficulty": 1,
+  "master_volume": 0.75,
+  "default_camera": "cockpit",
+  "show_fps": false
+}

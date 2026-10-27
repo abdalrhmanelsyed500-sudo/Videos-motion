@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "types": [
+    {
+      "id": "car",
+      "name": "Passenger Car",
+      "mass": 1.0,
+      "speed_min": 19.0,
+      "speed_max": 31.0,
+      "length": 4.4,
+      "width": 1.9,
+      "height": 1.4,
+      "color": "#9AA0A1",
+      "accent": "#D4D2C7",
+      "lane_change": 0.55
+    },
+    {
+      "id": "taxi",
+      "name": "Cairo Taxi",
+      "mass": 1.0,
+      "speed_min": 18.0,
+      "speed_max": 29.0,
+      "length": 4.5,
+      "width": 1.9,
+      "height": 1.5,
+      "color": "#E5BC28",
+      "accent": "#24242A",
+      "lane_change": 0.7
+    },
+    {
+      "id": "microbus",
+      "name": "Microbus",
+      "mass": 1.5,
+      "speed_min": 16.0,
+      "speed_max": 25.0,
+      "length": 5.6,
+      "width": 2.1,
+      "height": 2.2,
+      "color": "#E7E2D4",
+      "accent": "#2862A4",
+      "lane_change": 0.45
+    },
+    {
+      "id": "minibus",
+      "name": "Minibus",
+      "mass": 1.8,
+      "speed_min": 15.0,
+      "speed_max": 23.0,
+      "length": 7.2,
+      "width": 2.3,
+      "height": 2.5,
+      "color": "#D7D9CF",
+      "accent": "#3D7C55",
+      "lane_change": 0.3
+    },
+    {
+      "id": "truck",
+      "name": "Heavy Truck",
+      "mass": 3.0,
+      "speed_min": 12.0,
+      "speed_max": 19.0,
+      "length": 8.5,
+      "width": 2.6,
+      "height": 3.0,
+      "color": "#8B6B4D",
+      "accent": "#3F454A",
+      "lane_change": 0.18
+    },
+    {
+      "id": "trailer",
+      "name": "Trailer",
+      "mass": 4.5,
+      "speed_min": 11.0,
+      "speed_max": 17.0,
+      "length": 12.0,
+      "width": 2.6,
+      "height": 3.1,
+      "color": "#B9B1A0",
+      "accent": "#A33A32",
+      "lane_change": 0.1
+    },
+    {
+      "id": "police",
+      "name": "Egyptian Police Car",
+      "mass": 1.2,
+      "speed_min": 26.0,
+      "speed_max": 45.0,
+      "length": 4.8,
+      "width": 2.0,
+      "height": 1.5,
+      "color": "#ECE9DF",
+      "accent": "#202735",
+      "lane_change": 0.85
+    }
+  ]
+}

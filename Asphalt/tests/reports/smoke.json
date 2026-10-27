@@ -1,0 +1,145 @@
+{
+	"checks": [
+		{
+			"detail": "player, road and HUD are present",
+			"name": "race_world_build",
+			"passed": true
+		},
+		{
+			"detail": "first triangle normal=(0, 0.999999, -0.001564)",
+			"name": "road_surface_normals",
+			"passed": true
+		},
+		{
+			"detail": "riders=8 bikes=6",
+			"name": "roster_sizes",
+			"passed": true
+		},
+		{
+			"detail": "rivals=5",
+			"name": "rival_count",
+			"passed": true
+		},
+		{
+			"detail": "traffic=15",
+			"name": "traffic_spawned",
+			"passed": true
+		},
+		{
+			"detail": "closest initial traffic=115m",
+			"name": "traffic_safe_spawn",
+			"passed": true
+		},
+		{
+			"detail": "race state=1",
+			"name": "countdown_releases_player",
+			"passed": true
+		},
+		{
+			"detail": "speed=27.4",
+			"name": "player_accelerates",
+			"passed": true
+		},
+		{
+			"detail": "start_z=0 z=-29.6",
+			"name": "player_moves_forward",
+			"passed": true
+		},
+		{
+			"detail": "wheel_angle=87.1",
+			"name": "wheel_pivot_rotates",
+			"passed": true
+		},
+		{
+			"detail": "gear=3",
+			"name": "gearbox_advances",
+			"passed": true
+		},
+		{
+			"detail": "progress=0.048",
+			"name": "road_progress_advances",
+			"passed": true
+		},
+		{
+			"detail": "functional bike/rider pivots exist",
+			"name": "bike_and_rider_parts",
+			"passed": true
+		},
+		{
+			"detail": "six distinct bike assemblies",
+			"name": "all_bike_models",
+			"passed": true
+		},
+		{
+			"detail": "eight articulated riders",
+			"name": "all_rider_models",
+			"passed": true
+		},
+		{
+			"detail": "seven vehicle body styles",
+			"name": "all_traffic_models",
+			"passed": true
+		},
+		{
+			"detail": "level=1 spawned=1",
+			"name": "police_escalation",
+			"passed": true
+		},
+		{
+			"detail": "closest police=430m",
+			"name": "police_no_teleport",
+			"passed": true
+		},
+		{
+			"detail": "crash_active=true",
+			"name": "severe_crash_one_shot",
+			"passed": true
+		},
+		{
+			"detail": "state=2",
+			"name": "race_stops_on_crash",
+			"passed": true
+		},
+		{
+			"detail": "state=3 result_crashed=true",
+			"name": "fall_finishes_and_result",
+			"passed": true
+		},
+		{
+			"detail": "menu, selections, settings, pause, HUD, results, hospital",
+			"name": "all_ui_scenes",
+			"passed": true
+		},
+		{
+			"detail": "race world instantiated by Main",
+			"name": "main_starts_race",
+			"passed": true
+		},
+		{
+			"detail": "results screen displayed",
+			"name": "results_screen_from_loop",
+			"passed": true
+		},
+		{
+			"detail": "hospital screen displayed",
+			"name": "hospital_screen_from_loop",
+			"passed": true
+		},
+		{
+			"detail": "retry recreates race world",
+			"name": "retry_after_defeat",
+			"passed": true
+		},
+		{
+			"detail": "world removed on menu return",
+			"name": "return_to_menu",
+			"passed": true
+		}
+	],
+	"engine": "4.2.2-stable (official)",
+	"failed_checks": 0,
+	"notes": "Headless logic tests use the dummy rendering driver; mesh RID warnings from that driver are environmental, not GDScript errors.",
+	"passed": true,
+	"timestamp": "2026-10-27T20:39:14",
+	"total_checks": 27
+}

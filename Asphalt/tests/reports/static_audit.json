@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "error_count": 0,
+  "errors": [],
+  "summary": {
+    "riders": 8,
+    "bikes": 6,
+    "traffic_types": 7,
+    "manifest_entries": 57,
+    "declared_total_bytes": 743515,
+    "gdscript_files": 38,
+    "scene_files": 10,
+    "generated_asset_files": 107
+  }
+}

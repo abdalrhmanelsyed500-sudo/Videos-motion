@@ -1,0 +1,317 @@
+{
+  "label": "v1-bridge",
+  "resolution": [
+    1280,
+    720
+  ],
+  "global": {
+    "reference": {
+      "mean_rgb": [
+        118.95,
+        118.68,
+        133.77
+      ],
+      "median_rgb": [
+        103.0,
+        98.0,
+        104.0
+      ],
+      "luminance_mean": 123.8,
+      "luminance_std": 55.23,
+      "edge_density": 2.115
+    },
+    "capture": {
+      "mean_rgb": [
+        188.59,
+        193.6,
+        205.7
+      ],
+      "median_rgb": [
+        250.0,
+        210.0,
+        211.0
+      ],
+      "luminance_mean": 195.96,
+      "luminance_std": 44.18,
+      "edge_density": 2.75
+    },
+    "mean_rgb_distance": 125.05,
+    "structure_score": 0.3575,
+    "reference_palette": [
+      {
+        "rgb": [
+          144,
+          168,
+          240
+        ],
+        "share": 0.2149
+      },
+      {
+        "rgb": [
+          96,
+          72,
+          96
+        ],
+        "share": 0.1302
+      },
+      {
+        "rgb": [
+          144,
+          120,
+          96
+        ],
+        "share": 0.1046
+      },
+      {
+        "rgb": [
+          72,
+          72,
+          96
+        ],
+        "share": 0.1002
+      },
+      {
+        "rgb": [
+          72,
+          72,
+          72
+        ],
+        "share": 0.0786
+      },
+      {
+        "rgb": [
+          24,
+          24,
+          24
+        ],
+        "share": 0.0344
+      },
+      {
+        "rgb": [
+          72,
+          72,
+          48
+        ],
+        "share": 0.0255
+      },
+      {
+        "rgb": [
+          96,
+          96,
+          72
+        ],
+        "share": 0.0249
+      }
+    ],
+    "capture_palette": [
+      {
+        "rgb": [
+          240,
+          240,
+          192
+        ],
+        "share": 0.2027
+      },
+      {
+        "rgb": [
+          96,
+          144,
+          240
+        ],
+        "share": 0.1537
+      },
+      {
+        "rgb": [
+          96,
+          120,
+          216
+        ],
+        "share": 0.1482
+      },
+      {
+        "rgb": [
+          240,
+          216,
+          168
+        ],
+        "share": 0.1289
+      },
+      {
+        "rgb": [
+          240,
+          240,
+          216
+        ],
+        "share": 0.0782
+      },
+      {
+        "rgb": [
+          240,
+          192,
+          144
+        ],
+        "share": 0.0357
+      },
+      {
+        "rgb": [
+          240,
+          240,
+          240
+        ],
+        "share": 0.0312
+      },
+      {
+        "rgb": [
+          96,
+          144,
+          216
+        ],
+        "share": 0.0312
+      }
+    ]
+  },
+  "regions": {
+    "sky": {
+      "reference": {
+        "mean_rgb": [
+          158.63,
+          177.61,
+          245.15
+        ],
+        "median_rgb": [
+          154.0,
+          175.0,
+          255.0
+        ],
+        "luminance_mean": 193.8,
+        "luminance_std": 23.2,
+        "edge_density": 0.699
+      },
+      "capture": {
+        "mean_rgb": [
+          98.4,
+          136.69,
+          223.48
+        ],
+        "median_rgb": [
+          100.0,
+          142.0,
+          238.0
+        ],
+        "luminance_mean": 152.86,
+        "luminance_std": 30.14,
+        "edge_density": 0.932
+      },
+      "mean_rgb_distance": 75.97,
+      "luminance_delta": -40.94,
+      "edge_density_delta": 0.233
+    },
+    "horizon": {
+      "reference": {
+        "mean_rgb": [
+          103.36,
+          106.36,
+          101.67
+        ],
+        "median_rgb": [
+          93.0,
+          93.0,
+          85.0
+        ],
+        "luminance_mean": 103.8,
+        "luminance_std": 43.64,
+        "edge_density": 3.505
+      },
+      "capture": {
+        "mean_rgb": [
+          140.58,
+          158.95,
+          216.75
+        ],
+        "median_rgb": [
+          113.0,
+          150.0,
+          242.0
+        ],
+        "luminance_mean": 172.09,
+        "luminance_std": 36.86,
+        "edge_density": 3.802
+      },
+      "mean_rgb_distance": 131.89,
+      "luminance_delta": 68.29,
+      "edge_density_delta": 0.297
+    },
+    "road": {
+      "reference": {
+        "mean_rgb": [
+          119.48,
+          107.84,
+          107.2
+        ],
+        "median_rgb": [
+          97.0,
+          92.0,
+          102.0
+        ],
+        "luminance_mean": 111.51,
+        "luminance_std": 34.15,
+        "edge_density": 1.822
+      },
+      "capture": {
+        "mean_rgb": [
+          242.69,
+          231.41,
+          197.01
+        ],
+        "median_rgb": [
+          255.0,
+          251.0,
+          199.0
+        ],
+        "luminance_mean": 223.7,
+        "luminance_std": 35.36,
+        "edge_density": 5.249
+      },
+      "mean_rgb_distance": 196.26,
+      "luminance_delta": 112.19,
+      "edge_density_delta": 3.427
+    },
+    "dashboard": {
+      "reference": {
+        "mean_rgb": [
+          91.1,
+          82.63,
+          79.93
+        ],
+        "median_rgb": [
+          94.0,
+          89.0,
+          98.0
+        ],
+        "luminance_mean": 84.55,
+        "luminance_std": 42.43,
+        "edge_density": 2.776
+      },
+      "capture": {
+        "mean_rgb": [
+          252.26,
+          232.84,
+          189.52
+        ],
+        "median_rgb": [
+          255.0,
+          237.0,
+          193.0
+        ],
+        "luminance_mean": 224.87,
+        "luminance_std": 15.47,
+        "edge_density": 0.717
+      },
+      "mean_rgb_distance": 246.06,
+      "luminance_delta": 140.32,
+      "edge_density_delta": -2.059
+    }
+  },
+  "mean_region_rgb_distance": 162.55,
+  "interpretation": "Lower colour distances and a higher structure score indicate closer measurable composition. Artistic fidelity still requires visual inspection."
+}

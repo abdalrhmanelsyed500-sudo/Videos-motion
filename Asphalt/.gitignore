@@ -20,3 +20,8 @@ tools/runtime/*.tar.gz
 tools/runtime/*.tar.gz.part*
 tools/runtime/*.zip
 tools/runtime/*.sha256
+
+# Final distributable archive and optional runtime staging
+dist/
+tools/runtime/*
+!tools/runtime/README.md

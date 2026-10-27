@@ -1,0 +1,293 @@
+{
+  "generator": "tools/generate_assets.py",
+  "version": 1,
+  "file_count": 57,
+  "total_bytes": 743515,
+  "files": [
+    {
+      "path": "assets/LICENSE-ASSETS.txt",
+      "bytes": 498,
+      "sha256": "50718da644845543c4be21cda5587062384c42ff24919fbc612e8a03e4a49c44"
+    },
+    {
+      "path": "assets/animations/PROCEDURAL.md",
+      "bytes": 734,
+      "sha256": "4827acacc21dc2bd1a178dc8b65914a9d7cf046d33fd02f5beaf25a1631eb325"
+    },
+    {
+      "path": "assets/audio/boost.wav",
+      "bytes": 15038,
+      "sha256": "e4aa9f390bb2fa69c6b21cf02362da2d2bcfceb813d08fc9f51972074b749954"
+    },
+    {
+      "path": "assets/audio/collision_major.wav",
+      "bytes": 27386,
+      "sha256": "fcf84d6ca440fdf028f9e2c3936ede012e1ef0d7e91fb0e3384ef2bc960d8200"
+    },
+    {
+      "path": "assets/audio/collision_minor.wav",
+      "bytes": 9746,
+      "sha256": "2ea4c590f4db9355db71b3e39cba6f9c34dffbf75ab0fd569f582f387f322e11"
+    },
+    {
+      "path": "assets/audio/countdown_beep.wav",
+      "bytes": 7982,
+      "sha256": "c0f92fd1b2b5ddadb1fd812f165a8e0569d14829001ba5bc0940bbabbe1363a7"
+    },
+    {
+      "path": "assets/audio/engine_loop.wav",
+      "bytes": 88244,
+      "sha256": "34ce1b372501d059ee4c7320ebc054f52f770e60d180e7842e3228262fa62961"
+    },
+    {
+      "path": "assets/audio/hospital_sting.wav",
+      "bytes": 41498,
+      "sha256": "8e4923ef85bca12c48a8ab3ca8201b6fa32fd6665e55a63823ebf39deda517a8"
+    },
+    {
+      "path": "assets/audio/menu_click.wav",
+      "bytes": 3130,
+      "sha256": "865b60b8038fb7412af6bc6fa9c689015183c0de9bedea98ab21d8a30b2c13d0"
+    },
+    {
+      "path": "assets/audio/police_alert.wav",
+      "bytes": 15920,
+      "sha256": "95095def7fd018d392c6f5d61436b59022c5435e852201dca1c2f47f2a2f33aa"
+    },
+    {
+      "path": "assets/audio/race_go.wav",
+      "bytes": 18566,
+      "sha256": "ceb04d37ba2189232070927516e4ff11fa004c215ecb9feb636d424ec3aceec3"
+    },
+    {
+      "path": "assets/audio/siren_loop.wav",
+      "bytes": 88244,
+      "sha256": "605075841653a781ce4c9a06a8b9d65eb3f4dfc2754ecda103d9e6eeb0a8f91c"
+    },
+    {
+      "path": "assets/audio/traffic_ambience.wav",
+      "bytes": 88244,
+      "sha256": "4899e2bd14d4159df3497cc14c3de81a1512f92f10217ef60d8dfbfa5acda1f6"
+    },
+    {
+      "path": "assets/audio/victory_sting.wav",
+      "bytes": 45026,
+      "sha256": "5bf34724d105f68728fd1dfe45165255104ac0e6f541bd69b42a17998bb200ef"
+    },
+    {
+      "path": "assets/data/bikes.json",
+      "bytes": 3610,
+      "sha256": "037cfd1c496e96610f4f6258f81735aa7bc386b17da88c183f663d2cd2cd4d0a"
+    },
+    {
+      "path": "assets/data/riders.json",
+      "bytes": 5943,
+      "sha256": "f7d459da0534dbe9b245197d0c1963bd2ab126f8b323c430827e9e91cb78a12c"
+    },
+    {
+      "path": "assets/data/settings_defaults.json",
+      "bytes": 194,
+      "sha256": "825829524f6cd10cebe2428b30ef925b0b7c531659163dd3aead7c5ec79bc9f6"
+    },
+    {
+      "path": "assets/data/traffic.json",
+      "bytes": 1948,
+      "sha256": "798af1a87d68d6b0521b8f02c1f0a8db9385dfb7a35d80b542be87b17e260c5b"
+    },
+    {
+      "path": "assets/materials/README.md",
+      "bytes": 391,
+      "sha256": "04df879d45a7b74c694357270ffce4076b42991eeb09fbc74abfd1c71b6692ef"
+    },
+    {
+      "path": "assets/models/README.md",
+      "bytes": 904,
+      "sha256": "ffc898c701d2577d0cf11ca5ddb0a054779e9db3f2249ba499e2bd241b49b726"
+    },
+    {
+      "path": "assets/textures/asphalt.png",
+      "bytes": 22624,
+      "sha256": "6687fdaf4c9a406064a02be8d1825b7c4c111da493df5acaf4d35694dd8c8638"
+    },
+    {
+      "path": "assets/textures/awning_stripe.png",
+      "bytes": 227,
+      "sha256": "eed88ccb2b16dd513f153ed5c177442d3a3c85c8e6b90823ca607c7f6f78cf55"
+    },
+    {
+      "path": "assets/textures/brick_1.png",
+      "bytes": 15663,
+      "sha256": "52d0a5ebbd8819054a90aac04eef430ecd4d8be182d2a8c2e77ed7ff8757d581"
+    },
+    {
+      "path": "assets/textures/brick_2.png",
+      "bytes": 15693,
+      "sha256": "9e7c0b7e6d5ec2aea7a89faa95a5899e107bfbc4654322d5c3b2ec8f4bb2d865"
+    },
+    {
+      "path": "assets/textures/brick_3.png",
+      "bytes": 16334,
+      "sha256": "486391feb3a7a4d6e277e3bba1ea9384f7d413fddb6859ab175146320ff58493"
+    },
+    {
+      "path": "assets/textures/carbon.png",
+      "bytes": 6935,
+      "sha256": "7344733b16b7b7f2d0930564b6fdb7856cc0e3433b9907c5dce67e438baa87ce"
+    },
+    {
+      "path": "assets/textures/checker.png",
+      "bytes": 308,
+      "sha256": "028cfdb8103b176f7e83c3ab6ec7e57dfffb6e3f5d28f362e999e477303a1e9e"
+    },
+    {
+      "path": "assets/textures/cloud.png",
+      "bytes": 330,
+      "sha256": "ef7a9e5a3eeccb7822ac05901b22a26cc861b49f12486bab403a2e6c88af5015"
+    },
+    {
+      "path": "assets/textures/concrete.png",
+      "bytes": 22593,
+      "sha256": "0b8f95f88a68c43f1d72143136d53fb20f9f38dde46d07e0474071d037a0b7d3"
+    },
+    {
+      "path": "assets/textures/hospital_tile.png",
+      "bytes": 665,
+      "sha256": "19dd4a85b94c36168600c4cd1b15cbd3a58b68c4d357897add5221376c8db342"
+    },
+    {
+      "path": "assets/textures/police_stripe.png",
+      "bytes": 376,
+      "sha256": "38dd2d325a54d172b764ee94edc829635299073e7d360c6403983e2098e509f3"
+    },
+    {
+      "path": "assets/textures/sand.png",
+      "bytes": 23713,
+      "sha256": "f0611ee51456ed57f9657c38c0711e7e205a70a81f2d529f8a134b13c8d616b0"
+    },
+    {
+      "path": "assets/textures/signs/shop_cafe.png",
+      "bytes": 8533,
+      "sha256": "768669a9ac1ee7ac991fdd407e9856f505e9e9924ec5aa64f40ad3224c81c78b"
+    },
+    {
+      "path": "assets/textures/signs/shop_spares.png",
+      "bytes": 9613,
+      "sha256": "b1710ceef6e96d5226be71d59b6402b6b51c06fd562ea87beb40e1ab0e7448ea"
+    },
+    {
+      "path": "assets/textures/signs/sign_giza.png",
+      "bytes": 5434,
+      "sha256": "e6104fa41fad53b09ac46caaed374118199adff3ac8e74a76a83e1dfb786f168"
+    },
+    {
+      "path": "assets/textures/signs/sign_maadi.png",
+      "bytes": 5533,
+      "sha256": "5f152cd49af554fa0982d2f7eaf7c1af0eeb8d1a7a04481a0346841d8b367b6d"
+    },
+    {
+      "path": "assets/textures/signs/sign_nasr_city.png",
+      "bytes": 7390,
+      "sha256": "3c8a7e60d1e422130909a5794b846046ef03e5ca09e13ee669408b9c52d31d47"
+    },
+    {
+      "path": "assets/textures/signs/sign_ring_road.png",
+      "bytes": 7949,
+      "sha256": "f598a95907562f7b0fae9672117c1a0667834fcb1ef61c9c7100393e7ae13754"
+    },
+    {
+      "path": "assets/textures/window.png",
+      "bytes": 371,
+      "sha256": "1d9abd20eaef61f4a1d499421cbeb2cdb758c2907a47fa040babf01044d3d918"
+    },
+    {
+      "path": "assets/ui/hospital_bg.png",
+      "bytes": 6293,
+      "sha256": "07c73a18b0f1f5fb66417d117b66b070a6a1539e7a8f8a6acb90e60c3c191217"
+    },
+    {
+      "path": "assets/ui/menu_background.png",
+      "bytes": 11205,
+      "sha256": "e2ebaf2f6feec79dd4bae923aad286457ba02281fa44ebd250b1a7a8e9640e59"
+    },
+    {
+      "path": "assets/ui/portraits/bike_00_cairo_125.png",
+      "bytes": 4328,
+      "sha256": "8f59ca18434245abf4f0722cb391e1263463690055a9ade9383151ee9665771a"
+    },
+    {
+      "path": "assets/ui/portraits/bike_01_delta_150.png",
+      "bytes": 3874,
+      "sha256": "0a3eba650c997a53a947be5b94a16fea6ceaa4e78f89070ea86eeb85c72eef69"
+    },
+    {
+      "path": "assets/ui/portraits/bike_02_sprint_200.png",
+      "bytes": 4325,
+      "sha256": "373695b1f2f1e8ca3ff0d6ea1823dfa20a1ba39f2675b4d39be7d0c6d2f7d258"
+    },
+    {
+      "path": "assets/ui/portraits/bike_03_khan_custom.png",
+      "bytes": 4835,
+      "sha256": "429b19ff0c39c8d4c6773532a6ec1a2f743cb56f63d6b59f44e6da86cc25b98c"
+    },
+    {
+      "path": "assets/ui/portraits/bike_04_shadow_250.png",
+      "bytes": 4829,
+      "sha256": "8cbbbb48b6d8e87f5c38ad97ff7dfb4c7a9da3d36df924d3490ee00c499f3f52"
+    },
+    {
+      "path": "assets/ui/portraits/bike_05_golden_falcon.png",
+      "bytes": 4720,
+      "sha256": "59252d0b3c8a2cd2c931fa17fd1a4615a5635a6eccfbfe54e81e5f9299e31e7a"
+    },
+    {
+      "path": "assets/ui/portraits/rider_00_kareem.png",
+      "bytes": 3216,
+      "sha256": "2a1df987144307f34c151dfae84a3a65176ff19e3efb692b2f2c7f6419a9e6ab"
+    },
+    {
+      "path": "assets/ui/portraits/rider_01_sayed.png",
+      "bytes": 2991,
+      "sha256": "bfac029c5715f8b4257fc6862492460b414f047c4b751ba824ff0b655a645b57"
+    },
+    {
+      "path": "assets/ui/portraits/rider_02_tarek.png",
+      "bytes": 2803,
+      "sha256": "1a4a3c60a935b93709eb40792855686c2050438d55e5f08a1ea046b56ba87c74"
+    },
+    {
+      "path": "assets/ui/portraits/rider_03_mona.png",
+      "bytes": 2982,
+      "sha256": "3af90f16d2f03f0851df6fe0f01e5c35104f12bae4731664acff6bb3576bf47c"
+    },
+    {
+      "path": "assets/ui/portraits/rider_04_hassan.png",
+      "bytes": 2793,
+      "sha256": "5a7e0e4e64f9032e0052c04deddcdaba70b39aafd6477212c75666fdec649032"
+    },
+    {
+      "path": "assets/ui/portraits/rider_05_fofo.png",
+      "bytes": 2476,
+      "sha256": "fc87c85a1607f7cb5cdf39b182a081cd6009c47e10843241f652ca430581351e"
+    },
+    {
+      "path": "assets/ui/portraits/rider_06_ashraf.png",
+      "bytes": 2879,
+      "sha256": "5a97eef5511effc50930f28f137144b6c35412bf646897d387f8860e813e58ed"
+    },
+    {
+      "path": "assets/ui/portraits/rider_07_zizo.png",
+      "bytes": 2699,
+      "sha256": "ce063757140ddc0e71294b9b0d3bed733ec1006376d9afae7e785e45259335f0"
+    },
+    {
+      "path": "assets/ui/results_bg.png",
+      "bytes": 6302,
+      "sha256": "59a97690408b993e6a846e5c51ab6174ef62a2d84ef774c02a945b9e2de11657"
+    },
+    {
+      "path": "assets/ui/title.png",
+      "bytes": 36435,
+      "sha256": "7e69947544221b42d9ed83ddf69a41f0bebee5564a744ac849cd5658aa986ce8"
+    }
+  ]
+}

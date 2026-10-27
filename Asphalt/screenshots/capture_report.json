@@ -1,0 +1,13 @@
+{
+	"captures": {
+		"chase": true,
+		"cockpit": true,
+		"replay": true
+	},
+	"engine": "4.2.2-stable (official)",
+	"rendering_method": "gl_compatibility",
+	"viewport": [
+		1280,
+		720
+	]
+}

@@ -1,0 +1,4 @@
+Pillow>=10
+numpy>=1.24
+arabic-reshaper>=3.0
+python-bidi>=0.4
