@@ -1,0 +1,161 @@
+name: Fetch XKB fix for portable Xvfb
+
+on:
+  push:
+    branches:
+      - arena/2879e691-videos-motion
+    paths:
+      - Asphalt/tools/runtime/REQUEST_XKB
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out the active Arena branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install xkbcomp and XKB data
+        run: |
+          set -euxo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            xkb-data x11-xkb-utils libxkbfile1
+          command -v xkbcomp
+          test -d /usr/share/X11/xkb
+          find /usr/share/X11/xkb -type f | wc -l
+
+      - name: Build a small XKB fix archive
+        run: |
+          set -euo pipefail
+          ROOT="$PWD"
+          LOG="$ROOT/Asphalt/tools/runtime/xkb-fetch.log"
+          mkdir -p "$ROOT/Asphalt/tools/runtime"
+          exec > >(tee "$LOG") 2>&1
+          echo "XKB fix started $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          export WORK="$RUNNER_TEMP/xkb-fix"
+          PKG="$WORK/package"
+          rm -rf "$WORK"
+          mkdir -p "$PKG/bin" "$PKG/lib" "$PKG/share/X11"
+          cp -L "$(command -v xkbcomp)" "$PKG/bin/xkbcomp"
+          chmod 755 "$PKG/bin/xkbcomp"
+          cp -a /usr/share/X11/xkb "$PKG/share/X11/"
+          python3 - <<'PY'
+          import os, re, shutil, subprocess
+          from pathlib import Path
+          pkg = Path(os.environ["WORK"]) / "package"
+          libdir = pkg / "lib"
+          core = {
+              "linux-vdso.so.1", "ld-linux-x86-64.so.2", "libc.so.6", "libm.so.6",
+              "libpthread.so.0", "libdl.so.2", "librt.so.1", "libresolv.so.2",
+              "libstdc++.so.6", "libgcc_s.so.1",
+          }
+          copied = set()
+
+          def ldd_libs(path):
+              try:
+                  out = subprocess.run(["ldd", str(path)], capture_output=True, text=True, timeout=30).stdout
+              except Exception as exc:
+                  print("ldd failed", path, exc)
+                  return []
+              result = []
+              for line in out.splitlines():
+                  m = re.search(r"=>\s+(\S+)", line)
+                  if m and os.path.isabs(m.group(1)):
+                      result.append(os.path.realpath(m.group(1)))
+              return result
+
+          def copy_lib(src):
+              src = os.path.realpath(src)
+              base = os.path.basename(src)
+              if base in core or not os.path.isfile(src):
+                  return None
+              target = libdir / base
+              if str(target) not in copied:
+                  shutil.copy2(src, target)
+                  copied.add(str(target))
+              return target
+
+          def collect(path, depth=0):
+              if depth > 6:
+                  return
+              for src in ldd_libs(path):
+                  target = copy_lib(src)
+                  if target is not None:
+                      collect(target, depth + 1)
+
+          collect("/usr/bin/xkbcomp")
+          # Explicitly seed XKB-related libraries.
+          for pattern in [
+              "/usr/lib/x86_64-linux-gnu/libxkbfile*.so*",
+              "/usr/lib/x86_64-linux-gnu/libxkbcommon*.so*",
+              "/usr/lib/x86_64-linux-gnu/libX11*.so*",
+              "/usr/lib/x86_64-linux-gnu/libxcb*.so*",
+          ]:
+              import glob
+              for src in glob.glob(pattern):
+                  target = copy_lib(src)
+                  if target is not None:
+                      collect(target)
+
+          # Create SONAME aliases so xkbcomp and Xvfb find short names.
+          def soname(path):
+              try:
+                  out = subprocess.run(["readelf", "-d", str(path)], capture_output=True, text=True, timeout=10).stdout
+                  m = re.search(r"\(SONAME\)\s+Library soname:\s+\[([^\]]+)\]", out)
+                  if m:
+                      return m.group(1)
+              except Exception:
+                  pass
+              m = re.match(r"^(.+\.so\.\d+)", path.name)
+              return m.group(1) if m else None
+
+          links = 0
+          for path in sorted(libdir.iterdir()):
+              if not path.is_file() or ".so" not in path.name:
+                  continue
+              alias = soname(path)
+              if alias and alias != path.name:
+                  target = libdir / alias
+                  if not target.exists() and not target.is_symlink():
+                      target.symlink_to(path.name)
+                      links += 1
+          print("Copied", len(copied), "libraries and created", links, "SONAME links")
+          print("XKB files:", len(list((pkg / "share" / "X11" / "xkb").rglob("*"))))
+          PY
+          cat > "$PKG/xkb-env.sh" <<'ENVEOF'
+          # Appended to the graphics runtime env.sh.
+          RUNTIME_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          export XKB_BIN_DIRECTORY="$RUNTIME_DIR/bin"
+          export XKB_CONFIG_ROOT="$RUNTIME_DIR/share/X11/xkb"
+          export PATH="$RUNTIME_DIR/bin:$PATH"
+          ENVEOF
+          tar -czf "$ROOT/Asphalt/tools/runtime/xkb-fix.tar.gz" -C "$WORK" package
+          sha256sum "$ROOT/Asphalt/tools/runtime/xkb-fix.tar.gz" > "$ROOT/Asphalt/tools/runtime/xkb-fix.tar.gz.sha256"
+          ls -lh "$ROOT/Asphalt/tools/runtime/xkb-fix.tar.gz"
+          du -sh "$PKG"
+
+      - name: Commit the XKB fix and log to the active branch
+        if: always()
+        run: |
+          set -euxo pipefail
+          git config user.name "Arena Runtime Bot"
+          git config user.email "runtime-bot@users.noreply.github.com"
+          git pull --ff-only origin "$GITHUB_REF_NAME" || true
+          git add -f \
+            Asphalt/tools/runtime/xkb-fix.tar.gz \
+            Asphalt/tools/runtime/xkb-fix.tar.gz.sha256 \
+            Asphalt/tools/runtime/xkb-fetch.log 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: stage Xvfb XKB keymap fix for software screenshots"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          else
+            echo "No XKB fix changes to commit."
+          fi
