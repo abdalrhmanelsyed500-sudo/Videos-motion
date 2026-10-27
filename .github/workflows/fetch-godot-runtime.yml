@@ -1,6 +1,11 @@
 name: Fetch portable Godot runtime
 
 on:
+  push:
+    branches:
+      - arena/2879e691-videos-motion
+    paths:
+      - Asphalt/tools/runtime/REQUEST_RUNTIME
   workflow_dispatch:
     inputs:
       release_tag:
