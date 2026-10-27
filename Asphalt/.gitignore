@@ -25,3 +25,7 @@ tools/runtime/*.sha256
 dist/
 tools/runtime/*
 !tools/runtime/README.md
+screenshots/debug_group_*.png
+screenshots/debug_hide_*.png
+screenshots/debug_group_*.png.import
+screenshots/debug_hide_*.png.import
