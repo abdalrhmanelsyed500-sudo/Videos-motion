@@ -1,0 +1,266 @@
+{
+  "generator": "tools/generate_hybrid_assets.py",
+  "description": "Original low-resolution sprites/backgrounds for the Hybrid 2.5D A/B benchmark.",
+  "palette": {
+    "sky_top": "#5F8BEB",
+    "sky_horizon": "#7D9EFC",
+    "cloud": "#F2F5F5",
+    "road": "#4B4858",
+    "road_alt": "#535060",
+    "road_dark": "#3A3847",
+    "yellow": "#D9B51F",
+    "white": "#D8D9D1",
+    "concrete": "#B4A992",
+    "sand": "#B9996D",
+    "sand_light": "#D6B98B",
+    "sand_dark": "#8F754F",
+    "brick": "#A47F72",
+    "brick_dark": "#8B665C",
+    "window": "#30272E",
+    "dash": "#272326",
+    "dash_light": "#403A38",
+    "gauge": "#DDD8C5",
+    "needle": "#CE3C31",
+    "magenta": "#A72C86",
+    "red": "#C32228",
+    "blue": "#37568A",
+    "green": "#4F8E3A",
+    "black": "#1B1B20",
+    "metal": "#8C8D8A",
+    "skin": "#B47B4C",
+    "skin_dark": "#8F5D39",
+    "jeans": "#344C78",
+    "shoe": "#E5E2D2",
+    "gold": "#D8B23C"
+  },
+  "rider_bike_sheet": {
+    "path": "rider_bike_sheet.png",
+    "frame_width": 128,
+    "frame_height": 128,
+    "columns": 4,
+    "rows": 3,
+    "frame_names": [
+      "riding/ride",
+      "riding/steer_left",
+      "riding/steer_right",
+      "riding/lean_left",
+      "riding/lean_right",
+      "riding/accelerate",
+      "riding/brake",
+      "crash/fall_1",
+      "crash/fall_2",
+      "crash/slide",
+      "crash/recovery",
+      "crash/defeat"
+    ],
+    "pivot": [
+      64,
+      126
+    ],
+    "wheel_base_y": 98,
+    "riding_frames": [
+      "riding/ride",
+      "riding/steer_left",
+      "riding/steer_right",
+      "riding/lean_left",
+      "riding/lean_right",
+      "riding/accelerate",
+      "riding/brake"
+    ],
+    "crash_frames": [
+      "crash/fall_1",
+      "crash/fall_2",
+      "crash/slide",
+      "crash/recovery",
+      "crash/defeat"
+    ],
+    "collision_width_m": 0.9,
+    "collision_length_m": 2.1
+  },
+  "traffic_sheet": {
+    "path": "traffic_sheet.png",
+    "frame_width": 128,
+    "frame_height": 96,
+    "columns": 3,
+    "rows": 6,
+    "kinds": [
+      "taxi",
+      "car",
+      "microbus",
+      "truck",
+      "trailer",
+      "police"
+    ],
+    "angles": [
+      "straight",
+      "left",
+      "right"
+    ],
+    "frame_names": [
+      "taxi/straight",
+      "taxi/left",
+      "taxi/right",
+      "car/straight",
+      "car/left",
+      "car/right",
+      "microbus/straight",
+      "microbus/left",
+      "microbus/right",
+      "truck/straight",
+      "truck/left",
+      "truck/right",
+      "trailer/straight",
+      "trailer/left",
+      "trailer/right",
+      "police/straight",
+      "police/left",
+      "police/right"
+    ],
+    "pivot": [
+      64,
+      94
+    ],
+    "collision": {
+      "taxi": [
+        1.9,
+        4.5
+      ],
+      "car": [
+        1.9,
+        4.4
+      ],
+      "microbus": [
+        2.1,
+        5.6
+      ],
+      "truck": [
+        2.6,
+        8.5
+      ],
+      "trailer": [
+        2.6,
+        12.0
+      ],
+      "police": [
+        2.0,
+        4.8
+      ]
+    }
+  },
+  "backgrounds": {
+    "sky": {
+      "path": "sky.png",
+      "size": [
+        1280,
+        360
+      ]
+    },
+    "hills": {
+      "path": "hills.png",
+      "size": [
+        1280,
+        240
+      ]
+    },
+    "ground": {
+      "path": "ground.png",
+      "size": [
+        1280,
+        480
+      ]
+    },
+    "far_buildings": {
+      "path": "buildings_far.png",
+      "size": [
+        1280,
+        280
+      ]
+    },
+    "roadside": {
+      "left": {
+        "path": "roadside_left.png",
+        "size": [
+          640,
+          420
+        ]
+      },
+      "right": {
+        "path": "roadside_right.png",
+        "size": [
+          640,
+          420
+        ]
+      }
+    }
+  },
+  "cockpit": {
+    "path": "cockpit_base.png",
+    "size": [
+      1280,
+      220
+    ],
+    "top_y": 500,
+    "gauge_left": [
+      460,
+      140
+    ],
+    "gauge_right": [
+      820,
+      140
+    ],
+    "gauge_radius": 68,
+    "gear_center": [
+      640,
+      140
+    ],
+    "needle_start_deg": 135.0,
+    "needle_end_deg": 405.0
+  },
+  "files": [
+    {
+      "path": "buildings_far.png",
+      "bytes": 4994,
+      "sha256": "e8063dda2644cfa9750426c0c9f0e77792548ca23aabc8545c630fa8b8a996a5"
+    },
+    {
+      "path": "cockpit_base.png",
+      "bytes": 9820,
+      "sha256": "423fafd7ec1fc0bc50b91cfb04be484fabd3de80bb526c358445fbc08a261cae"
+    },
+    {
+      "path": "ground.png",
+      "bytes": 7639,
+      "sha256": "1038295b8c0492f88a19141e2cc4edfde7b8ddc9d4c204e648acb6afe0242891"
+    },
+    {
+      "path": "hills.png",
+      "bytes": 2375,
+      "sha256": "ca6684e82b1b59293c37a0a10fb961a37c84037b8cf06011106bd9b21ce356bf"
+    },
+    {
+      "path": "rider_bike_sheet.png",
+      "bytes": 21790,
+      "sha256": "83ea88519d6293f0e24a1e18fe71e63942e7834ee47da3282814155d97d367e0"
+    },
+    {
+      "path": "roadside_left.png",
+      "bytes": 4649,
+      "sha256": "e98e7b74c94693cba879089dd0dfb55da0ee406a20c2a5308054b19a0879a4fb"
+    },
+    {
+      "path": "roadside_right.png",
+      "bytes": 4758,
+      "sha256": "f7d5152e0efed05728a471c05a6522dff28331adb7c97927b4452b7cc30a7952"
+    },
+    {
+      "path": "sky.png",
+      "bytes": 2680,
+      "sha256": "2d24ae1a0a7533d54c26de3d24d1a5c3fe849e7bb57202083de05361daaec36e"
+    },
+    {
+      "path": "traffic_sheet.png",
+      "bytes": 5706,
+      "sha256": "e5a554363f19c92df979d8a4a4377a49ea9ccd86fda4c7b55c7e722bb8d9f930"
+    }
+  ]
+}

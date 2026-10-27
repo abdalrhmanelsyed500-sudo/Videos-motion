@@ -80,6 +80,20 @@ python3 tools/generate_assets.py
 
 A distributable source archive is created at `dist/THE_ASPALT_GROOMS_Godot_4.2.2.zip` and uploaded to the Google Drive `Asphalt` folder linked above. The archive excludes sandbox-only Godot/Xvfb/Mesa runtime bundles and temporary debug captures; it includes all game source, generated assets, docs, screenshots, metrics and test reports.
 
+## Rendering strategy review
+
+A separate A/B review was added after the full-3D project was completed. It
+compares the existing full-3D benchmark with an isolated Hybrid 2.5D prototype
+that uses scanline road projection, original low-resolution rider/traffic/background
+sprites, a fixed live cockpit overlay, and road-relative collision/gameplay logic.
+
+See `docs/05-rendering-strategy-review.md` for the decision and
+`docs/06-hybrid-2p5d-benchmark.md` for the experiment, screenshots and test
+results. **Recommendation: use Approach C — Hybrid 2.5D as the future visual
+architecture, while preserving the current 3D project and its systems.** The
+experiment lives in `experiments/hybrid_2p5d/` and does not rewrite the existing
+gameplay systems.
+
 ## Tests and screenshots
 
 ```bash

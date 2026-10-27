@@ -1,0 +1,115 @@
+{
+	"checks": [
+		{
+			"detail": "scene and API present",
+			"name": "hybrid_scene_load",
+			"passed": true
+		},
+		{
+			"detail": "manifest and atlases loaded",
+			"name": "hybrid_assets_loaded",
+			"passed": true
+		},
+		{
+			"detail": "all sprite frames have alpha and consistent dimensions",
+			"name": "sprite_frame_audit",
+			"passed": true
+		},
+		{
+			"detail": "objects=10",
+			"name": "initial_world_objects",
+			"passed": true
+		},
+		{
+			"detail": "p=0.34",
+			"name": "road_projection",
+			"passed": true
+		},
+		{
+			"detail": "speed=45.2",
+			"name": "acceleration",
+			"passed": true
+		},
+		{
+			"detail": "distance=74.9",
+			"name": "race_progression",
+			"passed": true
+		},
+		{
+			"detail": "gear=4",
+			"name": "gearbox",
+			"passed": true
+		},
+		{
+			"detail": "rpm=0.82",
+			"name": "rpm_from_speed",
+			"passed": true
+		},
+		{
+			"detail": "dx=4.2",
+			"name": "steering_changes_lane",
+			"passed": true
+		},
+		{
+			"detail": "level=1 min_z=245.6",
+			"name": "police_pursuit",
+			"passed": true
+		},
+		{
+			"detail": "state=CRASHED",
+			"name": "severe_crash_state",
+			"passed": true
+		},
+		{
+			"detail": "state=HOSPITAL",
+			"name": "hospital_defeat_sequence",
+			"passed": true
+		},
+		{
+			"detail": "state=RACING distance=0",
+			"name": "retry_resets_race",
+			"passed": true
+		},
+		{
+			"detail": "state=FINISHED",
+			"name": "race_termination",
+			"passed": true
+		},
+		{
+			"detail": "mode=static",
+			"name": "benchmark_mode_static",
+			"passed": true
+		},
+		{
+			"detail": "mode=moving",
+			"name": "benchmark_mode_moving",
+			"passed": true
+		},
+		{
+			"detail": "mode=crash",
+			"name": "benchmark_mode_crash",
+			"passed": true
+		},
+		{
+			"detail": "mode=hospital",
+			"name": "benchmark_mode_hospital",
+			"passed": true
+		},
+		{
+			"detail": "mode=finish",
+			"name": "benchmark_mode_finish",
+			"passed": true
+		},
+		{
+			"detail": "mode=debug",
+			"name": "benchmark_mode_debug",
+			"passed": true
+		}
+	],
+	"engine": "4.2.2-stable (official)",
+	"failed_checks": 0,
+	"notes": "Road-relative z/lane coordinates drive both projection and collision; no screen-space-only collision logic.",
+	"passed": true,
+	"timestamp": "2026-10-27T21:43:46",
+	"total_checks": 21
+}

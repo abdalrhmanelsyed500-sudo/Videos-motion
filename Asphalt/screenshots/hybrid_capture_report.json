@@ -1,0 +1,17 @@
+{
+	"all_captures_ok": true,
+	"engine": "4.2.2-stable (official)",
+	"modes": [
+		"static",
+		"moving",
+		"crash",
+		"hospital",
+		"finish",
+		"debug"
+	],
+	"rendering": "2D CanvasItem / scanline pseudo-3D",
+	"viewport": [
+		1280,
+		720
+	]
+}

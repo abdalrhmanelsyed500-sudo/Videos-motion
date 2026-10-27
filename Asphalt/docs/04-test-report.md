@@ -88,3 +88,14 @@ A first run failed one check: `traffic_safe_spawn` reported a vehicle 6.9 m from
 ## Reproducibility
 
 Reports are stored in `tests/reports/`, comparison JSON in `docs/metrics_*.json`, logs in `logs/`, and captures/review images in `screenshots/`. The asset generator and its manifest allow deterministic regeneration of all original PNG/WAV/JSON assets.
+
+## Rendering-strategy experiment addendum
+
+An isolated Hybrid 2.5D benchmark was added after the main test run without
+rewriting production gameplay systems. See `docs/05-rendering-strategy-review.md`
+and `docs/06-hybrid-2p5d-benchmark.md`.
+
+- `tools/run_hybrid_tests.sh`: **21 checks, 0 failures** (`tests/reports/hybrid_smoke.json`).
+- Full production suite was rerun after adding the experiment: static audit passed, all GDScript parsed, production smoke **27/27** passed (`tests/reports/smoke.json`).
+- Static audit now reports 42 GDScript files and 11 scene files with 0 missing resources.
+- Genuine 1280×720 hybrid and 3D-crash captures were produced under Xvfb/Mesa llvmpipe; three-panel A/B review images and metrics are stored in `screenshots/` and `docs/`.

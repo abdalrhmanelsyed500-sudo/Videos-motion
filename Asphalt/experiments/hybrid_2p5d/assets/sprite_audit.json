@@ -1,0 +1,196 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "rider_bike_sheet_size",
+      "passed": true,
+      "detail": "expected atlas 512x384, got (512, 384)"
+    },
+    {
+      "name": "rider_bike_sheet_transparent_background",
+      "passed": true,
+      "detail": "top-left pixel alpha is zero"
+    },
+    {
+      "name": "rider_bike_sheet_frame_riding/ride_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(31, 0, 98, 126)"
+    },
+    {
+      "name": "rider_bike_sheet_frame_riding/steer_left_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(31, 0, 98, 126)"
+    },
+    {
+      "name": "rider_bike_sheet_frame_riding/steer_right_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(31, 0, 98, 126)"
+    },
+    {
+      "name": "rider_bike_sheet_frame_riding/lean_left_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(30, 0, 100, 126)"
+    },
+    {
+      "name": "rider_bike_sheet_frame_riding/lean_right_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(30, 0, 100, 126)"
+    },
+    {
+      "name": "rider_bike_sheet_frame_riding/accelerate_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(30, 0, 100, 126)"
+    },
+    {
+      "name": "rider_bike_sheet_frame_riding/brake_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(31, 0, 98, 126)"
+    },
+    {
+      "name": "rider_bike_sheet_frame_crash/fall_1_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(10, 0, 115, 128)"
+    },
+    {
+      "name": "rider_bike_sheet_frame_crash/fall_2_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(0, 24, 128, 128)"
+    },
+    {
+      "name": "rider_bike_sheet_frame_crash/slide_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(0, 39, 128, 128)"
+    },
+    {
+      "name": "rider_bike_sheet_frame_crash/recovery_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(18, 1, 106, 128)"
+    },
+    {
+      "name": "rider_bike_sheet_frame_crash/defeat_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(0, 17, 128, 125)"
+    },
+    {
+      "name": "traffic_sheet_size",
+      "passed": true,
+      "detail": "expected atlas 384x576, got (384, 576)"
+    },
+    {
+      "name": "traffic_sheet_transparent_background",
+      "passed": true,
+      "detail": "top-left pixel alpha is zero"
+    },
+    {
+      "name": "traffic_sheet_frame_taxi/straight_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(16, 18, 113, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_taxi/left_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(21, 18, 118, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_taxi/right_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(11, 18, 108, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_car/straight_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(16, 25, 113, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_car/left_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(21, 25, 118, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_car/right_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(11, 25, 108, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_microbus/straight_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(16, 20, 113, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_microbus/left_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(16, 20, 118, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_microbus/right_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(11, 20, 113, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_truck/straight_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(16, 24, 113, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_truck/left_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(17, 24, 118, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_truck/right_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(11, 24, 112, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_trailer/straight_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(14, 22, 115, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_trailer/left_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(11, 22, 119, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_trailer/right_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(10, 22, 118, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_police/straight_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(16, 17, 113, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_police/left_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(21, 17, 118, 96)"
+    },
+    {
+      "name": "traffic_sheet_frame_police/right_alpha",
+      "passed": true,
+      "detail": "transparent bbox=(11, 17, 108, 96)"
+    },
+    {
+      "name": "riding_wheel_baseline",
+      "passed": true,
+      "detail": "all riding frames use rear wheel y=98"
+    },
+    {
+      "name": "riding_frame_count",
+      "passed": true,
+      "detail": "7 riding animation frames"
+    },
+    {
+      "name": "crash_frame_count",
+      "passed": true,
+      "detail": "5 crash/recovery frames"
+    },
+    {
+      "name": "traffic_kinds",
+      "passed": true,
+      "detail": "6 traffic types"
+    }
+  ],
+  "errors": []
+}
