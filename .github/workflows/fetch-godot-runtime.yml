@@ -46,17 +46,31 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.release_tag }}
           ASSET_NAME: ${{ inputs.asset_name }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euxo pipefail
           ROOT="$PWD"
           WORK="$RUNNER_TEMP/godot-runtime-build"
           rm -rf "$WORK"
           mkdir -p "$WORK/package/lib/dri" "$WORK/package/share/X11"
-          curl -fL --retry 4 --retry-delay 3 \
-            -o "$WORK/godot.zip" \
-            "https://github.com/godotengine/godot/releases/download/$RELEASE_TAG/$ASSET_NAME"
+          # Primary: authenticated release-asset download through gh/API.
+          # Fallbacks: the official mirror, then the public release URL.
+          if ! gh release download "$RELEASE_TAG" --repo godotengine/godot \
+              --pattern "$ASSET_NAME" --dir "$WORK" --clobber; then
+            VERSION="${RELEASE_TAG%-stable}"
+            if ! curl -fL --retry 4 --retry-all-errors --retry-delay 3 \
+                -A 'ArenaGodotRuntime/1.0' -o "$WORK/godot.zip" \
+                "https://downloads.tuxfamily.org/godotengine/$VERSION/$ASSET_NAME"; then
+              curl -fL --retry 4 --retry-all-errors --retry-delay 3 \
+                -A 'ArenaGodotRuntime/1.0' -o "$WORK/godot.zip" \
+                "https://github.com/godotengine/godot/releases/download/$RELEASE_TAG/$ASSET_NAME"
+            fi
+          else
+            mv "$WORK/$ASSET_NAME" "$WORK/godot.zip"
+          fi
+          test -s "$WORK/godot.zip"
           unzip -q "$WORK/godot.zip" -d "$WORK/extracted"
-          BIN=$(find "$WORK/extracted" -maxdepth 2 -type f -name 'Godot_v*' -o -name 'godot' | head -n 1)
+          BIN=$(find "$WORK/extracted" -maxdepth 2 -type f \( -name 'Godot_v*' -o -name 'godot' \) | head -n 1)
           test -n "$BIN"
           cp -L "$BIN" "$WORK/package/godot"
           chmod 755 "$WORK/package/godot"
@@ -72,7 +86,7 @@ jobs:
             case "$target" in
               *linux-vdso*) return 0 ;;
             esac
-            ldd "$target" 2>/dev/null | awk '/=> \// {print $3}' | while read -r lib; do
+            (ldd "$target" 2>/dev/null || true) | awk '/=> \// {print $3}' | while read -r lib; do
               local base
               base=$(basename "$lib")
               case "$base" in
