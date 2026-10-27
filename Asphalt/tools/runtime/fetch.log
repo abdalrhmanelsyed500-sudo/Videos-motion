@@ -1,0 +1,13 @@
+Runtime fetch started 2026-10-27T18:52:43Z
+Tag=4.2.2-stable Asset=Godot_v4.2.2-stable_linux.x86_64.zip
+Source: authenticated GitHub release API
+Archive bytes: 45333918
+First bytes: 504b0304
+Archive contents:
+Archive:  /home/runner/work/Videos-motion/Videos-motion/Asphalt/tools/runtime/godot-4.2.2-linux.x86_64.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+100234608  2024-04-17 07:08   Godot_v4.2.2-stable_linux.x86_64
+---------                     -------
+100234608                     1 file
+Runtime fetch succeeded
