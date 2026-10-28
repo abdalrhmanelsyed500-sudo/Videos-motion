@@ -1,0 +1,33 @@
+// Real renderer smoke test: UI interactions use real mouse events, not state hooks.
+export default async (s) => {
+  await s.wait(5);
+  await s.shot('01_main_menu.png');
+  await s.page.mouse.click(300, 381);
+  await s.wait(3);
+  await s.page.mouse.click(650, 339);
+  await s.page.keyboard.down('Control'); await s.page.keyboard.press('KeyA'); await s.page.keyboard.up('Control');
+  await s.page.keyboard.type('123');
+  await s.shot('02_setup.png');
+  await s.page.mouse.click(640, 430);
+  await s.wait(6);
+  await s.shot('03_world.png');
+  await s.page.mouse.click(1038, 53);
+  await s.wait(1);
+  await s.page.mouse.click(1055, 89);
+  await s.wait(2);
+  await s.shot('04_forces.png');
+  await s.page.mouse.click(1093, 53);
+  await s.wait(1);
+  await s.page.mouse.click(1040, 90);
+  await s.wait(2);
+  await s.shot('05_market.png');
+  await s.page.mouse.click(1100, 400);
+  await s.wait(1);
+  await s.shot('05b_quote.png');
+  await s.page.mouse.click(640, 402);
+  await s.wait(2);
+  await s.shot('05c_order.png');
+  await s.page.mouse.click(1150, 53);
+  await s.wait(2);
+  await s.shot('06_politics.png');
+};

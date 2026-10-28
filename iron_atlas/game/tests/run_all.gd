@@ -94,12 +94,15 @@ func test_economy_market() -> void:
 	var bad := market.purchase(st, "tnk_main_old", 1)
 	ok(not bad["ok"], "unaffordable rejected")
 	ok(st.market_orders.size() == 1, "no phantom order")
-	# equip from inventory
+	# Equipment needs trained personnel or compatible squads; recruit a reserve first.
+	st.treasury = 5000.0
+	var econ := EconomySystem.new(); econ.init(null)
+	var recruited := econ.recruit(st, "reg_09", 24, 25.0)
+	ok(recruited["ok"] and recruited["recruited"] >= 12, "reserve recruited before equipment issue")
 	var fid: String = st.formations_of(st.player_id())[0]["id"]
 	var eq := market.equip_from_inventory(st, fid, "rif_basic", 5)
 	ok(eq["ok"] and int(st.inventory["rif_basic"]) == before + 5, "equip issued")
 	# upkeep drains treasury daily
-	var econ := EconomySystem.new(); econ.init(null)
 	var t1 := st.treasury
 	econ.tick_day(st, market.catalog)
 	ok(st.treasury <= t1, "daily upkeep applied")
@@ -116,6 +119,7 @@ func test_command_combat_logistics() -> void:
 	var fid: String = st.formations_of(st.player_id())[0]["id"]
 	var from_r: String = st.formations[fid]["region"]
 	var target: String = st.regions[from_r]["neighbors"][0]
+	st.rel(st.player_id(), st.regions[target]["controller"])["threat"] = 0.9
 	var mv := cmd.issue_move(st, fid, target)
 	ok(mv["ok"], "move order accepted")
 	ok(cmd.issue_move(st, fid, "reg_99").has("error") or not cmd.issue_move(st, fid, "reg_99")["ok"],
@@ -126,9 +130,8 @@ func test_command_combat_logistics() -> void:
 		cmd.tick_day(st, market.catalog)
 		guard += 1
 	ok(st.formations[fid]["region"] == target, "formation arrived")
-	# control transfer into uncontested enemy region
-	st.regions[target]["controller"] = "cty_player"
-	ok(st.regions[target]["controller"] == "cty_player", "control updated")
+	# Control must change through the actual order path, not by test assignment.
+	ok(st.regions[target]["controller"] == "cty_player", "uncontested hostile region captured")
 	# combat: plant a hostile formation in same region and resolve
 	var enemy_fid := st.next_id("frm")
 	st.formations[enemy_fid] = {"id": enemy_fid, "country": "cty_vardena", "name": "Garrison X",
@@ -174,7 +177,7 @@ func test_diplomacy_ai() -> void:
 	for f in st.formations:
 		if not st.formations[f]["country"] == st.player_id() and st.formations[f]["orders"].size():
 			moved = true
-	ok(moved or true, "ai evaluated (orders optional)")
+	ok(moved, "ai issues a real movement order")
 	var cf := dip.propose_ceasefire(st, w["war"])
 	ok(cf["ok"], "ceasefire proposal processed")
 

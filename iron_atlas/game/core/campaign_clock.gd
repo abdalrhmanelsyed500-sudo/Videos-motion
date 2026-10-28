@@ -13,6 +13,11 @@ func set_speed(idx: int) -> void:
 	speed_index = clampi(idx, 0, SPEEDS.size() - 1)
 
 
+func reset() -> void:
+	speed_index = 0
+	_acc = 0.0
+
+
 func is_paused() -> bool:
 	return speed_index == 0
 
@@ -28,7 +33,7 @@ func _process(delta: float) -> void:
 	if gs == null or gs.cs == null or is_paused():
 		return
 	_acc += delta * SPEEDS[speed_index]
-	while _acc >= 1.0:
+	while _acc >= 1.0 and not is_paused() and gs.cs.outcome == "":
 		_acc -= 1.0
 		_step_day(gs.cs)
 

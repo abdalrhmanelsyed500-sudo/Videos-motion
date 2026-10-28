@@ -75,6 +75,11 @@
       "ammo": "shell_0", "parts": 0.3, "reliability": 55, "combat": 38,
       "unit_class": "artillery", "delivery_days": 7, "supplier": "broker",
       "export_restricted": false, "sensitivity": 2, "availability": "black_market",
-      "black_market": true, "resale": 2500}
+      "black_market": true, "resale": 2500},
+    "med_kit": {"name": "Field Medical Kit", "category": "medical", "tier": 1,
+      "price": 180, "upkeep": 0.02, "crew": 0, "training": 0, "fuel": 0, "ammo": "",
+      "parts": 0, "reliability": 100, "combat": 0, "unit_class": "logistics",
+      "delivery_days": 3, "supplier": "local", "export_restricted": false,
+      "sensitivity": 0, "availability": "always", "resale": 60}
   }
 }

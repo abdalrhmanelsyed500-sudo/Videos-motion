@@ -42,8 +42,10 @@ func _process(_delta: float) -> void:
 		ok(wm.is_node_ready(), "world map ready")
 		wm.selected_region = "reg_09"
 		wm._refresh_all()
+		var before_recruits: int = GS.cs.formations_of(GS.cs.player_id())[0].get("personnel_reserve", 0)
+		var before_treasury: float = GS.cs.treasury
 		wm._on_recruit()
-		ok(true, "recruit path executed")
+		ok(int(GS.cs.formations_of(GS.cs.player_id())[0].get("personnel_reserve", 0)) > before_recruits and GS.cs.treasury < before_treasury, "recruit changes personnel and treasury")
 		wm._show_panel("Market")
 		var list: ItemList = wm.panels["Market"].get_node("MarketList")
 		ok(list.item_count >= 10, "market list populated")

@@ -1,0 +1,28 @@
+{
+  "personnel_per_unit": 12,
+  "recruit_cost_per_person": 25.0,
+  "occupation_cost_per_week": 5.0,
+  "focus_upkeep_per_week": 4.0,
+  "investments": {
+    "security": {
+      "cost": 200.0,
+      "pressure_reduction": 0.14,
+      "opposition_reduction": 0.08
+    },
+    "infrastructure": {
+      "cost": 300.0,
+      "repair": 0.22
+    },
+    "economy": {
+      "cost": 240.0,
+      "productivity": 0.16,
+      "support": 0.04,
+      "legitimacy": 0.02
+    }
+  },
+  "military_transition_share": 0.6,
+  "settlement_share": 0.3,
+  "transition_support": 0.42,
+  "transition_stability": 0.4,
+  "transition_legitimacy": 0.38
+}

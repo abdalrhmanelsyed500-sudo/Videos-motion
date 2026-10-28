@@ -5,7 +5,7 @@ limited palettes, 3-tone body shading, 1px darker rim (no thick outlines),
 light from top-left, clean readable texture, consistent 24px units / 32px tiles.
 Run:  python3 iron_atlas/tools/make_sprites.py   (needs Pillow)
 """
-import os, random
+import os, random, zlib
 from PIL import Image, ImageDraw
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "game", "assets", "sprites")
@@ -97,7 +97,7 @@ unit_artillery("artillery")
 def terrain(name, base, fn):
     im = Image.new("RGBA", (32, 32), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
     rect(d, 0, 0, 31, 31, base)
-    rnd = random.Random(hash(name) & 0xFFFF)
+    rnd = random.Random(zlib.crc32(name.encode("utf-8")))
     fn(d, rnd)
     im.save(os.path.join(T, name + ".png"))
 
@@ -107,26 +107,57 @@ def speckle(d, rnd, cols, n=60):
         px(d, rnd.randrange(32), rnd.randrange(32), rnd.choice(cols))
 
 
-terrain("t_grass", (104, 128, 78), lambda d, r: speckle(d, r, [(92, 116, 68), (116, 140, 88), (84, 106, 62)]))
-terrain("t_forest", (72, 100, 58), lambda d, r: [
-    (d.ellipse([x, y, x + 7, y + 7], fill=(44, 74, 40), outline=(30, 52, 28)),
-     d.point((x + 2, y + 2), fill=(64, 96, 56)))
-    for x, y in [(3, 3), (14, 8), (6, 16), (20, 18), (12, 24), (24, 4)]])
-terrain("t_snow", (226, 230, 236), lambda d, r: speckle(d, r, [(210, 214, 222), (238, 242, 246), (196, 200, 210)], 80))
-terrain("t_desert", (196, 172, 122), lambda d, r: speckle(d, r, [(182, 158, 110), (210, 186, 134), (170, 148, 102)], 70))
-terrain("t_urban", (128, 124, 118), lambda d, r: [
-    (d.rectangle([x, y, x + 8, y + 7], fill=(150, 146, 138), outline=(84, 80, 76)),
-     d.rectangle([x + 2, y + 2, x + 4, y + 3], fill=(96, 92, 88)))
-    for x, y in [(2, 2), (16, 6), (6, 16), (20, 20)]])
+def forest_details(d, rnd):
+    # Clustered, stepped tree canopies with a cast shadow and upper-left light.
+    speckle(d, rnd, [(67, 93, 54), (77, 105, 62)], 35)
+    for x, y in [(2, 3), (15, 3), (8, 15), (21, 18), (2, 25)]:
+        rect(d, x + 1, y + 5, min(31, x + 8), min(31, y + 9), (38, 62, 34))
+        d.polygon([(x + 2, y), (x + 6, y), (x + 8, y + 2), (x + 8, y + 6),
+                   (x + 6, y + 8), (x + 2, y + 8), (x, y + 6), (x, y + 2)],
+                  fill=(43, 72, 38), outline=(30, 51, 28))
+        rect(d, x + 2, y + 1, x + 5, y + 2, (72, 105, 56))
+        px(d, x + 1, y + 3, (65, 96, 51))
+        px(d, x + 6, y + 5, (34, 62, 33))
+
+
+def hill_details(d, rnd):
+    # Low-contrast ridge fragments rather than a repeated ring pattern.
+    speckle(d, rnd, [(108, 125, 78), (123, 140, 90), (111, 129, 80)], 56)
+    for x, y in [(2, 10), (20, 22)]:
+        d.line([(x, y + 1), (x + 2, y), (x + 5, y), (x + 7, y + 1)], fill=(94, 113, 72), width=1)
+        d.line([(x + 2, y - 1), (x + 5, y - 1)], fill=(137, 153, 102), width=1)
+
+
+def urban_details(d, rnd):
+    # Small roofs and a road create recognisable settlements at 1x.
+    rect(d, 0, 13, 31, 18, (111, 110, 101))
+    for x, y, w, h in [(2, 2, 10, 8), (18, 3, 10, 7), (5, 21, 9, 8), (20, 22, 8, 7)]:
+        rect(d, x + 1, y + 1, x + w + 1, y + h + 1, (80, 81, 73))
+        rect(d, x, y, x + w, y + h, (143, 140, 127))
+        rect(d, x + 1, y + 1, x + w - 1, y + 2, (174, 169, 151))
+        rect(d, x + 2, y + 4, x + 4, y + 5, (95, 111, 110))
+        rect(d, x + w - 3, y + 4, x + w - 1, y + 5, (95, 111, 110))
+
+
+def mountain_details(d, rnd):
+    speckle(d, rnd, [(117, 116, 110), (136, 135, 126)], 32)
+    for x, y in [(3, 4), (18, 7), (8, 20)]:
+        d.polygon([(x, y + 6), (x + 2, y + 2), (x + 7, y), (x + 11, y + 3),
+                   (x + 12, y + 7), (x + 8, y + 9), (x + 3, y + 9)],
+                  fill=(104, 104, 96), outline=(79, 80, 74))
+        d.line([(x + 2, y + 3), (x + 7, y + 1), (x + 9, y + 3)], fill=(164, 163, 150), width=1)
+        px(d, x + 4, y + 4, (153, 152, 141))
+
+
+terrain("t_grass", (104, 128, 78), lambda d, r: speckle(d, r, [(98, 121, 74), (112, 135, 84), (95, 117, 70)], 56))
+terrain("t_forest", (72, 100, 58), forest_details)
+terrain("t_snow", (226, 230, 236), lambda d, r: speckle(d, r, [(210, 214, 222), (238, 242, 246), (196, 200, 210)], 65))
+terrain("t_desert", (196, 172, 122), lambda d, r: speckle(d, r, [(187, 164, 117), (205, 181, 128), (180, 158, 111)], 60))
+terrain("t_urban", (128, 124, 118), urban_details)
 terrain("t_water", (58, 92, 128), lambda d, r: [
     d.line([(2, y), (29, y)], fill=(74, 108, 144), width=1) for y in (6, 14, 22, 28)])
-terrain("t_mountain", (128, 124, 118), lambda d, r: [
-    (d.polygon([(x, y + 9), (x + 6, y), (x + 12, y + 9)], fill=(150, 146, 140),
-       outline=(84, 80, 76)), d.point((x + 5, y + 2), fill=(210, 208, 204)))
-    for x, y in [(2, 6), (15, 2), (8, 18), (20, 16)]])
-terrain("t_hills", (116, 132, 84), lambda d, r: [
-    d.ellipse([x, y, x + 12, y + 8], fill=(128, 144, 94), outline=(88, 102, 64))
-    for x, y in [(2, 4), (14, 12), (4, 20), (18, 22)]])
+terrain("t_mountain", (128, 124, 118), mountain_details)
+terrain("t_hills", (116, 132, 84), hill_details)
 terrain("t_marsh", (88, 104, 74), lambda d, r: [
     d.ellipse([x, y, x + 7, y + 4], fill=(70, 96, 100)) for x, y in [(4, 6), (18, 12), (8, 22)]])
 

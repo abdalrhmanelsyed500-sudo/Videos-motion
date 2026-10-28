@@ -1,19 +1,20 @@
-# IRON ATLAS — Development roadmap
+# IRON ATLAS — roadmap after Stage 2
 
-- **Stage 0 (done):** audit, harness recovery, art-reference study, architecture. See STAGE0_AUDIT.md.
-- **Stage 1 (this deliverable):** playable vertical slice — menu → seeded campaign →
-  strategic map (24 regions, 5 actors) → region inspection → recruit → move orders →
-  market purchase with delivery + diplomatic effect → tactical engagement with
-  pause/orders → battle report → world update → save/load round-trip → headless suite.
-- **Stage 2:** recruitment pool depth, morale/readiness recovery curves, battle report
-  detail, occupation states, event scheduler v1, difficulty settings, autosave.
-- **Stage 3:** diplomacy actions + treaties as objects, intelligence reports, political
-  support mechanics, more equipment classes, procurement restrictions, reconstruction.
-- **Stage 4:** government phase (budget categories, taxation policies, political groups,
-  elections/transition), industry + research trees.
-- **Stage 5:** world scale-up (continents/regions counts from config), maritime system,
-  alliances/blocs, sanctions, naval units, major-power AI.
-- **Stage 6-8:** advanced AI/intel, scenarios & custom worlds, art/UI polish pass,
-  release validation (long-run sims, save migration tests).
+- **Stage 0:** repository/tooling audit and reference study.
+- **Stage 1:** 24-region vertical slice. The original report overstated several
+  behaviors; the verified starting-state corrections are in `STAGE2_AUDIT.md`.
+- **Stage 2:** regional conflict core and configurable 200-region world,
+  resource-constrained factions, administration, logistics, persistence and
+  regression coverage. See `STATUS.md` for verified boundaries: the art and
+  200-region campaign balance are not yet at final production quality.
+- **Next iteration:** improve regional geography and hand-authored pixel art;
+  playtest/retune long 200-region campaigns; profile real desktop rendering,
+  culling and memory; deepen tactical AI and extract tactical rules from the
+  scene; add save slots and mid-battle persistence.
+- **Later stages:** events and campaign director, espionage, broader politics and
+  treaties, research/industry, weather, maritime movement and sea supply,
+  continental expansion, advanced AI, replay modes and release validation.
 
-Each stage ends with: suite green + STATUS.md updated (implemented/simplified/planned).
+Do not interpret planned systems as implemented, or headless simulation timing
+as FPS. Each iteration should retain regression coverage and record measured
+results and any limitations.

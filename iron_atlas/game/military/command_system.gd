@@ -2,8 +2,8 @@ extends RefCounted
 const Bus = preload("res://core/bus.gd")
 const CampaignState = preload("res://core/campaign_state.gd")
 const WorldGenerator = preload("res://world/world_generator.gd")
-## Orders with validation, queueing, cancellation and status feedback.
-## Order: {id, formation, type, target_region, path, progress, status, issued_day}
+const Administration = preload("res://administration/administration_system.gd")
+## Orders traverse land neighbors only; sea_neighbors require future naval rules.
 
 const SUPPLY_PER_MOVE := 0.06
 
@@ -20,14 +20,13 @@ func issue_move(st: CampaignState, formation_id: String, target_region: String) 
 		return {"ok": false, "error": "unknown target region"}
 	if f["region"] == target_region:
 		return {"ok": false, "error": "already there"}
-	var passable := func(rid: String) -> bool: return true
-	var path := WorldGenerator.path_bfs(st, f["region"], target_region, passable)
+	var path := WorldGenerator.path_bfs(st, f["region"], target_region, func(_rid): return true)
 	if path.is_empty():
 		return {"ok": false, "error": "no land route"}
 	var oid := st.next_id("ord")
 	var order := {"id": oid, "formation": formation_id, "type": "move",
 		"target_region": target_region, "path": path.slice(1), "progress": 0.0,
-		"status": "active", "issued_day": st.day}
+		"status": "active", "issued_day": st.day, "retreat": false}
 	f["orders"].append(order)
 	return {"ok": true, "order": order}
 
@@ -48,19 +47,25 @@ func issue_retreat(st: CampaignState, formation_id: String) -> Dictionary:
 	var best_score := -1.0
 	for nb in st.regions[f["region"]]["neighbors"]:
 		var r: Dictionary = st.regions[nb]
-		var score: float = (1.0 if r["controller"] == f["country"] else 0.0) + r["stability"]
+		if r["controller"] != f["country"] or _hostiles_present(st, nb, f["country"]):
+			continue
+		var score: float = float(r["stability"]) + float(r["supply_accessibility"])
 		if score > best_score:
 			best_score = score
 			best = nb
 	if best == "":
-		return {"ok": false, "error": "nowhere to retreat"}
+		return {"ok": false, "error": "no friendly adjacent region to retreat to"}
+	f["orders"] = []
 	f["morale"] = maxf(0.15, float(f["morale"]) - 0.15)
-	return issue_move(st, formation_id, best)
+	var result := issue_move(st, formation_id, best)
+	if result["ok"]:
+		result["order"]["retreat"] = true
+	return result
 
 
 func cancel_order(st: CampaignState, order_id: String) -> Dictionary:
-	for fid in st.formations:
-		var orders: Array = st.formations[fid]["orders"]
+	for f in st.formations.values():
+		var orders: Array = f["orders"]
 		for i in orders.size():
 			if orders[i]["id"] == order_id:
 				orders[i]["status"] = "cancelled"
@@ -78,59 +83,74 @@ func active_order(f: Dictionary) -> Dictionary:
 
 func tick_day(st: CampaignState, equip_table: Dictionary) -> void:
 	for fid in st.formations.keys():
+		if not st.formations.has(fid):
+			continue
 		var f: Dictionary = st.formations[fid]
 		var o := active_order(f)
 		if o.is_empty() or o["type"] != "move":
 			continue
-		var terrain: String = st.regions[f["region"]]["terrain"]
-		var speed_mod: float = WorldGenerator.TERRAIN_MOD[terrain]["move"]
+		if o["path"].is_empty():
+			f["orders"].erase(o)
+			continue
+		if _hostiles_present(st, f["region"], f["country"]) and not bool(o.get("retreat", false)):
+			continue
+		var r: Dictionary = st.regions[f["region"]]
+		var speed_mod: float = WorldGenerator.TERRAIN_MOD[r["terrain"]]["move"]
 		var cls_speed := 1.0
+		var fuel_need := 0.0
 		for u in f["units"]:
 			cls_speed = minf(cls_speed, float(CampaignState.UNIT_CLASSES[u["class"]]["speed"]))
+			fuel_need += float(equip_table.get(u["equip"], {}).get("fuel", 0.0)) * float(u["count"]) * 0.05
+		if fuel_need > 0.0:
+			var available := float(r["stocks"]["fuel"]) if r["controller"] == f["country"] else 0.0
+			var used := minf(available, fuel_need)
+			r["stocks"]["fuel"] = maxf(0.0, float(r["stocks"]["fuel"]) - used)
+			if used < fuel_need * 0.5:
+				speed_mod *= 0.35
+				if int(f.get("last_fuel_warning", -100)) + 7 <= st.day:
+					f["last_fuel_warning"] = st.day
+					st.add_report("logistics", "Fuel shortage", f["name"] + " is moving slowly without fuel.", f["country"])
 		if float(f["supplies"]) < 0.25:
 			speed_mod *= 0.5
-		o["progress"] += 0.55 * cls_speed * speed_mod
+		o["progress"] = float(o["progress"]) + 0.55 * cls_speed * speed_mod
 		f["supplies"] = maxf(0.0, float(f["supplies"]) - SUPPLY_PER_MOVE)
-		if o["progress"] >= 1.0:
+		if float(o["progress"]) >= 1.0:
 			o["progress"] = 0.0
 			var from_id: String = f["region"]
 			f["region"] = o["path"].pop_front()
-			st.regions[from_id]["history"].append({"day": st.day, "text": f["name"] + " departed"})
 			if o["path"].is_empty():
 				o["status"] = "completed"
 				f["orders"].erase(o)
-				st.regions[f["region"]]["history"].append(
-					{"day": st.day, "text": f["name"] + " arrived"})
+				st.regions[f["region"]]["history"].append({"day": st.day, "text": f["name"] + " arrived"})
+			_check_control(st, from_id)
 			_check_control(st, f["region"])
 
 
 func _check_control(st: CampaignState, region_id: String) -> void:
 	var r: Dictionary = st.regions[region_id]
 	var present := st.formations_in(region_id)
-	if present.is_empty():
-		return
-	var strongest: Dictionary = present[0]
+	var strongest: Dictionary = {}
 	for f in present:
-		if st.formation_power(f, {}) > st.formation_power(strongest, {}):
+		if st.formation_power(f, {}) <= 0.0:
+			continue
+		if strongest.is_empty() or st.formation_power(f, {}) > st.formation_power(strongest, {}):
 			strongest = f
-	var enemy_present := false
+	if strongest.is_empty() or strongest["country"] == r["controller"]:
+		return
+	if not st.is_hostile(strongest["country"], r["controller"]):
+		return # neutral forces do not capture neutral territory
 	for f in present:
-		if f["country"] != strongest["country"] and _at_war_or_hostile(st, f["country"], strongest["country"]):
-			enemy_present = true
-	if enemy_present:
-		return  # contested: control changes only via combat resolution
-	if r["controller"] != strongest["country"]:
-		r["prev_controller"] = r["controller"]
-		r["controller"] = strongest["country"]
-		r["history"].append({"day": st.day, "text": "control passed to " + strongest["country"]})
-		Bus.fire("region_controller_changed", region_id, r["controller"], 2)
+		if st.is_hostile(f["country"], strongest["country"]) and st.formation_power(f, {}) > 0.0:
+			return
+	Administration.capture(st, region_id, strongest["country"])
+
+
+func _hostiles_present(st: CampaignState, region_id: String, cid: String) -> bool:
+	for f in st.formations_in(region_id):
+		if st.is_hostile(cid, f["country"]) and st.formation_power(f, {}) > 0.0:
+			return true
+	return false
 
 
 func _at_war_or_hostile(st: CampaignState, a: String, b: String) -> bool:
-	for wid in st.wars:
-		var w: Dictionary = st.wars[wid]
-		if a in w["sides_a"] and b in w["sides_b"]:
-			return true
-		if b in w["sides_a"] and a in w["sides_b"]:
-			return true
-	return st.rel(a, b)["threat"] > 0.55
+	return st.is_hostile(a, b)

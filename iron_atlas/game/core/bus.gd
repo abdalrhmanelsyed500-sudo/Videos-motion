@@ -8,7 +8,7 @@ static func _node():
 	var tree := Engine.get_main_loop()
 	if tree == null:
 		return null
-	return (tree as SceneTree).root.get_node_or_null("/root/EventBus")
+	return (tree as SceneTree).root.get_node_or_null("EventBus")
 
 static func fire(sig: String, a1 = null, a2 = null, nargs: int = 0) -> void:
 	var b = _node()

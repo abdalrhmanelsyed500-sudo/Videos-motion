@@ -3,15 +3,54 @@
   "treasury": 12000,
   "stability": 0.45,
   "start_day": 0,
-  "inventory": {"rif_surplus": 40, "rif_basic": 12, "kit_protect": 8, "veh_pickup": 3,
-    "veh_truck": 2, "med_kit": 10},
+  "inventory": {
+    "rif_surplus": 40,
+    "rif_basic": 12,
+    "kit_protect": 8,
+    "veh_pickup": 3,
+    "veh_truck": 2,
+    "med_kit": 10
+  },
   "start_formations": [
-    {"country": "cty_player", "name": "Safehouse Guard", "region": "reg_09",
-     "commander": "Amira Voss",
-     "units": [{"class": "infantry", "equip": "rif_surplus", "count": 4, "condition": 0.85}]},
-    {"country": "cty_player", "name": "Convoy Column", "region": "reg_13",
-     "commander": "Deyan Marek",
-     "units": [{"class": "logistics", "equip": "veh_truck", "count": 2, "condition": 0.8},
-               {"class": "recon", "equip": "veh_pickup", "count": 2, "condition": 0.8}]}
-  ]
+    {
+      "country": "cty_player",
+      "name": "Safehouse Guard",
+      "region": "reg_09",
+      "commander": "Amira Voss",
+      "units": [
+        {
+          "class": "infantry",
+          "equip": "rif_surplus",
+          "count": 3,
+          "condition": 0.85
+        }
+      ]
+    },
+    {
+      "country": "cty_player",
+      "name": "Convoy Column",
+      "region": "reg_13",
+      "commander": "Deyan Marek",
+      "units": [
+        {
+          "class": "logistics",
+          "equip": "veh_truck",
+          "count": 1,
+          "condition": 0.8
+        },
+        {
+          "class": "recon",
+          "equip": "veh_pickup",
+          "count": 1,
+          "condition": 0.8
+        }
+      ]
+    }
+  ],
+  "faction_starting_treasury": {
+    "cty_vardena": 8000,
+    "cty_karsak": 8000,
+    "cty_meridia": 8000,
+    "cty_ostran": 8000
+  }
 }

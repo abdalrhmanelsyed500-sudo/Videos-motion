@@ -18,7 +18,6 @@ func ok(cond: bool, label: String) -> void:
 
 
 func _initialize() -> void:
-	print("T0 init")
 	GS = root.get_node("GameState")
 	GS.new_campaign(4242)
 	var st = GS.cs
