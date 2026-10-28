@@ -1,0 +1,26 @@
+; IRON ATLAS: SHATTERED WORLD — Godot 4.7 project
+config_version=5
+
+[application]
+
+config/name="IRON ATLAS: SHATTERED WORLD"
+run/main_scene="res://scenes/boot.tscn"
+config/features=PackedStringArray("4.7")
+
+[autoload]
+
+EventBus="*res://core/event_bus.gd"
+GameState="*res://core/game_state.gd"
+CampaignClock="*res://core/campaign_clock.gd"
+SaveManager="*res://core/save_manager.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
+renderer/rendering_method="gl_compatibility"
