@@ -1,0 +1,6 @@
+# heavy generated artifacts (regenerable via the render pipeline)
+02_EDITABLE_PROJECT/render/node_modules/
+02_EDITABLE_PROJECT/render/frames/
+02_EDITABLE_PROJECT/render/qc_frames/
+02_EDITABLE_PROJECT/render/04_audio_out/mix.wav
+02_EDITABLE_PROJECT/render/04_audio_out/mix_16.wav
